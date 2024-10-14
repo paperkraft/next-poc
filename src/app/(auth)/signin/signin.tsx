@@ -1,5 +1,6 @@
 "use client"
 import Link from 'next/link'
+import Script from 'next/script'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Form } from '@/components/ui/form'
@@ -8,12 +9,11 @@ import { useForm } from 'react-hook-form'
 import * as z from "zod"
 import { LoaderCircle } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
-import { InputController } from '@/components/custom/form.control/InputController'
-import { signIn } from 'next-auth/react'
 import { useMounted } from '@/hooks/use-mounted'
-import Script from 'next/script'
-import ToggleButtons from '@/components/custom/layout/ToggleButtons'
+import { signIn } from 'next-auth/react'
 import { RECAPTCHA_SITE_KEY } from '@/utils/constant'
+import { InputController } from '@/components/custom/form.control/InputController'
+import ToggleButtons from '@/components/custom/layout/ToggleButtons'
 
 const signInSchema = z.object({
     email: z.string({ required_error: "Email is required" })
@@ -39,40 +39,32 @@ export default function SignInPage() {
     });
 
     const onSubmit = async (data: signInT) => {
+        setLoading(true);
 
+        // get captch
         const token = await new Promise<string>((resolve) => {
             window.grecaptcha.execute(RECAPTCHA_SITE_KEY as string, { action: 'submit' }).then(resolve);
         });
 
-        setLoading(true);
+        // get user
+        const response = await fetch('/api/user', {
+            method:"POST",
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({...data, token}),
+        }).then((res) => {
+            return res.json();
+        })
 
-        try {
-            const res = await signIn('credentials', {
-                email: data.email,
-                password: data.password,
-                redirect: false,    
-                token: token
-            });
-
-            if(res?.code === "credentials" || res?.error === "CredentialsSignin"){
-                toast({
-                    title: "Login Error",
-                    description: "Invalid credentials",
-                });
-            }
-
-            if (!res?.error) {
-                window.location.href = '/dashboard'
-            }
-        } catch (error) {
-            console.log("Error", error);
+        if(response.type === "CredentialsSignin" || response.code === "credentials"){
             toast({
-                title: "Unexpected Error",
-                description: "An error occurred while trying to log in.",
+                title: "Error",
+                description: "Invalid credentials",
+                variant:'destructive'
             });
-        } finally {
             setLoading(false);
-        }
+        } else {
+            window.location.href = '/dashboard'
+        }   
     };
     
     const renderButtonContent = () => {

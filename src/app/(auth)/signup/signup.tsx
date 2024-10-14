@@ -11,6 +11,7 @@ import { LoaderCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { InputController } from "@/components/custom/form.control/InputController";
 import { useMounted } from "@/hooks/use-mounted";
+import { signIn } from 'next-auth/react'
 
 const signUpSchema = z.object({
     firstName: z.string({ required_error: "First name is required" })
@@ -140,7 +141,12 @@ export default function SignUpPage() {
                             <Button type="submit" className="w-full" disabled={loading}>
                                 {renderButtonContent()}
                             </Button>
-                            <Button variant="outline" className="w-full">
+                            <Button variant="outline" className="w-full" 
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    signIn('github');
+                                }}
+                            >
                                 Sign up with GitHub
                             </Button>
                         </div>

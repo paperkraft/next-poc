@@ -2,9 +2,12 @@ import { NextAuthConfig, User } from "next-auth"
 import prisma from "@/lib/prisma";
 import Credentials from "next-auth/providers/credentials";
 import GitHub from "next-auth/providers/github";
-import { AUTH_SECRET, BASE_PATH, GITHUB_ID, GITHUB_SECRET } from "@/utils/constant";
+import bcrypt from 'bcryptjs';
+import { AUTH_SECRET, GITHUB_ID, GITHUB_SECRET } from "@/utils/constant";
  
 const authConfig: NextAuthConfig = {
+    secret: AUTH_SECRET,
+
     providers: [
         Credentials({
             name:"Credentails",
@@ -13,8 +16,7 @@ const authConfig: NextAuthConfig = {
                 email: { label: "Email", type: "text" },
                 password: { label: "Password", type: "password" },
             },
-            async authorize(credentials):Promise<User | null> {
-
+            async authorize(credentials):Promise<User | null > {
                 const data = {
                     token: credentials?.token as string,
                     email: credentials?.email as string,
@@ -22,24 +24,14 @@ const authConfig: NextAuthConfig = {
                 }
                 
                 /* GET User details */
-                try {
-                    const response = await fetch(`${BASE_PATH}/api/user/`, {
-                        method: "POST",
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(data)
-                    });
-
-                    if (!response.ok)  return null;
+                const user = await prisma.user.findUnique({
+                    where: { email: data.email },
+                });
             
-                    const user = await response.json();
-            
-                    if (!user)  return null;
-                    
-                    return user;
-                } catch (error) {
-                    console.error('Error during authentication:', error);
-                    return null;
+                if (!user || !(await bcrypt.compare(data.password, user.password as string))) {
+                    return null
                 }
+                return { id:user.id, name:user.name, email:data.email }
             }
         }),
 
@@ -50,10 +42,6 @@ const authConfig: NextAuthConfig = {
         })
     ],
 
-    secret: AUTH_SECRET,
-
-    // basePath: process.env.AUTH_URL,
-    
     session: {
         strategy: 'jwt',
         maxAge: 10 * 60,
@@ -87,18 +75,24 @@ const authConfig: NextAuthConfig = {
         
         async jwt({ token, user }) {
             if (user) {
-                return {
-                    ...token,
-                    id: user.id
-                }
+                token.id = user.id;
             }
             return token;
         },
-        async session({ session, user }) {
-            // session.user.id = user.id
+
+        async session({ session, token }) {
+            if (token) {
+                session.user.id = token.id as string;
+            }
             return session
         },
     },
+
+    events:{
+        async signOut(message){
+            // console.log("SignOut Event", message);
+        }
+    },  
 
     pages: {
         signIn: '/signin'

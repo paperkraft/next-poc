@@ -2,8 +2,7 @@ import { NextAuthConfig, User } from "next-auth"
 import prisma from "@/lib/prisma";
 import Credentials from "next-auth/providers/credentials";
 import GitHub from "next-auth/providers/github";
-import { basePath } from "@/utils/constant";
-// import bcrypt from 'bcryptjs';
+import { AUTH_SECRET, BASE_PATH, GITHUB_ID, GITHUB_SECRET } from "@/utils/constant";
  
 const authConfig: NextAuthConfig = {
     providers: [
@@ -11,8 +10,8 @@ const authConfig: NextAuthConfig = {
             name:"Credentails",
             credentials: {
                 token: { label: "token", type: "text" },
-                email: { label: "Email", type: "text", placeholder: "Enter your email" },
-                password: { label: "Password", type: "password", placeholder: "Enter your password" },
+                email: { label: "Email", type: "text" },
+                password: { label: "Password", type: "password" },
             },
             async authorize(credentials):Promise<User | null> {
 
@@ -21,53 +20,37 @@ const authConfig: NextAuthConfig = {
                     email: credentials?.email as string,
                     password : credentials?.password as string,
                 }
-                const apiUrl = `${basePath}/api/user/`;
                 
+                /* GET User details */
                 try {
-                    const response = await fetch(apiUrl, {
+                    const response = await fetch(`${BASE_PATH}/api/user/`, {
                         method: "POST",
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(data)
                     });
 
-                    if (!response.ok) {
-                        return null;
-                    }
+                    if (!response.ok)  return null;
             
                     const user = await response.json();
             
-                    if (!user) {
-                        return null;
-                    }
-            
+                    if (!user)  return null;
+                    
                     return user;
                 } catch (error) {
                     console.error('Error during authentication:', error);
                     return null;
                 }
-
-                /* GET User details */
-
-                // const user = await prisma.user.findUnique({
-                //     where: { email: credentials?.email as string },
-                // });
-            
-                // if (!user || !(await bcrypt.compare(credentials?.password as string, user.password as string))) {
-                //     return null
-                // }
-            
-                // return {id:user.id, email: user.email, name:user.name}
             }
         }),
 
         GitHub({
            name:"GitHub",
-           clientId: process.env.AUTH_GITHUB_ID as string,
-           clientSecret: process.env.AUTH_GITHUB_SECRET as string,
+           clientId: GITHUB_ID as string,
+           clientSecret: GITHUB_SECRET as string,
         })
     ],
 
-    secret: process.env.AUTH_SECRET,
+    secret: AUTH_SECRET,
 
     // basePath: process.env.AUTH_URL,
     
@@ -89,7 +72,7 @@ const authConfig: NextAuthConfig = {
             });
 
             if(!existingUser){
-                // add to db
+                // add user to database
                 await prisma.user.create({
                     data:{
                         email: user.email as string,
@@ -99,7 +82,6 @@ const authConfig: NextAuthConfig = {
                     }
                 });
             }
-
             return true;
         },
         
@@ -112,12 +94,9 @@ const authConfig: NextAuthConfig = {
             }
             return token;
         },
-        async session({ session, token }) {
-            return {
-                ...session,
-                id: token.id as string
-
-            }
+        async session({ session, user }) {
+            // session.user.id = user.id
+            return session
         },
     },
 

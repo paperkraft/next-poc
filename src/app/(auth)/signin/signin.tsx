@@ -13,7 +13,7 @@ import { signIn } from 'next-auth/react'
 import { useMounted } from '@/hooks/use-mounted'
 import Script from 'next/script'
 import ToggleButtons from '@/components/custom/layout/ToggleButtons'
-import { captchaSiteKey } from '@/utils/constant'
+import { RECAPTCHA_SITE_KEY } from '@/utils/constant'
 
 const signInSchema = z.object({
     email: z.string({ required_error: "Email is required" })
@@ -41,7 +41,7 @@ export default function SignInPage() {
     const onSubmit = async (data: signInT) => {
 
         const token = await new Promise<string>((resolve) => {
-            window.grecaptcha.execute(captchaSiteKey as string, { action: 'submit' }).then(resolve);
+            window.grecaptcha.execute(RECAPTCHA_SITE_KEY as string, { action: 'submit' }).then(resolve);
         });
 
         setLoading(true);
@@ -90,7 +90,7 @@ export default function SignInPage() {
         mounted &&
         <>
             <Script
-                src={`https://www.google.com/recaptcha/api.js?render=${captchaSiteKey}`}
+                src={`https://www.google.com/recaptcha/api.js?render=${RECAPTCHA_SITE_KEY}`}
                 strategy="afterInteractive"
                 onLoad={() => {
                     console.log('reCAPTCHA script loaded successfully');
@@ -120,10 +120,6 @@ export default function SignInPage() {
                                 />
                             </div>
                             
-                            {/* <ReCAPTCHA sitekey={siteKey} onChange={handleCaptchaChange} style={{width:"100%"}} className='[&_iframe]:w-full'/> */}
-
-                            
-
                             <Button type="submit" className="w-full" disabled={loading}>
                                 { renderButtonContent() }
                             </Button>

@@ -88,8 +88,8 @@ export default function SignUpPage() {
         mounted &&
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex items-center justify-center py-10">
-                <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
-                    <div className="flex flex-col space-y-2 text-center">
+                <div className="mx-auto grid w-[350px] gap-6">
+                    <div className="grid gap-2 text-center">
                         <h1 className="text-2xl font-semibold tracking-tight">Sign Up</h1>
                         <p className="text-sm text-muted-foreground">Enter your information to create an account</p>
                     </div>

@@ -14,10 +14,9 @@ import { useMounted } from "@/hooks/use-mounted";
 import { signIn } from 'next-auth/react'
 
 const signUpSchema = z.object({
-    firstName: z.string({ required_error: "First name is required" })
-        .min(1, "First name is required"),
-    lastName: z.string({ required_error: "Last name is required" })
-        .min(1, "Last name is required"),
+    username: z.string({ required_error: "Username is required" })
+        .min(6, "Username is required")
+        .max(8, "Username must be less than 8 characters"),
     email: z.string({ required_error: "Email is required" })
         .min(1, "Email is required")
         .email("Invalid email"),
@@ -25,9 +24,9 @@ const signUpSchema = z.object({
         .min(1, "Password is required")
         .min(6, "Password must be more than 6 characters")
         .max(20, "Password must be less than 20 characters"),
-    mobile: z.string({ required_error: "Mobile No. is required" })
-        .min(10, "Mobile No. is required")
-        .max(10, "Mobile No. must be less than 10 characters"),
+    // mobile: z.string({ required_error: "Mobile No. is required" })
+    //     .min(10, "Mobile No. is required")
+    //     .max(10, "Mobile No. must be less than 10 characters"),
 });
 
 type signUp = z.infer<typeof signUpSchema>;
@@ -40,9 +39,7 @@ export default function SignUpPage() {
     const form = useForm<signUp>({
         resolver: zodResolver(signUpSchema),
         defaultValues: {
-            firstName: "",
-            lastName: "",
-            mobile: "",
+            username: "",
             email: "",
             password: ""
         },
@@ -70,6 +67,7 @@ export default function SignUpPage() {
             toast({
                 title:"Failed",
                 description: errorData?.message || "Error creating account",
+                variant:'destructive'
             });
         }
     }
@@ -96,38 +94,18 @@ export default function SignUpPage() {
                     </div>
                     <div className="grid gap-4">
                         <div className="grid gap-2">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="grid gap-2">
-                                    <InputController
-                                        name="firstName"
-                                        label="First Name"
-                                        placeholder="First Name"
-                                    />
-                                </div>
-                                <div className="grid gap-2">
-                                    <InputController
-                                        name="lastName"
-                                        label="Last Name"
-                                        placeholder="Last Name"
-                                    />
-                                </div>
-                            </div>
-                            <div className="grid gap-2">
-                                <InputController
-                                    name="mobile"
-                                    label="Mobile No."
-                                    placeholder="Mobile No."
-                                    type="number"
-                                    maxLength={10}
-                                />
-                            </div>
+                            <InputController
+                                name="username"
+                                label="Username"
+                                placeholder="Username"
+                            />
                             <div className="grid gap-2">
                                 <InputController
                                     name="email"
                                     label="Email"
                                     placeholder="Email"
                                     type='email'
-                                    maxLength={30}
+                                    maxLength={40}
                                 />
                             </div>
                             <div className="grid gap-2">
@@ -138,6 +116,7 @@ export default function SignUpPage() {
                                     type='password'
                                 />
                             </div>
+
                             <Button type="submit" className="w-full" disabled={loading}>
                                 {renderButtonContent()}
                             </Button>

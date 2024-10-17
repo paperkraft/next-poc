@@ -23,35 +23,26 @@ import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { signOut, useSession } from "next-auth/react";
+import { AvatarIcon } from "@radix-ui/react-icons";
 
 const UserAction = () => {
   const router = useRouter();
   const { setTheme, resolvedTheme } = useTheme();
   const { data: session } = useSession();
 
+  // shortcut key to logout ctrl + q
   useEffect(() => {
-    const down = async (e: KeyboardEvent) => {
-      if (e.key === "f" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-      }
+    const down = (e: KeyboardEvent) => {
       if (e.key === "q" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         localStorage.removeItem("user");
-        await signOut({redirect: false, callbackUrl:'/signin'});
-      }
-      if (e.key === "x" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        router.push("/settings");
+        signOut({redirect: false});
       }
     };
 
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
   }, [router]);
-
-  const onDarkModeToggle = (e:boolean) => {
-    setTheme(e ? "dark" : "light");
-  };
 
   const logout = () => {
     signOut({ redirect: false });
@@ -68,7 +59,11 @@ const UserAction = () => {
           <DropdownMenuContent align="start" className={cn("w-56 mt-4 mr-1 [&_svg]:w-5 [&_svg]:stroke-[1.5] [&_svg]:mr-2 [&_svg]:h-5")}>
             
             <DropdownMenuLabel className="flex items-center">
-              <Image src={"/sv.svg"} width={38} height={38} alt="user" />
+              {
+                session?.user?.email.includes('vishal') 
+                ? <Image src={"/sv.svg"} width={38} height={38} alt="user" />
+                : <AvatarIcon className="h-10 w-10"/>
+              }
               <span className="flex flex-col ml-4 overflow-ellipsis">
                 <span>{session?.user?.name ?? "Vishal Sannake"}</span>
                 <span className={cn("text-muted-foreground text-xs",{

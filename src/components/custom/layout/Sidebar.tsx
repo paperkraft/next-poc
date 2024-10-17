@@ -2,7 +2,7 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Link from "next/link";
 import * as React from "react";
-import { BookTextIcon, GraduationCap, Home, ImageIcon, UniversityIcon } from "lucide-react";
+import { BookTextIcon, GraduationCap, Home, ImageIcon, MonitorCogIcon, UniversityIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
@@ -43,10 +43,10 @@ export default function SidebarMenu() {
                         </Link>
                     </li>
                     <li>
-                        <Link href={'/academic'} className={cn(classList, {"bg-gray-100 dark:bg-slate-800": path === '/academic'})}>
+                        <Link href={'/access-control'} className={cn(classList, {"bg-gray-100 dark:bg-slate-800": path === '/access-control'})}>
                             <span className="flex">
-                                <BookTextIcon size={20} className="stroke-[1.5] mr-1" />
-                                Academic
+                                <MonitorCogIcon size={20} className="stroke-[1.5] mr-1" />
+                                Access Control
                             </span>
                         </Link>
                     </li>

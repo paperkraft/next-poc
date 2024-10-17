@@ -3,31 +3,38 @@ import bcrypt from 'bcryptjs';
 import prisma from '@/lib/prisma';
 
 export async function POST(request: Request) {
-    const { firstName, lastName, email, password, phone } = await request.json();
+    const { username, email, password } = await request.json();
 
-    // Check if the user already exists
-    const existingUser = await prisma.user.findUnique({
-        where: { email: email }
-    })
-
-    if (existingUser) {
-        return NextResponse.json({ message: 'User already exists' }, { status: 400 });
-    }
-
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Insert the new user
-    await prisma.user.create({
-        data: {
-            name: firstName +' '+ lastName,
-            firstName,
-            lastName,
-            email,
-            phone,
-            password: hashedPassword
+    try {
+        // Check if the user already exists
+        const existingUser = await prisma.user.findFirst({
+            where: {
+                OR:[
+                    { email: email },
+                    { username: username }
+                ]
+             }
+        });
+    
+        if (existingUser) {
+            return NextResponse.json({ message: 'User already exists' }, { status: 409 });
         }
-    });
-
-    return NextResponse.json({ message: 'User registered successfully' }, { status: 201 });
+    
+        // Hash the password
+        const hashedPassword = await bcrypt.hash(password, 10);
+    
+        // Insert the new user
+        await prisma.user.create({
+            data: {
+                username,
+                email,
+                password: hashedPassword
+            }
+        });
+    
+        return NextResponse.json({ message: 'User registered successfully' }, { status: 201 });
+    } catch (error) {
+        console.error("Error processing request:", error);
+        return NextResponse.json(JSON.stringify({ error: "Internal Server Error" }), { status: 500 });
+    }
 }

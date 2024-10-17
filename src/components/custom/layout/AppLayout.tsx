@@ -29,6 +29,7 @@ function AppLayout({ children }:{children: React.ReactNode}) {
                         {`
                             [data-radix-scroll-area-viewport] > div {
                                 display:block !important;
+                                min-width: auto !important;
                             }
                         `}
                     </style>

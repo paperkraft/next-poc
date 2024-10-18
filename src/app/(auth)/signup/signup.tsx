@@ -4,9 +4,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod"
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
-import * as z from "zod"
 import { LoaderCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { InputController } from "@/components/custom/form.control/InputController";
@@ -15,7 +15,8 @@ import { signIn } from 'next-auth/react'
 
 const signUpSchema = z.object({
     username: z.string({ required_error: "Username is required" })
-        .min(6, "Username is required")
+        .min(1, "Username is required")
+        .min(6, "Username must be more than 6 characters")
         .max(8, "Username must be less than 8 characters"),
     email: z.string({ required_error: "Email is required" })
         .min(1, "Email is required")
@@ -92,34 +93,36 @@ export default function SignUpPage() {
                         <h1 className="text-2xl font-semibold tracking-tight">Sign Up</h1>
                         <p className="text-sm text-muted-foreground">Enter your information to create an account</p>
                     </div>
+                    
                     <div className="grid gap-4">
                         <div className="grid gap-2">
                             <InputController
                                 name="username"
                                 label="Username"
                                 placeholder="Username"
+                                maxLength={8}
+                                minLength={6}
                             />
-                            <div className="grid gap-2">
-                                <InputController
-                                    name="email"
-                                    label="Email"
-                                    placeholder="Email"
-                                    type='email'
-                                    maxLength={40}
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <InputController
-                                    name="password"
-                                    label="Password"
-                                    placeholder="Password"
-                                    type='password'
-                                />
-                            </div>
+
+                            <InputController
+                                name="email"
+                                label="Email"
+                                placeholder="Email"
+                                type='email'
+                                maxLength={40}
+                            />
+                            
+                            <InputController
+                                name="password"
+                                label="Password"
+                                placeholder="Password"
+                                type='password'
+                            />
 
                             <Button type="submit" className="w-full" disabled={loading}>
                                 {renderButtonContent()}
                             </Button>
+
                             <Button variant="outline" className="w-full" 
                                 onClick={(e) => {
                                     e.preventDefault();
@@ -129,11 +132,10 @@ export default function SignUpPage() {
                                 Sign up with GitHub
                             </Button>
                         </div>
+
                         <div className="mt-4 text-center text-sm">
                             Already have an account?&nbsp;
-                            <Link href="/signin" className="underline">
-                                Sign in
-                            </Link>
+                            <Link href="/signin" className="underline">Sign in</Link>
                         </div>
                     </div>
 

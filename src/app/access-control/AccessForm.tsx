@@ -272,8 +272,6 @@ export default function AccessPage() {
               </pre>
             ),
         });
-
-        console.log("Data", JSON.stringify(result, null, 2));
     }
 
     return (
@@ -384,7 +382,7 @@ export default function AccessPage() {
                     </TableBody>
                 </Table>
 
-                <div className="flex justify-end my-4 gap-1">
+                <div className="flex justify-end my-4 gap-2">
                     <Button variant={'outline'} onClick={(e) => { e.preventDefault(); form.reset(); }}>Reset</Button>
                     <Button type="submit">Submit</Button>
                 </div>

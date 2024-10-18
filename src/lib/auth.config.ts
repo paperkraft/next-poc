@@ -86,6 +86,10 @@ const authConfig: NextAuthConfig = {
             }
             return session
         },
+
+        // authorized: async ({ auth }) => {
+        //     return !!auth
+        // },
     },
 
     events:{

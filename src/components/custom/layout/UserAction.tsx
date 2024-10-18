@@ -77,15 +77,16 @@ const UserAction = () => {
             <DropdownMenuSeparator />
 
             <DropdownMenuGroup className="space-y-1">
-              <DropdownMenuItem className="cursor-pointer">
-                <UserIcon />
-                Profile
-                <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-              </DropdownMenuItem>
 
               <li className="flex text-sm p-2 group hover:bg-accent">
-                <Link href={'/settings'} className="flex w-full">
-                  <Settings />Settings
+                <Link href={'/profile'} className="flex w-full">
+                <UserIcon /> Profile
+                </Link>
+              </li>
+
+              <li className="flex text-sm p-2 group hover:bg-accent">
+                <Link href={'#'} className="flex w-full">
+                  <Settings /> Settings
                 </Link>
               </li>
 
@@ -94,7 +95,7 @@ const UserAction = () => {
             <DropdownMenuSeparator />
 
             <li className="flex text-sm hover:bg-accent text-primary">
-              <Button onClick={() => logout()} variant={'ghost'} className="flex w-full px-2">
+              <Button onClick={logout} variant={'ghost'} className="flex w-full px-2">
                   <PowerIcon />Logout
                   <DropdownMenuShortcut>Ctrl+Q</DropdownMenuShortcut>
               </Button>

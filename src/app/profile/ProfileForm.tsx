@@ -61,8 +61,6 @@ export default function Profile() {
     },[user]);
 
     const onSubmit = async (data: formType) => {
-        console.log("Data : ", data);
-
         const res = await fetch('/api/user/update',{
             method:"POST",
             body: JSON.stringify(data)

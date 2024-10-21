@@ -52,7 +52,7 @@ export default function Profile() {
 
                 const data = await response.json();
 
-                Object.entries(data).map(([key, val]) => {
+                Object.entries(data).map(([key, val]:any) => {
                     if(val) form.setValue(key, val);
                 })
             };
@@ -61,7 +61,7 @@ export default function Profile() {
     },[user]);
 
     const onSubmit = async (data: formType) => {
-        const res = await fetch('/api/user/update',{
+        const res = await fetch('/api/user/update', {
             method:"POST",
             body: JSON.stringify(data)
         })

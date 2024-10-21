@@ -1,5 +1,5 @@
 'use client';
-import AppLayout from "@/components/custom/layout/AppLayout";
+import LeftSidebar from "@/components/custom/layout/LeftSidebar";
 import { useMounted } from "@/hooks/use-mounted";
 import { useSession } from "next-auth/react";
 
@@ -10,8 +10,8 @@ export default function WelcomePage() {
 
   return (
     mounted &&
-    <AppLayout>
+    <LeftSidebar>
       <div> Welcome, {user?.name ?? user?.email}  </div>
-    </AppLayout>
+    </LeftSidebar>
   )
 }

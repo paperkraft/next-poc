@@ -12,7 +12,8 @@ import {
     LogOut,
     Settings2,
     UserIcon,
-    UniversityIcon
+    UniversityIcon,
+    MenuIcon
 } from "lucide-react"
 import {
     Avatar,
@@ -61,12 +62,14 @@ import {
     SidebarProvider,
     SidebarRail,
     SidebarTrigger,
+    useSidebar,
 } from "@/components/ui/sidebar"
 import { ChildProps } from "@/types/children"
 import { signOut, useSession } from "next-auth/react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 
 // This is sample data.
 const data = [
@@ -144,6 +147,11 @@ function getTitleAndParentByUrl(data: any, url: string) {
     return null;
 }
 
+export function CustomTrigger() {
+    const { toggleSidebar } = useSidebar();
+    return <Button onClick={toggleSidebar} variant={'ghost'} size={'sm'} className="size-7 -ml-1"><MenuIcon /></Button>
+}
+
 export default function LeftSidebar({ children }: ChildProps) {
 
     const route = useRouter();
@@ -165,7 +173,7 @@ export default function LeftSidebar({ children }: ChildProps) {
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton onClick={() => route.push('/')} size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
-                                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                                <div className="flex aspect-square size-8 items-center justify-center rounded-full bg-sidebar-primary text-sidebar-primary-foreground">
                                     WD
                                 </div>
                                 <div className="grid flex-1 text-left text-sm leading-tight">
@@ -250,15 +258,11 @@ export default function LeftSidebar({ children }: ChildProps) {
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <DropdownMenu>
-
                                 <DropdownMenuTrigger asChild>
                                     <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
-                                        <Avatar className="h-8 w-8 rounded-lg">
-                                            <AvatarImage
-                                                src={user?.image}
-                                                alt={user?.name}
-                                            />
-                                            <AvatarFallback className="rounded-lg">SV</AvatarFallback>
+                                        <Avatar className="h-8 w-8 rounded-full border border-blue-500">
+                                            <AvatarImage src={user?.image} alt={user?.name} />
+                                            <AvatarFallback className="rounded-full">SV</AvatarFallback>
                                         </Avatar>
                                         <div className="grid flex-1 text-left text-sm leading-tight">
                                             <span className="truncate font-semibold">
@@ -280,14 +284,9 @@ export default function LeftSidebar({ children }: ChildProps) {
                                 >
                                     <DropdownMenuLabel className="p-0 font-normal">
                                         <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                                            <Avatar className="h-8 w-8 rounded-lg">
-                                                <AvatarImage
-                                                    src={user?.image}
-                                                    alt={user?.name}
-                                                />
-                                                <AvatarFallback className="rounded-lg">
-                                                    SV
-                                                </AvatarFallback>
+                                            <Avatar className="h-8 w-8 rounded-full border border-blue-500">
+                                                <AvatarImage src={user?.image} alt={user?.name} />
+                                                <AvatarFallback className="rounded-full">SV</AvatarFallback>
                                             </Avatar>
                                             <div className="grid flex-1 text-left text-sm leading-tight">
                                                 <span className="truncate font-semibold">
@@ -336,15 +335,14 @@ export default function LeftSidebar({ children }: ChildProps) {
                     </SidebarMenu>
                 </SidebarFooter>
 
-                <SidebarRail />
+                {/* <SidebarRail /> */}
 
             </Sidebar>
 
             <SidebarInset>
                 <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
                     <div className="flex items-center gap-2 px-4">
-                        <SidebarTrigger className="-ml-1" />
-
+                        <CustomTrigger/>
                         <Separator orientation="vertical" className="mr-2 h-4" />
 
                         <Breadcrumb>

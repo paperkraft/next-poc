@@ -1,16 +1,10 @@
 'use client'
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog";
+import DialogBox from "@/components/custom/dialog-box";
+import { ImgProps } from "@/types/types";
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react"
-import { ImgProps } from "../../page";
 
 
 const Photo = React.memo(({params:{id}} : {params:{id:string}}) => {
@@ -39,15 +33,9 @@ const Photo = React.memo(({params:{id}} : {params:{id:string}}) => {
 
     return(
         photo &&
-        <Dialog open={open} onOpenChange={handleClose}>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Image {id}</DialogTitle>
-                    <DialogDescription>.{photo?.title}</DialogDescription>
-                </DialogHeader>
-                <Image src={photo.url} alt="" width={600} height={600} className="rounded" />
-            </DialogContent>
-        </Dialog>
+        <DialogBox open={open} setClose={handleClose} title={`Image ${id}`} description={photo?.title}>
+            <Image src={photo.url} alt="" width={600} height={600} className="rounded aspect-square" />
+        </DialogBox>
     )
 })
 

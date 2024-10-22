@@ -6,18 +6,19 @@ type DialogProps= {
     open: boolean,
     setClose: () => void;
     title: string;
+    description?: string;
     children: React.ReactNode;
     footer?: React.ReactNode;
 }
 
-const DialogBox = memo(function DialogBox({open, setClose, title, footer, children}:DialogProps) {
+const DialogBox = memo(function DialogBox({open, setClose, title, description, footer, children}:DialogProps) {
     return(
         <Dialog open={open} onOpenChange={setClose}>
         <DialogContent aria-describedby="content">
           <DialogHeader>
             <DialogTitle>{title ?? "Dialog Title"}</DialogTitle>
             <div>
-                <DialogDescription className="my-4"></DialogDescription>
+                <DialogDescription className="my-4">{description}</DialogDescription>
                 { children } 
             </div>
           </DialogHeader>
@@ -30,23 +31,3 @@ const DialogBox = memo(function DialogBox({open, setClose, title, footer, childr
 });
 
 export default DialogBox;
-
-// export const DialogBox = ({open, setClose, title, footer, children}:DialogProps) => {
-
-//     return(
-//         <Dialog open={open} onOpenChange={setClose}>
-//         <DialogContent aria-describedby="content">
-//           <DialogHeader>
-//             <DialogTitle>{title ?? "Dialog Title"}</DialogTitle>
-//             <div>
-//                 <DialogDescription className="my-4"></DialogDescription>
-//                 { children } 
-//             </div>
-//           </DialogHeader>
-//           <DialogFooter>
-//             { footer }
-//           </DialogFooter>
-//         </DialogContent>
-//         </Dialog>
-//     )
-// }

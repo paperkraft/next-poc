@@ -132,7 +132,7 @@ export default function LeftSidebar({ children }: ChildProps) {
                                                         !hasSubmenu &&
                                                         <SidebarMenuItem key={item.title}>
                                                             <SidebarMenuButton tooltip={item.title} asChild>
-                                                                <Link href={item.url} className={cn({ "bg-sidebar-accent text-sidebar-accent-foreground": item.url === path })}>
+                                                                <Link href={item.url} className={cn({ "bg-sidebar-accent text-sidebar-accent-foreground": item.url === path || path.includes(item.url) })}>
                                                                     {item.icon && <item.icon />}
                                                                     {item.title}
                                                                 </Link>

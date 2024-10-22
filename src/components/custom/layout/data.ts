@@ -1,5 +1,6 @@
 import {
     BookOpen,
+    GraduationCapIcon,
     Home,
     ImageIcon,
     Settings2,
@@ -24,6 +25,14 @@ export const data = [
     },
     {
         label: "Home",
+        title: "Student",
+        url: "/student",
+        icon: GraduationCapIcon,
+        isActive: false,
+        submenu: [],
+    },
+    {
+        label: "Home",
         title: "Settings",
         url: "#",
         icon: Settings2,
@@ -31,7 +40,7 @@ export const data = [
         submenu: [
             {
                 title: "General",
-                url: "#",
+                url: "/general",
             },
             {
                 title: "Access",

@@ -5,8 +5,8 @@ import ThemeProvider from "@/components/custom/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { NextAuthProvider } from "@/components/custom/auth-provider";
 import { cn } from "@/lib/utils";
-import { ChildProps } from "@/types/children";
 import AppLayout from "@/components/custom/layout/AppLayout";
+import { ChildProps } from "@/types/types";
 
 const inter = Inter({subsets: ["latin"]});
 

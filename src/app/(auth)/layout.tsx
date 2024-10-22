@@ -1,5 +1,5 @@
+import { ChildProps } from "@/types/types";
 import type { Metadata } from "next";
-import { ChildProps } from "@/types/children";
 
 export const metadata: Metadata = {
   title:{

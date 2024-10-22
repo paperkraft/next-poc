@@ -22,7 +22,7 @@ function getTitleAndParentByUrl(data: any, url: string) {
 
         // Check in submenu if it exists
         if (entry.submenu) {
-            const submenuItem = entry.submenu.find((sub:any) => sub.url === url);
+            const submenuItem = entry.submenu.find((sub: any) => sub.url === url);
             if (submenuItem) {
                 return { parentTitle: entry.title, childTitle: submenuItem.title };
             }
@@ -31,14 +31,15 @@ function getTitleAndParentByUrl(data: any, url: string) {
     return null;
 }
 
-const Header:React.FC = React.memo(()=>{
+const Header: React.FC = React.memo(() => {
     const path = usePathname();
     const breadcrumb = getTitleAndParentByUrl(data, path);
 
     return (
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
             <div className="flex items-center gap-2 px-4">
-                <CustomTrigger/>
+                <CustomTrigger />
+                
                 <Separator orientation="vertical" className="mr-2 h-4" />
 
                 <Breadcrumb>
@@ -47,10 +48,10 @@ const Header:React.FC = React.memo(()=>{
                             <BreadcrumbLink href="#">Home</BreadcrumbLink>
                         </BreadcrumbItem>
 
-                        { path !== '/' && <BreadcrumbSeparator className="hidden md:block" /> }
+                        {path !== '/' && <BreadcrumbSeparator className="hidden md:block" />}
 
-                        { breadcrumb?.childTitle ?
-                            <React.Fragment>
+                        {breadcrumb?.childTitle
+                            ? <React.Fragment>
                                 <BreadcrumbItem className="hidden md:block">
                                     <BreadcrumbLink href={"#"}>{breadcrumb?.parentTitle}</BreadcrumbLink>
                                 </BreadcrumbItem>

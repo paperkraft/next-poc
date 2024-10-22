@@ -1,12 +1,12 @@
-import { FormControl, FormDescription, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { HTMLAttributes } from "react"
-import { Control, Controller, FieldValues, Path, PathValue } from "react-hook-form"
+import { Control, Controller, FieldValues, Path, PathValue, useFormContext } from "react-hook-form"
 import { DateField } from "./DateField";
 import { isDate } from "date-fns";
 
 interface IInputControllerProps<T extends FieldValues>
 extends HTMLAttributes<HTMLInputElement> {
-    control: Control<T>;
+    control?: Control<T>;
     name: Path<T>;
     label: string;
     description?:string;
@@ -20,9 +20,10 @@ extends HTMLAttributes<HTMLInputElement> {
 }
 
 export const DateController = <T extends FieldValues>({control, name, label, ...rest}:IInputControllerProps<T>) => {
+    const form = useFormContext();
     return (
-        <Controller
-            control={control}
+        <FormField
+            control={form.control}
             name={name}
             render={({field, fieldState:{error}})=>(
                 <FormItem className="w-full">

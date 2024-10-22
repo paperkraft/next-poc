@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { NextAuthProvider } from "@/components/custom/auth-provider";
 import { cn } from "@/lib/utils";
 import { ChildProps } from "@/types/children";
+import AppLayout from "@/components/custom/layout/AppLayout";
 
 const inter = Inter({subsets: ["latin"]});
 
@@ -23,7 +24,9 @@ export default function RootLayout({children}:ChildProps) {
       <body className={cn(inter.className)}>
         <ThemeProvider>
           <NextAuthProvider>
-            {children}
+            <AppLayout>
+              {children}
+            </AppLayout>
           </NextAuthProvider>
         </ThemeProvider>
         <Toaster />

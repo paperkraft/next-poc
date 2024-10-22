@@ -3,31 +3,17 @@
 import * as React from "react"
 import {
     Bell,
-    BookOpen,
     ChevronRight,
     ChevronsUpDown,
     CreditCard,
-    Home,
-    ImageIcon,
     LogOut,
-    Settings2,
     UserIcon,
-    UniversityIcon,
-    MenuIcon
 } from "lucide-react"
 import {
     Avatar,
     AvatarFallback,
     AvatarImage,
 } from "@/components/ui/avatar"
-import {
-    Breadcrumb,
-    BreadcrumbItem,
-    BreadcrumbLink,
-    BreadcrumbList,
-    BreadcrumbPage,
-    BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
 import {
     Collapsible,
     CollapsibleContent,
@@ -40,7 +26,6 @@ import {
     DropdownMenuItem,
     DropdownMenuLabel,
     DropdownMenuSeparator,
-    DropdownMenuShortcut,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Separator } from "@/components/ui/separator"
@@ -53,104 +38,20 @@ import {
     SidebarHeader,
     SidebarInset,
     SidebarMenu,
-    SidebarMenuAction,
     SidebarMenuButton,
     SidebarMenuItem,
     SidebarMenuSub,
     SidebarMenuSubButton,
     SidebarMenuSubItem,
     SidebarProvider,
-    SidebarRail,
-    SidebarTrigger,
-    useSidebar,
 } from "@/components/ui/sidebar"
 import { ChildProps } from "@/types/children"
 import { signOut, useSession } from "next-auth/react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-
-// This is sample data.
-const data = [
-    {
-        label: "Home",
-        title: "Dashboard",
-        url: "/dashboard",
-        icon: Home,
-        isActive: true,
-        submenu: [],
-    },
-    {
-        label: "Home",
-        title: "Gallery",
-        url: "/gallery",
-        icon: ImageIcon,
-        isActive: false,
-        submenu: [],
-    },
-    {
-        label: "Home",
-        title: "Settings",
-        url: "#",
-        icon: Settings2,
-        isActive: false,
-        submenu: [
-            {
-                title: "General",
-                url: "#",
-            },
-            {
-                title: "Access",
-                url: "/access-control",
-            }
-        ],
-    },
-    {
-        label: "Master",
-        title: "Documentation",
-        url: "#",
-        icon: BookOpen,
-        isActive: false,
-        submenu: [
-            {
-                title: "Introduction",
-                url: "#",
-            },
-            {
-                title: "Get Started",
-                url: "#",
-            },
-            {
-                title: "Tutorials",
-                url: "#",
-            }
-        ],
-    }
-]
-
-function getTitleAndParentByUrl(data: any, url: string) {
-    for (const entry of data) {
-        // Check if the current entry matches the url
-        if (entry.url === url) {
-            return { parentTitle: entry.title };
-        }
-
-        // Check in submenu if it exists
-        if (entry.submenu) {
-            const submenuItem = entry.submenu.find((sub:any) => sub.url === url);
-            if (submenuItem) {
-                return { parentTitle: entry.title, childTitle: submenuItem.title };
-            }
-        }
-    }
-    return null;
-}
-
-export function CustomTrigger() {
-    const { toggleSidebar } = useSidebar();
-    return <Button onClick={toggleSidebar} variant={'ghost'} size={'sm'} className="size-7 -ml-1"><MenuIcon /></Button>
-}
+import Header from "./Header"
+import { menus, uniqueLabels } from "./data"
 
 export default function LeftSidebar({ children }: ChildProps) {
 
@@ -160,11 +61,6 @@ export default function LeftSidebar({ children }: ChildProps) {
     const user = session?.user;
 
     const logout = () => signOut({ redirect: false });
-
-    const uniqueLabels = Array.from(new Set(data.map((menu) => menu.label)));
-    const menus = uniqueLabels.map((label) => data.filter((menu) => menu.label === label).map((item) => item));
-    
-    const breadcrumb = getTitleAndParentByUrl(data, path);
 
     return (
         <SidebarProvider>
@@ -221,7 +117,7 @@ export default function LeftSidebar({ children }: ChildProps) {
                                                                         {item.submenu?.map((subItem) => (
                                                                             <SidebarMenuSubItem key={subItem.title}>
                                                                                 <SidebarMenuSubButton asChild>
-                                                                                    <Link href={subItem.url} className={cn({"bg-sidebar-accent text-sidebar-accent-foreground": subItem.url === path})}>
+                                                                                    <Link href={subItem.url} className={cn({ "bg-sidebar-accent text-sidebar-accent-foreground": subItem.url === path })}>
                                                                                         {subItem.title}
                                                                                     </Link>
                                                                                 </SidebarMenuSubButton>
@@ -236,7 +132,7 @@ export default function LeftSidebar({ children }: ChildProps) {
                                                         !hasSubmenu &&
                                                         <SidebarMenuItem key={item.title}>
                                                             <SidebarMenuButton tooltip={item.title} asChild>
-                                                                <Link href={item.url} className={cn({"bg-sidebar-accent text-sidebar-accent-foreground": item.url === path})}>
+                                                                <Link href={item.url} className={cn({ "bg-sidebar-accent text-sidebar-accent-foreground": item.url === path })}>
                                                                     {item.icon && <item.icon />}
                                                                     {item.title}
                                                                 </Link>
@@ -251,7 +147,6 @@ export default function LeftSidebar({ children }: ChildProps) {
                             </SidebarGroup>
                         ))
                     }
-
                 </SidebarContent>
 
                 <SidebarFooter>
@@ -316,8 +211,7 @@ export default function LeftSidebar({ children }: ChildProps) {
 
                                         <DropdownMenuItem>
                                             <Link href={'#'} className="flex w-full">
-                                                <Bell />
-                                                Notifications
+                                                <Bell /> Notifications
                                             </Link>
                                         </DropdownMenuItem>
                                     </DropdownMenuGroup>
@@ -325,8 +219,7 @@ export default function LeftSidebar({ children }: ChildProps) {
                                     <DropdownMenuSeparator />
 
                                     <DropdownMenuItem onClick={() => logout()} className="cursor-pointer">
-                                        <LogOut />
-                                        Log out
+                                        <LogOut /> Log out
                                     </DropdownMenuItem>
 
                                 </DropdownMenuContent>
@@ -334,50 +227,13 @@ export default function LeftSidebar({ children }: ChildProps) {
                         </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarFooter>
-
-                {/* <SidebarRail /> */}
-
             </Sidebar>
 
             <SidebarInset>
-                <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-                    <div className="flex items-center gap-2 px-4">
-                        <CustomTrigger/>
-                        <Separator orientation="vertical" className="mr-2 h-4" />
-
-                        <Breadcrumb>
-                            <BreadcrumbList>
-                                <BreadcrumbItem className="hidden md:block">
-                                    <BreadcrumbLink href="#">Home</BreadcrumbLink>
-                                </BreadcrumbItem>
-
-                                { path !== '/' && <BreadcrumbSeparator className="hidden md:block" /> }
-
-                                { breadcrumb?.childTitle ?
-                                    <React.Fragment>
-                                        <BreadcrumbItem className="hidden md:block">
-                                            <BreadcrumbLink href={"#"}>{breadcrumb?.parentTitle}</BreadcrumbLink>
-                                        </BreadcrumbItem>
-                                        <BreadcrumbSeparator className="hidden md:block" />
-                                        <BreadcrumbItem>
-                                            <BreadcrumbPage>{breadcrumb?.childTitle}</BreadcrumbPage>
-                                        </BreadcrumbItem>
-                                    </React.Fragment>
-                                    : <BreadcrumbPage>{breadcrumb?.parentTitle}</BreadcrumbPage>
-                                }
-                            </BreadcrumbList>
-                        </Breadcrumb>
-                    </div>
-                </header>
+                <Header />
                 <Separator />
                 <div className="flex flex-1 flex-col gap-4 p-4">
                     {children}
-                    {/* <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-                        <div className="aspect-video rounded-xl bg-muted/50" />
-                        <div className="aspect-video rounded-xl bg-muted/50" />
-                        <div className="aspect-video rounded-xl bg-muted/50" />
-                    </div>
-                    <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" /> */}
                 </div>
             </SidebarInset>
         </SidebarProvider>

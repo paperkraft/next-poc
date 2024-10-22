@@ -9,9 +9,6 @@ export default function WelcomePage() {
   const user = session?.user;
 
   return (
-    mounted &&
-    <LeftSidebar>
-      <div> Welcome, {user?.name ?? user?.email}  </div>
-    </LeftSidebar>
+    mounted && <div> Welcome, {user?.name ?? user?.email}  </div>
   )
 }

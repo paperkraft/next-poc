@@ -1,40 +1,69 @@
 'use client'
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Menu} from 'lucide-react';
-import SidebarMenu from "./Sidebar";
-import UserAction from './UserAction';
-import Link from 'next/link';
-import { cn } from '@/lib/utils';
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { useSidebar } from '@/components/ui/sidebar';
+import { MenuIcon } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 import React from 'react';
+import { data } from './data';
+
+export function CustomTrigger() {
+    const { toggleSidebar } = useSidebar();
+    return <Button onClick={toggleSidebar} variant={'ghost'} size={'sm'} className="size-7 -ml-1"><MenuIcon /></Button>
+}
+
+function getTitleAndParentByUrl(data: any, url: string) {
+    for (const entry of data) {
+        // Check if the current entry matches the url
+        if (entry.url === url) {
+            return { parentTitle: entry.title };
+        }
+
+        // Check in submenu if it exists
+        if (entry.submenu) {
+            const submenuItem = entry.submenu.find((sub:any) => sub.url === url);
+            if (submenuItem) {
+                return { parentTitle: entry.title, childTitle: submenuItem.title };
+            }
+        }
+    }
+    return null;
+}
 
 const Header:React.FC = React.memo(()=>{
+    const path = usePathname();
+    const breadcrumb = getTitleAndParentByUrl(data, path);
+
     return (
-        <header className={cn("h-16 fixed top-0 z-50 flex sm:justify-start sm:flex-nowrap w-full bg-primary dark:bg-background dark:text-white text-sm py-4 border-b items-center")}>
-            <nav className="max-w-full w-full mx-auto px-4 sm:flex sm:items-center sm:justify-between" aria-label="Global">
-                <div className="flex items-center justify-between w-full">
-                    <div className="flex items-center">
-                        <div className="sm:hidden">
-                            <Sheet>
-                                <SheetTrigger className='text-white mt-2'><Menu /></SheetTrigger>
-                                <SheetContent side={"left"} className="w-[300px] sm:w-[340px]">
-                                    <SheetHeader>
-                                        Webdesk
-                                        <SheetTitle className='text-left text-xl font-bold hidden'></SheetTitle>
-                                        <div>
-                                            <SheetDescription></SheetDescription>
-                                            <SidebarMenu />
-                                        </div>
-                                    </SheetHeader>
-                                </SheetContent>
-                            </Sheet>
-                        </div>
-                        <Link className="hidden ml-4 relative md:block text-white" href="/">
-                            Webdesk
-                        </Link>
-                    </div>
-                    <UserAction />
-                </div>
-            </nav>
+        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+            <div className="flex items-center gap-2 px-4">
+                <CustomTrigger/>
+                <Separator orientation="vertical" className="mr-2 h-4" />
+
+                <Breadcrumb>
+                    <BreadcrumbList>
+                        <BreadcrumbItem className="hidden md:block">
+                            <BreadcrumbLink href="#">Home</BreadcrumbLink>
+                        </BreadcrumbItem>
+
+                        { path !== '/' && <BreadcrumbSeparator className="hidden md:block" /> }
+
+                        { breadcrumb?.childTitle ?
+                            <React.Fragment>
+                                <BreadcrumbItem className="hidden md:block">
+                                    <BreadcrumbLink href={"#"}>{breadcrumb?.parentTitle}</BreadcrumbLink>
+                                </BreadcrumbItem>
+                                <BreadcrumbSeparator className="hidden md:block" />
+                                <BreadcrumbItem>
+                                    <BreadcrumbPage>{breadcrumb?.childTitle}</BreadcrumbPage>
+                                </BreadcrumbItem>
+                            </React.Fragment>
+                            : <BreadcrumbPage>{breadcrumb?.parentTitle}</BreadcrumbPage>
+                        }
+                    </BreadcrumbList>
+                </Breadcrumb>
+            </div>
         </header>
     );
 });

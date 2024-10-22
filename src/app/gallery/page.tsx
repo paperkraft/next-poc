@@ -1,6 +1,6 @@
-import AppLayout from "@/components/custom/layout/AppLayout";
 import { Metadata } from "next";
 import Gallery from "./Gallery";
+import TitlePage from "@/components/custom/page-heading";
 
 export const metadata: Metadata = {
     title: "Gallery",
@@ -8,5 +8,10 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-    return <Gallery/>
+    return(
+        <>
+            <TitlePage title="Gallery" description="description" />
+            <Gallery/>
+        </>
+    ) 
 }

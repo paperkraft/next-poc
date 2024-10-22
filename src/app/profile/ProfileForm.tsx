@@ -82,53 +82,48 @@ export default function Profile() {
     }
 
     return(
-        <>
-            <TitlePage title={"Profile"} description={"This is how others will see you"}/>
-            <div>
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                        <div className="grid gap-4 px-2">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <InputController
-                                    name="firstName"
-                                    label="First Name"
-                                    placeholder="First Name"
-                                    maxLength={10}
-                                />
+        <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <div className="grid gap-4 px-2">
+                    <div className="grid md:grid-cols-2 gap-4">
+                        <InputController
+                            name="firstName"
+                            label="First Name"
+                            placeholder="First Name"
+                            maxLength={10}
+                        />
 
-                                <InputController
-                                    name="lastName"
-                                    label="Last Name"
-                                    placeholder="Last Name"
-                                    maxLength={10}
-                                />
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <InputController
-                                    name="username"
-                                    label="Username"
-                                    placeholder="Username"
-                                    maxLength={8}
-                                    minLength={6}
-                                    disabled
-                                />
+                        <InputController
+                            name="lastName"
+                            label="Last Name"
+                            placeholder="Last Name"
+                            maxLength={10}
+                        />
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-4">
+                        <InputController
+                            name="username"
+                            label="Username"
+                            placeholder="Username"
+                            maxLength={8}
+                            minLength={6}
+                            disabled
+                        />
 
-                                <InputController        
-                                    name="email"
-                                    label="Email"
-                                    placeholder="Email"
-                                    type='email'
-                                    maxLength={40}
-                                    disabled
-                                />
-                            </div>
-                            <div className="flex justify-end">
-                                <Button type="submit">Save</Button>
-                            </div>
-                        </div>
-                    </form>
-                </Form>
-            </div>
-        </>
+                        <InputController        
+                            name="email"
+                            label="Email"
+                            placeholder="Email"
+                            type='email'
+                            maxLength={40}
+                            disabled
+                        />
+                    </div>
+                    <div className="flex justify-end">
+                        <Button type="submit">Save</Button>
+                    </div>
+                </div>
+            </form>
+        </Form>
     )
 }

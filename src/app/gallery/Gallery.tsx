@@ -21,32 +21,26 @@ const Gallery = React.memo(()=> {
       await fetch('https://jsonplaceholder.typicode.com/photos')
       .then(response => response.json())
       .then(data => {
-        const firstTenPhotos = data.slice(0, 10);
+        const firstTenPhotos = data.slice(0, 5);
         setPhotos(firstTenPhotos)
       })
       .catch(error => console.error('Error fetching photos:', error));
     }
-    
     getImages();
-
     return () => {
       getImages()
     }
-
   },[])
 
   return (
-    <AppLayout>
-      <TitlePage title="Gallery" description="description" />
-      <div className="grid grid-cols-5 gap-4 p-4">
-        {photos?.map((item) => (
-          <Link href={`/gallery/photos/${item.id}`} passHref key={item.id} className='flex flex-col items-center justify-center'>
-            <Image src={item.thumbnailUrl} height={150} width={150} alt={`${item.id}`} className='rounded-md w-40 h-40'/>
-            <p className="text-muted-foreground text-sm py-2">Image {item.id}</p>
-          </Link>
-        ))}
-      </div>
-    </AppLayout>
+    <div className="grid grid-cols-5 gap-4 p-4">
+      {photos?.map((item) => (
+        <Link href={`/gallery/photos/${item.id}`} passHref key={item.id} className='flex flex-col items-center justify-center'>
+          <Image src={item.thumbnailUrl} height={150} width={150} alt={`${item.id}`} className='rounded-md w-40 h-40'/>
+          <p className="text-muted-foreground text-sm py-2">Image {item.id}</p>
+        </Link>
+      ))}
+    </div>
   );
 })
 

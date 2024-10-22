@@ -16,12 +16,17 @@ export default function DashboardLayout({
   notification: React.ReactNode;
 }>) {
   return (
-    <AppLayout>
+    <>
       {children}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {news}
         {notification}
       </div>
-    </AppLayout>
+      <div className="grid auto-rows-min gap-4 md:grid-cols-3">
+          <div className="aspect-video rounded-xl bg-muted/50" />
+          <div className="aspect-video rounded-xl bg-muted/50" />
+          <div className="aspect-video rounded-xl bg-muted/50" />
+      </div>
+    </>
   );
 }

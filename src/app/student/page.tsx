@@ -4,7 +4,7 @@ import StudentForm from "./StudentForm";
 export default function Page(){
     return(
         <>
-            <TitlePage title="Student" description="description" />
+            <TitlePage title="Student" />
             <StudentForm />
         </>
     )

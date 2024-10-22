@@ -44,7 +44,6 @@ export const InputController = <T extends FieldValues>({name, label, reset, ...r
                             onChange={(e) => {
                                 const value = rest.type === undefined 
                                     ? e.target.value.replace(/[^a-zA-Z\s]/g, '').trimStart()
-                                    // : e.target.value
                                     : rest.type === 'number'
                                     ? e.target.value.replace(/[^0-9]/g, '').trimStart()
                                     : e.target.value

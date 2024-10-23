@@ -13,7 +13,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   useSession({
     required: true,
     onUnauthenticated() {
-      !isPublicURL && redirect('/signin')
+      !isPublicURL && redirect('/')
     }
   });
 

@@ -4,13 +4,15 @@ import { ChevronRightIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
+//h-[calc(100vh-64px)]
+
 export default function LandingPage() {
     return (
         <main>
-            <header className="flex justify-between h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear border-b">
+            <header className="fixed flex justify-between shrink-0 items-center gap-2 h-16 w-screen border-b bg-background">
                 <div className="flex items-center gap-2 px-4">
                     <div className="flex aspect-square size-8 items-center justify-center rounded-full bg-sidebar-primary text-sidebar-primary-foreground">
-                        WD
+                       <span className="text-xs">WD</span>
                     </div>
                     Webdesk
                 </div>
@@ -22,7 +24,7 @@ export default function LandingPage() {
                 </div>
             </header>
 
-            <div className="p-20 h-full bg-slate-50 grid grid-cols-2">
+            <div className="p-20 pt-40 h-screen bg-slate-50 grid md:grid-cols-2">
 
                 <div className="p-10 h-full">
                     <div className="space-y-4">
@@ -35,13 +37,13 @@ export default function LandingPage() {
                     </div>
                 </div>
 
-                <div className="p-10 h-full bg-white border rounded">
+                <div className="p-10 h-full bg-white border rounded-lg">
                     <h1 className="py-4">App List</h1>
 
                     <Link href={'/signin'}>
                         <div className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
                             <div className="space-y-0.5">
-                                <h1 className="font-medium text-xl">ERP</h1>
+                                <h1 className="font-medium text-lg">ERP</h1>
                                 <p className="text-xs">
                                     Automate your administrative operations to ensure paperless and hassle-free.
                                 </p>

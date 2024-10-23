@@ -9,11 +9,13 @@ export default function LandingPage() {
         <main>
             <header className="flex justify-between h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear border-b">
                 <div className="flex items-center gap-2 px-4">
-                    Logo
-                    <Separator orientation="vertical" className="mr-2 h-4" />
+                    <div className="flex aspect-square size-8 items-center justify-center rounded-full bg-sidebar-primary text-sidebar-primary-foreground">
+                        WD
+                    </div>
+                    Webdesk
                 </div>
 
-                <div className="flex items-center gap-4 px-8">
+                <div className="flex items-center gap-2 px-4">
                     <Link href={'/signin'}>Sign In</Link>
                     <Separator orientation="vertical" className="mx-2 h-4" />
                     <Link href={'/signup'}>Sign Up</Link>

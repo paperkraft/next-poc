@@ -4,6 +4,6 @@ import { checkIsAuthenticated } from "@/lib/isAuth";
 
 export default async function Home() {
   const isAuthenticated = await checkIsAuthenticated();
-  console.log("Auth", isAuthenticated);
+  // console.log("Auth", isAuthenticated);
   return (isAuthenticated ? <WelcomePage /> : <LandingPage />)
 }

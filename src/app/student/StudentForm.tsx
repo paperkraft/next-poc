@@ -1,29 +1,38 @@
 'use client'
 import { Button } from '@/components/ui/button';
-import { Form} from '@/components/ui/form';
+import { Form } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { InputController } from '@/components/custom/form.control/InputController';
 import { SelectController } from '@/components/custom/form.control/SelectController';
 import { toast } from '@/hooks/use-toast';
+import { DateController } from '@/components/custom/form.control/DateController';
 
 const formSchema = z.object({
-    name: z.string().min(2, {
-      message: "name must be at least 2 characters.",
+    name: z.string({
+      required_error: "Name is required.",
+    }).min(1, {
+      message:"Name is required."
     }),
-    email: z.string().email({
+    email: z.string({
+      required_error: "Email is required.",
+    }).email({
       message:"Please enter valid email"
     }),
-    option: z.string({
-      required_error: "Please select test options.",
+    date: z.coerce.date({
+      errorMap:()=>({ message:"Date is required.", })
+    }),
+    // date: z.coerce.date({errorMap:(issue, {defaultError})=>({message: issue.code === "invalid_date" ? "Please enter valid date" : defaultError,})}),
+    gender: z.string({
+      required_error: "Gender is required.",
     })
 });
 
 const options = [
-  {label:"Option A" , value:"a"},
-  {label:"Option B" , value:"b"},
-  {label:"Option C" , value:"c"}
+  {label:"Male" , value:"M"},
+  {label:"Female" , value:"F"},
+  {label:"Other" , value:"O"}
 ]
 
 type FormValues = z.infer<typeof formSchema>
@@ -56,7 +65,8 @@ const StudentForm: React.FC = () => {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 p-2">
         <InputController  name="name"   label="Name" placeholder="Enter your name" description='This is your public display name.' reset/>
         <InputController  name="email"  label="Email" type='email'  placeholder="Enter your email" description='This is your public display email.' reset/>
-        <SelectController name="option" label="Select" placeholder="Select" description='This is sample select.' options={options}/>
+        <DateController   name='date'   label='Date' placeholder='DD-MM-YYY' description='This is your public display date of birth'/>
+        <SelectController name="gender" label="Gender" placeholder="Select" description='This is your public display gender' options={options}/>
         <Button type="submit">Submit</Button>
       </form>
     </Form>

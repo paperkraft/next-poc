@@ -1,7 +1,7 @@
 'use client'
 import React from "react";
 import { usePathname, useRouter } from "next/navigation";
-import LeftSidebar from "./LeftSidebar";
+import AppSidebar from "./AppSidebar";
 import { useSession } from "next-auth/react";
 
 export const publicURL = ['/signin', '/signup'];
@@ -24,6 +24,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   if (isPublicURL || (pathname === "/" && !user)) {
     return <React.Fragment>{children}</React.Fragment>
   } else {
-    return <LeftSidebar>{children}</LeftSidebar>
+    return <AppSidebar>{children}</AppSidebar>
   }
 }

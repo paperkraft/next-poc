@@ -111,7 +111,7 @@ const defaultValues = {
     ]
 };
 
-function cleanPermissions(data:RoleData) {
+const cleanPermissions = (data:RoleData) => {
     const cleanedData: RoleData = {
         role: data.role,
         module: data.module.map(module => ({
@@ -131,7 +131,7 @@ function cleanPermissions(data:RoleData) {
     return cleanedData;
 }
 
-function reversePermissions(data: RoleData) {
+const reversePermissions = (data: RoleData) => {
     const reversedData: RoleData = { ...data, module: [] };
 
     data.module.forEach(module => {
@@ -161,96 +161,24 @@ function reversePermissions(data: RoleData) {
     return reversedData;
 }
 
-const cleanedInputData: RoleData = {
-    role: "admin",
-    module: [
-        {
-            id: 1,
-            label: "Admission",
-            permission: [5],
-            subModule: [
-                {
-                    id: 11,
-                    label: "Registration",
-                    permission: []
-                },
-                {
-                    id: 12,
-                    label: "Probation",
-                    permission: []
-                }
-            ]
-        },
-        {
-            id: 2,
-            label: "Reports",
-            permission: [1, 2],
-            subModule: []
-        },
-        {
-            id: 3,
-            label: "Fees Management",
-            permission: [],
-            subModule: [
-                {
-                    id: 31,
-                    label: "Academics",
-                    permission: []
-                },
-                {
-                    id: 32,
-                    label: "Hostel",
-                    permission: []
-                }
-            ]
-        }
-    ]
-};
+const filterPermissions = (data:RoleData) => {
+    // Filter out modules with empty permissions
+    const cleanedModules = data.module
+        .map((module) => {
+            // Filter out submodules with empty permissions
+            const cleanedSubModules = module.subModule.filter((sub) => sub.permission.length > 0);
+            return {
+                ...module,
+                subModule: cleanedSubModules,
+                permission: module.permission.length > 0 ? module.permission : undefined // Remove if empty
+            };
+        })
+        .filter((module) => module.permission !== undefined || module.subModule.length > 0); // Remove if both are empty
 
-const inputData: any = {
-    role: "staff",
-    module: [
-      {
-        id: 1,
-        label: "Admission",
-        permission: [false, false, false, false, true],
-        subModule: [
-          {
-            id: 11,
-            label: "Registration",
-            permission: [false, false, false, false, true]
-          },
-          {
-            id: 12,
-            label: "Probation",
-            permission: [false, false, false, false, false]
-          }
-        ]
-      },
-      {
-        id: 2,
-        label: "Reports",
-        permission: [false, false, false, false, false],
-        subModule: []
-      },
-      {
-        id: 3,
-        label: "Fees Management",
-        permission: [false, false, false, false, false],
-        subModule: [
-          {
-            id: 31,
-            label: "Academics",
-            permission: [false, false, false, false, false]
-          },
-          {
-            id: 32,
-            label: "Hostel",
-            permission: [false, false, false, false, false]
-          }
-        ]
-      }
-    ]
+    return {
+        ...data,
+        module: cleanedModules
+    };
 };
 
 export default function AccessPage() {
@@ -263,12 +191,17 @@ export default function AccessPage() {
     const onSubmit = (data:RoleData) => {
         const formData = { ...data };
         const result = cleanPermissions(formData);
+        const filter = filterPermissions(result);
+        const reversed = reversePermissions(result);
+
+        console.log("Filtered",JSON.stringify(filter, null, 2));
+        console.log("Reversed",JSON.stringify(reversed, null, 2));
 
         toast({
             title: "submitted values:",
             description: (
               <pre className="mt-2 w-max md:w-[354px] rounded-md bg-slate-950 p-4 max-h-64 overflow-scroll">
-                <code className="text-white text-[12px]">{JSON.stringify(result, null, 2)}</code>
+                <code className="text-white text-[12px]">{JSON.stringify(filter, null, 2)}</code>
               </pre>
             ),
         });

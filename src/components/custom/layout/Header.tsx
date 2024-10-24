@@ -36,7 +36,7 @@ const Header: React.FC = React.memo(() => {
     const breadcrumb = getTitleAndParentByUrl(data, path);
 
     return (
-        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+        <header className="fixed bg-background w-full z-50 flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 border-b">
             <div className="flex items-center gap-2 px-4">
                 <CustomTrigger />
                 

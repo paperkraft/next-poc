@@ -53,7 +53,7 @@ import Header from "./Header"
 import { menus, uniqueLabels } from "./data"
 import { ChildProps } from "@/types/types"
 
-export default function LeftSidebar({ children }: ChildProps) {
+export default function AppSidebar({ children }: ChildProps) {
 
     const route = useRouter();
     const path = usePathname();
@@ -65,7 +65,7 @@ export default function LeftSidebar({ children }: ChildProps) {
     return (
         <SidebarProvider>
             <Sidebar>
-                <SidebarHeader className="border-b">
+                <SidebarHeader className="h-16 border-b">
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton onClick={() => route.push('/')} size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
@@ -155,10 +155,13 @@ export default function LeftSidebar({ children }: ChildProps) {
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
-                                        <Avatar className="h-8 w-8 rounded-full border border-blue-500">
-                                            <AvatarImage src={user?.image} alt={user?.name} />
-                                            <AvatarFallback className="rounded-full">SV</AvatarFallback>
-                                        </Avatar>
+                                        {
+                                            user &&
+                                            <Avatar className="h-8 w-8 rounded-full border border-blue-500">
+                                                <AvatarImage src={user?.image} alt={user?.name} />
+                                                <AvatarFallback className="rounded-full">SV</AvatarFallback>
+                                            </Avatar>
+                                        }
                                         <div className="grid flex-1 text-left text-sm leading-tight">
                                             <span className="truncate font-semibold">
                                                 {user?.name}
@@ -231,8 +234,7 @@ export default function LeftSidebar({ children }: ChildProps) {
 
             <SidebarInset>
                 <Header />
-                <Separator />
-                <div className="flex flex-1 flex-col gap-4 p-4">
+                <div className="mt-16 flex flex-1 flex-col gap-4 p-4">
                     {children}
                 </div>
             </SidebarInset>

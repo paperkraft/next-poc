@@ -1,19 +1,26 @@
 'use client'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import React, { memo } from "react";
+import React, { memo, useState } from "react";
 
 type DialogProps= {
     open: boolean,
-    setClose: () => void;
+    setClose?: () => void;
     title: string;
     description?: string;
     children: React.ReactNode;
-    footer?: React.ReactNode;
+    footer?: React.ReactNode | null;
 }
 
 const DialogBox = memo(function DialogBox({open, setClose, title, description, footer, children}:DialogProps) {
+    const [opened, setOpen] = useState(open);
+
+    const handleOpenChange = () => {
+      setOpen(false);
+      setClose?.();
+    }
+    
     return(
-        <Dialog open={open} onOpenChange={setClose}>
+      <Dialog open={opened} onOpenChange={handleOpenChange}>
         <DialogContent aria-describedby="content">
           <DialogHeader>
             <DialogTitle>{title ?? "Dialog Title"}</DialogTitle>
@@ -26,7 +33,7 @@ const DialogBox = memo(function DialogBox({open, setClose, title, description, f
             { footer }
           </DialogFooter>
         </DialogContent>
-        </Dialog>
+      </Dialog>
     )
 });
 

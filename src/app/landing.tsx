@@ -59,5 +59,5 @@ export default function LandingPage() {
                 </section>
             </main>
         </React.Fragment>
-    );
+    )
 }

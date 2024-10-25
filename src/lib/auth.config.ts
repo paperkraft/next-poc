@@ -92,12 +92,6 @@ const authConfig: NextAuthConfig = {
         // },
     },
 
-    events:{
-        async signOut(message){
-            // console.log("SignOut Event", message);
-        }
-    },  
-
     pages: {
         signIn: '/signin'
     },

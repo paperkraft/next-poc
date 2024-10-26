@@ -2,7 +2,12 @@
 import React from "react";
 import { SessionProvider } from "next-auth/react";
 import { ChildProps } from "@/types/types";
+import { Session } from "next-auth";
 
-export const NextAuthProvider = ({ children }:ChildProps) => {
-  return <SessionProvider>{children}</SessionProvider>;
+interface NextAuthProviderProps extends ChildProps {
+  session?: Session | null;
+}
+
+export const NextAuthProvider = ({ children, session }:NextAuthProviderProps) => {
+  return <SessionProvider session={session}>{children}</SessionProvider>;
 };

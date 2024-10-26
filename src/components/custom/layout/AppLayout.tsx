@@ -11,18 +11,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isPublicURL = publicURL.includes(pathname);
 
-  const { data: session } = useSession();
-  const user = session?.user;
+  const { status } = useSession();
 
-  useSession({
-    required: true,
-    onUnauthenticated() {
-      !isPublicURL && route.push('/')
+  React.useEffect(() => {
+    if (!isPublicURL && status === "unauthenticated") {
+      route.push('/');
     }
-  });
+  }, [isPublicURL, status, route]);
 
-  if (isPublicURL || (pathname === "/" && !user)) {
-    return <React.Fragment>{children}</React.Fragment>
+  if (isPublicURL || (pathname === "/" && status === 'unauthenticated' || status === 'loading')) {
+    return <>{children}</>
   } else {
     return <AppSidebar>{children}</AppSidebar>
   }

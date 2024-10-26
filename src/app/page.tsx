@@ -1,12 +1,13 @@
-import React from "react";
+"use client";
+import { useSession } from "next-auth/react";
 import LandingPage from "./landing";
-import { checkIsAuthenticated } from "@/lib/isAuth";
+import WelcomePage from "./welcome";
 
-export default async function Home() {
-  const isAuthenticated = await checkIsAuthenticated()
-  return(
-    <React.Fragment>
-      <LandingPage auth={isAuthenticated} />
-    </React.Fragment>
-  ) 
+export default function Home() {
+  const { data: session } = useSession();
+  if (session) {
+    return <WelcomePage />;
+  } else {
+    return <LandingPage />;
+  }
 }

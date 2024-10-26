@@ -22,13 +22,13 @@ export default function RootLayout({children}:ChildProps) {
   return (
     <html lang="en" suppressHydrationWarning={true}>
       <body className={cn(inter.className)}>
-        <ThemeProvider>
-          <NextAuthProvider>
+        <NextAuthProvider>
+          <ThemeProvider>
             <AppLayout>
               {children}
             </AppLayout>
-          </NextAuthProvider>
-        </ThemeProvider>
+          </ThemeProvider>
+        </NextAuthProvider>
         <Toaster />
       </body>
     </html>

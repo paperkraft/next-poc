@@ -17,21 +17,21 @@ export default function WelcomePage() {
     }
   }, [mounted, user])
 
-  return (
-    <React.Fragment>
-      {
-        mounted && user
-          ? <div>
-            <p>Welcome, {user?.name ?? user?.email}</p>
-            <p>Your Unique Id: {user?.id ?? ""}</p>
-          </div>
-          : <div className="flex justify-center items-center w-full h-screen">
-            <span className="flex items-center">
-              <LoaderCircleIcon className="mr-2 h-4 w-4 animate-spin" />
-              Loading...
-            </span>
-          </div>
-      }
-    </React.Fragment>
-  )
+  if (mounted && user) {
+    return (
+      <div>
+        <p>Welcome, {user?.name ?? user?.email}</p>
+        <p>Your Unique Id: {user?.id ?? ""}</p>
+      </div>
+    )
+  } else {
+    return (
+      <div className="flex justify-center items-center w-full h-screen">
+        <span className="flex items-center">
+          <LoaderCircleIcon className="mr-2 h-4 w-4 animate-spin" />
+          Loading...
+        </span>
+      </div>
+    )
+  }
 }

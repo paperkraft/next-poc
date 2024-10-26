@@ -6,8 +6,8 @@ import WelcomePage from "./welcome";
 export default function Home() {
   const { data: session } = useSession();
   if (session) {
-    return <WelcomePage />;
+    return <WelcomePage />
   } else {
-    return <LandingPage />;
+    return <LandingPage />
   }
 }

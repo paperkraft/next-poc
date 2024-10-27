@@ -1,9 +1,9 @@
-'use client';
+"use client";
 import { useMounted } from "@/hooks/use-mounted";
-import { LoaderCircleIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
+import Loading from "./loading";
 
 export default function WelcomePage() {
   const mounted = useMounted();
@@ -18,14 +18,7 @@ export default function WelcomePage() {
   }, [mounted, status, route]);
 
   if (status === "loading" || !user) {
-    return (
-      <div className="flex justify-center items-center w-full h-screen">
-        <span className="flex items-center" aria-live="polite">
-          <LoaderCircleIcon className="mr-2 h-4 w-4 animate-spin" />
-          Loading...
-        </span>
-      </div>
-    );
+    return <Loading />;
   }
 
   return (

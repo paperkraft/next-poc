@@ -3,7 +3,6 @@ import { useMounted } from "@/hooks/use-mounted";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
-import Loading from "./loading";
 
 export default function WelcomePage() {
   const mounted = useMounted();
@@ -12,16 +11,13 @@ export default function WelcomePage() {
   const user = session?.user;
 
   useEffect(() => {
-    if (mounted && status === "unauthenticated") {
+    if (mounted && status !== "authenticated") {
       route.refresh();
     }
   }, [mounted, status, route]);
 
-  if (status === "loading" || !user) {
-    return <Loading />;
-  }
-
   return (
+    mounted && user &&
     <div>
       <p>Welcome, {user?.name ?? user?.email}</p>
       <p>Your Unique Id: {user?.id ?? ""}</p>

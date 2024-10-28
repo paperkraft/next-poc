@@ -20,27 +20,27 @@ export default function DashboardPage() {
     }
   },[user, mounted])
 
-  const handleClose = () => {
-    setOpen(false);
-  }
-
+ 
   return(
     mounted &&
     <>
       <TitlePage title="Dashboard" description="description" />
-      <DialogBox open={open} setClose={handleClose} title={"Profile Incomplete"}>
-        <p> Hi <b>{user?.email}</b>,</p>
-        <p>Welcome to Webdesk! It looks like your profile is incomplete. </p>
-        <p>To enhance your experience, please complete your profile by visiting your profile settings..</p><br/>
-        <p>It only takes a few minutes!</p>
-        <p>Your profile information helps us serve you better!</p><br/>
-        <p>Thanks for joining us!</p>
-        <div className="mt-4 flex gap-2">
-          <Button asChild>
-            <Link href={'/profile'}>Go to Profile Settings</Link>
-          </Button>
-        </div>
-      </DialogBox>
+      {
+        open &&
+        <DialogBox open={open} title={"Profile Incomplete"}>
+          <p> Hi <b>{user?.email}</b>,</p>
+          <p>Welcome to Webdesk! It looks like your profile is incomplete. </p>
+          <p>To enhance your experience, please complete your profile by visiting your profile settings..</p><br/>
+          <p>It only takes a few minutes!</p>
+          <p>Your profile information helps us serve you better!</p><br/>
+          <p>Thanks for joining us!</p>
+          <div className="mt-4 flex gap-2">
+            <Button asChild>
+              <Link href={'/profile'}>Go to Profile Settings</Link>
+            </Button>
+          </div>
+        </DialogBox>
+      }
     </>
   )
 } 

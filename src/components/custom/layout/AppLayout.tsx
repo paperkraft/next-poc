@@ -1,8 +1,9 @@
 "use client";
 import React from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { notFound, usePathname, useRouter } from "next/navigation";
 import AppSidebar from "./AppSidebar";
 import { useSession } from "next-auth/react";
+import Loading from "@/app/loading";
 
 export const publicURL = ["/signin", "/signup"];
 
@@ -20,7 +21,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
   });
 
-  if (isPublicURL || (pathname === "/" && status === "unauthenticated")) {
+  if(status === 'loading'){
+    return <Loading/>
+  }
+  if (isPublicURL || (pathname === "/" && status !== "authenticated")) {
     return <>{children}</>;
   } else {
     return session && <AppSidebar>{children}</AppSidebar>;

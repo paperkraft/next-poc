@@ -41,18 +41,18 @@ export default function LandingPage() {
                             </div>
                         </div>
 
-                        <div className="p-8 bg-background border rounded-lg w-full md:max-w-[390px] mb-8">
+                        <div className="p-8 bg-background border rounded-lg w-full md:max-w-[390px] mb-8 shadow-xl">
                             <h1 className="py-4">App List</h1>
 
-                            <Link href={'/signin'}>
-                                <div className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
+                            <Link href={'/signin'} className="group">
+                                <div className="flex gap-1 items-center justify-between rounded-lg p-4 group-hover:border">
                                     <div className="space-y-0.5">
                                         <h1 className="font-medium text-lg">ERP</h1>
-                                        <p className="text-xs">
-                                            Automate your administrative operations to ensure paperless and hassle-free.
+                                        <p className="text-sm text-balance">
+                                            Automate your administrative operations to ensure paperless and hassle-free
                                         </p>
                                     </div>
-                                    <ChevronRightIcon className="size-4" />
+                                    <span><ChevronRightIcon /></span>
                                 </div>
                             </Link>
                         </div>

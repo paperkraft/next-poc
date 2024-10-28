@@ -28,10 +28,10 @@ export function CarouselPlugin() {
       <CarouselContent>
         {data.map((item) => (
           <CarouselItem key={item.title}>
-            <div className="space-y-2">
-              <Image src={item.image} alt={item.title} width={320} height={300} className="aspect-video" />
+            <div className="space-y-2 flex flex-col justify-center items-center">
+              <Image src={item.image} alt={item.title} width={300} height={180} className="aspect-auto" />
               <h1 className="font-semibold p-1">{item.title}</h1>
-              <p className="p-1">{item.content}</p>
+              <p className="p-1 text-center leading-normal text-balance">{item.content}</p>
             </div>
           </CarouselItem>
         ))}

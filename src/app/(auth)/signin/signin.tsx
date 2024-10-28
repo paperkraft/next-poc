@@ -14,6 +14,8 @@ import { signIn } from 'next-auth/react'
 import { RECAPTCHA_SITE_KEY } from '@/utils/constant'
 import { InputController } from '@/components/custom/form.control/InputController'
 import ToggleButtons from '@/components/custom/layout/ToggleButtons'
+import { Separator } from '@/components/ui/separator'
+import Divider from '@/components/custom/divider'
 
 const signInSchema = z.object({
     email: z.string({ required_error: "Email is required" })
@@ -71,11 +73,11 @@ export default function SignInPage() {
         if (loading) {
             return (
                 <>
-                    <LoaderCircle className="mr-2 h-4 w-4 animate-spin"/> Logging...
+                    <LoaderCircle className="mr-2 h-4 w-4 animate-spin"/> Signing...
                 </>
             );
         }
-        return "Login";
+        return "Signin";
     };
 
     return (
@@ -90,31 +92,31 @@ export default function SignInPage() {
             />
 
             <Form {...form}>
-                <form id='form_submit' onSubmit={form.handleSubmit(onSubmit)} className="flex items-center justify-center py-12">
+                <form id='form_submit' onSubmit={form.handleSubmit(onSubmit)} className="flex items-center justify-center py-12 p-4">
                     <div className="mx-auto grid w-[350px] gap-6">
-                        <div className="grid gap-2 text-center">
-                        <h1 className="text-2xl font-semibold tracking-tight">Login</h1>
-                        <p className="text-muted-foreground text-sm">Enter your email below to login to your account</p>
+                        
+                        <div className="grid gap-2">
+                            <h1 className="text-2xl font-semibold tracking-tight">Sign in</h1>
+                            <p className="text-muted-foreground text-sm">Enter your email below to Sign in to your account</p>
                         </div>
-                        <div className="grid gap-4">
-                            <div className="grid gap-2">
-                                <InputController 
-                                    name="email"
-                                    label="Email"
-                                    type='email'
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <InputController 
-                                    name="password"
-                                    label="Password"
-                                    type='password'
-                                />
-                            </div>
+                        <div className="grid gap-2">
+                            <InputController 
+                                name="email"
+                                label="Email"
+                                type='email'
+                            />
+                            <InputController 
+                                name="password"
+                                label="Password"
+                                type='password'
+                            />
                             
                             <Button type="submit" className="w-full" disabled={loading}>
                                 { renderButtonContent() }
                             </Button>
+                            
+                            <Divider text='Or continue with' className='my-4'/>
+
                             <Button variant="outline" type="button" className="w-full" onClick={(e) => {e.preventDefault(); signIn('github')}}>
                                 Sign in with GitHub
                             </Button>
@@ -128,8 +130,6 @@ export default function SignInPage() {
                     </div>
                 </form>
             </Form>
-
-            <ToggleButtons/>
         </>
     )
 }

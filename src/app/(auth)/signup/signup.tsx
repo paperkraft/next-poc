@@ -12,6 +12,7 @@ import { toast } from "@/hooks/use-toast";
 import { InputController } from "@/components/custom/form.control/InputController";
 import { useMounted } from "@/hooks/use-mounted";
 import { signIn } from 'next-auth/react'
+import Divider from "@/components/custom/divider";
 
 const signUpSchema = z.object({
     username: z.string({ required_error: "Username is required" })
@@ -89,57 +90,57 @@ export default function SignUpPage() {
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex items-center justify-center py-10">
                 <div className="mx-auto grid w-[350px] gap-6">
-                    <div className="grid gap-2 text-center">
-                        <h1 className="text-2xl font-semibold tracking-tight">Sign Up</h1>
+                    <div className="grid gap-2">
+                        <h1 className="text-2xl font-semibold tracking-tight">Sign up</h1>
                         <p className="text-sm text-muted-foreground">Enter your information to create an account</p>
                     </div>
-                    
-                    <div className="grid gap-4">
-                        <div className="grid gap-2">
-                            <InputController
-                                name="username"
-                                label="Username"
-                                placeholder="Username"
-                                maxLength={8}
-                                minLength={6}
-                            />
 
-                            <InputController
-                                name="email"
-                                label="Email"
-                                placeholder="Email"
-                                type='email'
-                                maxLength={40}
-                            />
-                            
-                            <InputController
-                                name="password"
-                                label="Password"
-                                placeholder="Password"
-                                type='password'
-                            />
+                    <div className="grid gap-2">
+                        <InputController
+                            name="username"
+                            label="Username"
+                            placeholder="Username"
+                            maxLength={8}
+                            minLength={6}
+                        />
 
-                            <Button type="submit" className="w-full" disabled={loading}>
-                                {renderButtonContent()}
-                            </Button>
+                        <InputController
+                            name="email"
+                            label="Email"
+                            placeholder="Email"
+                            type='email'
+                            maxLength={40}
+                        />
+                        
+                        <InputController
+                            name="password"
+                            label="Password"
+                            placeholder="Password"
+                            type='password'
+                        />
 
-                            <Button variant="outline" className="w-full" 
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    signIn('github');
-                                }}
-                            >
-                                Sign up with GitHub
-                            </Button>
-                        </div>
+                        <Button type="submit" className="w-full" disabled={loading}>
+                            {renderButtonContent()}
+                        </Button>
 
-                        <div className="mt-4 text-center text-sm">
-                            Already have an account?&nbsp;
-                            <Link href="/signin" className="underline">Sign in</Link>
-                        </div>
+                        <Divider text='Or continue with' className='my-2'/>
+
+                        <Button variant="outline" className="w-full" 
+                            onClick={(e) => {
+                                e.preventDefault();
+                                signIn('github');
+                            }}
+                        >
+                            Sign up with GitHub
+                        </Button>
                     </div>
 
-                    <p className="px-4 text-center text-sm text-muted-foreground">By clicking continue, you agree to our <br/>
+                    <div className="text-center text-sm">
+                        Already have an account?&nbsp;
+                        <Link href="/signin" className="underline">Sign in</Link>
+                    </div>
+
+                    <p className="text-center text-sm text-muted-foreground">By clicking continue, you agree to our <br/>
                         <a className="underline underline-offset-4 hover:text-primary" href="#">Terms of Service</a> and&nbsp;
                         <a className="underline underline-offset-4 hover:text-primary" href="#">Privacy Policy</a>.
                     </p>

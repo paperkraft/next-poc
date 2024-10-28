@@ -5,6 +5,20 @@ import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
+
+const appList = [
+    {
+        url:'/signin',
+        title:"ERP",
+        desc:"Automate your administrative operations to ensure paperless and hassle-free"
+    },
+    {
+        url:'/signin',
+        title:"HR Payroll",
+        desc:"Automate your administrative operations to ensure paperless and hassle-free"
+    }
+]
+
 export default function LandingPage() {
 
     return (
@@ -42,19 +56,23 @@ export default function LandingPage() {
                         </div>
 
                         <div className="p-8 bg-background border rounded-lg w-full md:max-w-[390px] mb-8 shadow-xl">
-                            <h1 className="py-4">App List</h1>
+                            <h1 className="pb-4">App List</h1>
+                            <div className="grid gap-3">
+                                {
+                                    appList.map((item)=>(
+                                        <Link href={'/signin'} className="group" key={item.title}>
+                                            <div className="flex gap-1 items-center justify-between rounded-lg p-4 border group-hover:border">
+                                                <div className="space-y-0.5">
+                                                    <h1 className="font-medium text-lg">{item.title}</h1>
+                                                    <p className="text-sm text-balance">{item.desc}</p>
+                                                </div>
+                                                <span><ChevronRightIcon /></span>
+                                            </div>
+                                        </Link>
+                                    ))
+                                }
+                            </div>
 
-                            <Link href={'/signin'} className="group">
-                                <div className="flex gap-1 items-center justify-between rounded-lg p-4 group-hover:border">
-                                    <div className="space-y-0.5">
-                                        <h1 className="font-medium text-lg">ERP</h1>
-                                        <p className="text-sm text-balance">
-                                            Automate your administrative operations to ensure paperless and hassle-free
-                                        </p>
-                                    </div>
-                                    <span><ChevronRightIcon /></span>
-                                </div>
-                            </Link>
                         </div>
                     </div>
                 </section>

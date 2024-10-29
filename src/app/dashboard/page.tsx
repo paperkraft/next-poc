@@ -27,7 +27,7 @@ export default function DashboardPage() {
       <TitlePage title="Dashboard" description="description" />
       {
         open &&
-        <DialogBox open={open} title={"Profile Incomplete"}>
+        <DialogBox open={open} title={"Profile Incomplete"} hideClose preventClose>
           <p> Hi <b>{user?.email}</b>,</p>
           <p>Welcome to Webdesk! It looks like your profile is incomplete. </p>
           <p>To enhance your experience, please complete your profile by visiting your profile settings..</p><br/>

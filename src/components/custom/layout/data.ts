@@ -6,7 +6,22 @@ import {
     Settings2,
 } from "lucide-react"
 
-export const data = [
+type submenuType = {
+    title: string;
+    url: string;
+    submenu?: submenuType[];
+}
+
+export type menuType = {
+    label: string;
+    title: string;
+    url: string;
+    icon: any;
+    isActive: boolean;
+    submenu: submenuType[];
+}
+
+export const data:menuType[] = [
     {
         label: "Home",
         title: "Dashboard",
@@ -24,7 +39,7 @@ export const data = [
         submenu: [],
     },
     {
-        label: "Home",
+        label: "Master",
         title: "Student",
         url: "/student",
         icon: GraduationCapIcon,
@@ -41,31 +56,24 @@ export const data = [
             {
                 title: "General",
                 url: "/general",
+                submenu: [
+                    {
+                        title: "Introduction",
+                        url: "#",
+                    },
+                    {
+                        title: "Get Started",
+                        url: "#",
+                    },
+                    {
+                        title: "Tutorials",
+                        url: "#",
+                    }
+                ],
             },
             {
                 title: "Access",
                 url: "/access-control",
-            }
-        ],
-    },
-    {
-        label: "Master",
-        title: "Documentation",
-        url: "#",
-        icon: BookOpen,
-        isActive: false,
-        submenu: [
-            {
-                title: "Introduction",
-                url: "#",
-            },
-            {
-                title: "Get Started",
-                url: "#",
-            },
-            {
-                title: "Tutorials",
-                url: "#",
             }
         ],
     }

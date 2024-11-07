@@ -55,7 +55,7 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import Header from "./Header"
-import { menus, uniqueLabels } from "./data"
+import { menus, menuType, uniqueLabels } from "./data"
 import { ChildProps } from "@/types/types"
 import { Label } from "@/components/ui/label"
 
@@ -69,7 +69,18 @@ export default function AppSidebar({ children }: ChildProps) {
 
                 <SidebarContent>
                     <SearchMenuOptions/>
-                    <ContentMenuOptions/>
+                    {
+                        menus.map((data, index) => (
+                            <SidebarGroup key={index}>
+                                <SidebarGroupLabel>{uniqueLabels.at(index)}</SidebarGroupLabel>
+                                <SidebarMenu>
+                                    {data.map((item, index) => (
+                                        <NestedMenu key={index} item={item} />
+                                    ))}
+                                </SidebarMenu>
+                            </SidebarGroup>
+                        ))
+                    }
                     <OtherOptions/>
                 </SidebarContent>
 
@@ -209,75 +220,6 @@ function FooterMenuOptions() {
     )
 }
 
-function ContentMenuOptions(){
-    const path = usePathname();
-    return(
-        <>
-            {
-                menus.map((data, index) => (
-                    <SidebarGroup key={index}>
-                        <SidebarGroupLabel>{uniqueLabels.at(index)}</SidebarGroupLabel>
-                        <SidebarMenu>
-                            {
-                                data.map((item) => {
-                                    const hasSubmenu = item.submenu.length > 0;
-                                    const active = item.url === path || item.submenu.some(subItem => subItem.url === path)
-                                    return (
-                                        <React.Fragment key={item.title}>
-                                            {
-                                                hasSubmenu &&
-                                                <Collapsible
-                                                    asChild
-                                                    defaultOpen={active}
-                                                    className="group/collapsible"
-                                                >
-                                                    <SidebarMenuItem>
-                                                        <CollapsibleTrigger asChild>
-                                                            <SidebarMenuButton tooltip={item.title}>
-                                                                {item.icon && <item.icon />}
-                                                                <span>{item.title}</span>
-                                                                <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                                                            </SidebarMenuButton>
-                                                        </CollapsibleTrigger>
-                                                        <CollapsibleContent>
-                                                            <SidebarMenuSub>
-                                                                {item.submenu?.map((subItem) => (
-                                                                    <SidebarMenuSubItem key={subItem.title}>
-                                                                        <SidebarMenuSubButton asChild>
-                                                                            <Link href={subItem.url} className={cn({ "bg-sidebar-accent text-sidebar-accent-foreground": subItem.url === path })}>
-                                                                                {subItem.title}
-                                                                            </Link>
-                                                                        </SidebarMenuSubButton>
-                                                                    </SidebarMenuSubItem>
-                                                                ))}
-                                                            </SidebarMenuSub>
-                                                        </CollapsibleContent>
-                                                    </SidebarMenuItem>
-                                                </Collapsible>
-                                            }
-                                            {
-                                                !hasSubmenu &&
-                                                <SidebarMenuItem key={item.title}>
-                                                    <SidebarMenuButton tooltip={item.title} asChild>
-                                                        <Link href={item.url} className={cn({ "bg-sidebar-accent text-sidebar-accent-foreground": item.url === path || path.includes(item.url) })}>
-                                                            {item.icon && <item.icon />}
-                                                            {item.title}
-                                                        </Link>
-                                                    </SidebarMenuButton>
-                                                </SidebarMenuItem>
-                                            }
-                                        </React.Fragment>
-                                    )
-                                })
-                            }
-                        </SidebarMenu>
-                    </SidebarGroup>
-                ))
-            }
-        </>
-    )
-}
-
 function SearchMenuOptions(){
     return(
         <form>
@@ -316,5 +258,49 @@ function OtherOptions(){
                 </SidebarMenu>
             </SidebarGroupContent>
         </SidebarGroup>
+    )
+}
+
+function NestedMenu({ item }: { item: menuType }) {
+
+    const path = usePathname();
+    const hasSubmenu = item?.submenu?.length > 0;
+    const active = item.url === path
+        || item?.submenu?.some(subItem => subItem.url === path)
+        || item?.submenu?.some(subItem => subItem?.submenu?.some(subSubItem => subSubItem.url === path))
+
+    if (!hasSubmenu) {
+        return (
+            <SidebarMenuButton tooltip={item.title} asChild>
+                <Link href={item.url} className={cn({ "bg-sidebar-accent text-sidebar-accent-foreground": item.url === path })}>
+                    {item.icon && <item.icon />}
+                    {item.title}
+                </Link>
+            </SidebarMenuButton>
+        )
+    }
+
+    return (
+        <SidebarMenuItem>
+            <Collapsible defaultOpen={active} className="group/collapsible [&[data-state=open]>button>svg:not(:first-child)]:rotate-90">
+                <CollapsibleTrigger asChild>
+                    <SidebarMenuButton tooltip={item.title}>
+                        {item.icon && <item.icon />}
+                        <span>{item.title}</span>
+                        <ChevronRight className="ml-auto transition-transform" />
+                    </SidebarMenuButton>
+                </CollapsibleTrigger>
+
+                <CollapsibleContent>
+                    <SidebarMenuSub>
+                        {
+                            item?.submenu.map((subItem, index) => (
+                                <NestedMenu key={index} item={subItem as menuType} />
+                            ))
+                        }
+                    </SidebarMenuSub>
+                </CollapsibleContent>
+            </Collapsible>
+        </SidebarMenuItem>
     )
 }

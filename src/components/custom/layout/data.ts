@@ -1,5 +1,4 @@
 import {
-    BookOpen,
     GraduationCapIcon,
     Home,
     ImageIcon,
@@ -16,7 +15,7 @@ export type menuType = {
     label: string;
     title: string;
     url: string;
-    icon: any;
+    icon: React.ComponentType;
     isActive: boolean;
     submenu: submenuType[];
 }
@@ -80,4 +79,4 @@ export const data:menuType[] = [
 ]
 
 export const uniqueLabels = Array.from(new Set(data.map((menu) => menu.label)));
-export const menus = uniqueLabels.map((label) => data.filter((menu) => menu.label === label).map((item) => item));
+export const menus:menuType[][] = uniqueLabels.map((label) => data.filter((menu) => menu.label === label).map((item) => item));

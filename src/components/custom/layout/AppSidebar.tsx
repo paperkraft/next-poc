@@ -11,7 +11,8 @@ import {
     SearchIcon,
     Send,
     UserIcon,
-    Settings2
+    Settings2,
+    X
 } from "lucide-react"
 import {
     Avatar,
@@ -55,11 +56,59 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import Header from "./Header"
-import { menus, menuType, uniqueLabels } from "./data"
+import { data, menus, menuType, uniqueLabels } from "./data"
 import { ChildProps } from "@/types/types"
 import { Label } from "@/components/ui/label"
+import { useForm } from "react-hook-form"
+import { FormField } from "@/components/ui/form"
+import { Button } from "@/components/ui/button"
 
 export default function AppSidebar({ children }: ChildProps) {
+
+    const [filter, setFilter] = React.useState(menus);
+
+    const form = useForm({
+        defaultValues:{
+            query:""
+        }
+    });
+
+    const query = form.watch('query');
+
+    const filterMenu = (query: string) => {
+        
+        const lowerCaseQuery = query.toLowerCase();
+
+        const filtered = menus.map((menuItem) => {
+            return(
+                menuItem.filter((item) => {
+                    return (
+                        item.label.toLowerCase().includes(lowerCaseQuery) ||
+                        item.title.toLowerCase().includes(lowerCaseQuery) ||
+                        item.submenu.some((item) => {
+                            return (
+                                item.title.toLowerCase().includes(lowerCaseQuery) ||
+                                (item.submenu && item.submenu.some((sub) =>
+                                    sub.title.toLowerCase().includes(lowerCaseQuery)
+                                ))
+                            );
+                        })
+                    );
+                })
+            )
+        }).filter(menuItem => menuItem.length > 0);
+
+        setFilter(filtered);
+    };
+
+    React.useEffect(()=>{
+        if(query){
+            filterMenu(query);
+        } else {
+            setFilter(menus);
+        }
+    },[query])
+
     return (
         <SidebarProvider>
             <Sidebar>
@@ -68,11 +117,39 @@ export default function AppSidebar({ children }: ChildProps) {
                 </SidebarHeader>
 
                 <SidebarContent>
-                    <SearchMenuOptions/>
+                    <SidebarGroup>
+                        <FormField 
+                            control={form.control}
+                            name="query"
+                            render={({field})=>(
+                                <SidebarGroupContent className="relative">
+                                    <Label htmlFor="search" className="sr-only">
+                                        Search
+                                    </Label>
+                                    <SidebarInput
+                                        id="search"
+                                        placeholder="Search for menu..."
+                                        className="px-8"
+                                        {...field}
+                                    />
+                                    <SearchIcon className="pointer-events-none absolute left-2 top-1/2 size-4 -translate-y-1/2 select-none opacity-50" />
+                                    {
+                                        field.value &&
+                                        <span className="cursor-pointer absolute right-2 top-1/2 size-4 -translate-y-1/2" onClick={()=> form.resetField('query')}>
+                                            <X className="size-4"/>
+                                        </span>
+                                    }
+                                </SidebarGroupContent>
+                            )}
+                        />
+                    </SidebarGroup>
+
+                    {/* Menus */}
+
                     {
-                        menus.map((data, index) => (
+                        filter.map((data, index) => (
                             <SidebarGroup key={index}>
-                                <SidebarGroupLabel>{uniqueLabels.at(index)}</SidebarGroupLabel>
+                                <SidebarGroupLabel>{data.at(0)?.label}</SidebarGroupLabel>
                                 <SidebarMenu>
                                     {data.map((item, index) => (
                                         <NestedMenu key={index} item={item} />
@@ -221,20 +298,34 @@ function FooterMenuOptions() {
 }
 
 function SearchMenuOptions(){
+
+    const form = useForm({
+        defaultValues:{
+            query:""
+        }
+    });
+
     return(
         <form>
             <SidebarGroup>
-                <SidebarGroupContent className="relative">
-                    <Label htmlFor="search" className="sr-only">
-                        Search
-                    </Label>
-                    <SidebarInput
-                        id="search"
-                        placeholder="Search for menu..."
-                        className="pl-8"
-                    />
-                    <SearchIcon className="pointer-events-none absolute left-2 top-1/2 size-4 -translate-y-1/2 select-none opacity-50" />
-                </SidebarGroupContent>
+                <FormField 
+                    control={form.control}
+                    name="query"
+                    render={({field})=>(
+                        <SidebarGroupContent className="relative">
+                            <Label htmlFor="search" className="sr-only">
+                                Search
+                            </Label>
+                            <SidebarInput
+                                id="search"
+                                placeholder="Search for menu..."
+                                className="pl-8"
+                                {...field}
+                            />
+                            <SearchIcon className="pointer-events-none absolute left-2 top-1/2 size-4 -translate-y-1/2 select-none opacity-50" />
+                        </SidebarGroupContent>
+                    )}
+                />
             </SidebarGroup>
         </form>
     )

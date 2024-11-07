@@ -6,34 +6,49 @@ import { useSidebar } from '@/components/ui/sidebar';
 import { MenuIcon } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import React from 'react';
-import { data } from './data';
+import { data, menuType } from './data';
 
 export function CustomTrigger() {
     const { toggleSidebar } = useSidebar();
     return <Button onClick={toggleSidebar} variant={'ghost'} size={'sm'} className="size-7 -ml-1"><MenuIcon /></Button>
 }
 
-function getTitleAndParentByUrl(data: any, url: string) {
-    for (const entry of data) {
-        // Check if the current entry matches the url
-        if (entry.url === url) {
-            return { parentTitle: entry.title };
+function getBreadcrumbs(menus: any[], url: string): { title: string, url: string }[] | null {
+    function findBreadcrumbs(submenus: any[], url: string, breadcrumb: { title: string, url: string }[] = []): { title: string, url: string }[] | null {
+        for (const submenu of submenus) {
+            if (submenu.url === url) {
+                breadcrumb.push({ title: submenu.title, url: submenu.url });
+                return breadcrumb;
+            }
+
+            if (submenu.submenu) {
+                breadcrumb.push({ title: submenu.title, url: submenu.url });
+                const result = findBreadcrumbs(submenu.submenu, url, breadcrumb);
+                if (result) return result;
+                breadcrumb.pop();
+            }
+        }
+        return null;
+    }
+
+    for (const menuGroup of menus) {
+        if (menuGroup.url === url) {
+            return [{ title: menuGroup.title, url: menuGroup.url }];
         }
 
-        // Check in submenu if it exists
-        if (entry.submenu) {
-            const submenuItem = entry.submenu.find((sub: any) => sub.url === url);
-            if (submenuItem) {
-                return { parentTitle: entry.title, childTitle: submenuItem.title };
-            }
+        const result = findBreadcrumbs(menuGroup.submenu, url, [{ title: menuGroup.title, url: menuGroup.url }]);
+        if (result) {
+            return result;
         }
     }
     return null;
 }
 
+
+
 const Header: React.FC = React.memo(() => {
     const path = usePathname();
-    const breadcrumb = getTitleAndParentByUrl(data, path);
+    const breadcrumb = getBreadcrumbs(data, path);
 
     return (
         //w-full transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12
@@ -48,20 +63,15 @@ const Header: React.FC = React.memo(() => {
                         <BreadcrumbItem className="hidden md:block">
                             <BreadcrumbLink href="#">Home</BreadcrumbLink>
                         </BreadcrumbItem>
-
-                        {path !== '/' && <BreadcrumbSeparator className="hidden md:block" />}
-
-                        {breadcrumb?.childTitle
-                            ? <React.Fragment>
-                                <BreadcrumbItem className="hidden md:block">
-                                    <BreadcrumbLink href={"#"}>{breadcrumb?.parentTitle}</BreadcrumbLink>
-                                </BreadcrumbItem>
-                                <BreadcrumbSeparator className="hidden md:block" />
-                                <BreadcrumbItem>
-                                    <BreadcrumbPage>{breadcrumb?.childTitle}</BreadcrumbPage>
-                                </BreadcrumbItem>
-                            </React.Fragment>
-                            : <BreadcrumbPage>{breadcrumb?.parentTitle}</BreadcrumbPage>
+                        {
+                            breadcrumb?.map((item)=>(
+                                <React.Fragment key={item.title}>
+                                    <BreadcrumbSeparator className="hidden md:block" />
+                                    <BreadcrumbItem className="hidden md:block">
+                                        <BreadcrumbLink href={"#"}>{item.title}</BreadcrumbLink>
+                                    </BreadcrumbItem>
+                                </React.Fragment>
+                            ))
                         }
                     </BreadcrumbList>
                 </Breadcrumb>

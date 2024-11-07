@@ -20,7 +20,7 @@ export type menuType = {
     submenu: submenuType[];
 }
 
-export const data:menuType[] = [
+export const data = [
     {
         label: "Home",
         title: "Dashboard",
@@ -30,7 +30,7 @@ export const data:menuType[] = [
         submenu: [],
     },
     {
-        label: "Home",
+        label: "Picture",
         title: "Gallery",
         url: "/gallery",
         icon: ImageIcon,
@@ -58,7 +58,7 @@ export const data:menuType[] = [
                 submenu: [
                     {
                         title: "Introduction",
-                        url: "#",
+                        url: "/settings/general/introduction",
                     },
                     {
                         title: "Get Started",
@@ -79,4 +79,4 @@ export const data:menuType[] = [
 ]
 
 export const uniqueLabels = Array.from(new Set(data.map((menu) => menu.label)));
-export const menus:menuType[][] = uniqueLabels.map((label) => data.filter((menu) => menu.label === label).map((item) => item));
+export const menus: menuType[][] = uniqueLabels.map((label) => data.filter((menu) => menu.label === label).map((item) => item));

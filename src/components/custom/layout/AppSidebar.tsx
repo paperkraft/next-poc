@@ -61,7 +61,6 @@ import { ChildProps } from "@/types/types"
 import { Label } from "@/components/ui/label"
 import { useForm } from "react-hook-form"
 import { FormField } from "@/components/ui/form"
-import { Button } from "@/components/ui/button"
 
 export default function AppSidebar({ children }: ChildProps) {
 
@@ -294,40 +293,6 @@ function FooterMenuOptions() {
                 </DropdownMenu>
             </SidebarMenuItem>
         </SidebarMenu>
-    )
-}
-
-function SearchMenuOptions(){
-
-    const form = useForm({
-        defaultValues:{
-            query:""
-        }
-    });
-
-    return(
-        <form>
-            <SidebarGroup>
-                <FormField 
-                    control={form.control}
-                    name="query"
-                    render={({field})=>(
-                        <SidebarGroupContent className="relative">
-                            <Label htmlFor="search" className="sr-only">
-                                Search
-                            </Label>
-                            <SidebarInput
-                                id="search"
-                                placeholder="Search for menu..."
-                                className="pl-8"
-                                {...field}
-                            />
-                            <SearchIcon className="pointer-events-none absolute left-2 top-1/2 size-4 -translate-y-1/2 select-none opacity-50" />
-                        </SidebarGroupContent>
-                    )}
-                />
-            </SidebarGroup>
-        </form>
     )
 }
 

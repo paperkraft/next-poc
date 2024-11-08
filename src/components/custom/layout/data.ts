@@ -1,11 +1,12 @@
 import {
+    Book,
     GraduationCapIcon,
     Home,
     ImageIcon,
     Settings2,
 } from "lucide-react"
 
-type submenuType = {
+export type submenuType = {
     title: string;
     url: string;
     submenu?: submenuType[];
@@ -44,6 +45,39 @@ export const data = [
         icon: GraduationCapIcon,
         isActive: false,
         submenu: [],
+    },
+    {
+        label: "Master",
+        title: "Academics",
+        url: "#",
+        icon: Book,
+        isActive: false,
+        submenu: [
+            {
+                title: "Student",
+                url: "#",
+                submenu: [
+                    {
+                        title: "Division",
+                        url: "#",
+                        submenu: [
+                            {
+                                title: "Assign",
+                                url: "#",
+                            },
+                            {
+                                title: "Transfer",
+                                url: "#",
+                            },
+                        ],
+                    },
+                    {
+                        title: "Attendance",
+                        url: "#",
+                    },
+                ],
+            },
+        ],
     },
     {
         label: "Home",

@@ -47,8 +47,6 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
     SidebarMenuSub,
-    SidebarMenuSubButton,
-    SidebarMenuSubItem,
     SidebarProvider,
 } from "@/components/ui/sidebar"
 import { signOut, useSession } from "next-auth/react"
@@ -56,9 +54,8 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import Header from "./Header"
-import { data, menus, menuType, uniqueLabels } from "./data"
+import { menus, menuType, submenuType } from "./data"
 import { ChildProps } from "@/types/types"
-import { Label } from "@/components/ui/label"
 import { useForm } from "react-hook-form"
 import { FormField } from "@/components/ui/form"
 
@@ -78,23 +75,24 @@ export default function AppSidebar({ children }: ChildProps) {
         
         const lowerCaseQuery = query.toLowerCase();
 
+        function searchSubmenu(submenu:submenuType[], query: string):boolean {
+            if (!submenu) return false;
+            return submenu.some((item) => {
+                return (
+                    item.title.toLowerCase().includes(query) ||
+                    (item.submenu && searchSubmenu(item.submenu, query))
+                );
+            });
+        }
+
         const filtered = menus.map((menuItem) => {
-            return(
-                menuItem.filter((item) => {
-                    return (
-                        item.label.toLowerCase().includes(lowerCaseQuery) ||
-                        item.title.toLowerCase().includes(lowerCaseQuery) ||
-                        item.submenu.some((item) => {
-                            return (
-                                item.title.toLowerCase().includes(lowerCaseQuery) ||
-                                (item.submenu && item.submenu.some((sub) =>
-                                    sub.title.toLowerCase().includes(lowerCaseQuery)
-                                ))
-                            );
-                        })
-                    );
-                })
-            )
+            return menuItem.filter((item) => {
+                return (
+                    item.label.toLowerCase().includes(lowerCaseQuery) ||
+                    item.title.toLowerCase().includes(lowerCaseQuery) ||
+                    searchSubmenu(item.submenu, lowerCaseQuery)
+                );
+            })
         }).filter(menuItem => menuItem.length > 0);
 
         setFilter(filtered);
@@ -122,9 +120,6 @@ export default function AppSidebar({ children }: ChildProps) {
                             name="query"
                             render={({field})=>(
                                 <SidebarGroupContent className="relative">
-                                    <Label htmlFor="search" className="sr-only">
-                                        Search
-                                    </Label>
                                     <SidebarInput
                                         id="search"
                                         placeholder="Search for menu..."

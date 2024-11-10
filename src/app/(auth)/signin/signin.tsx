@@ -7,15 +7,14 @@ import { Form } from '@/components/ui/form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import * as z from "zod"
-import { ChevronLeft, LoaderCircle } from 'lucide-react'
+import { LoaderCircle } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 import { useMounted } from '@/hooks/use-mounted'
 import { signIn } from 'next-auth/react'
 import { RECAPTCHA_SITE_KEY } from '@/utils/constant'
 import { InputController } from '@/components/custom/form.control/InputController'
-import ToggleButtons from '@/components/custom/layout/ToggleButtons'
-import { Separator } from '@/components/ui/separator'
 import Divider from '@/components/custom/divider'
+import BiometricLogin from './biometricLogin'
 
 const signInSchema = z.object({
     email: z.string({ required_error: "Email is required" })

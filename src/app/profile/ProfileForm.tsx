@@ -91,6 +91,7 @@ export default function Profile() {
                             label="First Name"
                             placeholder="First Name"
                             maxLength={10}
+                            
                         />
 
                         <InputController
@@ -107,7 +108,6 @@ export default function Profile() {
                             placeholder="Username"
                             maxLength={8}
                             minLength={6}
-                            disabled
                         />
 
                         <InputController        

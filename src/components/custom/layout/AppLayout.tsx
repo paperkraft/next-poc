@@ -5,7 +5,7 @@ import AppSidebar from "./AppSidebar";
 import { useSession } from "next-auth/react";
 import Loading from "@/app/loading";
 
-export const publicURL = ["/signin", "/signup"];
+export const publicURL = ["/signin", "/signup", "/organization"];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const route = useRouter();

@@ -12,7 +12,8 @@ import {
     Send,
     UserIcon,
     Settings2,
-    X
+    X,
+    Ellipsis
 } from "lucide-react"
 import {
     Avatar,
@@ -48,6 +49,7 @@ import {
     SidebarMenuItem,
     SidebarMenuSub,
     SidebarProvider,
+    useSidebar,
 } from "@/components/ui/sidebar"
 import { signOut, useSession } from "next-auth/react"
 import Link from "next/link"
@@ -58,6 +60,7 @@ import { menus, menuType, submenuType } from "./data"
 import { ChildProps } from "@/types/types"
 import { useForm } from "react-hook-form"
 import { FormField } from "@/components/ui/form"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 export default function AppSidebar({ children }: ChildProps) {
 
@@ -114,7 +117,7 @@ export default function AppSidebar({ children }: ChildProps) {
                 </SidebarHeader>
 
                 <SidebarContent>
-                    <SidebarGroup>
+                    <SidebarGroup className="sticky top-0 z-40 bg-sidebar">
                         <FormField 
                             control={form.control}
                             name="query"
@@ -237,7 +240,7 @@ function FooterMenuOptions() {
                                     {user?.email}
                                 </span>
                             </div>
-                            <ChevronsUpDown className="ml-auto size-4" />
+                            <Ellipsis className="ml-auto size-4" />
                         </SidebarMenuButton>
                     </DropdownMenuTrigger>
 
@@ -314,6 +317,8 @@ function OtherOptions(){
 
 function NestedMenu({ item }: { item: menuType }) {
 
+    const { toggleSidebar } = useSidebar();
+    const isMobile = useIsMobile();
     const path = usePathname();
     const hasSubmenu = item?.submenu?.length > 0;
     const active = item.url === path
@@ -322,7 +327,7 @@ function NestedMenu({ item }: { item: menuType }) {
 
     if (!hasSubmenu) {
         return (
-            <SidebarMenuButton tooltip={item.title} asChild>
+            <SidebarMenuButton tooltip={item.title} asChild onClick={() => isMobile && toggleSidebar()} >
                 <Link href={item.url} className={cn({ "bg-sidebar-accent text-sidebar-accent-foreground": item.url === path })}>
                     {item.icon && <item.icon />}
                     {item.title}

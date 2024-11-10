@@ -34,7 +34,11 @@ export default function DashboardPage() {
 
       const registrationOptions = await response.json();
       const challenge = registrationOptions.challenge;
-      const challengeBuffer = new Uint8Array(atob(registrationOptions.challenge).split('').map(c => c.charCodeAt(0)));
+      const challengeBuffer = new Uint8Array(
+        atob(registrationOptions.challenge)
+          .split("")
+          .map((c) => c.charCodeAt(0))
+      );
 
       console.log("Registration Options:", registrationOptions);
 
@@ -84,11 +88,64 @@ export default function DashboardPage() {
     }
   };
 
+  const handleVerify = async () => {
+    try {
+      const userId = user?.id;
+
+      const response = await fetch("/api/webauthn/authenticate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId }),
+      });
+
+      const authenticationOptions = await response.json();
+      console.log("authenticationOptions", authenticationOptions);
+
+      // Convert the response to the format WebAuthn expects
+      const publicKeyCredentialRequestOptions = {
+        challenge: new Uint8Array(authenticationOptions.challenge),
+        timeout: authenticationOptions.timeout,
+        rpID: authenticationOptions.rpID,
+      };
+
+      const credential = await navigator.credentials.get({
+        publicKey: publicKeyCredentialRequestOptions,
+      });
+
+      console.log("credential", credential);
+
+      // Send the credential to the server for final authentication
+      const loginResponse = await fetch('/api/webauthn/authenticate/finish', {
+        method: 'POST',
+        body: JSON.stringify({ credential }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const result = await loginResponse.json();
+
+      if (result.success) {
+        alert('Authentication successful!');
+      } else {
+        alert('Authentication failed');
+      }
+
+    } catch (error) {
+      console.error("Error during WebAuthn authenticate", error);
+    }
+  };
+
   return (
     mounted && (
       <>
         <TitlePage title="Dashboard" description="description" />
+        <br />
         <Button onClick={handleClick}>Generate Passkey</Button>
+        <br />
+        <Button onClick={handleVerify}>Verify Passkey</Button>
         {open && (
           <DialogBox
             open={open}

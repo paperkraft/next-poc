@@ -5,15 +5,16 @@ import prisma from '@/lib/prisma';
 import { auth } from '@/auth';
 
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  const user = session?.user
   try {
     const body = await req.json();
-    const userId = body.userId;  // Get userId from the client
+    const userId = body.userId;
+
+    console.log(userId);
+    
 
     // Retrieve the user from the database
     const userRecord = await prisma.user.findUnique({
-      where: { id: user?.id },
+      where: { id: userId},
       include: { credentials: true },
     });
 
@@ -21,15 +22,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Get the first credential from the user record (you might have multiple credentials for a user)
-    const userCredential = userRecord.credentials[0];  // Assuming the user has one credential
+    const userCredential = userRecord.credentials[0];
 
     if (!userCredential) {
       return NextResponse.json({ error: 'User has no credentials for authentication' }, { status: 400 });
     }
 
     // Generate authentication options
-    const authenticationOptions = generateAuthenticationOptions({
+    const authenticationOptions = await generateAuthenticationOptions({
       // timeout: 60000,  // 60 seconds timeout
       // challenge: userRecord.challenge as string,  // The stored challenge
       // rpID: 'localhost',  // Your app's domain (for production, replace this with your actual domain)
@@ -42,6 +42,9 @@ export async function POST(req: NextRequest) {
 
       userVerification:'preferred'
     });
+
+    console.log('authenticationOptions', authenticationOptions);
+    
 
     // Return authentication options to the client
     return NextResponse.json(authenticationOptions);

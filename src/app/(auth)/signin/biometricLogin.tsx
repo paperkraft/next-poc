@@ -21,6 +21,9 @@ export default function BiometricLogin() {
 
     const authenticationOptions = await response.json();
 
+    console.log('authenticationOptions',authenticationOptions);
+    
+
     // Convert the response to the format WebAuthn expects
     const publicKeyCredentialRequestOptions = {
       challenge: new Uint8Array(authenticationOptions.challenge),
@@ -33,6 +36,10 @@ export default function BiometricLogin() {
       const credential = await navigator.credentials.get({
         publicKey: publicKeyCredentialRequestOptions,
       });
+
+
+      console.log('credential', credential);
+      
 
       // Send the credential to the server for final authentication
       const loginResponse = await fetch('/api/webauthn/authenticate/finish', {

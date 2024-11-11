@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyRegistrationResponse } from '@simplewebauthn/server';
 import prisma from '@/lib/prisma';
 import { auth } from '@/auth';
+import { isoBase64URL } from '@simplewebauthn/server/helpers';
 
 export async function POST(req: NextRequest) {
 
@@ -38,8 +39,8 @@ export async function POST(req: NextRequest) {
     // Save the credential info in the database
     await prisma.credential.create({
       data: {
-        credentialID: Array.from(info.credentialID).map(byte => String.fromCharCode(byte)).join(''),
-        publicKey: Array.from(info.credentialPublicKey).map(byte => String.fromCharCode(byte)).join(''),
+        credentialID: isoBase64URL.fromBuffer(info.credentialID),
+        publicKey: isoBase64URL.fromBuffer(info.credentialPublicKey),
         counter: info.counter,
         userId: userRecord.id,
       },

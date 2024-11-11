@@ -3,13 +3,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAuthenticationResponse } from '@simplewebauthn/server';
 import prisma from '@/lib/prisma';
 import { auth } from '@/auth';
+import { isoBase64URL } from '@simplewebauthn/server/helpers';
 
 export async function POST(req: NextRequest) {
   const session = await auth();
   const user = session?.user
 
   try {
-    const data = await req.json();
+    const {credential} = await req.json();
 
     // Retrieve the user from the database
     const userRecord = await prisma.user.findUnique({
@@ -22,22 +23,21 @@ export async function POST(req: NextRequest) {
     }
 
     // Get the credential the user is using for authentication
-    const userCredential = userRecord.credentials[0];  // You could have multiple credentials
+    const userCredential = userRecord.credentials.find((passKey) => passKey.credentialID == credential.rawId);
 
     if (!userCredential) {
       return NextResponse.json({ error: 'User has no credentials for authentication' }, { status: 400 });
     }
 
-
     // Verify the authentication response from the client
     const { verified, authenticationInfo: info } = await verifyAuthenticationResponse({
-      response: data,
+      response: credential,
       expectedChallenge: userRecord.challenge as string,
       expectedOrigin: 'http://localhost:3000',
       expectedRPID:'localhost',
       authenticator:{
-        credentialID: new Uint8Array(userCredential.credentialID as any),
-        credentialPublicKey: new Uint8Array(userCredential.publicKey as any),
+        credentialID: isoBase64URL.toBuffer(userCredential.credentialID),
+        credentialPublicKey: isoBase64URL.toBuffer(userCredential.publicKey),
         counter: userCredential.counter
       }
     })

@@ -1,8 +1,7 @@
 // app/api/webauthn/authenticate/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { generateAuthenticationOptions } from '@simplewebauthn/server'; // Correct imports
+import { generateAuthenticationOptions } from '@simplewebauthn/server';
 import prisma from '@/lib/prisma';
-import { auth } from '@/auth';
 import { isoBase64URL } from '@simplewebauthn/server/helpers';
 
 export async function POST(req: NextRequest) {

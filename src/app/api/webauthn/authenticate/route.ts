@@ -6,11 +6,11 @@ import { isoBase64URL } from '@simplewebauthn/server/helpers';
 
 export async function POST(req: NextRequest) {
   try {
-    const {email} = await req.json();
+    const { email } = await req.json();
 
     // Retrieve the user from the database
     const user = await prisma.user.findUnique({
-      where: { email: email},
+      where: { email: email },
       include: { credentials: true },
     });
 
@@ -27,11 +27,11 @@ export async function POST(req: NextRequest) {
     // Generate authentication options
     const authenticationOptions = await generateAuthenticationOptions({
       challenge: isoBase64URL.toBuffer(user.challenge as string),
-      userVerification:'preferred'
+      userVerification: 'preferred'
     });
 
     // Return authentication options to the client
-    return NextResponse.json(authenticationOptions);
+    return NextResponse.json({ options: authenticationOptions, userId: user.id });
   } catch (error) {
     console.error('Error in authentication process:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

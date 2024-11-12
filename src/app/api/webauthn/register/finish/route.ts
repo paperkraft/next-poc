@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
 
     // Now verify the registration response
 
-    const { verified, registrationInfo: info } =  await verifyRegistrationResponse({
+    const { verified, registrationInfo: info } = await verifyRegistrationResponse({
       response: credential,
       expectedChallenge: challenge,
       expectedOrigin: 'http://localhost:3000',
@@ -45,6 +45,8 @@ export async function POST(req: NextRequest) {
         userId: userRecord.id,
       },
     });
+
+    
 
     return NextResponse.json({ success: true });
 

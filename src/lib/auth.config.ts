@@ -4,41 +4,44 @@ import Credentials from "next-auth/providers/credentials";
 import GitHub from "next-auth/providers/github";
 import bcrypt from 'bcryptjs';
 import { AUTH_SECRET, GITHUB_ID, GITHUB_SECRET } from "@/utils/constant";
- 
+
 const authConfig: NextAuthConfig = {
     secret: AUTH_SECRET,
 
     providers: [
         Credentials({
-            name:"Credentails",
+            name: "Credentails",
             credentials: {
-                token: { label: "token", type: "text" },
                 email: { label: "Email", type: "text" },
                 password: { label: "Password", type: "password" },
             },
-            async authorize(credentials):Promise<User | null > {
+
+            async authorize(credentials): Promise<User | null> {
+
                 const data = {
-                    token: credentials?.token as string,
                     email: credentials?.email as string,
-                    password : credentials?.password as string,
+                    password: credentials?.password as string,
                 }
-                
+
                 /* GET User details */
                 const user = await prisma.user.findUnique({
                     where: { email: data.email },
+                    include: {
+                        credentials: true
+                    }
                 });
-            
+
                 if (!user || !(await bcrypt.compare(data.password, user.password as string))) {
                     return null
                 }
-                return { id:user.id, name:user.name, email:data.email }
+                return { id: user?.id, name: user?.name, email: data.email }
             }
         }),
 
         GitHub({
-           name:"GitHub",
-           clientId: GITHUB_ID as string,
-           clientSecret: GITHUB_SECRET as string,
+            name: "GitHub",
+            clientId: GITHUB_ID as string,
+            clientSecret: GITHUB_SECRET as string,
         })
     ],
 
@@ -49,20 +52,20 @@ const authConfig: NextAuthConfig = {
     },
 
     callbacks: {
-        async signIn({user, account, profile}){
+        async signIn({ user, account, profile }) {
 
             console.log("signIn - user", user,); // info related user
             console.log("signIn - account", account,); // info related auth provider
             console.log("signIn - profile", profile,); // same as user
-            
+
             const existingUser = await prisma.user.findUnique({
                 where: { email: user.email as string }
             });
 
-            if(!existingUser){
+            if (!existingUser) {
                 // add user to database
                 await prisma.user.create({
-                    data:{
+                    data: {
                         email: user.email as string,
                         name: user?.name || "",
                         firstName: user?.name?.split(" ")[0] || "",
@@ -72,7 +75,7 @@ const authConfig: NextAuthConfig = {
             }
             return true;
         },
-        
+
         async jwt({ token, user }) {
             if (user) {
                 token.id = user.id;

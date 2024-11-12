@@ -2,19 +2,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAuthenticationResponse } from '@simplewebauthn/server';
 import prisma from '@/lib/prisma';
-import { auth } from '@/auth';
 import { isoBase64URL } from '@simplewebauthn/server/helpers';
 
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  const user = session?.user
 
   try {
-    const {credential} = await req.json();
+    const { credential, userId } = await req.json();
 
     // Retrieve the user from the database
     const userRecord = await prisma.user.findUnique({
-      where: { id: user?.id },
+      where: { id: userId },
       include: { credentials: true },
     });
 
@@ -34,8 +31,8 @@ export async function POST(req: NextRequest) {
       response: credential,
       expectedChallenge: userRecord.challenge as string,
       expectedOrigin: 'http://localhost:3000',
-      expectedRPID:'localhost',
-      authenticator:{
+      expectedRPID: 'localhost',
+      authenticator: {
         credentialID: isoBase64URL.toBuffer(userCredential.credentialID),
         credentialPublicKey: isoBase64URL.toBuffer(userCredential.publicKey),
         counter: userCredential.counter
@@ -53,7 +50,7 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ success: true });
-    
+
   } catch (error) {
     console.error('Error in authentication verification:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

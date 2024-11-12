@@ -9,22 +9,22 @@ export async function POST(req: NextRequest) {
   const id = data?.id
   const name = data?.name
   const email = data?.email
-    
+
 
   if (!data?.email) {
     return NextResponse.json({ success: false, message: 'You are not connected.' }, { status: 401 });
   }
-  
+
   try {
 
     const options = await generateRegistrationOptions({
       rpID: 'localhost',
-      rpName: 'MyERP',
+      rpName: 'SV',
       userID: id,
       userName: name,
-      timeout: 60000, 
-      attestationType:"none",
-      authenticatorSelection:{
+      timeout: 60000,
+      attestationType: "none",
+      authenticatorSelection: {
         userVerification: 'preferred',
       },
     });
@@ -33,8 +33,8 @@ export async function POST(req: NextRequest) {
 
     await prisma.user.upsert({
       where: { email: email },
-      update: { challenge }, 
-      create: { 
+      update: { challenge },
+      create: {
         id: id,
         email: email,
         challenge: challenge,

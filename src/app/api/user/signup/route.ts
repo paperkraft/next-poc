@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     
         // Insert the new user
         await prisma.user.create({
-            data: { email, password: hashedPassword, ...rest, name: `${rest.firstName} ${rest.lastName}` }
+            data: { email, password: hashedPassword, ...rest, name: `${rest.firstName} ${rest.lastName}`, roleId:'6734bee65d5c29c84c9a26b5' }
         });
     
         return NextResponse.json({ message: 'User registered successfully' }, { status: 201 });

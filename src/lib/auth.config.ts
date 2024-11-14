@@ -3,7 +3,7 @@ import prisma from "@/lib/prisma";
 import Credentials from "next-auth/providers/credentials";
 import GitHub from "next-auth/providers/github";
 import bcrypt from 'bcryptjs';
-import { AUTH_SECRET, GITHUB_ID, GITHUB_SECRET } from "@/utils/constant";
+import { AUTH_SECRET, GITHUB_ID, GITHUB_SECRET } from "@/utils/constants";
 
 const authConfig: NextAuthConfig = {
     secret: AUTH_SECRET,
@@ -27,14 +27,16 @@ const authConfig: NextAuthConfig = {
                 const user = await prisma.user.findUnique({
                     where: { email: data.email },
                     include: {
-                        credentials: true
+                        credentials: true,
+                        role: true
                     }
                 });
 
                 if (!user || !(await bcrypt.compare(data.password, user.password as string))) {
                     return null
                 }
-                return { id: user?.id, name: user?.name, email: data.email }
+
+                return { id: user?.id, name: user?.name, email: data.email, roleId: user?.roleId, role: user?.role } as unknown as User
             }
         }),
 
@@ -64,30 +66,36 @@ const authConfig: NextAuthConfig = {
 
             if (!existingUser) {
                 // add user to database
-                await prisma.user.create({
-                    data: {
-                        email: user.email as string,
-                        name: user?.name || "",
-                        firstName: user?.name?.split(" ")[0] || "",
-                        lastName: user?.name?.split(" ")[1] || "",
-                    }
-                });
+                // await prisma.user.create({
+                //     data: {
+                //         email: `${user?.email}`,
+                //         name: user?.name || "",
+                //         firstName: user?.name?.split(" ")[0] || "",
+                //         lastName: user?.name?.split(" ")[1] || "",
+                //     }
+                // });
             }
             return true;
         },
 
         async jwt({ token, user }) {
-            if (user) {
-                token.id = user.id;
+            if (user?.role) {
+                token.role = user.role;
+                token.permissions = user.role.permissions;
             }
             return token;
         },
 
         async session({ session, token }) {
-            if (token) {
-                session.user.id = token.id as string;
-            }
-            return session
+            return {
+                ...session,
+                user: {
+                    ...session.user,
+                    role: token.role,
+                    permissions: token.permissions,
+                    roleId: token.roleId,
+                },
+            };
         },
 
         // authorized: async ({ auth }) => {

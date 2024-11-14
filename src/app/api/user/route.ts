@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { RECAPTCHA_SECRET_KEY } from "@/utils/constant";
+import { RECAPTCHA_SECRET_KEY } from "@/utils/constants";
 import { signIn } from "@/auth";
 
 const verifyCaptcha = async (captcha: string) => {

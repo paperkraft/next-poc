@@ -102,10 +102,8 @@ export default function DashboardPage() {
   return (
     <>
       <TitlePage title="Dashboard" description="description" />
-      <br />
-      <Button onClick={handleRegister}>Generate Passkey</Button>
-      <br />
-      <Button onClick={handleVerify}>Verify Passkey</Button>
+      <Button onClick={handleRegister} className="hidden">Generate Passkey</Button>
+      <Button onClick={handleVerify} className="hidden">Verify Passkey</Button>
       {open && (
         <DialogBox
           open={open}

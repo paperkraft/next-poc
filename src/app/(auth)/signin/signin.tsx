@@ -11,7 +11,7 @@ import { LoaderCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useMounted } from "@/hooks/use-mounted";
 import { signIn } from "next-auth/react";
-import { RECAPTCHA_SITE_KEY } from "@/utils/constant";
+import { RECAPTCHA_SITE_KEY } from "@/utils/constants";
 import { InputController } from "@/components/custom/form.control/InputController";
 import Divider from "@/components/custom/divider";
 import { getAuthenticationOptions } from "@/app/action/webauth.action";

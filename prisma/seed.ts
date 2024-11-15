@@ -1,14 +1,6 @@
-// import prisma from "@/lib/prisma";
-// import { makePassword } from "@/utils/password";
-// const { makePassword } = require("@/utils/password")
-const { PrismaClient } = require('@prisma/client');
-
-const prisma = new PrismaClient();
-
-// import { PrismaClient } from "@prisma/client";
-
 // Initialize the Prisma Client
-// const prisma = new PrismaClient();
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 
 // Permissions: Define the permissions and their corresponding bit values
 const permissions = [
@@ -27,6 +19,7 @@ async function main() {
 
   // Seed Roles
   console.log("Seeding Roles...");
+  
   const adminPermissions = 1 | 2 | 4 | 8; // Full access
   const userPermissions = 1 | 2; // Limited permissions
 
@@ -46,6 +39,7 @@ async function main() {
 
   // Seed Users (with roles assigned)
   console.log("Seeding Users...");
+
   await prisma.user.createMany({
     data: [
       {

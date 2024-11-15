@@ -22,7 +22,7 @@ export async function POST(request: Request) {
         const verify = await verifyCaptcha(token);
         if (verify.success) {
             try {
-                await signIn('credentials', { email, password })
+                await signIn('credentials', { email, password, redirect:false });
                 return NextResponse.json({ message: 'Success' }, { status: 200 });
             } catch (error: any) {
                 return NextResponse.json({ ...error });

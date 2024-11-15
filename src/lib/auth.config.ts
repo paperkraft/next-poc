@@ -36,7 +36,13 @@ const authConfig: NextAuthConfig = {
                     return null
                 }
 
-                return { id: user?.id, name: user?.name, email: data.email, roleId: user?.roleId, role: user?.role } as unknown as User
+                return { 
+                    id: user?.id, 
+                    name: user?.name, 
+                    email: data.email, 
+                    roleId: user?.roleId, 
+                    permissions: user?.role?.permissions 
+                } as User
             }
         }),
 
@@ -79,23 +85,21 @@ const authConfig: NextAuthConfig = {
         },
 
         async jwt({ token, user }) {
-            if (user?.role) {
-                token.role = user.role;
-                token.permissions = user.role.permissions;
+            if (user) {
+                token.id = user?.id;
+                token.roleId = user?.roleId;
+                token.permissions = user?.permissions;
             }
             return token;
         },
 
         async session({ session, token }) {
-            return {
-                ...session,
-                user: {
-                    ...session.user,
-                    role: token.role,
-                    permissions: token.permissions,
-                    roleId: token.roleId,
-                },
-            };
+            if (token) {
+                session.user.id = token.id;
+                session.user.roleId = token.roleId;
+                session.user.permissions = token.permissions;
+            }
+            return session;
         },
 
         // authorized: async ({ auth }) => {
@@ -103,9 +107,7 @@ const authConfig: NextAuthConfig = {
         // },
     },
 
-    pages: {
-        signIn: '/signin'
-    },
+    pages: { signIn: '/signin' },
 }
 
 export default authConfig;

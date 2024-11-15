@@ -58,6 +58,7 @@ export default function SignInPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...data, token }),
     }).then((res) => {
+      setLoading(false);
       return res.json();
     });
 

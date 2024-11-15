@@ -44,9 +44,10 @@ const UserAction = () => {
     return () => document.removeEventListener("keydown", down);
   }, [router]);
 
-  const logout = () => {
-    signOut({ redirect: false });
+  const handleSignOut = async () => {
     localStorage.removeItem("user");
+    sessionStorage.clear();
+    await signOut({ callbackUrl: "/" });
   };
 
   return (
@@ -95,7 +96,7 @@ const UserAction = () => {
             <DropdownMenuSeparator />
 
             <li className="flex text-sm hover:bg-accent text-primary">
-              <Button onClick={logout} variant={'ghost'} className="flex w-full px-2">
+              <Button onClick={handleSignOut} variant={'ghost'} className="flex w-full px-2">
                   <PowerIcon />Logout
                   <DropdownMenuShortcut>Ctrl+Q</DropdownMenuShortcut>
               </Button>

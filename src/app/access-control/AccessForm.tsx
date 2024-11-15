@@ -14,7 +14,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { ChevronRight, CornerDownRightIcon } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Form, FormField } from "@/components/ui/form";
@@ -23,6 +23,7 @@ import { SelectController } from "@/components/custom/form.control/SelectControl
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "@/hooks/use-toast";
+import { WithPermission } from "@/components/custom/with-permission";
 
 interface SubModule {
   id: number;
@@ -226,130 +227,132 @@ export default function AccessPage() {
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <div className="px-4">
-          <SelectController
-            name={"role"}
-            label={"Role"}
-            options={roleOptions}
-          />
-        </div>
+    <WithPermission permissionBit={4 & 8}>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <div className="px-4">
+            <SelectController
+              name={"role"}
+              label={"Role"}
+              options={roleOptions}
+            />
+          </div>
 
-        <Table>
-          <TableHeader className="bg-gray-50 dark:bg-gray-800">
-            <TableRow>
-              {tHead.map((items) => (
-                <TableHead key={items}>{items}</TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
+          <Table>
+            <TableHeader className="bg-gray-50 dark:bg-gray-800">
+              <TableRow>
+                {tHead.map((items) => (
+                  <TableHead key={items}>{items}</TableHead>
+                ))}
+              </TableRow>
+            </TableHeader>
 
-          <TableBody>
-            {defaultValues.module.map((item, i) => {
-              const hasSubModules = item.subModule.length > 0;
-              return (
-                <React.Fragment key={item.id}>
-                  {hasSubModules && (
-                    <Collapsible asChild key={item.id}>
-                      <React.Fragment>
-                        <TableRow>
-                          <TableCell>
-                            <CollapsibleTrigger asChild>
-                              <Button
-                                variant={"ghost"}
-                                className="flex h-6 w-6 p-0 data-[state=open]:bg-muted [&[data-state=open]>svg]:rotate-90"
-                              >
-                                <ChevronRight className="h-4 w-4" />
-                              </Button>
-                            </CollapsibleTrigger>
-                          </TableCell>
-                          <TableCell className="text-left">
-                            {item.label}
-                          </TableCell>
-                          {item.permission.map((_a, ii) => (
-                            <TableCell key={ii}>
-                              <FormField
-                                name={`module.${i}.permission.${ii}`}
-                                control={form.control}
-                                render={({ field }) => (
-                                  <Switch
-                                    checked={!!field.value}
-                                    onCheckedChange={field.onChange}
-                                  />
-                                )}
-                              />
+            <TableBody>
+              {defaultValues.module.map((item, i) => {
+                const hasSubModules = item.subModule.length > 0;
+                return (
+                  <React.Fragment key={item.id}>
+                    {hasSubModules && (
+                      <Collapsible asChild key={item.id}>
+                        <React.Fragment>
+                          <TableRow>
+                            <TableCell>
+                              <CollapsibleTrigger asChild>
+                                <Button
+                                  variant={"ghost"}
+                                  className="flex h-6 w-6 p-0 data-[state=open]:bg-muted [&[data-state=open]>svg]:rotate-90"
+                                >
+                                  <ChevronRight className="h-4 w-4" />
+                                </Button>
+                              </CollapsibleTrigger>
                             </TableCell>
-                          ))}
-                        </TableRow>
-
-                        <CollapsibleContent asChild>
-                          <React.Fragment>
-                            {item.subModule.map((sub, ii) => (
-                              <TableRow key={sub.id}>
-                                <TableCell></TableCell>
-                                <TableCell>{`|-- ${sub.label}`}</TableCell>
-                                {sub.permission.map((_b, iii) => (
-                                  <TableCell key={iii}>
-                                    <FormField
-                                      name={`module.${i}.subModule.${ii}.permission.${iii}`}
-                                      control={form.control}
-                                      render={({ field }) => (
-                                        <Switch
-                                          checked={field.value}
-                                          onCheckedChange={field.onChange}
-                                        />
-                                      )}
+                            <TableCell className="text-left">
+                              {item.label}
+                            </TableCell>
+                            {item.permission.map((_a, ii) => (
+                              <TableCell key={ii}>
+                                <FormField
+                                  name={`module.${i}.permission.${ii}`}
+                                  control={form.control}
+                                  render={({ field }) => (
+                                    <Switch
+                                      checked={!!field.value}
+                                      onCheckedChange={field.onChange}
                                     />
-                                  </TableCell>
-                                ))}
-                              </TableRow>
+                                  )}
+                                />
+                              </TableCell>
                             ))}
-                          </React.Fragment>
-                        </CollapsibleContent>
-                      </React.Fragment>
-                    </Collapsible>
-                  )}
+                          </TableRow>
 
-                  {!hasSubModules && (
-                    <TableRow>
-                      <TableCell></TableCell>
-                      <TableCell>{item.label}</TableCell>
-                      {item.permission.map((_c, ii) => (
-                        <TableCell key={ii}>
-                          <FormField
-                            name={`module.${i}.permission.${ii}`}
-                            control={form.control}
-                            render={({ field }) => (
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            )}
-                          />
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  )}
-                </React.Fragment>
-              );
-            })}
-          </TableBody>
-        </Table>
+                          <CollapsibleContent asChild>
+                            <React.Fragment>
+                              {item.subModule.map((sub, ii) => (
+                                <TableRow key={sub.id}>
+                                  <TableCell></TableCell>
+                                  <TableCell>{`|-- ${sub.label}`}</TableCell>
+                                  {sub.permission.map((_b, iii) => (
+                                    <TableCell key={iii}>
+                                      <FormField
+                                        name={`module.${i}.subModule.${ii}.permission.${iii}`}
+                                        control={form.control}
+                                        render={({ field }) => (
+                                          <Switch
+                                            checked={field.value}
+                                            onCheckedChange={field.onChange}
+                                          />
+                                        )}
+                                      />
+                                    </TableCell>
+                                  ))}
+                                </TableRow>
+                              ))}
+                            </React.Fragment>
+                          </CollapsibleContent>
+                        </React.Fragment>
+                      </Collapsible>
+                    )}
 
-        <div className="flex justify-end my-4 gap-2">
-          <Button
-            variant={"outline"}
-            onClick={(e) => {
-              e.preventDefault();
-              form.reset();
-            }}
-          >
-            Reset
-          </Button>
-          <Button type="submit">Submit</Button>
-        </div>
-      </form>
-    </Form>
+                    {!hasSubModules && (
+                      <TableRow>
+                        <TableCell></TableCell>
+                        <TableCell>{item.label}</TableCell>
+                        {item.permission.map((_c, ii) => (
+                          <TableCell key={ii}>
+                            <FormField
+                              name={`module.${i}.permission.${ii}`}
+                              control={form.control}
+                              render={({ field }) => (
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              )}
+                            />
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </TableBody>
+          </Table>
+
+          <div className="flex justify-end my-4 gap-2">
+            <Button
+              variant={"outline"}
+              onClick={(e) => {
+                e.preventDefault();
+                form.reset();
+              }}
+            >
+              Reset
+            </Button>
+            <Button type="submit">Submit</Button>
+          </div>
+        </form>
+      </Form>
+    </WithPermission>
   );
 }

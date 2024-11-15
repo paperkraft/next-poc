@@ -2,6 +2,7 @@ import { auth } from '@/auth';
 import AccessDenied from '@/components/custom/access-denied';
 import { hasPermission } from '@/utils/guard';
 import React from 'react'
+import ModuleAdd from './Form';
 
 export default async function Page() {
   const session = await auth();
@@ -13,6 +14,9 @@ export default async function Page() {
   }
 
   return (
-    <div>Introduction</div>
+    <div>
+      <p> Introduction </p>
+      <ModuleAdd/>
+    </div>
   )
 }

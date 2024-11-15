@@ -8,17 +8,21 @@ datasource db {
 }
 
 model Role {
-  id              String           @id @default(auto()) @map("_id") @db.ObjectId
-  name            String
-  permissions     Int             
-  users           User[]
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  permissions Int
+  users       User[]
 }
 
 model Permission {
-  id              String           @id @default(auto()) @map("_id") @db.ObjectId
-  name            String
-  bit             Int              
+  id      String @id @default(auto()) @map("_id") @db.ObjectId
+  name    String
+  bitmask Int
+
+  Module   Module? @relation(fields: [moduleId], references: [id])
+  moduleId String? @db.ObjectId
 }
+
 model User {
   id           String       @id @default(auto()) @map("_id") @db.ObjectId
   firstName    String?
@@ -35,6 +39,35 @@ model User {
   credentials  Credential[]
   roleId       String       @db.ObjectId
   role         Role         @relation(fields: [roleId], references: [id])
+
+  ModulePermissions ModulePermissions[]
+}
+
+model ModulePermissions {
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  moduleId    String     @db.ObjectId
+  userId      String     @db.ObjectId
+  submoduleId String?    @db.ObjectId
+  permissions Int
+  user        User       @relation(fields: [userId], references: [id])
+  module      Module     @relation(fields: [moduleId], references: [id])
+  submodule   SubModule? @relation(fields: [submoduleId], references: [id])
+}
+
+model Module {
+  id                String              @id @default(auto()) @map("_id") @db.ObjectId
+  name              String
+  permissions       Permission[]
+  ModulePermissions ModulePermissions[]
+  SubModule         SubModule[]
+}
+
+model SubModule {
+  id                String              @id @default(auto()) @map("_id") @db.ObjectId
+  name              String
+  moduleId          String              @db.ObjectId
+  module            Module              @relation(fields: [moduleId], references: [id])
+  ModulePermissions ModulePermissions[]
 }
 
 model Credential {

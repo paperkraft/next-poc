@@ -27,8 +27,25 @@ const authConfig: NextAuthConfig = {
                 const user = await prisma.user.findUnique({
                     where: { email: data.email },
                     include: {
+                        role: true,
                         credentials: true,
-                        role: true
+                        ModulePermissions:{
+                            select:{
+                                permissions:true,
+                                module:{
+                                    select:{
+                                        id: true,
+                                        name:true,
+                                    }
+                                },
+                                submodule:{
+                                    select:{
+                                        id: true,
+                                        name:true,
+                                    }
+                                }
+                            }
+                        }
                     }
                 });
 
@@ -41,7 +58,8 @@ const authConfig: NextAuthConfig = {
                     name: user?.name, 
                     email: data.email, 
                     roleId: user?.roleId, 
-                    permissions: user?.role?.permissions 
+                    permissions: user?.role?.permissions,
+                    modules: user?.ModulePermissions
                 } as User
             }
         }),
@@ -89,6 +107,7 @@ const authConfig: NextAuthConfig = {
                 token.id = user?.id;
                 token.roleId = user?.roleId;
                 token.permissions = user?.permissions;
+                token.modules = user?.modules;
             }
             return token;
         },
@@ -98,6 +117,7 @@ const authConfig: NextAuthConfig = {
                 session.user.id = token.id;
                 session.user.roleId = token.roleId;
                 session.user.permissions = token.permissions;
+                session.user.modules = token.modules;
             }
             return session;
         },

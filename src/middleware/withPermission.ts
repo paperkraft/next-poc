@@ -12,7 +12,7 @@ export async function withPermission(req: NextRequest, permissionBit: number) {
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     include: {
-      role: true, // Include role to get the permissions bitmask
+      role: true,
     },
   });
 
@@ -20,7 +20,6 @@ export async function withPermission(req: NextRequest, permissionBit: number) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  // Check if the role's permissions contain the required permission
   if (!hasPermission(user.role.permissions, permissionBit)) {
     return NextResponse.json({ error: "Forbidden: You do not have the required permission" }, { status: 403 });
   }

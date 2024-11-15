@@ -18,6 +18,8 @@ export default function DashboardPage() {
   const { data: session } = useSession();
   const user = session?.user;
 
+  console.log('session', session);
+
   useEffect(() => {
     if (mounted && user?.name === null) {
       setOpen(true);

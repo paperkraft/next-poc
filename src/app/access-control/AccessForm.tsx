@@ -227,7 +227,7 @@ export default function AccessPage() {
   };
 
   return (
-    <WithPermission permissionBit={4 & 8}>
+    <WithPermission permissionBit={4 | 8}>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="px-4">

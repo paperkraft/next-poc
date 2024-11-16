@@ -5,6 +5,13 @@ import GitHub from "next-auth/providers/github";
 import bcrypt from 'bcryptjs';
 import { AUTH_SECRET, GITHUB_ID, GITHUB_SECRET } from "@/utils/constants";
 
+interface GroupedModule {
+    id: string;
+    name: string;
+    permissions?: number;
+    submodules: { id: string; name: string, permissions?: number }[];
+  }
+
 const authConfig: NextAuthConfig = {
     secret: AUTH_SECRET,
 
@@ -29,19 +36,19 @@ const authConfig: NextAuthConfig = {
                     include: {
                         role: true,
                         credentials: true,
-                        ModulePermissions:{
-                            select:{
-                                permissions:true,
-                                module:{
-                                    select:{
-                                        id: true,
-                                        name:true,
-                                    }
-                                },
-                                submodule:{
-                                    select:{
-                                        id: true,
-                                        name:true,
+                        ModulePermissions: {
+                            select: {
+                                id: true,
+                                module: {
+                                    select: {
+                                        name: true,
+                                        parentId: true,
+                                        SubModules: {
+                                            select: {
+                                                id: true,
+                                                name: true
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -49,17 +56,74 @@ const authConfig: NextAuthConfig = {
                     }
                 });
 
+                const userModulesGrouped = await prisma.modulePermissions.findMany({
+                    where: {
+                        userId: user?.id,
+                    },
+                    select: {
+                        module: {
+                            select: {
+                                id: true,
+                                name: true,
+                            },
+                        },
+                        submodule: {
+                            select: {
+                                id: true,
+                                name: true,
+                            },
+                        },
+                        permissions: true,
+                    },
+                });
+
+
+                // Grouping modules and submodules
+                const groupedModules:GroupedModule[] = userModulesGrouped.reduce((acc:GroupedModule[], permission) => {
+                    // Check if the module already exists in the accumulator
+                    const existingModule = acc.find(m => m.id === permission.module.id);
+
+                    if (existingModule) {
+                        // Add the submodule to the existing module if it exists
+                        if (permission.submodule) {
+                            existingModule.submodules.push({
+                                id: permission.submodule.id,
+                                name: permission.submodule.name,
+                                permissions: permission.permissions
+                            });
+                        }
+                    } else {
+                        // Create a new module object if it doesn't exist yet
+                        acc.push({
+                            id: permission.module.id,
+                            name: permission.module.name,
+                            permissions: permission.permissions,
+                            submodules: permission.submodule
+                                ? [
+                                    {
+                                        id: permission.submodule.id,
+                                        name: permission.submodule.name,
+                                        permissions: permission.permissions
+                                    },
+                                ]
+                                : [],
+                        });
+                    }
+
+                    return acc;
+                }, []);
+
                 if (!user || !(await bcrypt.compare(data.password, user.password as string))) {
                     return null
                 }
 
-                return { 
-                    id: user?.id, 
-                    name: user?.name, 
-                    email: data.email, 
-                    roleId: user?.roleId, 
+                return {
+                    id: user?.id,
+                    name: user?.name,
+                    email: data.email,
+                    roleId: user?.roleId,
                     permissions: user?.role?.permissions,
-                    modules: user?.ModulePermissions
+                    modules: groupedModules
                 } as User
             }
         }),

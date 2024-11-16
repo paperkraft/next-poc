@@ -7,7 +7,7 @@ import ModuleAdd from './Form';
 export default async function Page() {
   const session = await auth();
   const rolePermissions = +session?.user?.permissions;
-  const permission = hasPermission(rolePermissions, 1 & 8);
+  const permission = hasPermission(rolePermissions, 8);
 
   if (!permission) {
     return <AccessDenied/>;

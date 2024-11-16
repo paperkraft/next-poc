@@ -44,30 +44,25 @@ model User {
 }
 
 model ModulePermissions {
-  id          String     @id @default(auto()) @map("_id") @db.ObjectId
-  moduleId    String     @db.ObjectId
-  userId      String     @db.ObjectId
-  submoduleId String?    @db.ObjectId
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  moduleId    String  @db.ObjectId
+  userId      String  @db.ObjectId
+  submoduleId String? @db.ObjectId
   permissions Int
-  user        User       @relation(fields: [userId], references: [id])
-  module      Module     @relation(fields: [moduleId], references: [id])
-  submodule   SubModule? @relation(fields: [submoduleId], references: [id])
+  user        User    @relation(fields: [userId], references: [id])
+  module      Module  @relation(fields: [moduleId], references: [id])
+  submodule   Module? @relation("ModuleParent", fields: [submoduleId], references: [id])
 }
 
 model Module {
-  id                String              @id @default(auto()) @map("_id") @db.ObjectId
-  name              String
-  permissions       Permission[]
-  ModulePermissions ModulePermissions[]
-  SubModule         SubModule[]
-}
-
-model SubModule {
-  id                String              @id @default(auto()) @map("_id") @db.ObjectId
-  name              String
-  moduleId          String              @db.ObjectId
-  module            Module              @relation(fields: [moduleId], references: [id])
-  ModulePermissions ModulePermissions[]
+  id                   String              @id @default(auto()) @map("_id") @db.ObjectId
+  name                 String
+  parentId             String?             @db.ObjectId
+  parent               Module?             @relation("ModuleParent", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  permissions          Permission[]
+  ModulePermissions    ModulePermissions[]
+  SubModules           Module[]            @relation("ModuleParent")
+  SubModulePermissions ModulePermissions[] @relation("ModuleParent")
 }
 
 model Credential {

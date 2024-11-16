@@ -17,7 +17,7 @@ declare module "next-auth" {
             roleId?: string;
             permissions?: number;
             modules?: any;
-        };
+        } & DefaultSession["user"];
     }
 
     interface Token {

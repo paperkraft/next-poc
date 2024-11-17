@@ -1,5 +1,4 @@
 "use client";
-import TitlePage from "@/components/custom/page-heading";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -9,10 +8,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { toast } from "@/hooks/use-toast";
-import { Eye, Plus } from "lucide-react";
+import { Eye } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 
 export type RoleType = {
   id: string;
@@ -20,39 +17,12 @@ export type RoleType = {
   permissions: number;
 };
 
-export default function RoleList() {
+export default function RoleList({data}:{data:RoleType[]}) {
   const route = useRouter();
   const path = usePathname();
 
-  const [data, setData] = useState<RoleType[]>([]);
-
-  useEffect(() => {
-    const getRoles = async () => {
-      const res = await fetch("/api/master/role");
-      const data = await res.json();
-      if (data.success) {
-        setData(data.data);
-      }
-    };
-
-    getRoles();
-  }, []);
-
   return (
     <div className="space-y-8 p-2">
-      <TitlePage title="Role" description="Define role">
-        <div className="flex gap-2">
-          <Button
-            className="size-7"
-            variant={"outline"}
-            size={"sm"}
-            onClick={() => route.push(`${path}/add`)}
-          >
-            <Plus className="size-5" />
-          </Button>
-        </div>
-      </TitlePage>
-
       <Table>
         <TableHeader className="bg-gray-50 dark:bg-gray-800">
           <TableRow>

@@ -68,7 +68,7 @@ export default function RoleForm() {
         title: "Succes",
         description: <>Role Created</>,
       });
-      route.back()
+      route.push('.')
     } else {
       toast({
         title: "Error",
@@ -80,7 +80,7 @@ export default function RoleForm() {
 
   return (
     <div className="space-y-8 p-2">
-      <TitlePage title="Role" description="Define role">
+      <TitlePage title="Create Role" description="Define a new role">
         <div>
           <Button className="size-7" variant={"outline"} size={"sm"} onClick={()=> route.back()}>
             <ArrowLeft className="size-5" />

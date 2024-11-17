@@ -9,6 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Eye } from "lucide-react";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
 export type RoleType = {
@@ -18,9 +19,7 @@ export type RoleType = {
 };
 
 export default function RoleList({data}:{data:RoleType[]}) {
-  const route = useRouter();
   const path = usePathname();
-
   return (
     <div className="space-y-8 p-2">
       <Table>
@@ -41,12 +40,8 @@ export default function RoleList({data}:{data:RoleType[]}) {
                 <TableCell>{item.name}</TableCell>
                 <TableCell>{item.permissions}</TableCell>
                 <TableCell>
-                  <Button
-                    variant={"ghost"}
-                    className="size-5"
-                    onClick={() => route.push(`${path}/${item.id}`)}
-                  >
-                    <Eye className="size-4" />
+                  <Button variant={"ghost"} className="size-5" asChild>
+                    <Link href={`${path}/${item.id}`}><Eye className="size-4" /></Link>
                   </Button>
                 </TableCell>
               </TableRow>

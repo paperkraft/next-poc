@@ -20,6 +20,7 @@ import {
 } from "../add/RoleForm";
 import { useEffect, useState } from "react";
 import Loading from "@/app/loading";
+import DialogBox from "@/components/custom/dialog-box";
 
 type Role = {
   id: string;
@@ -34,6 +35,7 @@ type Bitmask = {
 
 export default function RoleEdit({ data }: { data: Role }) {
   const route = useRouter();
+  const [open, setOpen] = useState(false);
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
   const [permissions, setPermission] = useState<Bitmask[]>();
@@ -90,12 +92,14 @@ export default function RoleEdit({ data }: { data: Role }) {
   };
 
   const handleDelete = async (id: string) => {
+    
     const res = await fetch("/api/master/role", {
       method: "DELETE",
       body: JSON.stringify({ id }),
     });
 
     if (res.status === 200) {
+      handleClose();
       toast({
         title: "Succes",
         description: <>Role Deleted</>,
@@ -106,112 +110,128 @@ export default function RoleEdit({ data }: { data: Role }) {
         title: "Error",
         description: <>Failed to delete role</>,
       });
+      handleClose();
     }
   };
 
+  const handleClose = () => {
+    setOpen(false);
+  }
+
   return (
-    <div className="space-y-8 p-2">
-      <TitlePage title="Role" description={show ? "Update role and permissions": "View role and permissions"}>
-        <div className="flex gap-2">
-          <Button
-            className="size-7"
-            variant={"outline"}
-            size={"sm"}
-            onClick={() => route.back()}
-          >
-            <ArrowLeft className="size-5" />
-          </Button>
-          {!show && (
-            <>
-              <Button
-                className="size-7"
-                variant={"outline"}
-                size={"sm"}
-                onClick={() => setShow(true)}
-              >
-                <Edit className="size-5" />
-              </Button>
-              <Button
-                className="size-7"
-                variant={"outline"}
-                size={"sm"}
-                onClick={() => handleDelete(id as string)}
-              >
-                <Trash2 className="size-5" />
-              </Button>
-            </>
-          )}
-        </div>
-      </TitlePage>
+    <>
+      <div className="space-y-8 p-2">
+        <TitlePage title="Role" description={show ? "Update role and permissions": "View role and permissions"}>
+          <div className="flex gap-2">
+            <Button
+              className="size-7"
+              variant={"outline"}
+              size={"sm"}
+              onClick={() => route.back()}
+            >
+              <ArrowLeft className="size-5" />
+            </Button>
+            {!show && (
+              <>
+                <Button
+                  className="size-7"
+                  variant={"outline"}
+                  size={"sm"}
+                  onClick={() => setShow(true)}
+                >
+                  <Edit className="size-5" />
+                </Button>
+                <Button
+                  className="size-7"
+                  variant={"outline"}
+                  size={"sm"}
+                  onClick={()=> setOpen(true)}
+                >
+                  <Trash2 className="size-5 text-red-500" />
+                </Button>
+              </>
+            )}
+          </div>
+        </TitlePage>
 
-      {loading && <Loading />}
+        {loading && <Loading />}
 
-      {!show && permissions && (
-        <div>
-          <p>Role : '{data.name}'</p>
-          <p>
-            Permisssions :
-            {permissions
-              .filter((item) => item.bitmask === true)
-              .map((item) => (
-                <span key={item.name} className="mx-2">
-                  {item.name}
-                </span>
-              ))}
-          </p>
-        </div>
-      )}
-
-      {show && (
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-8 p-2"
-          >
-            <InputController
-              name="name"
-              label="Role"
-              placeholder="Enter role"
-              description="This role will get added."
-              reset
-            />
-
-            <div className="flex flex-col gap-2">
-              <FormLabel>Permissions</FormLabel>
-              <div className="grid md:grid-cols-4">
-                {bitmask.map((item, index) => (
-                  <FormField
-                    key={index}
-                    name={`permissions.${index}.bitmask`}
-                    control={form.control}
-                    render={({ field }) => (
-                      <FormItem className="flex items-center">
-                        <FormLabel className="mr-2 mt-2">{item.name}</FormLabel>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormItem>
-                    )}
-                  />
+        {!show && permissions && (
+          <div>
+            <p>Role : '{data.name}'</p>
+            <p>
+              Permisssions :
+              {permissions
+                .filter((item) => item.bitmask === true)
+                .map((item) => (
+                  <span key={item.name} className="mx-2">
+                    {item.name}
+                  </span>
                 ))}
+            </p>
+          </div>
+        )}
+
+        {show && (
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-8 p-2"
+            >
+              <InputController
+                name="name"
+                label="Role"
+                placeholder="Enter role"
+                description="This role will get added."
+                reset
+              />
+
+              <div className="flex flex-col gap-2">
+                <FormLabel>Permissions</FormLabel>
+                <div className="grid md:grid-cols-4">
+                  {bitmask.map((item, index) => (
+                    <FormField
+                      key={index}
+                      name={`permissions.${index}.bitmask`}
+                      control={form.control}
+                      render={({ field }) => (
+                        <FormItem className="flex items-center">
+                          <FormLabel className="mr-2 mt-2">{item.name}</FormLabel>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormItem>
+                      )}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-            <div className="flex justify-end my-4 gap-2">
-              <Button
-                variant={"outline"}
-                onClick={(e) => {
-                  e.preventDefault();
-                  form.reset();
-                }}
-              >
-                Reset
-              </Button>
-              <Button type="submit">Submit</Button>
-            </div>
-          </form>
-        </Form>
-      )}
-    </div>
+              <div className="flex justify-end my-4 gap-2">
+                <Button
+                  variant={"outline"}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    form.reset();
+                  }}
+                >
+                  Reset
+                </Button>
+                <Button type="submit">Submit</Button>
+              </div>
+            </form>
+          </Form>
+        )}
+      </div>
+
+      { open && 
+        <DialogBox open={open} title={"Delete Confirmation"} preventClose setClose={handleClose}>
+          <h1>Are you sure? Do you want to delete role {data.name}</h1>
+          <div className="flex justify-end">
+            <Button onClick={()=>handleDelete(id as string)} variant={'destructive'}>Confirm</Button>
+          </div>
+        </DialogBox>
+      }
+    </>
   );
 }

@@ -22,7 +22,6 @@ export const ModuleFormSchema = z.object({
     }),
     isParent: z.boolean(),
     parent: z.object({
-        label:z.string(),
         value:z.string()
     })
 });
@@ -48,10 +47,10 @@ export default function AddModule() {
   });
 
   const onSubmit = async (data: ModuleFormValues) => {
-    const final = {
-      name: data.name,
-      parentId: null,
-    };
+    // const final = {
+    //   name: data.name,
+    //   parentId: null,
+    // };
 
     // const res = await fetch(`/api/module`, {
     //   method: "POST",
@@ -60,7 +59,7 @@ export default function AddModule() {
 
     // const dd = await res.json();
 
-    console.log(final);
+    console.log(data);
   };
 
   useEffect(() => {
@@ -104,7 +103,7 @@ export default function AddModule() {
             name="name"
             label="Name"
             placeholder="Enter module"
-            description="This will be a parent module."
+            description={`This will be a ${form.watch('isParent') ? "sub" : "parent"} module.`}
             reset
           />
 
@@ -121,7 +120,7 @@ export default function AddModule() {
 
           {
             form.watch('isParent') && options &&
-            <SelectController name={'parent.value'} label="Select Parent Module" options={options} description={`This will be parent module of ${form.watch('name')}`}/>
+            <SelectController name={`parent.value`} label="Select Parent Module" options={options} description={`This will be parent module of ${form.watch('name')}`}/>
           }
 
           <div className="flex justify-end my-4 gap-2">

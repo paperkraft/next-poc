@@ -17,13 +17,15 @@ export default async function Page() {
   return (
     <div className="space-y-8 p-2">
       <TitlePage title="Roles" description="List of all roles">
-      <div className="flex gap-2">
-        <Button className="size-7" variant={"outline"} size={"sm"} asChild>
-          <Link href={'/master/role/add'}><Plus className="size-5" /></Link>
-        </Button>
-      </div>
-    </TitlePage>
-      { roles && <RoleList data={roles}/> }
+        <div className="flex gap-2">
+          <Button className="size-7" variant={"outline"} size={"sm"} asChild>
+            <Link href={"/master/role/add"}>
+              <Plus className="size-5" />
+            </Link>
+          </Button>
+        </div>
+      </TitlePage>
+      {roles && <RoleList data={roles} />}
     </div>
-  )
+  );
 }

@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Eye } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 export type RoleType = {
   id: string;

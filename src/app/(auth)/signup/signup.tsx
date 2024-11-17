@@ -12,7 +12,6 @@ import { toast } from "@/hooks/use-toast";
 import { InputController } from "@/components/custom/form.control/InputController";
 import { useMounted } from "@/hooks/use-mounted";
 import OrganizationPage from "./organization";
-import BiometricRegister from "./BiometricRegister";
 
 const signUpSchema = z.object({
     firstName: z.string({ required_error: "First Name is required" })
@@ -28,9 +27,6 @@ const signUpSchema = z.object({
         .min(1, "Password is required")
         .min(6, "Password must be more than 6 characters")
         .max(20, "Password must be less than 20 characters"),
-    // mobile: z.string({ required_error: "Mobile No. is required" })
-    //     .min(10, "Mobile No. is required")
-    //     .max(10, "Mobile No. must be less than 10 characters"),
 });
 
 export type signUp = z.infer<typeof signUpSchema>;
@@ -54,35 +50,10 @@ export default function SignUpPage() {
 
     const onSubmit = async (data: signUp) => {
         setLoading(true);
-        
-        // const res = await fetch('/api/user/signup', {
-        //     method: 'POST',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify(data),
-        // });
-
         setTimeout(()=>{
             setData(data)
             setLoading(false);
         },2000)
-
-        
-        // router.push('/organization');
-
-        // if (res.ok) {
-        //     toast({
-        //         title:"Success",
-        //         description: "Organization info",
-        //     });
-        //     router.push('/organization');
-        // } else {
-        //     const errorData = await res.json();
-        //     toast({
-        //         title:"Failed",
-        //         description: errorData?.message || "Error creating account",
-        //         variant:'destructive'
-        //     });
-        // }
     }
 
     const renderButtonContent = () => {

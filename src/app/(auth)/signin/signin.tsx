@@ -88,46 +88,6 @@ export default function SignInPage() {
     return "Signin";
   };
 
-  const handleLoginWithDevice = async () => {
-    const email = form.watch("email");
-
-    try {
-      // Step 1: Get authentication options from the server
-      const response = await fetch("/api/webauthn/authenticate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email: email }),
-      });
-
-      const { options, userId } = await response.json();
-
-      // Step 2: Call the WebAuthn API to authenticate the user
-      const credential = await startAuthentication(options);
-
-      // Send the credential to the server for final authentication
-      const loginResponse = await fetch("/api/webauthn/authenticate/finish", {
-        method: "POST",
-        // body: JSON.stringify({ credential }),
-        body: JSON.stringify({ credential, userId }),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      const result = await loginResponse.json();
-
-      if (result.success) {
-        alert("Authentication successful!");
-      } else {
-        alert("Authentication failed");
-      }
-    } catch (error) {
-      console.error("Error during WebAuthn authenticate", error);
-    }
-  };
-
   return (
     mounted && (
       <>
@@ -178,18 +138,6 @@ export default function SignInPage() {
                   }}
                 >
                   Sign in with GitHub
-                </Button>
-
-                <Button
-                  variant="outline"
-                  type="button"
-                  className="w-full"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleLoginWithDevice();
-                  }}
-                >
-                  Sign in with Device
                 </Button>
               </div>
               <div className="mt-4 text-center text-sm">

@@ -35,7 +35,6 @@ const authConfig: NextAuthConfig = {
                     where: { email: data.email },
                     include: {
                         role: true,
-                        credentials: true,
                         ModulePermissions: {
                             select: {
                                 id: true,
@@ -184,11 +183,7 @@ const authConfig: NextAuthConfig = {
                 session.user.modules = token.modules;
             }
             return session;
-        },
-
-        // authorized: async ({ auth }) => {
-        //     return !!auth
-        // },
+        }
     },
 
     pages: { signIn: '/signin' },

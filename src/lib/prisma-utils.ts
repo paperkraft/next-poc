@@ -4,20 +4,17 @@ export const createPermissions = async () => {
   await prisma.permission.createMany({
     data: [
       { name: "VIEW", bitmask: 1 },
-      { name: "CREATE", bitmask: 2 },
-      { name: "EDIT", bitmask: 4 },
-      { name: "DELETE", bitmask: 8 }
+      { name: "EDIT", bitmask: 2 },
+      { name: "CREATE", bitmask: 4 },
+      { name: "DELETE", bitmask: 8 },
     ],
   });
 };
 
 export const createRole = async (roleName: string, permissions: number) => {
   return await prisma.role.create({
-    data: {
-      name: roleName,
-      permissions,
-    },
-  });
+    data:{ name: roleName, permissions }
+  })
 };
 
 export const createModule = async () => {

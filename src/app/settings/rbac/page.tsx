@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function Page() {
     return (
         <>
-            <TitlePage title="Access Control" description="Define role access" />
+            <TitlePage title="Role Based Access Control" description="Define role access" />
             <AccessPage />
         </>
     )

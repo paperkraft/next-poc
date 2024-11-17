@@ -1,8 +1,8 @@
 import { auth } from '@/auth';
 import AccessDenied from '@/components/custom/access-denied';
-import { hasPermission } from '@/utils/guard';
 import React from 'react'
 import ModuleAdd from './Form';
+import { hasPermission } from '@/lib/rbac';
 
 export default async function Page() {
   const session = await auth();

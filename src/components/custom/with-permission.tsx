@@ -1,9 +1,9 @@
 "use client";
 import { ReactNode } from "react";
-import { hasPermission } from "@/utils/guard";
 import Loading from "@/app/loading";
 import AccessDenied from "./access-denied";
 import { usePermission } from "@/hooks/use-permissions";
+import { hasPermission } from "@/lib/rbac";
 
 interface WithPermissionProps {
   permissionBit: number;

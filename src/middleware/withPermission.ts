@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { hasPermission } from "@/utils/guard";
 import { auth } from "@/auth";
+import { hasPermission } from "@/lib/rbac";
 
 export async function withPermission(req: NextRequest, permissionBit: number) {
   const session = await auth();
@@ -23,6 +23,5 @@ export async function withPermission(req: NextRequest, permissionBit: number) {
   if (!hasPermission(user.role.permissions, permissionBit)) {
     return NextResponse.json({ error: "Forbidden: You do not have the required permission" }, { status: 403 });
   }
-
   return NextResponse.next();
 }

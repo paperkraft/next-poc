@@ -4,6 +4,7 @@ import {
     Home,
     ImageIcon,
     Settings2,
+    User2,
 } from "lucide-react"
 
 export type submenuType = {
@@ -43,6 +44,14 @@ export const data = [
         title: "Student",
         url: "/student",
         icon: GraduationCapIcon,
+        isActive: false,
+        submenu: [],
+    },
+    {
+        label: "Master",
+        title: "Role",
+        url: "/master/role",
+        icon: User2,
         isActive: false,
         submenu: [],
     },
@@ -98,17 +107,13 @@ export const data = [
                         title: "Get Started",
                         url: "#",
                     },
-                    {
-                        title: "Tutorials",
-                        url: "#",
-                    }
-                ],
+                ]
             },
             {
                 title: "Access",
-                url: "/access-control",
+                url: "/settings/rbac",
             }
-        ],
+        ]
     }
 ]
 

@@ -73,7 +73,7 @@ const roleOptions = [
   { label: "Guest", value: "guest" },
 ];
 
-const tHead = ["", "Modules", "Read", "Write", "Modify", "Delete", "All"];
+const tHead = ["", "Modules", "Read", "Write", "Create", "Delete", "All"];
 
 const permissionArray = (length: number) => Array(length).fill(false);
 

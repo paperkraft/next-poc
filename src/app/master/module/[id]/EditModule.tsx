@@ -110,14 +110,8 @@ export default function EditModule({ data }: { data: any }) {
           />
 
           <div className="flex justify-end my-4 gap-2">
-            <Button
-              variant={"outline"}
-              onClick={(e) => {
-                e.preventDefault();
-                form.reset();
-              }}
-            >
-              Reset
+            <Button variant={"outline"} onClick={(e) =>{e.preventDefault(); route.back();}}>
+              Cancel
             </Button>
             <Button type="submit">Submit</Button>
           </div>

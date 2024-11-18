@@ -21,7 +21,7 @@ import React from "react";
 
 export default function ModuleList({data}:{data:Modules[]}) {
   return (
-    <div className="space-y-8 p-2">
+    <div>
       <Table>
         <TableHeader className="bg-gray-50 dark:bg-gray-800">
           <TableRow>
@@ -45,15 +45,19 @@ function Nested({data, level}:{data:Modules, level:number}){
     const path = usePathname();
     const hasSubModules = data?.submodules?.length > 0;
 
+    const renderDash = (count:number) =>{
+        return <span className="text-muted-foreground">{`|${Array(count).fill('-').join('')} `}</span>
+    }
+
     if(!hasSubModules){
         return(
             <TableRow>
                 <TableCell></TableCell>
-                <TableCell className={`pl-${level*2}`}>{data?.parentId ? " |-- " : null}{data?.name}</TableCell>
+                <TableCell>{data?.parentId ? renderDash(level) : null}{data?.name}</TableCell>
                 <TableCell>{data?.permissions}</TableCell>
                 <TableCell>
-                    <Button variant={"ghost"} className="size-5" asChild>
-                        <Link href={`${path}/${data?.id}`}><Eye className="size-4" /></Link>
+                    <Button variant={"ghost"} className="size-7" asChild>
+                        <Link href={`${path}/${data?.id}`}><Eye className="size-5" /></Link>
                     </Button>
                 </TableCell>
             </TableRow>
@@ -71,11 +75,11 @@ function Nested({data, level}:{data:Modules, level:number}){
                             </Button>
                         </CollapsibleTrigger>
                     </TableCell>
-                    <TableCell className={`pl-${level*2}`}>{data?.parentId ? " |-- " : null}{data?.name}</TableCell>
+                    <TableCell>{data?.parentId ? renderDash(level) : null}{data?.name}</TableCell>
                     <TableCell>{data?.permissions}</TableCell>
                     <TableCell>
-                        <Button variant={"ghost"} className="size-5" asChild>
-                            <Link href={`${path}/${data.id}`}><Eye className="size-4" /></Link>
+                        <Button variant={"ghost"} className="size-7" asChild size={'icon'}>
+                            <Link href={`${path}/${data.id}`}><Eye className="size-5" /></Link>
                         </Button>
                     </TableCell>
                 </TableRow>

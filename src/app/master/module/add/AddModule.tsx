@@ -11,6 +11,7 @@ import { InputController } from "@/components/custom/form.control/InputControlle
 import { Switch } from "@/components/ui/switch";
 import { useEffect, useState } from "react";
 import { SelectController } from "@/components/custom/form.control/SelectController";
+import { toast } from "@/hooks/use-toast";
 
 export const ModuleFormSchema = z.object({
   name: z
@@ -20,17 +21,26 @@ export const ModuleFormSchema = z.object({
     .min(1, {
       message: "Module is required.",
     }),
-    isParent: z.boolean(),
-    parent: z.object({
-        value:z.string()
-    })
-});
+  isParent: z.boolean(),
+  parent: z.object({
+    value: z.string()
+  }).optional()
+}).refine((data) => {
+  if (data.isParent && !data?.parent?.value) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Parent field is required when 'is Submodule' is true",
+  path: ['parent.value']
+}
+)
 
 export type ModuleFormValues = z.infer<typeof ModuleFormSchema>;
 
 type Options = {
-    label:string;
-    value:string;
+  label: string;
+  value: string;
 }
 
 export default function AddModule() {
@@ -47,37 +57,41 @@ export default function AddModule() {
   });
 
   const onSubmit = async (data: ModuleFormValues) => {
-    // const final = {
-    //   name: data.name,
-    //   parentId: null,
-    // };
+    const final = data.isParent ? { name: data.name, parentId: data?.parent?.value } : { name: data.name, parentId: null }
 
-    // const res = await fetch(`/api/module`, {
-    //   method: "POST",
-    //   body: JSON.stringify(final),
-    // });
+    const res = await fetch(`/api/module`, {
+      method: "POST",
+      body: JSON.stringify(final),
+    }).then((d)=> d.json()).catch((err)=> console.error(err));
 
-    // const dd = await res.json();
-
-    console.log(data);
+    // console.log(res);
+    if(res.success){
+      toast({
+        title: "Succes",
+        description: <>Module Created</>,
+      });
+      route.push('.');
+    } else {
+      toast({
+        title: "Error",
+        variant:'destructive',
+        description: <>Failed to create module</>,
+      });
+    }
   };
 
   useEffect(() => {
     const getModules = async () => {
-        const dd = await fetch('/api/module')
-        const res = await dd.json();
-        if(res.success){
-            
-            const data = res.data.map((item:any)=> {
-                return{
-                    label:item.name,
-                    value:item.id
-                }
-            });
-
-            console.log('res',data);
-            setOptions(data)
-        }
+      const response = await fetch('/api/module').then((res) => res.json()).catch((err) => console.error(err));
+      if (response.success) {
+        const data = flattenModules(response.data).map((item) => {
+          return {
+            label: item.parentId ? item.parentName + ' - ' + item.name : item.name,
+            value: item.id
+          }
+        })
+        setOptions(data)
+      }
     }
     getModules();
   }, []);
@@ -112,7 +126,7 @@ export default function AddModule() {
             control={form.control}
             render={({ field }) => (
               <FormItem className="flex items-center">
-                <FormLabel className="mr-2 mt-2">Not Parent?</FormLabel>
+                <FormLabel className="mr-2 mt-2">Is Sub Module?</FormLabel>
                 <Switch checked={field.value} onCheckedChange={field.onChange} />
               </FormItem>
             )}
@@ -120,7 +134,7 @@ export default function AddModule() {
 
           {
             form.watch('isParent') && options &&
-            <SelectController name={`parent.value`} label="Select Parent Module" options={options} description={`This will be parent module of ${form.watch('name')}`}/>
+            <SelectController name={`parent.value`} label="Select Parent Module" options={options} description={`This will be parent module of ${form.watch('name')}`} />
           }
 
           <div className="flex justify-end my-4 gap-2">
@@ -139,4 +153,32 @@ export default function AddModule() {
       </Form>
     </div>
   );
+}
+
+
+type Module = {
+  id: string;
+  name: string;
+  parentId?: string;
+  parentName?: string;
+  permissions: number;
+  submodules: Module[];
+};
+
+function flattenModules(modules: Module[]): Module[] {
+  const result: Module[] = [];
+
+  modules.forEach(parentModule => {
+    result.push({ ...parentModule, submodules: [] });
+
+    parentModule.submodules.forEach(submodule => {
+      result.push({
+        ...submodule,
+        parentId: parentModule.id,
+        parentName: parentModule.name
+      });
+    });
+  });
+
+  return result;
 }

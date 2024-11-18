@@ -1,8 +1,10 @@
 import {
+    AppWindow,
     Book,
     GraduationCapIcon,
     Home,
     ImageIcon,
+    Menu,
     Settings2,
     User2,
 } from "lucide-react"
@@ -52,6 +54,14 @@ export const data = [
         title: "Role",
         url: "/master/role",
         icon: User2,
+        isActive: false,
+        submenu: [],
+    },
+    {
+        label: "Master",
+        title: "Module",
+        url: "/master/module",
+        icon: AppWindow,
         isActive: false,
         submenu: [],
     },

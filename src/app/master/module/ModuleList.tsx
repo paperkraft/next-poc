@@ -20,11 +20,6 @@ import { Modules } from "./page";
 import React from "react";
 
 export default function ModuleList({data}:{data:Modules[]}) {
-    const path = usePathname();
-
-    console.log('data', data);
-    
-
   return (
     <div className="space-y-8 p-2">
       <Table>
@@ -38,21 +33,23 @@ export default function ModuleList({data}:{data:Modules[]}) {
         </TableHeader>
 
         <TableBody>
-            { data && data.map((item, index) => (<Nested data={item} key={index}/>))}
+            { data && data.map((item, index) => (<Nested data={item} key={index} level={0}/> ))}
         </TableBody>
       </Table>
     </div>
   );
 }
 
-function Nested({data}:{data:Modules}){
-
+function Nested({data, level}:{data:Modules, level:number}){
+    
     const path = usePathname();
-    if(data?.submodules?.length == 0){
+    const hasSubModules = data?.submodules?.length > 0;
+
+    if(!hasSubModules){
         return(
             <TableRow>
                 <TableCell></TableCell>
-                <TableCell>{data?.name}</TableCell>
+                <TableCell className={`pl-${level*2}`}>{data?.parentId ? " |-- " : null}{data?.name}</TableCell>
                 <TableCell>{data?.permissions}</TableCell>
                 <TableCell>
                     <Button variant={"ghost"} className="size-5" asChild>
@@ -74,8 +71,8 @@ function Nested({data}:{data:Modules}){
                             </Button>
                         </CollapsibleTrigger>
                     </TableCell>
-                    <TableCell className="text-left">{data?.name}</TableCell>
-                    <TableCell className="text-left">{data?.permissions}</TableCell>
+                    <TableCell className={`pl-${level*2}`}>{data?.parentId ? " |-- " : null}{data?.name}</TableCell>
+                    <TableCell>{data?.permissions}</TableCell>
                     <TableCell>
                         <Button variant={"ghost"} className="size-5" asChild>
                             <Link href={`${path}/${data.id}`}><Eye className="size-4" /></Link>
@@ -84,20 +81,11 @@ function Nested({data}:{data:Modules}){
                 </TableRow>
 
                 <CollapsibleContent asChild>
-                        <TableRow>
-                            {data && data?.submodules.map((sub)=>(
-                                <React.Fragment key={sub?.id}>
-                                    <TableCell></TableCell>
-                                    <TableCell className="text-left">{`|-- ${sub?.name}`}</TableCell>
-                                    <TableCell className="text-left">{sub?.permissions}</TableCell>
-                                    <TableCell>
-                                        <Button variant={"ghost"} className="size-5" asChild>
-                                            <Link href={`${path}/${sub?.id}`}><Eye className="size-4" /></Link>
-                                        </Button>
-                                    </TableCell>
-                                </React.Fragment>
-                            ))}
-                        </TableRow>
+                    <React.Fragment>
+                        {data && data?.submodules.map((sub) => (
+                            <Nested key={sub.id} data={sub} level={level + 1}/>
+                        ))}
+                    </React.Fragment>
                 </CollapsibleContent>
             </React.Fragment>
         </Collapsible>

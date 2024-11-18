@@ -9,17 +9,16 @@ import { ArrowLeft } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { InputController } from "@/components/custom/form.control/InputController";
 import { useEffect } from "react";
+import { toast } from "@/hooks/use-toast";
 
 export const ModuleFormSchema = z.object({
-    parentId: z.string(),
-    parent: z.string(),
-    name: z
-        .string({
-        required_error: "Module is required.",
-        })
-        .min(1, {
-        message: "Module is required.",
-        }),
+  parentId: z.string(),
+  parent: z.string(),
+  name: z.string({
+    required_error: "Module is required.",
+  }).min(1, {
+    message: "Module is required.",
+  }),
 });
 
 export type ModuleFormValues = z.infer<typeof ModuleFormSchema>;
@@ -31,9 +30,9 @@ export default function EditModule({ data }: { data: any }) {
   const form = useForm<ModuleFormValues>({
     resolver: zodResolver(ModuleFormSchema),
     defaultValues: {
-        parentId: "",
-        parent: "",
-        name: "",
+      name: "",
+      parent: "",
+      parentId: "",
     },
   });
 
@@ -47,26 +46,39 @@ export default function EditModule({ data }: { data: any }) {
     }
   }, []);
 
-//   console.log(data);
+  //   console.log(data);
 
   const onSubmit = async (data: ModuleFormValues) => {
-    console.log(JSON.stringify(data, null, 2));
 
     const final = {
-        id:id,
-        name: data.name,
-        parentId: data.parentId !== "" ? data.parentId : null
+      id: id,
+      name: data.name,
+      parentId: data.parentId ? data.parentId : null
     }
 
-    const res = await fetch(`/api/module`,{
-        method:"PUT",
-        body: JSON.stringify(final)
-    });
+    const res = await fetch(`/api/module`, {
+      method: "PUT",
+      body: JSON.stringify(final)
+    }).then((d) => d.json()).catch((err) => console.error(err));
 
-    if(res.statusText)
+    if (res.success) {
+      toast({
+        title: "Succes",
+        description: <>Module Updated</>,
+      });
+      form.reset();
+      route.push('.');
+
+    } else {
+      toast({
+        title: "Error",
+        variant: 'destructive',
+        description: <>Failed to update module</>,
+      });
+    }
 
     console.log('Response', res);
-    
+
   };
 
   return (

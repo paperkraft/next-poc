@@ -6,18 +6,17 @@ export default async function Page({ params }: { params: { id: string } }) {
 
   const module = await prisma.module.findUnique({
     where: { id: id },
+
     select: {
       id: true,
       name: true,
-      parent:true,
+      parent: true,
       parentId: true,
-      //   permissions: true,
-      SubModules:{
-        select:{
-            id: true,
-            name: true,
-            parentId: true
-            // permissions: true,
+      SubModules: {
+        select: {
+          id: true,
+          name: true,
+          parentId: true
         }
       }
     }

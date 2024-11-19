@@ -47,9 +47,7 @@ export default function EditModule({ data }: { data: IModule }) {
   }, []);
 
 
-  console.log('data', data);
   const onSubmit = async (data:IModule) => {
-    // const res = {success:false}
 
     const res = await fetch(`/api/master/module`, {
       method: "PUT",

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { InputController } from "@/components/custom/form.control/InputController";
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { IModule } from "../ModuleInterface";
 
@@ -16,26 +16,37 @@ export const ModuleFormSchema = z.object({
   id: z.string(),
   name: z.string(),
   parentId: z.string().nullable(),
-  permissions: z.number(),
-  submodules: z.unknown()
+  permissions: z.number().nullable(),
+  submodules: z.array(z.lazy((): z.ZodType<IModule> => ModuleFormSchema)),
 });
-
 
 export type ModuleFormValues = z.infer<typeof ModuleFormSchema>;
 
 export default function EditModule({ data }: { data: IModule }) {
-  const route = useRouter();
-  const hasSubmodule = data && data?.submodules?.length > 0;
 
-  const form = useForm<IModule>({
+  const route = useRouter();
+  const form = useForm<ModuleFormValues>({
     resolver: zodResolver(ModuleFormSchema),
     defaultValues: {
       id: "",
       name: "",
       parentId: "",
       permissions: 0,
-      submodules: []
-    },
+      submodules: [
+        {
+          id: "",
+          name: "",
+          parentId: "",
+          permissions: null,
+          submodules: []
+        }
+      ]
+    }
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "submodules",
   });
 
   useEffect(() => {
@@ -46,8 +57,7 @@ export default function EditModule({ data }: { data: IModule }) {
     }
   }, []);
 
-
-  const onSubmit = async (data:IModule) => {
+  const onSubmit = async (data:ModuleFormValues) => {
 
     const res = await fetch(`/api/master/module`, {
       method: "PUT",
@@ -56,14 +66,35 @@ export default function EditModule({ data }: { data: IModule }) {
 
     if (res.success) {
       toast.success('Module updated')
-
-      form.reset();
       route.push('.');
-
+      form.reset();
     } else {
       toast.error('Failed to update module');
     }
   };
+
+  const getLabel = useCallback(( index: number, parentIndexes: number[] = []) => {
+    const labelParts = [...parentIndexes, index + 1];
+    return `Sub Module-${labelParts.join('.')}`;
+  }, []); 
+  
+  const renderSubmodules = useCallback(
+    (submodules: any[], path: string, depth: number = 1, parentIndexes: number[] = []) => {
+      return submodules.map((field, index) => {
+        const label = getLabel(index, parentIndexes);
+        const key = `${depth}-${index}-${field.id}`;
+  
+        return (
+          <React.Fragment key={key}>
+            <InputController name={`${path}[${index}].name`} label={label} />
+            {field.submodules && field.submodules.length > 0 &&
+              renderSubmodules(field.submodules, `${path}[${index}].submodules`, depth + 1, [...parentIndexes, index+1])}
+          </React.Fragment>
+        );
+      });
+    },
+    [getLabel]
+  );
 
   return (
     <div className="space-y-8 p-2">
@@ -81,28 +112,9 @@ export default function EditModule({ data }: { data: IModule }) {
       </TitlePage>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 p-2">
-
+        <form onSubmit={form.handleSubmit(onSubmit)} className="p-2">
           <InputController name={'name'} label="Module" />
-          {/* {
-            hasSubmodule &&
-            (data?.submodules.map((item, index) => (
-              <InputController name={`submodules.${index}.name`} label={`Sub-Module-${index+1}`} key={item.id}/>
-            )))
-          } */}
-
-          {
-            hasSubmodule &&
-            (data?.submodules.map((item, index) => (
-              <React.Fragment key={item.id}>{
-                  item?.submodules && item?.submodules.map((subItem, subIndex)=>(
-                    <InputController name={`submodules.${index}.submodules.${subIndex}.name`} label={`Sub-Module-Child-${subIndex+1}`} key={subItem.id}/>
-                ))}
-                <InputController name={`submodules.${index}.name`} label={`Sub-Module-${index+1}`} key={item.id}/>
-              </React.Fragment>
-            )))
-          }
-
+          {renderSubmodules(fields, "submodules")}
           <div className="flex justify-end my-4 gap-2">
             <Button variant={"outline"} onClick={(e) =>{e.preventDefault(); route.back();}}>
               Cancel
@@ -114,3 +126,4 @@ export default function EditModule({ data }: { data: IModule }) {
     </div>
   );
 }
+

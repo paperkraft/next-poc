@@ -1,12 +1,12 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from "@/components/ui/table";
 import {
     Collapsible,
@@ -16,41 +16,46 @@ import {
 import { Eye, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Modules } from "./page";
 import React from "react";
+import { IModule } from "./ModuleInterface";
 
-export default function ModuleList({data}:{data:Modules[]}) {
-  return (
-    <div>
-      <Table>
-        <TableHeader className="bg-gray-50 dark:bg-gray-800">
-          <TableRow>
-            <TableHead>#</TableHead>
-            <TableHead>Module</TableHead>
-            <TableHead>Permisisions</TableHead>
-            <TableHead>Action</TableHead>
-          </TableRow>
-        </TableHeader>
+export default function ModuleList({ data }: { data: IModule[] }) {
 
-        <TableBody>
-            { data && data.map((item, index) => (<Nested data={item} key={index} level={0}/> ))}
-        </TableBody>
-      </Table>
-    </div>
-  );
+    if (!data) {
+        return null
+    }
+
+    return (
+        <div>
+            <Table>
+                <TableHeader className="bg-gray-50 dark:bg-gray-800">
+                    <TableRow>
+                        <TableHead>#</TableHead>
+                        <TableHead>Module</TableHead>
+                        <TableHead>Permisisions</TableHead>
+                        <TableHead>Action</TableHead>
+                    </TableRow>
+                </TableHeader>
+
+                <TableBody>
+                    {data && data.map((item, index) => (<Nested data={item} key={index} level={0} />))}
+                </TableBody>
+            </Table>
+        </div>
+    );
 }
 
-function Nested({data, level}:{data:Modules, level:number}){
-    
+function Nested({ data, level }: { data: IModule, level: number }) {
+
     const path = usePathname();
     const hasSubModules = data?.submodules?.length > 0;
 
-    const renderDash = (count:number) =>{
+    const renderDash = (count: number) => {
         return <span className="text-muted-foreground">{`|${Array(count).fill('-').join('')} `}</span>
     }
 
-    if(!hasSubModules){
-        return(
+    if (!hasSubModules) {
+        return (
             <TableRow>
                 <TableCell></TableCell>
                 <TableCell>{data?.parentId ? renderDash(level) : null}{data?.name}</TableCell>
@@ -64,7 +69,7 @@ function Nested({data, level}:{data:Modules, level:number}){
         )
     }
 
-    return(
+    return (
         <Collapsible asChild>
             <React.Fragment>
                 <TableRow>
@@ -87,7 +92,7 @@ function Nested({data, level}:{data:Modules, level:number}){
                 <CollapsibleContent asChild>
                     <React.Fragment>
                         {data && data?.submodules.map((sub) => (
-                            <Nested key={sub.id} data={sub} level={level + 1}/>
+                            <Nested key={sub.id} data={sub} level={level + 1} />
                         ))}
                     </React.Fragment>
                 </CollapsibleContent>

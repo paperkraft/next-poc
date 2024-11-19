@@ -22,8 +22,8 @@ import { useForm } from "react-hook-form";
 import { SelectController } from "@/components/custom/form.control/SelectController";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "@/hooks/use-toast";
 import { WithPermission } from "@/components/custom/with-permission";
+import { toast } from "sonner";
 
 interface SubModule {
   id: number;
@@ -214,15 +214,14 @@ export default function AccessPage() {
     console.log("Filtered", JSON.stringify(filter, null, 2));
     console.log("Reversed", JSON.stringify(reversed, null, 2));
 
-    toast({
-      title: "submitted values:",
-      description: (
+    toast.message('Submitted',{
+      description:(
         <pre className="mt-2 w-max md:w-[354px] rounded-md bg-slate-950 p-4 max-h-64 overflow-scroll">
           <code className="text-white text-[12px]">
             {JSON.stringify(filter, null, 2)}
           </code>
         </pre>
-      ),
+      )
     });
   };
 

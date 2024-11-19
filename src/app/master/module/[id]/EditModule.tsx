@@ -1,6 +1,6 @@
 "use client";
 import { Form } from "@/components/ui/form";
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import TitlePage from "@/components/custom/page-heading";
@@ -8,77 +8,63 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { InputController } from "@/components/custom/form.control/InputController";
-import { useEffect } from "react";
-import { toast } from "@/hooks/use-toast";
+import React, { useEffect } from "react";
+import { toast } from "sonner";
+import { IModule } from "../ModuleInterface";
 
 export const ModuleFormSchema = z.object({
-  parentId: z.string(),
-  parent: z.string(),
-  name: z.string({
-    required_error: "Module is required.",
-  }).min(1, {
-    message: "Module is required.",
-  }),
+  id: z.string(),
+  name: z.string(),
+  parentId: z.string().nullable(),
+  permissions: z.number(),
+  submodules: z.unknown()
 });
+
 
 export type ModuleFormValues = z.infer<typeof ModuleFormSchema>;
 
-export default function EditModule({ data }: { data: any }) {
+export default function EditModule({ data }: { data: IModule }) {
   const route = useRouter();
-  const { id } = useParams();
+  const hasSubmodule = data && data?.submodules?.length > 0;
 
-  const form = useForm<ModuleFormValues>({
+  const form = useForm<IModule>({
     resolver: zodResolver(ModuleFormSchema),
     defaultValues: {
+      id: "",
       name: "",
-      parent: "",
       parentId: "",
+      permissions: 0,
+      submodules: []
     },
   });
 
   useEffect(() => {
     if (data) {
-      form.setValue("name", data.name);
-      if (data.parentId) {
-        form.setValue("parent", data.parent.name);
-        form.setValue("parentId", data.parent.id);
-      }
+      Object.entries(data).map(([key, val])=> {
+        return form.setValue(key as any, val);
+      })
     }
   }, []);
 
-  //   console.log(data);
 
-  const onSubmit = async (data: ModuleFormValues) => {
+  console.log('data', data);
+  const onSubmit = async (data:IModule) => {
+    // const res = {success:false}
 
-    const final = {
-      id: id,
-      name: data.name,
-      parentId: data.parentId ? data.parentId : null
-    }
-
-    const res = await fetch(`/api/module`, {
+    const res = await fetch(`/api/master/module`, {
       method: "PUT",
-      body: JSON.stringify(final)
-    }).then((d) => d.json()).catch((err) => console.error(err));
+      body: JSON.stringify(data)
+    }).then((d) => d.json()).catch((err) => err);
 
     if (res.success) {
-      toast({
-        title: "Succes",
-        description: <>Module Updated</>,
-      });
+      toast.success('Module updated')
+
       form.reset();
       route.push('.');
 
     } else {
-      toast({
-        title: "Error",
-        variant: 'destructive',
-        description: <>Failed to update module</>,
-      });
+      toast.error('Failed to update module');
     }
-
-    console.log('Response', res);
-
   };
 
   return (
@@ -97,17 +83,27 @@ export default function EditModule({ data }: { data: any }) {
       </TitlePage>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 p-2">
-          {data.parentId && (
-            <InputController name="parent" label="Module" readOnly />
-          )}
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 p-2">
 
-          <InputController
-            name="name"
-            label={`${data.parentId ? "Sub" : ""} Module`}
-            placeholder="Enter module"
-            reset
-          />
+          <InputController name={'name'} label="Module" />
+          {/* {
+            hasSubmodule &&
+            (data?.submodules.map((item, index) => (
+              <InputController name={`submodules.${index}.name`} label={`Sub-Module-${index+1}`} key={item.id}/>
+            )))
+          } */}
+
+          {
+            hasSubmodule &&
+            (data?.submodules.map((item, index) => (
+              <React.Fragment key={item.id}>{
+                  item?.submodules && item?.submodules.map((subItem, subIndex)=>(
+                    <InputController name={`submodules.${index}.submodules.${subIndex}.name`} label={`Sub-Module-Child-${subIndex+1}`} key={subItem.id}/>
+                ))}
+                <InputController name={`submodules.${index}.name`} label={`Sub-Module-${index+1}`} key={item.id}/>
+              </React.Fragment>
+            )))
+          }
 
           <div className="flex justify-end my-4 gap-2">
             <Button variant={"outline"} onClick={(e) =>{e.preventDefault(); route.back();}}>

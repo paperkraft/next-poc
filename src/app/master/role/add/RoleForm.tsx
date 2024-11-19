@@ -5,11 +5,11 @@ import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { useRouter } from "next/navigation";
 import TitlePage from "@/components/custom/page-heading";
 import { ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
 
 export const bitmask = [
   { name: "VIEW", bitmask: 1 },
@@ -64,17 +64,10 @@ export default function RoleForm() {
     });
 
     if (res.status === 200) {
-      toast({
-        title: "Succes",
-        description: <>Role Created</>,
-      });
+      toast.success('Role created');
       route.push('.')
     } else {
-      toast({
-        title: "Error",
-        variant:'destructive',
-        description: <>Failed to create role</>,
-      });
+      toast.error('Failed to create role');
     }
   };
 

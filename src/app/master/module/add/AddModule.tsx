@@ -11,7 +11,7 @@ import { InputController } from "@/components/custom/form.control/InputControlle
 import { Switch } from "@/components/ui/switch";
 import { useEffect, useState } from "react";
 import { SelectController } from "@/components/custom/form.control/SelectController";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export const ModuleFormSchema = z.object({
   name: z
@@ -59,37 +59,25 @@ export default function AddModule() {
   const onSubmit = async (data: ModuleFormValues) => {
     const final = data.isParent ? { name: data.name, parentId: data?.parent?.value } : { name: data.name, parentId: null }
 
-    const res = await fetch(`/api/module`, {
+    const res = await fetch(`/api/master/module`, {
       method: "POST",
       body: JSON.stringify(final),
     }).then((d)=> d.json()).catch((err)=> console.error(err));
 
     // console.log(res);
     if(res.success){
-      toast({
-        title: "Succes",
-        description: <>Module Created</>,
-      });
+      toast.success('Module Created')
       route.push('.');
     } else {
-      toast({
-        title: "Error",
-        variant:'destructive',
-        description: <>Failed to create module</>,
-      });
+      toast.success('Failed to create module')
     }
   };
 
   useEffect(() => {
     const getModules = async () => {
-      const response = await fetch('/api/module').then((res) => res.json()).catch((err) => console.error(err));
+      const response = await fetch('/api/master/module').then((res) => res.json()).catch((err) => console.error(err));
       if (response.success) {
-        const data = flattenModules(response.data).map((item) => {
-          return {
-            label: item.parentId ? item.parentName + ' - ' + item.name : item.name,
-            value: item.id
-          }
-        })
+        const data = formatModules(response.data)
         setOptions(data)
       }
     }
@@ -150,28 +138,31 @@ export default function AddModule() {
 }
 
 
-type Module = {
+interface Module {
   id: string;
   name: string;
-  parentId?: string;
-  parentName?: string;
-  permissions: number;
+  parentId: string | null;
+  permissions: number | null;
   submodules: Module[];
-};
+}
 
-function flattenModules(modules: Module[]): Module[] {
-  const result: Module[] = [];
+interface FormattedModule {
+  label: string;
+  value: string;
+}
 
-  modules.forEach(parentModule => {
-    result.push({ ...parentModule, submodules: [] });
+function formatModules(modules: Module[], parentLabel: string = ''): FormattedModule[] {
+  const result: FormattedModule[] = [];
 
-    parentModule.submodules.forEach(submodule => {
-      result.push({
-        ...submodule,
-        parentId: parentModule.id,
-        parentName: parentModule.name
-      });
-    });
+  modules.forEach(module => {
+    const label = parentLabel ? `${parentLabel} - ${module.name}` : module.name;
+    result.push({ label, value: module.id });
+
+    // Recursively process submodules if any
+    if (module.submodules && module.submodules.length > 0) {
+      const submodules = formatModules(module.submodules, label);
+      result.push(...submodules);
+    }
   });
 
   return result;

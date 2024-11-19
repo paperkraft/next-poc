@@ -10,10 +10,14 @@ export async function GET(request: Request) {
                 permissions: true,
             }
         });
-        return NextResponse.json({ success: true, data: roles }, { status: 200 });
+        return NextResponse.json(
+            { success: true, data: roles }, 
+            { status: 200 });
     } catch (error) {
         console.error(error);
-        return NextResponse.json({ success: false, message: 'Error fetching roles' }, { status: 500 });
+        return NextResponse.json(
+            { success: false, message: 'Error fetching roles' },
+            { status: 500 });
     }
 }
 

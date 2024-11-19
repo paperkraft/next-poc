@@ -27,10 +27,14 @@ export async function GET(request: Request) {
                 { status: 404 }
             );
         }
-        return NextResponse.json({ success: true, data: role }, { status: 200 });
+        return NextResponse.json(
+            { success: true, data: role }, 
+            { status: 200 });
     } catch (error) {
         console.error(error);
-        return NextResponse.json({ success: false, message: 'Error fetching role' }, { status: 500 });
+        return NextResponse.json(
+            { success: false, message: 'Error fetching role' }, 
+            { status: 500 });
     }
 }
 

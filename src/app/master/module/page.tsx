@@ -4,20 +4,13 @@ import TitlePage from "@/components/custom/page-heading";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import Link from "next/link";
-
-export interface Modules {
-  id: string;
-  name: string;
-  parentId?: string;
-  permissions?: number;
-  submodules: Modules[]
-}
+import { IModule } from "./ModuleInterface";
 
 export default async function Page() {
   const modules = await getModulesWithSubmodules();
 
   if (!modules) {
-    return <>No Modules</>
+    return null
   }
 
   return (
@@ -36,7 +29,7 @@ export default async function Page() {
   )
 }
 
-export async function getModulesWithSubmodules(): Promise<Modules[]> {
+export async function getModulesWithSubmodules(): Promise<IModule[]> {
   const modules = await prisma.module.findMany({
     include: {
       permissions: true,
@@ -46,6 +39,11 @@ export async function getModulesWithSubmodules(): Promise<Modules[]> {
           SubModules: {
             include: {
               permissions: true,
+              SubModules: {
+                include: {
+                  permissions: true,
+                },
+              },
             },
           },
         },
@@ -54,7 +52,7 @@ export async function getModulesWithSubmodules(): Promise<Modules[]> {
   });
 
   // Recursive function to process a module and its submodules
-  function formatModule(module: any): Modules {
+  function formatModule(module: any): IModule {
     return {
       id: module.id,
       name: module.name,

@@ -18,6 +18,30 @@ export async function GET(){
 
 export async function PUT(req:Request) {
     const data = await req.json();
+    const hasSubmodule = data && data?.submodules?.length;
+
+    const updateSubmodules = (submodules: any) => {
+        return submodules.map((submodule:any) => ({
+          where: { id: submodule.id },
+          data: {
+            name: submodule.name,
+            SubModules: submodule.submodules.length ? {
+              update: updateSubmodules(submodule.submodules)
+            } : undefined,
+          },
+        }));
+    };
+
+    const final = hasSubmodule 
+      ? {
+        name: data.name,
+        SubModules: {
+          update: updateSubmodules(data.submodules),
+        }
+      } 
+      : {
+        name: data.name,
+      }
 
     if(!data?.id){
         return NextResponse.json(
@@ -29,10 +53,7 @@ export async function PUT(req:Request) {
     try {
         await prisma.module.update({
             where:{id: data.id},
-            data:{
-                name:data?.name,
-                parentId:data?.parentId
-            }
+            data: final
         });
         return NextResponse.json({ success: true, message: 'Success' }, { status: 200 });
         

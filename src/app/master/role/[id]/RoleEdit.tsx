@@ -3,9 +3,7 @@ import { Form, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { InputController } from "@/components/custom/form.control/InputController";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
-import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { useRouter } from "next/navigation";
 import TitlePage from "@/components/custom/page-heading";
@@ -21,6 +19,7 @@ import {
 import { useEffect, useState } from "react";
 import Loading from "@/app/loading";
 import DialogBox from "@/components/custom/dialog-box";
+import { toast } from "sonner";
 
 type Role = {
   id: string;
@@ -77,17 +76,10 @@ export default function RoleEdit({ data }: { data: Role }) {
     });
 
     if (res.status === 200) {
-      toast({
-        title: "Succes",
-        description: <>Role Updated</>,
-      });
+      toast.success('Role updated');
       route.refresh();
     } else {
-      toast({
-        title: "Error",
-        variant: "destructive",
-        description: <>Failed to update role</>,
-      });
+      toast.error('Failed to update role');
     }
   };
 
@@ -100,16 +92,10 @@ export default function RoleEdit({ data }: { data: Role }) {
 
     if (res.status === 200) {
       handleClose();
-      toast({
-        title: "Succes",
-        description: <>Role Deleted</>,
-      });
+      toast.success('Role deleted');
       route.push('.');
     } else {
-      toast({
-        title: "Error",
-        description: <>Failed to delete role</>,
-      });
+      toast.error('Failed to delete role');
       handleClose();
     }
   };

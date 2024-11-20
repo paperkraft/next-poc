@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useCallback } from "react";
 import {
   Table,
   TableBody,
@@ -17,341 +17,230 @@ import {
 import { ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Form, FormField } from "@/components/ui/form";
-import { useForm } from "react-hook-form";
+import { Form, FormField, FormLabel } from "@/components/ui/form";
 import { SelectController } from "@/components/custom/form.control/SelectController";
+import { RoleType } from "@/app/master/role/List";
+import { useFieldArray, useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { WithPermission } from "@/components/custom/with-permission";
-import { toast } from "sonner";
 
-interface SubModule {
-  id: number;
-  label: string;
-  permission: number[];
+interface permission {
+  name: string,
+  bitmask: number
+}
+interface IModule {
+  id: string;
+  name: string;
+  parentId: string | null;
+  permissions: permission[]
+  submodules: IModule[]
 }
 
-interface Module {
-  id: number;
-  label: string;
-  permission: number[];
-  subModule: SubModule[];
+const permissionObject = z.object({
+  name: z.string().optional(),
+  bitmask: z.number(),
+});
+
+const permissionArraySchema = z.array(permissionObject);
+
+const ModuleObject = z.object({
+  id: z.string().optional(),
+  name: z.string().optional(),
+  parentId: z.string().nullable().optional(),
+  permission: permissionArraySchema.default([]),
+  submodules: z.array(z.lazy((): z.ZodType<any> => ModuleObject)).default([]),
+});
+
+interface IAccessProps {
+  roles: RoleType[], 
+  modules: IModule[]
 }
 
-interface RoleData {
-  role: string;
-  module: Module[];
-}
-
-const permissionArraySchema = z.array(z.boolean());
-
-const subModuleSchema = z.object({
-  id: z.number(),
-  label: z.string(),
-  permission: permissionArraySchema,
+export const FormSchema = z.object({
+  userId: z.string().min(1, { message: "Role is required." }),
+  modules: z.array(ModuleObject)
 });
 
-const moduleSchema = z.object({
-  id: z.number(),
-  label: z.string(),
-  permission: permissionArraySchema,
-  subModule: z.array(subModuleSchema),
-});
+export type FormValues = z.infer<typeof FormSchema>;
 
-const defaultValuesSchema = z.object({
-  role: z.string().min(1, {
-    message: "Please select role",
-  }),
-  module: z.array(moduleSchema),
-});
-
-const roleOptions = [
-  { label: "Admin", value: "admin" },
-  { label: "Staff", value: "staff" },
-  { label: "Faculty", value: "faculty" },
-  { label: "Sudent", value: "student" },
-  { label: "Guest", value: "guest" },
+const bitmask = [
+  { name: "VIEW", bitmask: 1 },
+  { name: "EDIT", bitmask: 2 },
+  { name: "CREATE", bitmask: 4 },
+  { name: "DELETE", bitmask: 8 },
 ];
 
-const tHead = ["", "Modules", "Read", "Write", "Create", "Delete", "All"];
+// Recursive function to process permissions of modules and submodules
+const processModulePermissionsOld = (module: IModule, bitmask: any):any => {
+  // Ensure permissions is always an array before calling reduce
+  const permissionsArray = Array.isArray(module.permissions)
+    ? module.permissions
+    : [];
 
-const permissionArray = (length: number) => Array(length).fill(false);
+  // Calculate the permissions for this module
+  const updatedPermissions = bitmask.map((permission:any) => ({
+    name: permission.name,
+    bitmask:
+      permissionsArray.reduce(
+        (acc, perm) => acc | perm.bitmask,
+        0
+      ) & permission.bitmask
+        ? true
+        : false,
+  }));
 
-const defaultValues = {
-  role: "",
-  module: [
-    {
-      id: 1,
-      label: "Admission",
-      permission: permissionArray(5),
-      subModule: [
-        {
-          id: 11,
-          label: "Registration",
-          permission: permissionArray(5),
-        },
-        {
-          id: 12,
-          label: "Probation",
-          permission: permissionArray(5),
-        },
-      ],
-    },
-    {
-      id: 2,
-      label: "Reports",
-      permission: permissionArray(5),
-      subModule: [],
-    },
-    {
-      id: 3,
-      label: "Fees Management",
-      permission: permissionArray(5),
-      subModule: [
-        {
-          id: 31,
-          label: "Academics",
-          permission: permissionArray(5),
-        },
-        {
-          id: 32,
-          label: "Hostel",
-          permission: permissionArray(5),
-        },
-      ],
-    },
-  ],
-};
-
-const cleanPermissions = (data: RoleData) => {
-  const cleanedData: RoleData = {
-    role: data.role,
-    module: data.module.map((module) => ({
-      ...module,
-      permission: module.permission
-        .map((perm, index) => (perm ? index + 1 : null))
-        .filter((index) => index !== null),
-      subModule: module.subModule.map((subModule) => ({
-        ...subModule,
-        permission: subModule.permission
-          .map((perm, index) => (perm ? index + 1 : null))
-          .filter((index) => index !== null),
-      })),
-    })),
-  };
-
-  return cleanedData;
-};
-
-const reversePermissions = (data: RoleData) => {
-  const reversedData: RoleData = { ...data, module: [] };
-
-  data.module.forEach((module) => {
-    const newPermissions = Array(5).fill(false);
-    // Set true for the corresponding indices
-    module.permission.forEach((index) => {
-      if (index > 0 && index <= 5) {
-        newPermissions[index - 1] = true;
-      }
-    });
-
-    const newModule: Module = { ...module, permission: newPermissions };
-    // Process submodules
-    newModule.subModule = module.subModule.map((subModule) => {
-      const newSubPermissions = Array(5).fill(false);
-      // Set true for the corresponding indices
-      subModule.permission.forEach((index) => {
-        if (index > 0 && index <= 5) {
-          newSubPermissions[index - 1] = true;
-        }
-      });
-      return { ...subModule, permission: newSubPermissions };
-    });
-    reversedData.module.push(newModule);
-  });
-
-  return reversedData;
-};
-
-const filterPermissions = (data: RoleData) => {
-  // Filter out modules with empty permissions
-  const cleanedModules = data.module
-    .map((module) => {
-      // Filter out submodules with empty permissions
-      const cleanedSubModules = module.subModule.filter(
-        (sub) => sub.permission.length > 0
-      );
-      return {
-        ...module,
-        subModule: cleanedSubModules,
-        permission:
-          module.permission.length > 0 ? module.permission : undefined, // Remove if empty
-      };
-    })
-    .filter(
-      (module) => module.permission !== undefined || module.subModule.length > 0
-    ); // Remove if both are empty
+  // Recursively handle submodules
+  const updatedSubmodules = module.submodules.map((submodule) =>
+    processModulePermissions(submodule, bitmask)
+  );
 
   return {
-    ...data,
-    module: cleanedModules,
+    ...module,
+    permissions: updatedPermissions,
+    submodules: updatedSubmodules,
   };
 };
 
-export default function AccessPage() {
+
+const processModulePermissions = (module: IModule, bitmask: any): any => {
+  // Ensure permissions is always an array before calling reduce
+  const permissionsArray = Array.isArray(module.permissions)
+    ? module.permissions
+    : [];
+
+  // Calculate the permissions for this module and set default values if empty
+  const updatedPermissions = bitmask.map((permission: any) => ({
+    name: permission.name,
+    bitmask: permissionsArray.some(
+      (perm) => perm.name === permission.name && perm.bitmask
+    )
+      ? true
+      : false,
+  }));
+
+  // Recursively handle submodules
+  const updatedSubmodules = module.submodules.map((submodule) =>
+    processModulePermissions(submodule, bitmask)
+  );
+
+  return {
+    ...module,
+    permissions: updatedPermissions,
+    submodules: updatedSubmodules,
+  };
+};
+
+
+export default function AccessPage({roles, modules}:IAccessProps) {
+
 
   const form = useForm({
-    resolver: zodResolver(defaultValuesSchema),
-    defaultValues,
+    resolver: zodResolver(FormSchema),
+    defaultValues:{
+      userId: "",
+      modules:  modules.map((module) => processModulePermissions(module, bitmask)),
+    }
   });
 
-  const onSubmit = (data: RoleData) => {
-    const formData = { ...data };
-    const result = cleanPermissions(formData);
-    const filter = filterPermissions(result);
-    const reversed = reversePermissions(result);
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "modules",
+  });
 
-    console.log("Filtered", JSON.stringify(filter, null, 2));
-    console.log("Reversed", JSON.stringify(reversed, null, 2));
+  const roleOptions = roles.map((role)=>{
+    return{
+      value: role.id,
+      label: role.name
+    }
+  })
 
-    toast.message('Submitted',{
-      description:(
-        <pre className="mt-2 w-max md:w-[354px] rounded-md bg-slate-950 p-4 max-h-64 overflow-scroll">
-          <code className="text-white text-[12px]">
-            {JSON.stringify(filter, null, 2)}
-          </code>
-        </pre>
-      )
-    });
+  console.log(form.formState.errors);
+
+  const onSubmit = (data: FormValues) => {
+
+    // const updatedModules = data.modules.map((module) => ({
+    //   ...module,
+    //   permissions: module.permissions.map((permission) => ({
+    //     ...permission,
+    //     bitmask: permission.bitmask ? bitmask.find((b) => b.name === permission.name)?.bitmask : 0,
+    //   })),
+    // }));
+
+    console.log("Sumbitted Data: ", JSON.stringify(data, null, 2));
+
+  };
+
+   // Recursive function to render the form for modules and submodules
+   const renderModules = (modules: IModule[], parentIndex: string = "") => {
+    return modules.map((module, index) => (
+      <React.Fragment key={module.id}>
+        <TableRow key={module.id}>
+          <TableCell></TableCell>
+          <TableCell>{module.name}</TableCell>
+
+          {bitmask.map((permission, i) => (
+            <TableCell key={permission.name}>
+              <FormField
+                name={`modules.${parentIndex}${index}.permissions.${i}.bitmask`}
+                control={form.control}
+                render={({ field }) => (
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={(checked) => field.onChange(checked)}
+                  />
+                )}
+              />
+            </TableCell>
+          ))}
+        </TableRow>
+        {/* Render submodules recursively */}
+        {module.submodules && module.submodules.length > 0 &&  renderModules(module.submodules, `${parentIndex}${index}.submodules.`)}
+      </React.Fragment>
+    ));
   };
 
   return (
-    <WithPermission permissionBit={4 | 8}>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <div className="px-4">
-            <SelectController
-              name={"role"}
-              label={"Role"}
-              options={roleOptions}
-            />
-          </div>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <div className="px-4">
+          <SelectController
+            name={"userId"}
+            label={"Role"}
+            options={roleOptions}
+          />
+          
+        </div>
 
-          <Table>
-            <TableHeader className="bg-gray-50 dark:bg-gray-800">
-              <TableRow>
-                {tHead.map((items) => (
-                  <TableHead key={items}>{items}</TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
+        <Table>
+          <TableHeader className="bg-gray-50 dark:bg-gray-800">
+            <TableRow>
+              <TableHead></TableHead>
+              <TableHead>Module</TableHead>
+              <TableHead>View</TableHead>
+              <TableHead>Edit</TableHead>
+              <TableHead>Create</TableHead>
+              <TableHead>Delete</TableHead>
+            </TableRow>
+          </TableHeader>
 
-            <TableBody>
-              {defaultValues.module.map((item, i) => {
-                const hasSubModules = item.subModule.length > 0;
-                return (
-                  <React.Fragment key={item.id}>
-                    {hasSubModules && (
-                      <Collapsible asChild key={item.id}>
-                        <React.Fragment>
-                          <TableRow>
-                            <TableCell>
-                              <CollapsibleTrigger asChild>
-                                <Button
-                                  variant={"ghost"}
-                                  className="flex h-6 w-6 p-0 data-[state=open]:bg-muted [&[data-state=open]>svg]:rotate-90"
-                                >
-                                  <ChevronRight className="h-4 w-4" />
-                                </Button>
-                              </CollapsibleTrigger>
-                            </TableCell>
-                            <TableCell className="text-left">
-                              {item.label}
-                            </TableCell>
-                            {item.permission.map((_a, ii) => (
-                              <TableCell key={ii}>
-                                <FormField
-                                  name={`module.${i}.permission.${ii}`}
-                                  control={form.control}
-                                  render={({ field }) => (
-                                    <Switch
-                                      checked={!!field.value}
-                                      onCheckedChange={field.onChange}
-                                    />
-                                  )}
-                                />
-                              </TableCell>
-                            ))}
-                          </TableRow>
+          <TableBody>
+            {renderModules(modules)}
+          </TableBody>
+        </Table>
 
-                          <CollapsibleContent asChild>
-                            <React.Fragment>
-                              {item.subModule.map((sub, ii) => (
-                                <TableRow key={sub.id}>
-                                  <TableCell></TableCell>
-                                  <TableCell>{`|-- ${sub.label}`}</TableCell>
-                                  {sub.permission.map((_b, iii) => (
-                                    <TableCell key={iii}>
-                                      <FormField
-                                        name={`module.${i}.subModule.${ii}.permission.${iii}`}
-                                        control={form.control}
-                                        render={({ field }) => (
-                                          <Switch
-                                            checked={field.value}
-                                            onCheckedChange={field.onChange}
-                                          />
-                                        )}
-                                      />
-                                    </TableCell>
-                                  ))}
-                                </TableRow>
-                              ))}
-                            </React.Fragment>
-                          </CollapsibleContent>
-                        </React.Fragment>
-                      </Collapsible>
-                    )}
-
-                    {!hasSubModules && (
-                      <TableRow>
-                        <TableCell></TableCell>
-                        <TableCell>{item.label}</TableCell>
-                        {item.permission.map((_c, ii) => (
-                          <TableCell key={ii}>
-                            <FormField
-                              name={`module.${i}.permission.${ii}`}
-                              control={form.control}
-                              render={({ field }) => (
-                                <Switch
-                                  checked={field.value}
-                                  onCheckedChange={field.onChange}
-                                />
-                              )}
-                            />
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    )}
-                  </React.Fragment>
-                );
-              })}
-            </TableBody>
-          </Table>
-
-          <div className="flex justify-end my-4 gap-2">
-            <Button
-              variant={"outline"}
-              onClick={(e) => {
-                e.preventDefault();
-                form.reset();
-              }}
-            >
-              Reset
-            </Button>
-            <Button type="submit">Submit</Button>
-          </div>
-        </form>
-      </Form>
-    </WithPermission>
+        <div className="flex justify-end my-4 gap-2">
+          <Button
+            variant={"outline"}
+            onClick={(e) => {
+              e.preventDefault();
+              form.reset();
+            }}
+          >
+            Reset
+          </Button>
+          <Button type="submit">Submit</Button>
+        </div>
+      </form>
+    </Form>
   );
 }

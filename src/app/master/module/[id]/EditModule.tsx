@@ -5,12 +5,15 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import TitlePage from "@/components/custom/page-heading";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ChevronRight, Edit, Trash2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { InputController } from "@/components/custom/form.control/InputController";
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { IModule } from "../ModuleInterface";
+import DialogBox from "@/components/custom/dialog-box";
+import { Collapsible } from "@radix-ui/react-collapsible";
+import { CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 export const ModuleFormSchema = z.object({
   id: z.string(),
@@ -25,6 +28,9 @@ export type ModuleFormValues = z.infer<typeof ModuleFormSchema>;
 export default function EditModule({ data }: { data: IModule }) {
 
   const route = useRouter();
+  const [open, setOpen] = useState(false);
+  const [show, setShow] = useState(false);
+
   const form = useForm<ModuleFormValues>({
     resolver: zodResolver(ModuleFormSchema),
     defaultValues: {
@@ -96,34 +102,123 @@ export default function EditModule({ data }: { data: IModule }) {
     [getLabel]
   );
 
-  return (
-    <div className="space-y-8 p-2">
-      <TitlePage title="Update Module" description="Update module or submodule">
-        <div>
-          <Button
-            className="size-7"
-            variant={"outline"}
-            size={"sm"}
-            onClick={() => route.back()}
-          >
-            <ArrowLeft className="size-5" />
-          </Button>
-        </div>
-      </TitlePage>
+  const handleClose = () => {
+    setOpen(false);
+  }
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="p-2">
-          <InputController name={'name'} label="Module" />
-          {renderSubmodules(fields, "submodules")}
-          <div className="flex justify-end my-4 gap-2">
-            <Button variant={"outline"} onClick={(e) =>{e.preventDefault(); route.back();}}>
-              Cancel
-            </Button>
-            <Button type="submit">Submit</Button>
+  const handleDelete = async (id: string) => {
+    const res = await fetch("/api/master/module", {
+      method: "DELETE",
+      body: JSON.stringify({ id }),
+    });
+
+    if (res.status === 200) {
+      handleClose();
+      toast.success('Module deleted');
+      route.push('.');
+    } else {
+      toast.error('Failed to delete module');
+      handleClose();
+    }
+  };
+
+  return (
+    <>
+      <div className="space-y-8 p-2">
+        <TitlePage title="Module" description={show ? "Update module and submodule": "Overview module and submodule"}>
+          <div className="flex gap-2">
+              <Button
+                className="size-7"
+                variant={"outline"}
+                size={"sm"}
+                onClick={() => route.back()}
+              >
+                <ArrowLeft className="size-5" />
+              </Button>
+              {!show && (
+                <>
+                  <Button
+                    className="size-7"
+                    variant={"outline"}
+                    size={"sm"}
+                    onClick={() => setShow(true)}
+                  >
+                    <Edit className="size-5" />
+                  </Button>
+                  <Button
+                    className="size-7"
+                    variant={"outline"}
+                    size={"sm"}
+                    onClick={()=> setOpen(true)}
+                  >
+                    <Trash2 className="size-5 text-red-500" />
+                  </Button>
+                </>
+              )}
+            </div>
+        </TitlePage>
+
+        {
+          !show &&
+          <TreeView data={data} level={0}/>
+        }
+
+        {
+          show &&
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="p-2">
+              <InputController name={'name'} label="Module" />
+              {renderSubmodules(fields, "submodules")}
+              <div className="flex justify-end my-4 gap-2">
+                <Button variant={"outline"} onClick={(e) =>{e.preventDefault(); setShow(false);}}>
+                  Cancel
+                </Button>
+                <Button type="submit">Submit</Button>
+              </div>
+            </form>
+          </Form>
+        }
+      </div>
+
+      { open && 
+        <DialogBox open={open} title={"Delete Confirmation"} preventClose setClose={handleClose}>
+          <h1 className="pb-4">Are you sure? Do you want to delete module {data.name}</h1>
+          <div className="flex justify-end">
+            <Button onClick={()=>handleDelete(data.id)} variant={'destructive'}>Confirm</Button>
           </div>
-        </form>
-      </Form>
-    </div>
+        </DialogBox>
+      }
+    </>
   );
 }
 
+function TreeView({data, level}:{data:IModule, level: number}){
+
+    const hasSubmenu = data?.submodules?.length
+
+    if(!hasSubmenu){
+      return(
+        <li style={{paddingLeft:`${level*24}px`}}>{data.name}</li>
+      )
+    }
+
+    return (
+      <Collapsible defaultOpen>
+          <CollapsibleTrigger asChild>
+            <ul className={`flex gap-2 items-center [&[data-state=open]>svg]:rotate-90`} style={{paddingLeft:`${level*24}px`}}>
+              <ChevronRight className="h-4 w-4" />
+              {data.name}
+            </ul>
+          </CollapsibleTrigger>
+
+          <CollapsibleContent>
+            <React.Fragment>
+              {data && data.submodules.map((sub)=>(
+                <TreeView key={sub.id} data={sub} level={level + 1}/>
+              ))}
+            </React.Fragment>
+          </CollapsibleContent>
+      </Collapsible>
+    )
+
+}

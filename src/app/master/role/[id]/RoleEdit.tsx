@@ -151,7 +151,7 @@ export default function RoleEdit({ data }: { data: Role }) {
                 .filter((item) => item.bitmask === true)
                 .map((item) => (
                   <span key={item.name} className="mx-2">
-                    {item.name}
+                    {item.name},
                   </span>
                 ))}
             </p>
@@ -194,14 +194,8 @@ export default function RoleEdit({ data }: { data: Role }) {
                 </div>
               </div>
               <div className="flex justify-end my-4 gap-2">
-                <Button
-                  variant={"outline"}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    form.reset();
-                  }}
-                >
-                  Reset
+                <Button variant={"outline"} onClick={(e) => { e.preventDefault(); route.back(); }} >
+                  Cancel
                 </Button>
                 <Button type="submit">Submit</Button>
               </div>

@@ -82,3 +82,26 @@ export async function POST(req:Request) {
         return NextResponse.json({ success: false, message: 'Failed to create' }, { status: 500 });
     }
 }
+
+export async function DELETE(req:Request) {
+    const { id } = await req.json();
+    try {
+        if(!id){
+            return NextResponse.json({ success: false, message: "Module ID is required" }, { status: 400 });
+        }
+        await prisma.$transaction([
+            prisma.modulePermissions.deleteMany({
+              where: { moduleId: id },
+            }),
+            prisma.module.delete({
+              where: { id: id },
+            }),
+        ]);
+
+        return NextResponse.json({ success: true, message: 'Module deleted' }, { status: 200 });
+          
+    } catch (error) {
+        console.error(error)
+        return NextResponse.json({ success: false, message: 'Failed to delete module' }, { status: 500 });
+    }
+}

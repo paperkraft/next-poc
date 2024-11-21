@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import {
   Table,
   TableBody,
@@ -24,41 +24,53 @@ import { useFieldArray, useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-interface permission {
+
+interface IAccessProps {
+  roles: RoleType[],
+  modules: IModule[]
+}
+
+interface IPermission {
   name: string,
   bitmask: number
 }
+
+interface IPermissionBoolean {
+  name?: string,
+  bitmask: boolean
+}
+
 interface IModule {
   id: string;
   name: string;
   parentId: string | null;
-  permissions: permission[]
+  permissions: IPermission[]
   submodules: IModule[]
 }
 
-const permissionObject = z.object({
-  name: z.string().optional(),
-  bitmask: z.number(),
-});
-
-const permissionArraySchema = z.array(permissionObject);
-
-const ModuleObject = z.object({
-  id: z.string().optional(),
-  name: z.string().optional(),
-  parentId: z.string().nullable().optional(),
-  permission: permissionArraySchema.default([]),
-  submodules: z.array(z.lazy((): z.ZodType<any> => ModuleObject)).default([]),
-});
-
-interface IAccessProps {
-  roles: RoleType[], 
-  modules: IModule[]
+interface IRenderRows {
+  data: IModule,
+  parentIndex: string,
+  index: number,
+  level: number
 }
 
-export const FormSchema = z.object({
+const ModulePermissionsSchema = z.object({
+  name: z.string().optional(),
+  bitmask: z.boolean(),
+});
+
+const ModuleObjectSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  parentId: z.string().nullable(),
+  permissions: z.array(ModulePermissionsSchema),
+  submodules: z.array(z.lazy((): z.ZodType<any> => ModuleObjectSchema)),
+});
+
+const FormSchema = z.object({
   userId: z.string().min(1, { message: "Role is required." }),
-  modules: z.array(ModuleObject)
+  modules: z.array(ModuleObjectSchema),
 });
 
 export type FormValues = z.infer<typeof FormSchema>;
@@ -70,118 +82,98 @@ const bitmask = [
   { name: "DELETE", bitmask: 8 },
 ];
 
-// Recursive function to process permissions of modules and submodules
-const processModulePermissionsOld = (module: IModule, bitmask: any):any => {
-  // Ensure permissions is always an array before calling reduce
-  const permissionsArray = Array.isArray(module.permissions)
-    ? module.permissions
-    : [];
-
-  // Calculate the permissions for this module
-  const updatedPermissions = bitmask.map((permission:any) => ({
+const processModulePermissions = (module: IModule, bitmask: IPermission[]): any => {
+  const permissionsArray = bitmask.map((permission) => ({
     name: permission.name,
-    bitmask:
-      permissionsArray.reduce(
-        (acc, perm) => acc | perm.bitmask,
-        0
-      ) & permission.bitmask
-        ? true
-        : false,
+    bitmask: (+module.permissions & permission.bitmask) === permission.bitmask
   }));
 
-  // Recursively handle submodules
-  const updatedSubmodules = module.submodules.map((submodule) =>
-    processModulePermissions(submodule, bitmask)
-  );
+  // Recursively process submodules
+  const updatedSubmodules = module.submodules.map((submodule) => {
+    const updatedSubmodule = processModulePermissions(submodule, bitmask);
+    return {
+      ...updatedSubmodule,
+      permissions: permissionsArray,
+    };
+  });
 
   return {
     ...module,
-    permissions: updatedPermissions,
+    permissions: permissionsArray,
     submodules: updatedSubmodules,
   };
 };
 
-
-const processModulePermissions = (module: IModule, bitmask: any): any => {
-  // Ensure permissions is always an array before calling reduce
-  const permissionsArray = Array.isArray(module.permissions)
-    ? module.permissions
-    : [];
-
-  // Calculate the permissions for this module and set default values if empty
-  const updatedPermissions = bitmask.map((permission: any) => ({
-    name: permission.name,
-    bitmask: permissionsArray.some(
-      (perm) => perm.name === permission.name && perm.bitmask
-    )
-      ? true
-      : false,
-  }));
-
-  // Recursively handle submodules
-  const updatedSubmodules = module.submodules.map((submodule) =>
-    processModulePermissions(submodule, bitmask)
-  );
-
+const processRolesOptions = (role: RoleType): any => {
   return {
-    ...module,
-    permissions: updatedPermissions,
-    submodules: updatedSubmodules,
+    value: role.id,
+    label: role.name
+  }
+}
+
+function calculateBitmask(permissions: IPermissionBoolean[]) {
+  let combinedBitmask = 0;
+  permissions.forEach((permission) => {
+    const matchingBitmask = bitmask.find((b) => b.name === permission.name);
+    if (matchingBitmask && permission.bitmask) {
+      combinedBitmask |= matchingBitmask.bitmask;
+    }
+  });
+  return combinedBitmask;
+}
+
+const applyBitmaskRecursively = (item: any): IModule => {
+  const updatedItem = {
+    ...item,
+    permissions: calculateBitmask(item.permissions),
   };
+  if (updatedItem.submodules && updatedItem.submodules.length > 0) {
+    updatedItem.submodules = updatedItem.submodules.map(applyBitmaskRecursively);
+  }
+  return updatedItem;
 };
 
+export default function AccessPage({ roles, modules }: IAccessProps) {
 
-export default function AccessPage({roles, modules}:IAccessProps) {
-
+  const permissionMapped = modules.map((module) => processModulePermissions(module, bitmask));
+  const roleOptions = roles.map((role) => processRolesOptions(role));
 
   const form = useForm({
     resolver: zodResolver(FormSchema),
-    defaultValues:{
+    defaultValues: {
       userId: "",
-      modules:  modules.map((module) => processModulePermissions(module, bitmask)),
+      modules: permissionMapped,
     }
   });
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields } = useFieldArray({
     control: form.control,
     name: "modules",
   });
 
-  const roleOptions = roles.map((role)=>{
-    return{
-      value: role.id,
-      label: role.name
-    }
-  })
-
-  console.log(form.formState.errors);
-
   const onSubmit = (data: FormValues) => {
-
-    // const updatedModules = data.modules.map((module) => ({
-    //   ...module,
-    //   permissions: module.permissions.map((permission) => ({
-    //     ...permission,
-    //     bitmask: permission.bitmask ? bitmask.find((b) => b.name === permission.name)?.bitmask : 0,
-    //   })),
-    // }));
-
-    console.log("Sumbitted Data: ", JSON.stringify(data, null, 2));
-
+    console.log(form.formState.errors);
+    const final = data.modules.map(applyBitmaskRecursively)
+    console.log("Sumbitted Data: ", JSON.stringify(final, null, 2));
   };
 
-   // Recursive function to render the form for modules and submodules
-   const renderModules = (modules: IModule[], parentIndex: string = "") => {
-    return modules.map((module, index) => (
-      <React.Fragment key={module.id}>
-        <TableRow key={module.id}>
-          <TableCell></TableCell>
-          <TableCell>{module.name}</TableCell>
+  // Recursive function to render the form for modules and submodules
+  const RenderRows = useCallback(({ data, index, level, parentIndex }: IRenderRows) => {
+    const hasSubModules = data?.submodules?.length > 0;
 
-          {bitmask.map((permission, i) => (
+    const renderDash = (count: number) => {
+      return <span className="text-muted-foreground">{`|${Array(count).fill('-').join('')} `}</span>
+    }
+
+    if (!hasSubModules) {
+      return (
+        <TableRow>
+          <TableCell></TableCell>
+          <TableCell>{data?.parentId ? renderDash(level) : null}{data?.name}</TableCell>
+          {data.permissions.map((permission, i) => (
             <TableCell key={permission.name}>
               <FormField
-                name={`modules.${parentIndex}${index}.permissions.${i}.bitmask`}
+                name={`modules.${parentIndex}${index}.permissions.${i}.bitmask` as any}
                 control={form.control}
                 render={({ field }) => (
                   <Switch
@@ -193,22 +185,54 @@ export default function AccessPage({roles, modules}:IAccessProps) {
             </TableCell>
           ))}
         </TableRow>
-        {/* Render submodules recursively */}
-        {module.submodules && module.submodules.length > 0 &&  renderModules(module.submodules, `${parentIndex}${index}.submodules.`)}
-      </React.Fragment>
-    ));
-  };
+      )
+    }
+
+    return (
+      <Collapsible asChild key={index}>
+        <React.Fragment>
+          <TableRow>
+            <TableCell>
+              <CollapsibleTrigger asChild>
+                <Button variant={"ghost"} className="flex h-6 w-6 p-0 data-[state=open]:bg-muted [&[data-state=open]>svg]:rotate-90">
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </CollapsibleTrigger>
+            </TableCell>
+            <TableCell>{data?.parentId ? renderDash(level) : null}{data?.name}</TableCell>
+            {data.permissions.map((permission, i) => (
+              <TableCell key={permission.name}>
+                <FormField
+                  name={`modules.${parentIndex}${index}.permissions.${i}.bitmask` as any}
+                  control={form.control}
+                  render={({ field }) => (
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={(checked) => field.onChange(checked)}
+                    />
+                  )}
+                />
+              </TableCell>
+            ))}
+          </TableRow>
+
+          <CollapsibleContent asChild>
+            <React.Fragment>
+              {data && data?.submodules.map((sub, ii) => (
+                <RenderRows key={sub.id} data={sub} index={ii} level={level + 1} parentIndex={`${parentIndex}${index}.submodules.`} />
+              ))}
+            </React.Fragment>
+          </CollapsibleContent>
+        </React.Fragment>
+      </Collapsible>
+    )
+  }, [form.control]);
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <div className="px-4">
-          <SelectController
-            name={"userId"}
-            label={"Role"}
-            options={roleOptions}
-          />
-          
+          <SelectController name={"userId"} label={"Role"} options={roleOptions}/>
         </div>
 
         <Table>
@@ -224,18 +248,24 @@ export default function AccessPage({roles, modules}:IAccessProps) {
           </TableHeader>
 
           <TableBody>
-            {renderModules(modules)}
+            {
+              fields &&
+              permissionMapped.map((data: any, i: number) => {
+                return (<RenderRows key={i} data={data} parentIndex={""} index={i} level={0} />)
+              })
+            }
+
+            {
+              !permissionMapped &&
+              <TableRow>
+                <TableCell colSpan={6}>No Data</TableCell>
+              </TableRow>
+            }
           </TableBody>
         </Table>
 
         <div className="flex justify-end my-4 gap-2">
-          <Button
-            variant={"outline"}
-            onClick={(e) => {
-              e.preventDefault();
-              form.reset();
-            }}
-          >
+          <Button variant={"outline"} onClick={(e) => { e.preventDefault(); form.reset(); }}>
             Reset
           </Button>
           <Button type="submit">Submit</Button>
@@ -244,3 +274,4 @@ export default function AccessPage({roles, modules}:IAccessProps) {
     </Form>
   );
 }
+

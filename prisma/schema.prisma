@@ -12,6 +12,8 @@ model Role {
   name        String
   permissions Int
   users       User[]
+
+  ModulePermissions ModulePermissions[]
 }
 
 model Permission {
@@ -38,18 +40,24 @@ model User {
   roleId       String  @db.ObjectId
   role         Role    @relation(fields: [roleId], references: [id])
 
-  ModulePermissions ModulePermissions[]
+  // ModulePermissions ModulePermissions[]
 }
 
 model ModulePermissions {
   id          String  @id @default(auto()) @map("_id") @db.ObjectId
   moduleId    String  @db.ObjectId
-  userId      String  @db.ObjectId
+  // userId      String  @db.ObjectId
+  roleId      String  @db.ObjectId
   submoduleId String? @db.ObjectId
   permissions Int
-  user        User    @relation(fields: [userId], references: [id])
-  module      Module  @relation(fields: [moduleId], references: [id])
-  submodule   Module? @relation("ModuleParent", fields: [submoduleId], references: [id])
+
+  role      Role    @relation(fields: [roleId], references: [id])
+  // user      User    @relation(fields: [userId], references: [id])
+  module    Module  @relation(fields: [moduleId], references: [id])
+  submodule Module? @relation("ModuleParent", fields: [submoduleId], references: [id])
+
+  @@unique([roleId, moduleId]) // Add this line for composite unique constraint
+  @@unique([roleId, moduleId, submoduleId]) // Add this line for composite unique constraint for submodule
 }
 
 model Module {

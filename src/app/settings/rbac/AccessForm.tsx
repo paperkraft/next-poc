@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -23,6 +23,7 @@ import { RoleType } from "@/app/master/role/List";
 import { useFieldArray, useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useSession } from "next-auth/react";
 
 
 interface IAccessProps {
@@ -93,7 +94,8 @@ const processModulePermissions = (module: IModule, bitmask: IPermission[]): any 
     const updatedSubmodule = processModulePermissions(submodule, bitmask);
     return {
       ...updatedSubmodule,
-      permissions: permissionsArray,
+      // permissions: permissionsArray,
+      permissions: updatedSubmodule.permissions
     };
   });
 
@@ -135,6 +137,12 @@ const applyBitmaskRecursively = (item: any): IModule => {
 
 export default function AccessPage({ roles, modules }: IAccessProps) {
 
+  const [roleModules, setRoleModules] = useState<IModule[]>();
+
+  // const mergedResult = roleModules && mergeModules(modules as any, roleModules as any);
+  // Log the merged result to console
+  // console.log(JSON.stringify(mergedResult, null, 4));
+
   const permissionMapped = modules.map((module) => processModulePermissions(module, bitmask));
   const roleOptions = roles.map((role) => processRolesOptions(role));
 
@@ -151,10 +159,46 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
     name: "modules",
   });
 
-  const onSubmit = (data: FormValues) => {
-    console.log(form.formState.errors);
+  const roleId = form.watch('userId');
+
+  useEffect(()=>{
+    const getRoleModules = async (roleId:string) => {
+      if(roleId){
+        const res = await fetch(`/api/master/module/${roleId}`).then((dd)=> dd.json()).catch((err)=>err)
+        console.log('res', res);
+        if(res.success){
+          setRoleModules(res.data)
+        }
+      }
+    }
+    getRoleModules(roleId);
+
+  },[roleId]);
+
+  const onSubmit = async (data: FormValues) => {
+    // console.log(form.formState.errors);
     const final = data.modules.map(applyBitmaskRecursively)
     console.log("Sumbitted Data: ", JSON.stringify(final, null, 2));
+
+    const transformedData = transformModulesToCustomFormat(final);
+    console.log(JSON.stringify(transformedData, null, 2));
+
+
+    const dd = {
+      roleId : data.userId, 
+      modulesData: transformedData
+    }
+
+    const res = await fetch(`/api/master/rbac`,{
+      method:"POST",
+      body: JSON.stringify(dd)
+    })
+
+    const result = await res.json();
+
+    console.log('result', result);
+    
+    
   };
 
   // Recursive function to render the form for modules and submodules
@@ -275,3 +319,114 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
   );
 }
 
+
+// ----------------------------- //
+
+
+interface Submodule {
+  id: string;
+  name: string;
+  parentId: string | null;
+  permissions: number;
+  submodules: Submodule[];
+}
+
+interface Module {
+  id: string;
+  name: string;
+  parentId: string | null;
+  permissions: number;
+  submodules: Submodule[];
+}
+
+interface UserAssignedModule {
+  id: string;
+  name: string;
+  permissions: number;
+  submodules: { id: string; permissions: number }[];
+}
+
+function mergeModules(allModules: Module[], userModules: UserAssignedModule[]): Module[] {
+  // Convert the user modules list into a dictionary for easy lookup
+  const userModulesDict = new Map(userModules.map(module => [module.id, module]));
+
+  // Helper function to merge permissions for a module and its submodules
+  function mergeModulePermissions(allModule: Module): Module {
+    const userModule = userModulesDict.get(allModule.id);
+
+    // If the module is assigned to the user, update its permissions
+    if (userModule) {
+      allModule.permissions = userModule.permissions;
+
+      // Merge submodules' permissions
+      const userSubmodulesDict = new Map(
+        userModule.submodules.map(submodule => [submodule.id, submodule])
+      );
+
+      allModule.submodules.forEach(submodule => {
+        const userSubmodule = userSubmodulesDict.get(submodule.id);
+        if (userSubmodule) {
+          submodule.permissions = userSubmodule.permissions;
+        }
+      });
+    }
+
+    // Recursively merge submodules if any
+    allModule.submodules.forEach(submodule => {
+      submodule.submodules = mergeSubmodules(submodule.submodules, userModulesDict);
+    });
+
+    return allModule;
+  }
+
+  // Helper function to recursively merge submodules and user permissions
+  function mergeSubmodules(submodules: Submodule[], userModulesDict: Map<string, UserAssignedModule>): Submodule[] {
+    return submodules.map(submodule => {
+      const userSubmodule = userModulesDict.get(submodule.id)?.submodules.find(
+        userSub => userSub.id === submodule.id
+      );
+
+      if (userSubmodule) {
+        submodule.permissions = userSubmodule.permissions;
+      }
+
+      // Recursively merge sub-submodules if any
+      if (submodule.submodules.length > 0) {
+        submodule.submodules = mergeSubmodules(submodule.submodules, userModulesDict);
+      }
+
+      return submodule;
+    });
+  }
+
+  // Apply merging for each module in the allModules array
+  return allModules.map(mergeModulePermissions);
+}
+
+interface TransformedModule {
+  moduleId: string;
+  permissions: number;
+  submodules: {
+    submoduleId: string;
+    permissions: number;
+  }[];
+}
+
+function transformModulesToCustomFormat(inputData: any[]): TransformedModule[] {
+  return inputData.map(module => {
+    const submodules = module.submodules
+      .map((submodule:any) => ({
+        submoduleId: submodule.id,
+        permissions: submodule.permissions
+      }))
+      .filter((submodule:any) => submodule.permissions > 0);
+
+    const totalPermissions = module.permissions + submodules.reduce((sum: any, submodule: { permissions: any; }) => sum + submodule.permissions, 0);
+
+    return {
+      moduleId: module.id,
+      permissions: totalPermissions,
+      submodules: submodules.length > 0 ? submodules : [],
+    };
+  });
+}

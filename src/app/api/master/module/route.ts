@@ -7,7 +7,7 @@ export async function GET(){
     try {
         const data = await getModulesWithSubmodules()
         return NextResponse.json(
-            { success: true, message: 'Module created', data },
+            { success: true, message: 'Modules', data },
             { status: 200 }
         );
     } catch (error) {

@@ -23,9 +23,6 @@ import { RoleType } from "@/app/master/role/List";
 import { useFieldArray, useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useSession } from "next-auth/react";
-
-
 interface IAccessProps {
   roles: RoleType[],
   modules: IModule[]
@@ -137,12 +134,13 @@ const applyBitmaskRecursively = (item: any): IModule => {
 
 export default function AccessPage({ roles, modules }: IAccessProps) {
 
+  
   const [roleModules, setRoleModules] = useState<IModule[]>();
-
-  // const mergedResult = roleModules && mergeModules(modules as any, roleModules as any);
+  
   // Log the merged result to console
-  // console.log(JSON.stringify(mergedResult, null, 4));
-
+  // console.log(JSON.stringify(modules, null, 4));
+  console.log(JSON.stringify(roleModules, null, 4));
+  
   const permissionMapped = modules.map((module) => processModulePermissions(module, bitmask));
   const roleOptions = roles.map((role) => processRolesOptions(role));
 
@@ -163,19 +161,23 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
 
   useEffect(()=>{
     const getRoleModules = async (roleId:string) => {
+      form.resetField("modules");
       if(roleId){
         const res = await fetch(`/api/master/module/${roleId}`).then((dd)=> dd.json()).catch((err)=>err)
         console.log('res', res);
         if(res.success){
-          setRoleModules(res.data)
+          const data = res.data;
+          const procedded = data.map((module: IModule) => processModulePermissions(module, bitmask));
+          procedded && setRoleModules(procedded);
+          form.setValue('modules', procedded);
         }
       }
     }
     getRoleModules(roleId);
 
-  },[roleId]);
+  },[roleId, form]);
 
-  const onSubmit = async (data: FormValues) => {
+  const onSubmit = async (data: any) => {
     // console.log(form.formState.errors);
     const final = data.modules.map(applyBitmaskRecursively)
     console.log("Sumbitted Data: ", JSON.stringify(final, null, 2));
@@ -183,21 +185,19 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
     const transformedData = transformModulesToCustomFormat(final);
     console.log(JSON.stringify(transformedData, null, 2));
 
-
     const dd = {
       roleId : data.userId, 
       modulesData: transformedData
     }
 
-    const res = await fetch(`/api/master/rbac`,{
-      method:"POST",
-      body: JSON.stringify(dd)
-    })
+    // const res = await fetch(`/api/master/rbac`,{
+    //   method:"POST",
+    //   body: JSON.stringify(dd)
+    // })
 
-    const result = await res.json();
+    // const result = await res.json();
 
-    console.log('result', result);
-    
+    console.log('result', JSON.stringify(dd));
     
   };
 
@@ -270,7 +270,7 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
         </React.Fragment>
       </Collapsible>
     )
-  }, [form.control]);
+  }, [form]);
 
   return (
     <Form {...form}>
@@ -293,10 +293,14 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
 
           <TableBody>
             {
-              fields &&
-              permissionMapped.map((data: any, i: number) => {
+              !roleModules &&
+              permissionMapped && permissionMapped.map((data: any, i: number) => {
                 return (<RenderRows key={i} data={data} parentIndex={""} index={i} level={0} />)
               })
+            }
+
+            {
+              roleModules && roleModules.map((data, i)=> <RenderRows key={i} data={data} parentIndex={""} index={i} level={0}/>)
             }
 
             {
@@ -421,11 +425,11 @@ function transformModulesToCustomFormat(inputData: any[]): TransformedModule[] {
       }))
       .filter((submodule:any) => submodule.permissions > 0);
 
-    const totalPermissions = module.permissions + submodules.reduce((sum: any, submodule: { permissions: any; }) => sum + submodule.permissions, 0);
+    // const totalPermissions = module.permissions + submodules.reduce((sum: any, submodule: { permissions: any; }) => sum + submodule.permissions, 0);
 
     return {
       moduleId: module.id,
-      permissions: totalPermissions,
+      permissions: module.permissions,
       submodules: submodules.length > 0 ? submodules : [],
     };
   });

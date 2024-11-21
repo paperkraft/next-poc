@@ -33,43 +33,26 @@ const authConfig: NextAuthConfig = {
                 /* GET User details */
                 const user = await prisma.user.findUnique({
                     where: { email: data.email },
-                    include: {
-                        role: true,
-                        ModulePermissions: {
-                            select: {
-                                id: true,
-                                module: {
-                                    select: {
-                                        name: true,
-                                        parentId: true,
-                                        SubModules: {
-                                            select: {
-                                                id: true,
-                                                name: true
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    include: { role: true }
                 });
 
                 const userModulesGrouped = await prisma.modulePermissions.findMany({
                     where: {
-                        userId: user?.id,
+                        roleId: user?.roleId,
                     },
                     select: {
                         module: {
                             select: {
                                 id: true,
                                 name: true,
+                                parentId:true
                             },
                         },
                         submodule: {
                             select: {
                                 id: true,
                                 name: true,
+                                parentId:true
                             },
                         },
                         permissions: true,

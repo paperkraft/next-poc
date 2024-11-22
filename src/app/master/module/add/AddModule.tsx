@@ -69,7 +69,7 @@ export default function AddModule() {
       toast.success('Module Created')
       route.push('.');
     } else {
-      toast.success('Failed to create module')
+      toast.error('Failed to create module')
     }
   };
 

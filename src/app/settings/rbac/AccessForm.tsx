@@ -134,13 +134,13 @@ const applyBitmaskRecursively = (item: any): IModule => {
 
 export default function AccessPage({ roles, modules }: IAccessProps) {
 
-  
+  const [loading, setLoading] = useState<boolean>(false);
   const [roleModules, setRoleModules] = useState<IModule[]>();
-  
+  const [previousAssignedModules, setPreviousAssignModules] = useState<IModule[]>();
   // Log the merged result to console
   // console.log(JSON.stringify(modules, null, 4));
-  console.log(JSON.stringify(roleModules, null, 4));
-  
+  // console.log(JSON.stringify(roleModules, null, 4));
+
   const permissionMapped = modules.map((module) => processModulePermissions(module, bitmask));
   const roleOptions = roles.map((role) => processRolesOptions(role));
 
@@ -159,46 +159,50 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
 
   const roleId = form.watch('userId');
 
-  useEffect(()=>{
-    const getRoleModules = async (roleId:string) => {
-      form.resetField("modules");
-      if(roleId){
-        const res = await fetch(`/api/master/module/${roleId}`).then((dd)=> dd.json()).catch((err)=>err)
+  useEffect(() => {
+    const getRoleModules = async (roleId: string) => {
+      setLoading(true);
+      if (roleId) {
+        const res = await fetch(`/api/master/module/${roleId}`).then((dd) => dd.json()).catch((err) => err)
         console.log('res', res);
-        if(res.success){
+        if (res.success) {
           const data = res.data;
-          const procedded = data.map((module: IModule) => processModulePermissions(module, bitmask));
-          procedded && setRoleModules(procedded);
-          form.setValue('modules', procedded);
+          data && setPreviousAssignModules(data)
+          const merge = mergeModules(modules as any, data);
+          const processed = merge.map((module) => processModulePermissions(module as any, bitmask));
+          processed.length > 0 && setRoleModules(processed);
+          processed.length > 0 && form.setValue('modules', processed);
+          setLoading(false);
         }
       }
     }
     getRoleModules(roleId);
 
-  },[roleId, form]);
+  }, [roleId, form.control]);
 
   const onSubmit = async (data: any) => {
     // console.log(form.formState.errors);
-    const final = data.modules.map(applyBitmaskRecursively)
-    console.log("Sumbitted Data: ", JSON.stringify(final, null, 2));
+    const submitted = data.modules.map(applyBitmaskRecursively)
+    console.log("Sumbitted Data: ", JSON.stringify(submitted, null, 2));
 
-    const transformedData = transformModulesToCustomFormat(final);
-    console.log(JSON.stringify(transformedData, null, 2));
+    const updatedModules = previousAssignedModules && updateModules(previousAssignedModules as any, submitted as any);
+    console.log("updated Modules", JSON.stringify(updatedModules, null, 2));
 
-    const dd = {
-      roleId : data.userId, 
-      modulesData: transformedData
+    const formated = reverseFormat(updatedModules as any);
+    console.log("Format Modules", JSON.stringify(formated, null, 2));
+
+    const final = {
+      roleId: data.userId,
+      modulesData: formated
     }
 
-    // const res = await fetch(`/api/master/rbac`,{
-    //   method:"POST",
-    //   body: JSON.stringify(dd)
-    // })
+    const result = await fetch(`/api/master/rbac`, {
+      method: "POST",
+      body: JSON.stringify(final)
+    }).then((res) => res.json()).catch((err) => err)
 
-    // const result = await res.json();
+    console.log('result', JSON.stringify(result, null, 2));
 
-    console.log('result', JSON.stringify(dd));
-    
   };
 
   // Recursive function to render the form for modules and submodules
@@ -276,7 +280,7 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <div className="px-4">
-          <SelectController name={"userId"} label={"Role"} options={roleOptions}/>
+          <SelectController name={"userId"} label={"Role"} options={roleOptions} />
         </div>
 
         <Table>
@@ -293,20 +297,20 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
 
           <TableBody>
             {
-              !roleModules &&
+              !roleModules &&  
               permissionMapped && permissionMapped.map((data: any, i: number) => {
                 return (<RenderRows key={i} data={data} parentIndex={""} index={i} level={0} />)
               })
             }
 
-            {
-              roleModules && roleModules.map((data, i)=> <RenderRows key={i} data={data} parentIndex={""} index={i} level={0}/>)
+            { 
+              roleModules && roleModules.map((data, i) => <RenderRows key={i} data={data} parentIndex={""} index={i} level={0} />)
             }
 
             {
-              !permissionMapped &&
+              !permissionMapped && loading &&
               <TableRow>
-                <TableCell colSpan={6}>No Data</TableCell>
+                <TableCell colSpan={6} className="text-center">Loading...</TableCell>
               </TableRow>
             }
           </TableBody>
@@ -327,6 +331,51 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
 // ----------------------------- //
 
 
+type Module = {
+  id: string;
+  name: string;
+  parentId: string | null;
+  permissions: number;
+  submodules: Module[];
+};
+
+function mergeModules(allModules: Module[], roleAssignedModules: Module[]): Module[] {
+  // Helper function to merge a single module's permissions, if a role-assigned module exists
+  function mergeSingleModule(module: Module, roleAssignedModule: Module | undefined): Module {
+    if (roleAssignedModule) {
+      // If module exists in role-assigned modules, update its permissions
+      module.permissions = roleAssignedModule.permissions;
+
+      // Recursively merge submodules
+      module.submodules = mergeSubmodules(module.submodules, roleAssignedModule.submodules);
+    }
+
+    return module;
+  }
+
+  // Helper function to merge submodules
+  function mergeSubmodules(allSubmodules: Module[], roleAssignedSubmodules: Module[]): Module[] {
+    return allSubmodules.map(allSubmodule => {
+      // Find corresponding submodule in role-assigned submodules
+      const matchingRoleSubmodule = roleAssignedSubmodules.find(
+        roleSubmodule => roleSubmodule.id === allSubmodule.id
+      );
+
+      return mergeSingleModule(allSubmodule, matchingRoleSubmodule);
+    });
+  }
+
+  // Iterate over all modules and merge them with role-assigned modules
+  return allModules.map(allModule => {
+    const roleAssignedModule = roleAssignedModules.find(
+      roleModule => roleModule.id === allModule.id
+    );
+    return mergeSingleModule(allModule, roleAssignedModule);
+  });
+}
+
+// -----------------
+
 interface Submodule {
   id: string;
   name: string;
@@ -335,79 +384,91 @@ interface Submodule {
   submodules: Submodule[];
 }
 
-interface Module {
+interface Modules {
   id: string;
   name: string;
   parentId: string | null;
   permissions: number;
   submodules: Submodule[];
 }
+ 
+function updateModules(previous: Module[], newSubmitted: Module[]): Module[] {
+  // Helper function to update the submodules of a module
+  function updateSubmodules(prevSubmodules: Submodule[], newSubmodules: Submodule[]): Submodule[] {
+    const result: Submodule[] = [];
 
-interface UserAssignedModule {
-  id: string;
-  name: string;
-  permissions: number;
-  submodules: { id: string; permissions: number }[];
-}
-
-function mergeModules(allModules: Module[], userModules: UserAssignedModule[]): Module[] {
-  // Convert the user modules list into a dictionary for easy lookup
-  const userModulesDict = new Map(userModules.map(module => [module.id, module]));
-
-  // Helper function to merge permissions for a module and its submodules
-  function mergeModulePermissions(allModule: Module): Module {
-    const userModule = userModulesDict.get(allModule.id);
-
-    // If the module is assigned to the user, update its permissions
-    if (userModule) {
-      allModule.permissions = userModule.permissions;
-
-      // Merge submodules' permissions
-      const userSubmodulesDict = new Map(
-        userModule.submodules.map(submodule => [submodule.id, submodule])
-      );
-
-      allModule.submodules.forEach(submodule => {
-        const userSubmodule = userSubmodulesDict.get(submodule.id);
-        if (userSubmodule) {
-          submodule.permissions = userSubmodule.permissions;
+    // Add or update submodules
+    for (const newSub of newSubmodules) {
+      const existingSub = prevSubmodules.find(sub => sub.id === newSub.id);
+      if (existingSub) {
+        // Update permissions of existing submodule if permissions are not zero
+        if (newSub.permissions !== 0) {
+          existingSub.permissions = newSub.permissions;
+          result.push(existingSub);
         }
-      });
+      } else {
+        // If submodule is new and permissions are not 0, add it
+        if (newSub.permissions !== 0) {
+          result.push(newSub);
+        }
+      }
     }
 
-    // Recursively merge submodules if any
-    allModule.submodules.forEach(submodule => {
-      submodule.submodules = mergeSubmodules(submodule.submodules, userModulesDict);
-    });
+    // Keep submodules that are in the previous data with permissions not equal to zero
+    for (const prevSub of prevSubmodules) {
+      const existingSub = newSubmodules.find(sub => sub.id === prevSub.id);
+      if (!existingSub && prevSub.permissions !== 0) {
+        result.push(prevSub);
+      }
+    }
 
-    return allModule;
+    return result;
   }
 
-  // Helper function to recursively merge submodules and user permissions
-  function mergeSubmodules(submodules: Submodule[], userModulesDict: Map<string, UserAssignedModule>): Submodule[] {
-    return submodules.map(submodule => {
-      const userSubmodule = userModulesDict.get(submodule.id)?.submodules.find(
-        userSub => userSub.id === submodule.id
-      );
+  // Iterate over all modules in the new submitted data
+  const updatedModules: Module[] = [];
 
-      if (userSubmodule) {
-        submodule.permissions = userSubmodule.permissions;
+  // Add or update modules from new data
+  for (const newModule of newSubmitted) {
+    const prevModule = previous.find(mod => mod.id === newModule.id);
+
+    if (prevModule) {
+      // If the module exists in previous data, update permissions and submodules
+      if (newModule.permissions === 0) {
+        // If permission is 0, retain the module with 0 permissions
+        prevModule.permissions = 0;
+      } else {
+        // Update permissions and submodules if permission is non-zero
+        prevModule.permissions = newModule.permissions;
+        prevModule.submodules = updateSubmodules(prevModule.submodules, newModule.submodules);
       }
 
-      // Recursively merge sub-submodules if any
-      if (submodule.submodules.length > 0) {
-        submodule.submodules = mergeSubmodules(submodule.submodules, userModulesDict);
+      updatedModules.push(prevModule);
+    } else {
+      // If the module is not in previous data and permissions are 0, don't include it
+      if (newModule.permissions !== 0) {
+        updatedModules.push(newModule);
       }
-
-      return submodule;
-    });
+    }
   }
 
-  // Apply merging for each module in the allModules array
-  return allModules.map(mergeModulePermissions);
+  // Add any modules from the previous data that are not in the new data
+  for (const prevModule of previous) {
+    const existingModule = newSubmitted.find(mod => mod.id === prevModule.id);
+    if (!existingModule) {
+      // Keep modules from the previous data
+      updatedModules.push(prevModule);
+    }
+  }
+
+  return updatedModules;
 }
 
-interface TransformedModule {
+
+// ------------To Upsert data ----------//
+
+
+interface Formated {
   moduleId: string;
   permissions: number;
   submodules: {
@@ -416,21 +477,20 @@ interface TransformedModule {
   }[];
 }
 
-function transformModulesToCustomFormat(inputData: any[]): TransformedModule[] {
-  return inputData.map(module => {
-    const submodules = module.submodules
-      .map((submodule:any) => ({
-        submoduleId: submodule.id,
-        permissions: submodule.permissions
-      }))
-      .filter((submodule:any) => submodule.permissions > 0);
-
-    // const totalPermissions = module.permissions + submodules.reduce((sum: any, submodule: { permissions: any; }) => sum + submodule.permissions, 0);
+function reverseFormat(modules: Module[]): Formated[] {
+  return modules.map(module => {
+    const submodules = module.submodules.map(submodule => ({
+      submoduleId: submodule.id,
+      permissions: submodule.permissions
+    }));
 
     return {
       moduleId: module.id,
       permissions: module.permissions,
-      submodules: submodules.length > 0 ? submodules : [],
+      submodules
     };
   });
 }
+
+//------------- updae
+ 

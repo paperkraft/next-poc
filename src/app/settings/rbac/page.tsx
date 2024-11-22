@@ -3,7 +3,6 @@ import AccessPage from "./AccessForm";
 import TitlePage from "@/components/custom/page-heading";
 import { Metadata } from "next";
 import prisma from "@/lib/prisma";
-import { auth } from "@/auth";
 
 export const metadata: Metadata = {
     title: "Access Control",
@@ -12,8 +11,6 @@ export const metadata: Metadata = {
 
 export default async function Page() {
     const modules = await getModulesWithSubmodules();
-    const session = await auth()
-
     // await getModulesByRole(session?.user?.roleId).then(result => console.log(JSON.stringify(result, null, 2)))
 
     const roles = await prisma.role.findMany({

@@ -184,9 +184,10 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
     // console.log(form.formState.errors);
     const submitted = data.modules.map(applyBitmaskRecursively)
     console.log("Sumbitted Data: ", JSON.stringify(submitted, null, 2));
+    console.log("Previous Data: ", JSON.stringify(previousAssignedModules, null, 2));
 
-    const updatedModules = previousAssignedModules && updateModules(previousAssignedModules as any, submitted as any);
-    console.log("updated Modules", JSON.stringify(updatedModules, null, 2));
+    const updatedModules = previousAssignedModules && updateModules(submitted as any, previousAssignedModules as any);
+    console.log("Updated Modules", JSON.stringify(updatedModules, null, 2));
 
     const formated = reverseFormat(updatedModules as any);
     console.log("Format Modules", JSON.stringify(formated, null, 2));
@@ -274,7 +275,7 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
         </React.Fragment>
       </Collapsible>
     )
-  }, [form]);
+  }, [form.control]);
 
   return (
     <Form {...form}>
@@ -375,99 +376,7 @@ function mergeModules(allModules: Module[], roleAssignedModules: Module[]): Modu
 }
 
 // -----------------
-
-interface Submodule {
-  id: string;
-  name: string;
-  parentId: string | null;
-  permissions: number;
-  submodules: Submodule[];
-}
-
-interface Modules {
-  id: string;
-  name: string;
-  parentId: string | null;
-  permissions: number;
-  submodules: Submodule[];
-}
  
-function updateModules(previous: Module[], newSubmitted: Module[]): Module[] {
-  // Helper function to update the submodules of a module
-  function updateSubmodules(prevSubmodules: Submodule[], newSubmodules: Submodule[]): Submodule[] {
-    const result: Submodule[] = [];
-
-    // Add or update submodules
-    for (const newSub of newSubmodules) {
-      const existingSub = prevSubmodules.find(sub => sub.id === newSub.id);
-      if (existingSub) {
-        // Update permissions of existing submodule if permissions are not zero
-        if (newSub.permissions !== 0) {
-          existingSub.permissions = newSub.permissions;
-          result.push(existingSub);
-        }
-      } else {
-        // If submodule is new and permissions are not 0, add it
-        if (newSub.permissions !== 0) {
-          result.push(newSub);
-        }
-      }
-    }
-
-    // Keep submodules that are in the previous data with permissions not equal to zero
-    for (const prevSub of prevSubmodules) {
-      const existingSub = newSubmodules.find(sub => sub.id === prevSub.id);
-      if (!existingSub && prevSub.permissions !== 0) {
-        result.push(prevSub);
-      }
-    }
-
-    return result;
-  }
-
-  // Iterate over all modules in the new submitted data
-  const updatedModules: Module[] = [];
-
-  // Add or update modules from new data
-  for (const newModule of newSubmitted) {
-    const prevModule = previous.find(mod => mod.id === newModule.id);
-
-    if (prevModule) {
-      // If the module exists in previous data, update permissions and submodules
-      if (newModule.permissions === 0) {
-        // If permission is 0, retain the module with 0 permissions
-        prevModule.permissions = 0;
-      } else {
-        // Update permissions and submodules if permission is non-zero
-        prevModule.permissions = newModule.permissions;
-        prevModule.submodules = updateSubmodules(prevModule.submodules, newModule.submodules);
-      }
-
-      updatedModules.push(prevModule);
-    } else {
-      // If the module is not in previous data and permissions are 0, don't include it
-      if (newModule.permissions !== 0) {
-        updatedModules.push(newModule);
-      }
-    }
-  }
-
-  // Add any modules from the previous data that are not in the new data
-  for (const prevModule of previous) {
-    const existingModule = newSubmitted.find(mod => mod.id === prevModule.id);
-    if (!existingModule) {
-      // Keep modules from the previous data
-      updatedModules.push(prevModule);
-    }
-  }
-
-  return updatedModules;
-}
-
-
-// ------------To Upsert data ----------//
-
-
 interface Formated {
   moduleId: string;
   permissions: number;
@@ -492,5 +401,40 @@ function reverseFormat(modules: Module[]): Formated[] {
   });
 }
 
-//------------- updae
+//------------- 
  
+
+function updateModules(submittedData: Module[], previousData: Module[]): Module[] {
+  const mapPreviousData = createIdMap(previousData);
+
+  return submittedData
+    .map(submodule => {
+      const prevModule = mapPreviousData.get(submodule.id);
+
+      // If the module exists in previous data, include it and update permissions from submitted data
+      if (prevModule) {
+        return {
+          ...submodule, // Use the submitted module data
+          permissions: submodule.permissions, // Update to the submitted permissions (even if 0)
+          submodules: updateModules(submodule.submodules, prevModule.submodules) // Recurse for submodules
+        };
+      } else if (submodule.permissions !== 0) {
+        // If the module doesn't exist in previous data and permissions are non-zero, add it
+        return {
+          ...submodule,
+          submodules: updateModules(submodule.submodules, []) // Recurse for submodules, as there are no submodules in the previous data for new modules
+        };
+      }
+
+      return null; // Exclude module if it doesn't exist in previous data and permissions are zero
+    })
+    .filter(Boolean) as Module[]; // Filter out any null values (excluded modules with zero permissions)
+}
+
+function createIdMap(data: Module[]): Map<string, Module> {
+  const map = new Map<string, Module>();
+  data.forEach(module => {
+    map.set(module.id, module);
+  });
+  return map;
+}

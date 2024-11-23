@@ -32,7 +32,6 @@ export default function ModuleList({ data }: { data: IModule[] }) {
                     <TableRow>
                         <TableHead>#</TableHead>
                         <TableHead>Module</TableHead>
-                        <TableHead>Permisisions</TableHead>
                         <TableHead>Action</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -54,34 +53,35 @@ function Nested({ data, level }: { data: IModule, level: number }) {
         return <span className="text-muted-foreground">{`|${Array(count).fill('-').join('')} `}</span>
     }
 
-    if (!hasSubModules) {
-        return (
-            <TableRow>
-                <TableCell></TableCell>
-                <TableCell>{data?.parentId ? renderDash(level) : null}{data?.name}</TableCell>
-                <TableCell>{data?.permissions}</TableCell>
-                <TableCell>
-                    <Button variant={"ghost"} className="size-7" asChild>
-                        <Link href={`${path}/${data?.id}`}><Eye className="size-5" /></Link>
-                    </Button>
-                </TableCell>
-            </TableRow>
-        )
-    }
+    // if (!hasSubModules) {
+    //     return (
+    //         <TableRow>
+    //             <TableCell></TableCell>
+    //             <TableCell>{data?.parentId ? renderDash(level) : null}{data?.name}</TableCell>
+    //             <TableCell>
+    //                 <Button variant={"ghost"} className="size-7" asChild>
+    //                     <Link href={`${path}/${data?.id}`}><Eye className="size-5" /></Link>
+    //                 </Button>
+    //             </TableCell>
+    //         </TableRow>
+    //     )
+    // }
 
     return (
         <Collapsible asChild>
             <React.Fragment>
                 <TableRow>
                     <TableCell>
-                        <CollapsibleTrigger asChild>
-                            <Button variant={"ghost"} className="flex h-6 w-6 p-0 data-[state=open]:bg-muted [&[data-state=open]>svg]:rotate-90">
-                                <ChevronRight className="h-4 w-4" />
-                            </Button>
-                        </CollapsibleTrigger>
+                        {
+                            hasSubModules &&
+                            <CollapsibleTrigger asChild>
+                                <Button variant={"ghost"} className="flex h-6 w-6 p-0 data-[state=open]:bg-muted [&[data-state=open]>svg]:rotate-90">
+                                    <ChevronRight className="h-4 w-4" />
+                                </Button>
+                            </CollapsibleTrigger>
+                        }
                     </TableCell>
                     <TableCell>{data?.parentId ? renderDash(level) : null}{data?.name}</TableCell>
-                    <TableCell>{data?.permissions}</TableCell>
                     <TableCell>
                         <Button variant={"ghost"} className="size-7" asChild size={'icon'}>
                             <Link href={`${path}/${data.id}`}><Eye className="size-5" /></Link>

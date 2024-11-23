@@ -19,7 +19,6 @@ export default function Dashboard() {
   const user = session?.user;
 
   useEffect(() => {
-    console.log('render');
     
     if (mounted && user?.name === null) {
       setOpen(true);

@@ -15,7 +15,7 @@ type ModuleWithPermissions = {
             id: string;
             name: string;
             parentId: string;
-            SubModules: any[]; // To support nested submodules
+            SubModules: any[];
         }[];
     };
     submodule: {
@@ -116,21 +116,42 @@ export async function GET(request: Request) {
                 module: {
                     include: {
                         SubModules: {
+                            where: {
+                                SubModulePermissions: {
+                                    some: {
+                                        roleId
+                                    }
+                                }
+                            },
                             include: {
-                                SubModules: true,
+                                SubModules: {
+                                    where: {
+                                        SubModulePermissions: {
+                                            some: {
+                                                roleId
+                                            }
+                                        }
+                                    },
+                                },
                             }
                         }
                     }
                 },
                 submodule: {
                     include: {
-                        SubModules: true,
+                        SubModules: {
+                            where: {
+                                SubModulePermissions: {
+                                    some: {
+                                        roleId
+                                    }
+                                }
+                            },
+                        },
                     }
                 }
             }
         });
-
-
 
         if (!modulesWithPermissions) {
             return NextResponse.json(

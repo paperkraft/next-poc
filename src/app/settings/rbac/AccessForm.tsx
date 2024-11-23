@@ -25,6 +25,7 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+
 interface IAccessProps {
   roles: RoleType[];
   modules: IModule[];
@@ -132,9 +133,7 @@ const applyBitmaskRecursively = (item: any): IModule => {
     permissions: calculateBitmask(item.permissions),
   };
   if (updatedItem.submodules && updatedItem.submodules.length > 0) {
-    updatedItem.submodules = updatedItem.submodules.map(
-      applyBitmaskRecursively
-    );
+    updatedItem.submodules = updatedItem.submodules.map(applyBitmaskRecursively);
   }
   return updatedItem;
 };
@@ -144,12 +143,9 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
 
   const [loading, setLoading] = useState<boolean>(false);
   const [roleModules, setRoleModules] = useState<IModule[]>();
-  const [previousAssignedModules, setPreviousAssignModules] =
-    useState<IModule[]>();
+  const [previousAssignedModules, setPreviousAssignModules] = useState<IModule[]>();
 
-  const permissionMapped = modules.map((module) =>
-    processModulePermissions(module, bitmask)
-  );
+  const permissionMapped = modules.map((module) => processModulePermissions(module, bitmask));
   const roleOptions = roles.map((role) => processRolesOptions(role));
 
   const form = useForm({
@@ -171,62 +167,70 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
     const getRoleModules = async (roleId: string) => {
       setLoading(true);
       if (roleId) {
-        const res = await fetch(`/api/master/module/${roleId}`)
-          .then((dd) => dd.json())
-          .catch((err) => err);
-        if (res.success) {
-          const data = res.data;
-          data && setPreviousAssignModules(data);
-          const merge = mergeModules(modules as any, data);
-          const processed = merge.map((module) =>
-            processModulePermissions(module as any, bitmask)
-          );
-          processed.length > 0 && setRoleModules(processed);
-          processed.length > 0 && form.setValue("modules", processed);
-          setLoading(false);
+        try {
+          const result = await fetch(`/api/master/module/${roleId}`)
+          const res = await result.json();
+
+          if (res.success) {
+            const data = res.data;
+            data && setPreviousAssignModules(data);
+            const merge = mergeModules(modules as any, data);
+            const processed = merge.map((module) =>
+              processModulePermissions(module as any, bitmask)
+            );
+            processed.length > 0 && setRoleModules(processed);
+            processed.length > 0 && form.setValue("modules", processed);
+            setLoading(false);
+          } else {
+            toast.error("Failed to fetch role modules");
+          }
+        } catch (error) {
+          console.error(error);
+          toast.error("Failed to fetch role modules");
         }
       }
     };
     getRoleModules(roleId);
   }, [roleId, form.control]);
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: FormValues) => {
     const submitted = data.modules.map(applyBitmaskRecursively);
     const updatedModules =
       previousAssignedModules &&
       updateModules(submitted as any, previousAssignedModules as any);
-    const formated = reverseFormat(updatedModules as any);
+    const formated = transformModules(updatedModules as any);
 
     const final = {
       roleId: data.userId,
       modulesData: formated,
     };
 
-    const res = await fetch(`/api/master/rbac`, {
-      method: "POST",
-      body: JSON.stringify(final),
-    })
-      .then((res) => res.json())
-      .catch((err) => err);
-
-    if (res.success) {
-      toast.success("Module Created");
-      route.refresh();
-    } else {
-      toast.error("Failed to create module");
+    try {
+      const result = await fetch(`/api/master/rbac`, {
+        method: "POST",
+        body: JSON.stringify(final),
+      })
+      const res = await result.json();
+      if (res.success) {
+        console.log('res', res);
+        toast.success("Assigned module successfull");
+        route.refresh();
+      } else {
+        toast.error("Failed to assigned module");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to assigned module");
     }
   };
 
   const renderDash = (count: number) => {
     return (
-      <span className="text-muted-foreground">{`|${Array(count)
-        .fill("-")
-        .join("")} `}</span>
+      <span className="text-muted-foreground">{`|${Array(count).fill("-").join("")} `}</span>
     );
   };
   // Recursive function to render the form for modules and submodules
-  const RenderRows = useCallback(
-    ({ data, index, level, parentIndex }: IRenderRows) => {
+  const RenderRows = useCallback(({ data, index, level, parentIndex }: IRenderRows) => {
       const hasSubModules = data?.submodules?.length > 0;
 
       return (
@@ -235,11 +239,8 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
             <TableRow>
               <TableCell>
                 {hasSubModules ? (
-                  <CollapsibleTrigger asChild>
-                    <Button
-                      variant={"ghost"}
-                      className="flex h-6 w-6 p-0 data-[state=open]:bg-muted [&[data-state=open]>svg]:rotate-90"
-                    >
+                  <CollapsibleTrigger asChild className="data-[state=open]:bg-muted [&[data-state=open]>svg]:rotate-90">
+                    <Button variant={"ghost"} className="flex h-6 w-6 p-0">
                       <ChevronRight className="h-4 w-4" />
                     </Button>
                   </CollapsibleTrigger>
@@ -253,9 +254,7 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
               {data.permissions.map((permission, i) => (
                 <TableCell key={permission.name}>
                   <FormField
-                    name={
-                      `modules.${parentIndex}${index}.permissions.${i}.bitmask` as any
-                    }
+                    name={`modules.${parentIndex}${index}.permissions.${i}.bitmask` as any}
                     control={form.control}
                     render={({ field }) => (
                       <Switch
@@ -272,13 +271,7 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
               <React.Fragment>
                 {data &&
                   data?.submodules.map((sub, ii) => (
-                    <RenderRows
-                      key={sub.id}
-                      data={sub}
-                      index={ii}
-                      level={level + 1}
-                      parentIndex={`${parentIndex}${index}.submodules.`}
-                    />
+                    <RenderRows key={sub.id} data={sub} index={ii} level={level + 1} parentIndex={`${parentIndex}${index}.submodules.`} />
                   ))}
               </React.Fragment>
             </CollapsibleContent>
@@ -295,11 +288,7 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <div className="px-4">
-          <SelectController
-            name={"userId"}
-            label={"Role"}
-            options={roleOptions}
-          />
+          <SelectController name={"userId"} label={"Role"} options={roleOptions} />
         </div>
 
         <Table>
@@ -314,27 +303,13 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
           <TableBody>
             {!roleModules &&
               permissionMapped &&
-              permissionMapped.map((data: any, i: number) => {
-                return (
-                  <RenderRows
-                    key={i}
-                    data={data}
-                    parentIndex={""}
-                    index={i}
-                    level={0}
-                  />
-                );
-              })}
+              permissionMapped.map((data: any, i: number) => (
+                <RenderRows key={i} data={data} parentIndex={""} index={i} level={0} />
+              ))}
 
             {roleModules &&
               roleModules.map((data, i) => (
-                <RenderRows
-                  key={i}
-                  data={data}
-                  parentIndex={""}
-                  index={i}
-                  level={0}
-                />
+                <RenderRows key={i} data={data} parentIndex={""} index={i} level={0} />
               ))}
 
             {!permissionMapped && loading && (
@@ -348,13 +323,7 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
         </Table>
 
         <div className="flex justify-end my-4 gap-2">
-          <Button
-            variant={"outline"}
-            onClick={(e) => {
-              e.preventDefault();
-              form.reset();
-            }}
-          >
+          <Button variant={"outline"} onClick={(e) => { e.preventDefault(); form.reset(); }}>
             Reset
           </Button>
           <Button type="submit">Submit</Button>
@@ -364,7 +333,7 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
   );
 }
 
-// ----------------------------- //
+// ----------------------------- Merge default modules with role assigned modules ----------------------------- //
 
 type Module = {
   id: string;
@@ -374,40 +343,26 @@ type Module = {
   submodules: Module[];
 };
 
-function mergeModules(
-  allModules: Module[],
-  roleAssignedModules: Module[]
-): Module[] {
-  // Helper function to merge a single module's permissions, if a role-assigned module exists
-  function mergeSingleModule(
-    module: Module,
-    roleAssignedModule: Module | undefined
-  ): Module {
-    if (roleAssignedModule) {
-      // If module exists in role-assigned modules, update its permissions
-      module.permissions = roleAssignedModule.permissions;
+function mergeModules(allModules: Module[], roleAssignedModules: Module[]): Module[] {
 
-      // Recursively merge submodules
+  // Helper function to merge modules
+  function mergeSingleModule(module: Module, roleAssignedModule: Module | undefined): Module {
+    if (roleAssignedModule) {
+      module.permissions = roleAssignedModule.permissions;
       module.submodules = mergeSubmodules(
         module.submodules,
         roleAssignedModule.submodules
       );
     }
-
     return module;
   }
 
   // Helper function to merge submodules
-  function mergeSubmodules(
-    allSubmodules: Module[],
-    roleAssignedSubmodules: Module[]
-  ): Module[] {
+  function mergeSubmodules(allSubmodules: Module[], roleAssignedSubmodules: Module[]): Module[] {
     return allSubmodules.map((allSubmodule) => {
-      // Find corresponding submodule in role-assigned submodules
       const matchingRoleSubmodule = roleAssignedSubmodules.find(
         (roleSubmodule) => roleSubmodule.id === allSubmodule.id
       );
-
       return mergeSingleModule(allSubmodule, matchingRoleSubmodule);
     });
   }
@@ -421,38 +376,39 @@ function mergeModules(
   });
 }
 
-// -----------------
+// ----------------------------- Format submitted data to API ----------------------------- //
 
-interface Formated {
+interface FormatSubmodule {
+  submoduleId: string;
+  permissions: number;
+  submodules?: FormatSubmodule[];
+}
+
+interface FormatModule {
   moduleId: string;
   permissions: number;
-  submodules: {
-    submoduleId: string;
-    permissions: number;
-  }[];
+  submodules: FormatSubmodule[];
 }
 
-function reverseFormat(modules: Module[]): Formated[] {
-  return modules.map((module) => {
-    const submodules = module.submodules.map((submodule) => ({
-      submoduleId: submodule.id,
-      permissions: submodule.permissions,
-    }));
-
-    return {
-      moduleId: module.id,
-      permissions: module.permissions,
-      submodules,
-    };
-  });
+function transformModules(input: Module[]): FormatModule[] {
+  return input.map((module) => ({
+    moduleId: module.id,
+    permissions: module.permissions,
+    submodules: transformSubmodules(module.submodules),
+  }));
 }
 
-//-------------
+function transformSubmodules(input: Module[]): FormatSubmodule[] {
+  return input.map((submodule) => ({
+    submoduleId: submodule.id,
+    permissions: submodule.permissions,
+    submodules: submodule.submodules.length > 0 ? transformSubmodules(submodule.submodules) : [],
+  }));
+}
 
-function updateModules(
-  submittedData: Module[],
-  previousData: Module[]
-): Module[] {
+// ----------------------------- Update submited data from previous data  ----------------------------- //
+
+function updateModules(submittedData: Module[], previousData: Module[]): Module[] {
   const mapPreviousData = createIdMap(previousData);
 
   return submittedData
@@ -480,8 +436,6 @@ function updateModules(
 
 function createIdMap(data: Module[]): Map<string, Module> {
   const map = new Map<string, Module>();
-  data.forEach((module) => {
-    map.set(module.id, module);
-  });
+  data.forEach((module) => map.set(module.id, module));
   return map;
 }

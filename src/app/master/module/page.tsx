@@ -6,6 +6,14 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import { IModule } from "./ModuleInterface";
 
+
+interface InputFormat {
+  id: string,
+  name: string,
+  parentId: string | null,
+  SubModules: InputFormat[] | null
+}
+
 export default async function Page() {
   const modules = await getModulesWithSubmodules();
 
@@ -31,26 +39,21 @@ export default async function Page() {
 
 export async function getModulesWithSubmodules(): Promise<IModule[]> {
   try {
+    // 3 level submodules
     const modules = await prisma.module.findMany({
       include: {
-        permissions: true,
         SubModules: {
           include: {
-            permissions: true,
             SubModules: {
               include: {
-                permissions: true,
-                SubModules: {
-                  include: {
-                    permissions: true,
-                  },
-                },
+                SubModules: true,
               },
             },
           },
         },
       },
     });
+
     const formattedModules = modules.map((module) => formatModule(module));
     const submoduleIds = new Set(formattedModules.flatMap((module) => module.submodules.map((submodule) => submodule.id)));
     const finalModules = formattedModules.filter((module) => !submoduleIds.has(module.id));
@@ -61,14 +64,14 @@ export async function getModulesWithSubmodules(): Promise<IModule[]> {
   }
 }
 
-
 // Recursive function to process a module and its submodules
-function formatModule(module: any): IModule {
+function formatModule(module: InputFormat): IModule {
   return {
     id: module.id,
     name: module.name,
     parentId: module?.parentId,
-    permissions: module.permissions.reduce((acc: number, perm: any) => acc | perm.bitmask, 0),
-    submodules: (module.SubModules || []).map((submodule: any) => formatModule(submodule)),
+    permissions: 0,
+    // permissions: module.permissions.reduce((acc: number, perm: any) => acc | perm.bitmask, 0),
+    submodules: (module.SubModules || []).map((submodule) => formatModule(submodule)),
   };
 }

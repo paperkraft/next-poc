@@ -199,6 +199,7 @@ function HeaderMenuOptions(){
 function FooterMenuOptions() {
     const { data: session } = useSession();
     const user = session?.user;
+    const initials = user?.name.split(' ').map((word: any[]) => word[0]).join('').toUpperCase();
     const logout = () => signOut({ redirect: false });
 
     const options = [
@@ -229,7 +230,7 @@ function FooterMenuOptions() {
                             className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
                             <Avatar className="h-8 w-8 rounded-full border border-blue-500">
                                 <AvatarImage src={user?.image} alt={user?.name} />
-                                <AvatarFallback className="rounded-full">SV</AvatarFallback>
+                                <AvatarFallback className="rounded-full">{initials ?? "UN"}</AvatarFallback>
                             </Avatar>
                             
                             <div className="grid flex-1 text-left text-sm leading-tight">
@@ -254,7 +255,7 @@ function FooterMenuOptions() {
                             <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                                 <Avatar className="h-8 w-8 rounded-full border border-blue-500">
                                     <AvatarImage src={user?.image} alt={user?.name} />
-                                    <AvatarFallback className="rounded-full">SV</AvatarFallback>
+                                    <AvatarFallback className="rounded-full">{initials ?? "UN"}</AvatarFallback>
                                 </Avatar>
                                 <div className="grid flex-1 text-left text-sm leading-tight">
                                     <span className="truncate font-semibold">

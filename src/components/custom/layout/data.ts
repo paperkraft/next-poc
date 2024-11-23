@@ -1,10 +1,9 @@
 import {
-    AppWindow,
     Book,
     GraduationCapIcon,
     Home,
     ImageIcon,
-    Menu,
+    LayoutGrid,
     Settings2,
     User2,
 } from "lucide-react"
@@ -61,7 +60,7 @@ export const data = [
         label: "Master",
         title: "Module",
         url: "/master/module",
-        icon: AppWindow,
+        icon: LayoutGrid,
         isActive: false,
         submenu: [],
     },

@@ -17,7 +17,7 @@ import {
 import { ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Form, FormField, FormLabel } from "@/components/ui/form";
+import { Form, FormField } from "@/components/ui/form";
 import { SelectController } from "@/components/custom/form.control/SelectController";
 import { RoleType } from "@/app/master/role/List";
 import { useFieldArray, useForm } from "react-hook-form";
@@ -25,6 +25,7 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { WithPermission } from "@/components/custom/with-permission";
 
 interface IAccessProps {
   roles: RoleType[];
@@ -285,51 +286,53 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
   const Thead = ["", "Module", "View", "Edit", "Create", "Delete"];
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <div className="px-4">
-          <SelectController name={"userId"} label={"Role"} options={roleOptions} />
-        </div>
+    <WithPermission permissionBit={4 | 8}>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <div className="px-4">
+            <SelectController name={"userId"} label={"Role"} options={roleOptions} />
+          </div>
 
-        <Table>
-          <TableHeader className="bg-gray-50 dark:bg-gray-800">
-            <TableRow>
-              {Thead.map((item) => (
-                <TableHead key={item}>{item}</TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
-
-          <TableBody>
-            {!roleModules &&
-              permissionMapped &&
-              permissionMapped.map((data: any, i: number) => (
-                <RenderRows key={i} data={data} parentIndex={""} index={i} level={0} />
-              ))}
-
-            {roleModules &&
-              roleModules.map((data, i) => (
-                <RenderRows key={i} data={data} parentIndex={""} index={i} level={0} />
-              ))}
-
-            {!permissionMapped && loading && (
+          <Table>
+            <TableHeader className="bg-gray-50 dark:bg-gray-800">
               <TableRow>
-                <TableCell colSpan={6} className="text-center">
-                  Loading...
-                </TableCell>
+                {Thead.map((item) => (
+                  <TableHead key={item}>{item}</TableHead>
+                ))}
               </TableRow>
-            )}
-          </TableBody>
-        </Table>
+            </TableHeader>
 
-        <div className="flex justify-end my-4 gap-2">
-          <Button variant={"outline"} onClick={(e) => { e.preventDefault(); form.reset(); }}>
-            Reset
-          </Button>
-          <Button type="submit">Submit</Button>
-        </div>
-      </form>
-    </Form>
+            <TableBody>
+              {!roleModules &&
+                permissionMapped &&
+                permissionMapped.map((data: any, i: number) => (
+                  <RenderRows key={i} data={data} parentIndex={""} index={i} level={0} />
+                ))}
+
+              {roleModules &&
+                roleModules.map((data, i) => (
+                  <RenderRows key={i} data={data} parentIndex={""} index={i} level={0} />
+                ))}
+
+              {!permissionMapped && loading && (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center">
+                    Loading...
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+
+          <div className="flex justify-end my-4 gap-2">
+            <Button variant={"outline"} onClick={(e) => { e.preventDefault(); form.reset(); }}>
+              Reset
+            </Button>
+            <Button type="submit">Submit</Button>
+          </div>
+        </form>
+      </Form>
+    </WithPermission>
   );
 }
 

@@ -56,7 +56,7 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import Header from "./Header"
-import { menus, menuType, submenuType } from "./data"
+import { defalutMenu, menuType, submenuType, transformMenuData, uniqueLabels } from "./data"
 import { ChildProps } from "@/types/types"
 import { useForm } from "react-hook-form"
 import { FormField } from "@/components/ui/form"
@@ -64,21 +64,38 @@ import { useIsMobile } from "@/hooks/use-mobile"
 
 export default function AppSidebar({ children }: ChildProps) {
 
-    const [filter, setFilter] = React.useState(menus);
+    const { data } = useSession();
+    const [filter, setFilter] = React.useState<menuType[][]>(defalutMenu);
+    const [menus, setMenus] = React.useState<menuType[][]>(defalutMenu);
+
+    React.useEffect(() => {
+        if (data) {
+            const serverMenuData = data?.user?.modules
+            const userPermissions = data?.user?.permissions
+            const filteredMenuData = transformMenuData(serverMenuData, userPermissions);
+            const userMenus: menuType[][] = uniqueLabels
+                .map((label) => filteredMenuData
+                    .filter((menu) => menu.label === label))
+                .filter((menuGroup) => menuGroup.length > 0)
+            setFilter(userMenus);
+            setMenus(userMenus);
+        }
+    }, [data]);
+
 
     const form = useForm({
-        defaultValues:{
-            query:""
+        defaultValues: {
+            query: ""
         }
     });
 
     const query = form.watch('query');
 
     const filterMenu = (query: string) => {
-        
+
         const lowerCaseQuery = query.toLowerCase();
 
-        function searchSubmenu(submenu:submenuType[], query: string):boolean {
+        function searchSubmenu(submenu: submenuType[], query: string): boolean {
             if (!submenu) return false;
             return submenu.some((item) => {
                 return (
@@ -101,27 +118,27 @@ export default function AppSidebar({ children }: ChildProps) {
         setFilter(filtered);
     };
 
-    React.useEffect(()=>{
-        if(query){
+    React.useEffect(() => {
+        if (query) {
             filterMenu(query);
         } else {
             setFilter(menus);
         }
-    },[query])
+    }, [query])
 
     return (
         <SidebarProvider>
             <Sidebar>
                 <SidebarHeader className="h-16 border-b">
-                    <HeaderMenuOptions/>
+                    <HeaderMenuOptions />
                 </SidebarHeader>
 
                 <SidebarContent>
                     <SidebarGroup className="sticky top-0 z-40 bg-sidebar">
-                        <FormField 
+                        <FormField
                             control={form.control}
                             name="query"
-                            render={({field})=>(
+                            render={({ field }) => (
                                 <SidebarGroupContent className="relative">
                                     <SidebarInput
                                         id="search"
@@ -132,8 +149,8 @@ export default function AppSidebar({ children }: ChildProps) {
                                     <SearchIcon className="pointer-events-none absolute left-2 top-1/2 size-4 -translate-y-1/2 select-none opacity-50" />
                                     {
                                         field.value &&
-                                        <span className="cursor-pointer absolute right-2 top-1/2 size-4 -translate-y-1/2" onClick={()=> form.resetField('query')}>
-                                            <X className="size-4"/>
+                                        <span className="cursor-pointer absolute right-2 top-1/2 size-4 -translate-y-1/2" onClick={() => form.resetField('query')}>
+                                            <X className="size-4" />
                                         </span>
                                     }
                                 </SidebarGroupContent>
@@ -155,11 +172,11 @@ export default function AppSidebar({ children }: ChildProps) {
                             </SidebarGroup>
                         ))
                     }
-                    <OtherOptions/>
+                    <OtherOptions />
                 </SidebarContent>
 
                 <SidebarFooter>
-                    <FooterMenuOptions/>
+                    <FooterMenuOptions />
                 </SidebarFooter>
             </Sidebar>
 
@@ -173,9 +190,9 @@ export default function AppSidebar({ children }: ChildProps) {
     )
 }
 
-function HeaderMenuOptions(){
+function HeaderMenuOptions() {
     const route = useRouter();
-    return(
+    return (
         <SidebarMenu>
             <SidebarMenuItem>
                 <SidebarMenuButton onClick={() => route.push('/')} size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
@@ -204,18 +221,18 @@ function FooterMenuOptions() {
 
     const options = [
         {
-            label:'Profile',
-            url:'/profile',
+            label: 'Profile',
+            url: '/profile',
             icon: UserIcon
         },
         {
-            label:'Setting',
-            url:'#',
+            label: 'Setting',
+            url: '#',
             icon: Settings2
         },
         {
-            label:'Notifications',
-            url:'#',
+            label: 'Notifications',
+            url: '#',
             icon: Bell
         },
     ]
@@ -232,7 +249,7 @@ function FooterMenuOptions() {
                                 <AvatarImage src={user?.image} alt={user?.name} />
                                 <AvatarFallback className="rounded-full">{initials ?? "UN"}</AvatarFallback>
                             </Avatar>
-                            
+
                             <div className="grid flex-1 text-left text-sm leading-tight">
                                 <span className="truncate font-semibold">
                                     {user?.name}
@@ -272,7 +289,7 @@ function FooterMenuOptions() {
 
                         <DropdownMenuGroup>
                             {
-                                options.map((item)=>(
+                                options.map((item) => (
                                     <DropdownMenuItem key={item.label}>
                                         <Link href={item.url} className="flex flex-1 items-center">
                                             {item.icon && <item.icon />}{item.label}
@@ -295,8 +312,8 @@ function FooterMenuOptions() {
     )
 }
 
-function OtherOptions(){
-    return(
+function OtherOptions() {
+    return (
         <SidebarGroup className="mt-auto">
             <SidebarGroupContent>
                 <SidebarMenu>

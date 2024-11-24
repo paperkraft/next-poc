@@ -5,13 +5,6 @@ import GitHub from "next-auth/providers/github";
 import bcrypt from 'bcryptjs';
 import { AUTH_SECRET, GITHUB_ID, GITHUB_SECRET } from "@/utils/constants";
 
-interface GroupedModule {
-    id: string;
-    name: string;
-    permissions?: number;
-    submodules: { id: string; name: string, permissions?: number }[];
-  }
-
 const authConfig: NextAuthConfig = {
     secret: AUTH_SECRET,
 
@@ -45,55 +38,21 @@ const authConfig: NextAuthConfig = {
                             select: {
                                 id: true,
                                 name: true,
-                                parentId:true
+                                parentId: true
                             },
                         },
                         submodule: {
                             select: {
                                 id: true,
                                 name: true,
-                                parentId:true
+                                parentId: true
                             },
                         },
                         permissions: true,
                     },
                 });
 
-
-                // Grouping modules and submodules
-                const groupedModules:GroupedModule[] = userModulesGrouped.reduce((acc:GroupedModule[], permission) => {
-                    // Check if the module already exists in the accumulator
-                    const existingModule = acc.find(m => m.id === permission.module.id);
-
-                    if (existingModule) {
-                        // Add the submodule to the existing module if it exists
-                        if (permission.submodule) {
-                            existingModule.submodules.push({
-                                id: permission.submodule.id,
-                                name: permission.submodule.name,
-                                permissions: permission.permissions
-                            });
-                        }
-                    } else {
-                        // Create a new module object if it doesn't exist yet
-                        acc.push({
-                            id: permission.module.id,
-                            name: permission.module.name,
-                            permissions: permission.permissions,
-                            submodules: permission.submodule
-                                ? [
-                                    {
-                                        id: permission.submodule.id,
-                                        name: permission.submodule.name,
-                                        permissions: permission.permissions
-                                    },
-                                ]
-                                : [],
-                        });
-                    }
-
-                    return acc;
-                }, []);
+                const formattedJson = formatToParentChild(userModulesGrouped);
 
                 if (!user || !(await bcrypt.compare(data.password, user.password as string))) {
                     return null
@@ -105,7 +64,7 @@ const authConfig: NextAuthConfig = {
                     email: data.email,
                     roleId: user?.roleId,
                     permissions: user?.role?.permissions,
-                    modules: groupedModules
+                    modules: formattedJson
                 } as User
             }
         }),
@@ -173,3 +132,51 @@ const authConfig: NextAuthConfig = {
 }
 
 export default authConfig;
+interface InputFormat {
+    id: string;
+    name: string;
+    parentId: string | null;
+    permissions: number;
+    submodules: InputFormat[] | null;
+}
+
+// Function to transform the input into a parent-child hierarchical format
+function formatToParentChild(input: any[]): InputFormat[] {
+    // A map to store all modules by their id
+    const moduleMap: { [key: string]: InputFormat } = {};
+
+    // Step 1: Create a module map where each module/submodule is keyed by id
+    input.forEach((item) => {
+        const module = item.module;
+        const submodule = item.submodule;
+
+        if (!moduleMap[module.id]) {
+            moduleMap[module.id] = {
+                id: module.id,
+                name: module.name,
+                parentId: module.parentId,
+                permissions: item.permissions,
+                submodules: []
+            };
+        }
+
+        // If there is a submodule, process it similarly
+        if (submodule) {
+            if (!moduleMap[submodule.id]) {
+                moduleMap[submodule.id] = {
+                    id: submodule.id,
+                    name: submodule.name,
+                    parentId: submodule.parentId,
+                    permissions: item.permissions,
+                    submodules: []
+                };
+            }
+
+            // Add the submodule to the parent module's submodules
+            moduleMap[submodule.parentId!].submodules!.push(moduleMap[submodule.id]);
+        }
+    });
+
+    // Step 2: Extract only the top-level modules (those with no parentId)
+    return Object.values(moduleMap).filter(module => module.parentId === null);
+}

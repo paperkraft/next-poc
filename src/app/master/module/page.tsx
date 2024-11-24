@@ -4,7 +4,7 @@ import TitlePage from "@/components/custom/page-heading";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import Link from "next/link";
-import { IModule } from "./ModuleInterface";
+import { IModuleFormat } from "./ModuleInterface";
 
 
 interface InputFormat {
@@ -15,29 +15,32 @@ interface InputFormat {
 }
 
 export default async function Page() {
-  const modules = await getModulesWithSubmodules();
 
-  if (!modules) {
-    return null
+  try {
+    const modules = await getModulesWithSubmodules();
+
+    return (
+      <div className="space-y-8 p-2">
+        <TitlePage title="Module List" description="List of all module and submodule">
+          <div className="flex gap-2">
+            <Button className="size-7" variant={"outline"} size={"sm"} asChild>
+              <Link href={'/master/module/add'}>
+                <Plus className="size-5" />
+              </Link>
+            </Button>
+          </div>
+        </TitlePage>
+        {!modules && <>No data found...</>}
+        {modules && <ModuleList data={modules as any} />}
+      </div>
+    )
+  } catch (error) {
+    console.error(error);
+    return <>Failed to fetch data...</>
   }
-
-  return (
-    <div className="space-y-8 p-2">
-      <TitlePage title="Module List" description="List of all module and submodule">
-        <div className="flex gap-2">
-          <Button className="size-7" variant={"outline"} size={"sm"} asChild>
-            <Link href={'/master/module/add'}>
-              <Plus className="size-5" />
-            </Link>
-          </Button>
-        </div>
-      </TitlePage>
-      {modules && <ModuleList data={modules} />}
-    </div>
-  )
 }
 
-export async function getModulesWithSubmodules(): Promise<IModule[]> {
+export async function getModulesWithSubmodules(): Promise<Module[]> {
   try {
     // 3 level submodules
     const modules = await prisma.module.findMany({
@@ -64,13 +67,20 @@ export async function getModulesWithSubmodules(): Promise<IModule[]> {
   }
 }
 
+
+interface Module {
+  id: string;
+  name: string;
+  parentId: string | null;
+  submodules: Module[]
+}
 // Recursive function to process a module and its submodules
-function formatModule(module: InputFormat): IModule {
+function formatModule(module: InputFormat): Module {
   return {
     id: module.id,
     name: module.name,
     parentId: module?.parentId,
-    permissions: 0,
+    // permissions: 0,
     // permissions: module.permissions.reduce((acc: number, perm: any) => acc | perm.bitmask, 0),
     submodules: (module.SubModules || []).map((submodule) => formatModule(submodule)),
   };

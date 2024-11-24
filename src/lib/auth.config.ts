@@ -119,7 +119,7 @@ const authConfig: NextAuthConfig = {
 
     session: {
         strategy: 'jwt',
-        maxAge: 10 * 60,
+        maxAge: 10 * 60 * 60,
         updateAge: 5 * 60
     },
 

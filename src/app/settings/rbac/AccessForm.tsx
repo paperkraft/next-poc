@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -14,7 +14,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, LoaderCircleIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Form, FormField } from "@/components/ui/form";
@@ -26,10 +26,24 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { WithPermission } from "@/components/custom/with-permission";
+import { SwitchButton } from "@/components/custom/form.control/SwitchButton";
 
+interface ISubmodules {
+  id: string;
+  name: string;
+  parentId: string | null;
+  permissions: number;
+  submodules: ISubmodules[] | null
+}
 interface IAccessProps {
   roles: RoleType[];
-  modules: IModule[];
+  modules:{
+    id: string;
+    name: string;
+    parentId: string | null;
+    permissions: number;
+    submodules: ISubmodules[] | null
+  }[]
 }
 
 interface IPermission {
@@ -46,7 +60,7 @@ interface IModule {
   id: string;
   name: string;
   parentId: string | null;
-  permissions: IPermission[];
+  permissions?: IPermission[];
   submodules: IModule[];
 }
 
@@ -84,22 +98,23 @@ const bitmask = [
   { name: "DELETE", bitmask: 8 },
 ];
 
+
 const processModulePermissions = (
   module: IModule,
   bitmask: IPermission[]
 ): any => {
   const permissionsArray = bitmask.map((permission) => ({
     name: permission.name,
-    bitmask: (+module.permissions & permission.bitmask) === permission.bitmask,
+    bitmask: (module?.permissions && +module?.permissions & permission.bitmask) === permission.bitmask,
   }));
 
   // Recursively process submodules
-  const updatedSubmodules = module.submodules.map((submodule) => {
+  const updatedSubmodules = module.submodules && module.submodules.map((submodule) => {
     const updatedSubmodule = processModulePermissions(submodule, bitmask);
     return {
       ...updatedSubmodule,
       // permissions: permissionsArray,
-      permissions: updatedSubmodule.permissions,
+      // permissions: updatedSubmodule.permissions,
     };
   });
 
@@ -134,26 +149,44 @@ const applyBitmaskRecursively = (item: any): IModule => {
     permissions: calculateBitmask(item.permissions),
   };
   if (updatedItem.submodules && updatedItem.submodules.length > 0) {
-    updatedItem.submodules = updatedItem.submodules.map(applyBitmaskRecursively);
+    updatedItem.submodules = updatedItem.submodules.map(
+      applyBitmaskRecursively
+    );
   }
   return updatedItem;
 };
 
+
+function removePermissions(modules: Module[]): any[] {
+  return modules.map(module => {
+    const { permissions, submodules, ...rest } = module;
+    const updatedSubmodules = removePermissions(submodules);
+    return {
+      ...rest,
+      submodules: updatedSubmodules,
+    };
+  });
+}
+
 export default function AccessPage({ roles, modules }: IAccessProps) {
+  
   const route = useRouter();
+  const initialModules = removePermissions(modules as any);
+  const initialRoles = roles
+  const Thead = ["", "Module", "View", "Edit", "Create", "Delete"];
 
   const [loading, setLoading] = useState<boolean>(false);
   const [roleModules, setRoleModules] = useState<IModule[]>();
-  const [previousAssignedModules, setPreviousAssignModules] = useState<IModule[]>();
+  const [previousModules, setPreviousModules] = useState<Module[]>();
 
-  const permissionMapped = modules.map((module) => processModulePermissions(module, bitmask));
-  const roleOptions = roles.map((role) => processRolesOptions(role));
+  const defaultModules = initialModules.map((module) => processModulePermissions(module as any, bitmask));
+  const roleOptions = initialRoles.map((role) => processRolesOptions(role));
 
   const form = useForm({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       userId: "",
-      modules: permissionMapped,
+      modules: defaultModules,
     },
   });
 
@@ -167,38 +200,43 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
   useEffect(() => {
     const getRoleModules = async (roleId: string) => {
       setLoading(true);
-      if (roleId) {
-        try {
-          const result = await fetch(`/api/master/module/${roleId}`)
-          const res = await result.json();
+      setRoleModules(undefined);
+      form.resetField("modules");
+
+      try {
+        if(roleId){
+          const res = await fetch(`/api/master/module/${roleId}`).then((d)=>d.json())
+          const data = res.data;
 
           if (res.success) {
-            const data = res.data;
-            data && setPreviousAssignModules(data);
-            const merge = mergeModules(modules as any, data);
-            const processed = merge.map((module) =>
-              processModulePermissions(module as any, bitmask)
-            );
-            processed.length > 0 && setRoleModules(processed);
-            processed.length > 0 && form.setValue("modules", processed);
-            setLoading(false);
+            // get previous modules of role
+            if(data && initialModules){
+              setPreviousModules(data);
+              const mergePreviousWithDefault = mergeModules(initialModules as any, data);
+              const previousModules = mergePreviousWithDefault.map((module) => processModulePermissions(module as any, bitmask));
+              setRoleModules(previousModules);
+              form.setValue("modules", previousModules);
+            }
           } else {
             toast.error("Failed to fetch role modules");
           }
-        } catch (error) {
-          console.error(error);
-          toast.error("Failed to fetch role modules");
+        } else {
+          form.resetField("modules");
         }
+      } catch (error) {
+        console.error(error);
+        toast.error("Failed to fetch role modules");
+      } finally {
+        setLoading(false);
       }
     };
     getRoleModules(roleId);
-  }, [roleId, form.control]);
+  }, [roleId]);
 
   const onSubmit = async (data: FormValues) => {
     const submitted = data.modules.map(applyBitmaskRecursively);
-    const updatedModules =
-      previousAssignedModules &&
-      updateModules(submitted as any, previousAssignedModules as any);
+    const updatedModules = previousModules &&
+    updateModules(submitted as any, previousModules as any);
     const formated = transformModules(updatedModules as any);
 
     const final = {
@@ -210,11 +248,13 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
       const result = await fetch(`/api/master/rbac`, {
         method: "POST",
         body: JSON.stringify(final),
-      })
+      });
+
       const res = await result.json();
+
       if (res.success) {
-        console.log('res', res);
-        toast.success("Assigned module successfull");
+        console.log("res", res);
+        toast.success("Modules assigned");
         route.refresh();
       } else {
         toast.error("Failed to assigned module");
@@ -225,72 +265,12 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
     }
   };
 
-  const renderDash = (count: number) => {
-    return (
-      <span className="text-muted-foreground">{`|${Array(count).fill("-").join("")} `}</span>
-    );
-  };
-  // Recursive function to render the form for modules and submodules
-  const RenderRows = useCallback(({ data, index, level, parentIndex }: IRenderRows) => {
-      const hasSubModules = data?.submodules?.length > 0;
-
-      return (
-        <Collapsible asChild key={index}>
-          <React.Fragment>
-            <TableRow>
-              <TableCell>
-                {hasSubModules ? (
-                  <CollapsibleTrigger asChild className="data-[state=open]:bg-muted [&[data-state=open]>svg]:rotate-90">
-                    <Button variant={"ghost"} className="flex h-6 w-6 p-0">
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  </CollapsibleTrigger>
-                ) : null}
-              </TableCell>
-
-              <TableCell>
-                {data?.parentId ? renderDash(level) : null}
-                {data?.name}
-              </TableCell>
-              {data.permissions.map((permission, i) => (
-                <TableCell key={permission.name}>
-                  <FormField
-                    name={`modules.${parentIndex}${index}.permissions.${i}.bitmask` as any}
-                    control={form.control}
-                    render={({ field }) => (
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={(checked) => field.onChange(checked)}
-                      />
-                    )}
-                  />
-                </TableCell>
-              ))}
-            </TableRow>
-
-            <CollapsibleContent asChild>
-              <React.Fragment>
-                {data &&
-                  data?.submodules.map((sub, ii) => (
-                    <RenderRows key={sub.id} data={sub} index={ii} level={level + 1} parentIndex={`${parentIndex}${index}.submodules.`} />
-                  ))}
-              </React.Fragment>
-            </CollapsibleContent>
-          </React.Fragment>
-        </Collapsible>
-      );
-    },
-    [form.control]
-  );
-
-  const Thead = ["", "Module", "View", "Edit", "Create", "Delete"];
-
   return (
     <WithPermission permissionBit={4 | 8}>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="px-4">
-            <SelectController name={"userId"} label={"Role"} options={roleOptions} />
+            <SelectController name={"userId"} label={"Role"} options={roleOptions}/>
           </div>
 
           <Table>
@@ -303,21 +283,24 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
             </TableHeader>
 
             <TableBody>
-              {!roleModules &&
-                permissionMapped &&
-                permissionMapped.map((data: any, i: number) => (
-                  <RenderRows key={i} data={data} parentIndex={""} index={i} level={0} />
-                ))}
-
-              {roleModules &&
+              {roleModules && !loading &&
                 roleModules.map((data, i) => (
                   <RenderRows key={i} data={data} parentIndex={""} index={i} level={0} />
                 ))}
 
-              {!permissionMapped && loading && (
+              {defaultModules && !loading &&
+                !roleModules &&
+                defaultModules.map((data, i) => (
+                  <RenderRows key={i} data={data} parentIndex={""} index={i} level={0} />
+                ))}
+
+              { loading && (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center">
-                    Loading...
+                    <span className="flex items-center justify-center" aria-live="polite">
+                      <LoaderCircleIcon className="mr-2 h-4 w-4 animate-spin" />
+                      Loading...
+                    </span>
                   </TableCell>
                 </TableRow>
               )}
@@ -325,8 +308,14 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
           </Table>
 
           <div className="flex justify-end my-4 gap-2">
-            <Button variant={"outline"} onClick={(e) => { e.preventDefault(); form.reset(); }}>
-              Reset
+            <Button
+              variant={"outline"}
+              onClick={(e) => {
+                e.preventDefault();
+                route.back();
+              }}
+            >
+              Cancel
             </Button>
             <Button type="submit">Submit</Button>
           </div>
@@ -335,6 +324,69 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
     </WithPermission>
   );
 }
+
+// ----------------------------- Render rows of table ----------------------------- //
+
+const renderDash = (count: number) => {
+  return (
+    <span className="text-muted-foreground">{`|${Array(count)
+      .fill("-")
+      .join("")} `}</span>
+  );
+};
+
+const RenderRows = React.memo(
+  ({ data, index, level, parentIndex }: IRenderRows) => {
+    const hasSubModules = data?.submodules?.length > 0;
+    return (
+      <Collapsible asChild key={index}>
+        <React.Fragment>
+          <TableRow>
+            <TableCell>
+              {hasSubModules ? (
+                <CollapsibleTrigger
+                  asChild
+                  className="data-[state=open]:bg-muted [&[data-state=open]>svg]:rotate-90"
+                >
+                  <Button variant={"ghost"} className="flex h-6 w-6 p-0">
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </CollapsibleTrigger>
+              ) : null}
+            </TableCell>
+
+            <TableCell>
+              {data?.parentId ? renderDash(level) : null}
+              {data?.name}
+            </TableCell>
+            {data?.permissions && data?.permissions.map((permission, i) => (
+              <TableCell key={permission.name}>
+                <SwitchButton
+                  name={`modules.${parentIndex}${index}.permissions.${i}.bitmask`}
+                />
+              </TableCell>
+            ))}
+          </TableRow>
+
+          <CollapsibleContent asChild>
+            <React.Fragment>
+              {data?.submodules &&
+                data?.submodules.map((sub, ii) => (
+                  <RenderRows
+                    key={sub.id}
+                    data={sub}
+                    index={ii}
+                    level={level + 1}
+                    parentIndex={`${parentIndex}${index}.submodules.`}
+                  />
+                ))}
+            </React.Fragment>
+          </CollapsibleContent>
+        </React.Fragment>
+      </Collapsible>
+    );
+  }
+);
 
 // ----------------------------- Merge default modules with role assigned modules ----------------------------- //
 
@@ -346,10 +398,15 @@ type Module = {
   submodules: Module[];
 };
 
-function mergeModules(allModules: Module[], roleAssignedModules: Module[]): Module[] {
-
+function mergeModules(
+  allModules: Module[],
+  roleAssignedModules: Module[]
+): Module[] {
   // Helper function to merge modules
-  function mergeSingleModule(module: Module, roleAssignedModule: Module | undefined): Module {
+  function mergeSingleModule(
+    module: Module,
+    roleAssignedModule: Module | undefined
+  ): Module {
     if (roleAssignedModule) {
       module.permissions = roleAssignedModule.permissions;
       module.submodules = mergeSubmodules(
@@ -361,7 +418,10 @@ function mergeModules(allModules: Module[], roleAssignedModules: Module[]): Modu
   }
 
   // Helper function to merge submodules
-  function mergeSubmodules(allSubmodules: Module[], roleAssignedSubmodules: Module[]): Module[] {
+  function mergeSubmodules(
+    allSubmodules: Module[],
+    roleAssignedSubmodules: Module[]
+  ): Module[] {
     return allSubmodules.map((allSubmodule) => {
       const matchingRoleSubmodule = roleAssignedSubmodules.find(
         (roleSubmodule) => roleSubmodule.id === allSubmodule.id
@@ -405,13 +465,19 @@ function transformSubmodules(input: Module[]): FormatSubmodule[] {
   return input.map((submodule) => ({
     submoduleId: submodule.id,
     permissions: submodule.permissions,
-    submodules: submodule.submodules.length > 0 ? transformSubmodules(submodule.submodules) : [],
+    submodules:
+      submodule.submodules.length > 0
+        ? transformSubmodules(submodule.submodules)
+        : [],
   }));
 }
 
 // ----------------------------- Update submited data from previous data  ----------------------------- //
 
-function updateModules(submittedData: Module[], previousData: Module[]): Module[] {
+function updateModules(
+  submittedData: Module[],
+  previousData: Module[]
+): Module[] {
   const mapPreviousData = createIdMap(previousData);
 
   return submittedData

@@ -56,7 +56,7 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import Header from "./Header"
-import { defalutMenu, menuType, submenuType, transformMenuData, uniqueLabels } from "./data"
+import { defalutMenu, menuType, submenuType, transformMenuData } from "./data"
 import { ChildProps } from "@/types/types"
 import { useForm } from "react-hook-form"
 import { FormField } from "@/components/ui/form"
@@ -73,6 +73,7 @@ export default function AppSidebar({ children }: ChildProps) {
             const serverMenuData = data?.user?.modules
             const userPermissions = data?.user?.permissions
             const filteredMenuData = transformMenuData(serverMenuData, userPermissions);
+            const uniqueLabels = Array.from(new Set(filteredMenuData.map((menu) => menu.label)));
             const userMenus: menuType[][] = uniqueLabels
                 .map((label) => filteredMenuData
                     .filter((menu) => menu.label === label))

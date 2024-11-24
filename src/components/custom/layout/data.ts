@@ -1,5 +1,6 @@
 import {
     Book,
+    Dot,
     GraduationCapIcon,
     Home,
     ImageIcon,
@@ -195,10 +196,26 @@ export const transformMenuData = (serverData: any[], userPermissions: number): m
 
                 return {
                     ...matchedMenu,
-                    submenu: submenus.length > 0 ? submenus : [],
+                    submenu: submenus && submenus.length > 0 ? submenus : [],
                     isActive: false,
                 };
             }
+
+            // If no match is found in the hardcoded data, add the item dynamically
+            if (hasPermission(userPermissions, menuItem.permissions)) {
+                // Transform the submodules recursively, even if the parent is dynamically added
+                const submenus = transformSubmodules(menuItem.submodules, userPermissions);
+
+                return {
+                    label: "Uncategorized",  // Assign a default label if no match found
+                    title: menuItem.name,
+                    url: "#",  // Assign a default URL if no match found
+                    icon: Dot,  // Optionally set a default icon
+                    isActive: false,
+                    submenu: submenus && submenus.length > 0 ? submenus : [],  // Include submodules if they exist
+                };
+            }
+
             return null;
         })
         .filter((item) => item !== null);

@@ -16,7 +16,7 @@ extends HTMLAttributes<HTMLInputElement> {
     options: Array<Options>
     description?: string;
     placeholder?: string;
-    defaultValue?: PathValue<T, Path<T>> | undefined;
+    // defaultValue?: PathValue<T, Path<T>> | undefined;
     disabled?: boolean;
     readOnly?: boolean;
 }
@@ -33,7 +33,7 @@ export const SelectController = <T extends FieldValues>({ options, name, label, 
                     <FormControl>
                         <Select 
                             onValueChange={field.onChange} 
-                            defaultValue={field.value} 
+                            // defaultValue={field.value} 
                             disabled={rest?.disabled}
                         >
                             <FormControl>

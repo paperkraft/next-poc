@@ -27,7 +27,7 @@ export default async function Page() {
         }
         return (
             <>
-                <TitlePage title="Role Based Access Module" description="Define role access" />
+                <TitlePage title="Role Based Access Module" description="Define module access" />
                 {modules && <AccessPage roles={roles} modules={modules} />}
             </>
         )

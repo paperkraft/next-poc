@@ -35,6 +35,7 @@ interface ISubmodules {
   permissions: number;
   submodules: ISubmodules[] | null
 }
+
 interface IAccessProps {
   roles: RoleType[];
   modules:{
@@ -359,7 +360,13 @@ const RenderRows = React.memo(
               {data?.parentId ? renderDash(level) : null}
               {data?.name}
             </TableCell>
-            {data?.permissions && data?.permissions.map((permission, i) => (
+
+              {
+                hasSubModules &&
+                <TableCell colSpan={4}></TableCell>
+              }
+            
+            {!hasSubModules && data?.permissions && data?.permissions.map((permission, i) => (
               <TableCell key={permission.name}>
                 <SwitchButton
                   name={`modules.${parentIndex}${index}.permissions.${i}.bitmask`}

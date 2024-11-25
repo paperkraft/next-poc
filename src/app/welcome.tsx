@@ -10,6 +10,10 @@ export default function WelcomePage() {
   const { data: session, status } = useSession();
   const user = session?.user;
 
+  if(user){
+    console.log(user.modules);
+  }
+
   useEffect(() => {
     if (mounted && status !== "authenticated") {
       route.refresh();

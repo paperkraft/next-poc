@@ -15,12 +15,12 @@ export const WithPermission = ({ children, permissionBit }: WithPermissionProps)
   const permission = hasPermission(rolePermission, permissionBit)
 
   if (status === 'loading') {
-    return <Loading/>
+    return <Loading />
   }
 
   if (!permission) {
-    return (<AccessDenied/>)
+    return (<AccessDenied />)
   }
 
-  return children;
+  return <>{children}</>;
 };

@@ -38,17 +38,16 @@ const authConfig: NextAuthConfig = {
                             select: {
                                 id: true,
                                 name: true,
-                                parentId: true
+                                parentId: true,
                             },
                         },
-                        submodule: {
+                        subModule: {
                             select: {
                                 id: true,
                                 name: true,
                                 parentId: true
                             },
                         },
-                        permissions: true,
                     },
                 });
 
@@ -63,7 +62,6 @@ const authConfig: NextAuthConfig = {
                     name: user?.name,
                     email: data.email,
                     roleId: user?.roleId,
-                    permissions: user?.role?.permissions,
                     modules: formattedJson
                 } as User
             }
@@ -111,7 +109,6 @@ const authConfig: NextAuthConfig = {
             if (user) {
                 token.id = user?.id;
                 token.roleId = user?.roleId;
-                token.permissions = user?.permissions;
                 token.modules = user?.modules;
             }
             return token;
@@ -121,7 +118,6 @@ const authConfig: NextAuthConfig = {
             if (token) {
                 session.user.id = token.id;
                 session.user.roleId = token.roleId;
-                session.user.permissions = token.permissions;
                 session.user.modules = token.modules;
             }
             return session;

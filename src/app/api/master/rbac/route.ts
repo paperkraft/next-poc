@@ -3,15 +3,23 @@ import { NextResponse } from "next/server";
 
 
 interface SubModules {
-    submoduleId: string;
-    permissions: number;
-    submodules: SubModules[]
+    subModuleId: string;
+    canCreate: boolean;
+    canRead: boolean;
+    canUpdate: boolean;
+    canDelete: boolean;
+    canManage: boolean;
+    subModules: SubModules[]
 }
 
 interface Module {
     moduleId: string;
-    permissions: number;
-    submodules: SubModules[]
+    canCreate: boolean;
+    canRead: boolean;
+    canUpdate: boolean;
+    canDelete: boolean;
+    canManage: boolean;
+    subModules: SubModules[]
 }
 
 export async function POST(req: Request) {
@@ -29,18 +37,18 @@ export async function POST(req: Request) {
     }
 }
 
-async function UpsertAssignModulesToRole(roleId: string, modulesWithPermissions: Module[]) {
+async function UpsertAssignModulesToRoleOO(roleId: string, modulesWithPermissions: Module[]) {
     const assignments: any[] = [];
 
     try {
         for (const moduleData of modulesWithPermissions) {
             // Process the main module
-            await upsertModulePermissions(roleId, moduleData, assignments);
+            await upsertModulePermissionsOO(roleId, moduleData, assignments);
 
             // Process nested submodules (if any)
-            if (moduleData.submodules && moduleData.submodules.length > 0) {
-                for (const submodule of moduleData.submodules) {
-                    await upsertSubmodulePermissions(roleId, moduleData.moduleId, submodule, assignments);
+            if (moduleData.subModules && moduleData.subModules.length > 0) {
+                for (const submodule of moduleData.subModules) {
+                    await upsertSubModulePermissionsOO(roleId, moduleData.moduleId, submodule, assignments);
                 }
             }
         }
@@ -52,9 +60,13 @@ async function UpsertAssignModulesToRole(roleId: string, modulesWithPermissions:
     }
 }
 
-async function upsertModulePermissions(roleId: string, moduleData: Module, assignments: any[]) {
+async function upsertModulePermissionsOO(roleId: string, moduleData: Module, assignments: any[]) {
     // Check if permissions are 0, in which case we remove the module access by deleting it
-    if (moduleData.permissions === 0) {
+    if (moduleData.canCreate === false 
+        && moduleData.canRead === false
+        && moduleData.canUpdate === false
+        && moduleData.canDelete === false
+    ) {
         // Delete the module permission for the role
         await prisma.modulePermissions.delete({
             where: {
@@ -76,59 +88,153 @@ async function upsertModulePermissions(roleId: string, moduleData: Module, assig
             },
             // Update the module permissions if they exist
             update: {
-                permissions: moduleData.permissions,
+                canCreate:moduleData.canCreate,
+                canRead:moduleData.canRead,
+                canUpdate:moduleData.canUpdate,
+                canDelete:moduleData.canDelete,
             },
             create: {
                 roleId: roleId,
                 moduleId: moduleData.moduleId,
-                permissions: moduleData.permissions,
+                canCreate:moduleData.canCreate,
+                canRead:moduleData.canRead,
+                canUpdate:moduleData.canUpdate,
+                canDelete:moduleData.canDelete,
             },
         });
         assignments.push(modulePermission);
     }
 }
 
-async function upsertSubmodulePermissions(roleId: string, moduleId: string, submodule: SubModules, assignments: any[]) {
-    if (submodule.permissions === 0) {
+async function upsertSubModulePermissionsOO(roleId: string, moduleId: string, subModule: SubModules, assignments: any[]) {
+    if (subModule.canCreate === false
+        && subModule.canRead === false
+        && subModule.canUpdate === false
+        && subModule.canDelete === false
+    ) {
         // If permission is 0, delete the submodule permission
         await prisma.modulePermissions.delete({
             where: {
-                roleId_moduleId_submoduleId: {
+                roleId_moduleId_subModuleId: {
                     roleId: roleId,
                     moduleId: moduleId,
-                    submoduleId: submodule.submoduleId,
+                    subModuleId: subModule.subModuleId,
                 },
             },
         });
-        assignments.push({ submoduleId: submodule.submoduleId, status: 'deleted' });
+        assignments.push({ submoduleId: subModule.subModuleId, status: 'deleted' });
     } else {
         // Otherwise, upsert the submodule permission (update or create)
         const submodulePermission = await prisma.modulePermissions.upsert({
             where: {
-                roleId_moduleId_submoduleId: {
+                roleId_moduleId_subModuleId: {
                     roleId: roleId,
                     moduleId: moduleId,
-                    submoduleId: submodule.submoduleId,
+                    subModuleId: subModule.subModuleId,
                 },
             },
             // Update the submodule permissions if they exist
             update: {
-                permissions: submodule.permissions,
+                canCreate:subModule.canCreate,
+                canRead:subModule.canRead,
+                canUpdate:subModule.canUpdate,
+                canDelete:subModule.canDelete,
             },
             create: {
                 roleId: roleId,
                 moduleId: moduleId,
-                submoduleId: submodule.submoduleId,
-                permissions: submodule.permissions,
+                subModuleId: subModule.subModuleId,
+                canCreate:subModule.canCreate,
+                canRead:subModule.canRead,
+                canUpdate:subModule.canUpdate,
+                canDelete:subModule.canDelete,
             },
         });
         assignments.push(submodulePermission);
     }
 
     // If the submodule has its own submodules (nested submodules), recursively handle them
-    if (submodule.submodules && submodule.submodules.length > 0) {
-        for (const nestedSubmodule of submodule.submodules) {
-            await upsertSubmodulePermissions(roleId, moduleId, nestedSubmodule, assignments);
+    if (subModule.subModules && subModule.subModules.length > 0) {
+        for (const nestedSubmodule of subModule.subModules) {
+            await upsertSubModulePermissionsOO(roleId, moduleId, nestedSubmodule, assignments);
         }
     }
+}
+
+
+// ---------------------------------------
+
+async function UpsertAssignModulesToRole(roleId: string, modulesWithPermissions: Module[]) {
+    const assignments: any[] = [];
+
+    for (const moduleData of modulesWithPermissions) {
+        const moduleChanges = await upsertModulePermissions(roleId, moduleData);
+        if (moduleChanges) assignments.push(moduleChanges);
+
+        if (moduleData.subModules?.length > 0) {
+            for (const submodule of moduleData.subModules) {
+                const submoduleChanges = await upsertSubModulePermissions(roleId, moduleData.moduleId, submodule);
+                if (submoduleChanges) assignments.push(submoduleChanges);
+            }
+        }
+    }
+
+    return assignments;
+}
+
+async function upsertModulePermissions(roleId: string, moduleData: Module) {
+    if (isEmptyPermission(moduleData)) {
+        await prisma.modulePermissions.delete({
+            where: {
+                roleId_moduleId: {
+                    roleId: roleId,
+                    moduleId: moduleData.moduleId,
+                },
+            },
+        });
+        return { moduleId: moduleData.moduleId, status: 'deleted' };
+    } else {
+        return await prisma.modulePermissions.upsert({
+            where: {
+                roleId_moduleId: {
+                    roleId: roleId,
+                    moduleId: moduleData.moduleId,
+                },
+            },
+            update: moduleData,
+            create: { ...moduleData, roleId },
+        });
+    }
+}
+
+async function upsertSubModulePermissions(roleId: string, moduleId: string, subModule: SubModules) {
+    if (isEmptyPermission(subModule)) {
+        await prisma.modulePermissions.delete({
+            where: {
+                roleId_moduleId_subModuleId: {
+                    roleId: roleId,
+                    moduleId: moduleId,
+                    subModuleId: subModule.subModuleId,
+                },
+            },
+        });
+        return { submoduleId: subModule.subModuleId, status: 'deleted' };
+    } else {
+        return await prisma.modulePermissions.upsert({
+            where: {
+                roleId_moduleId_subModuleId: {
+                    roleId: roleId,
+                    moduleId: moduleId,
+                    subModuleId: subModule.subModuleId,
+                },
+            },
+            update: subModule,
+            create: { ...subModule, roleId, moduleId },
+        });
+    }
+}
+
+// Helper function to check if permission is empty (no access)
+function isEmptyPermission(permission: { canCreate: boolean; canRead: boolean; canUpdate: boolean; canDelete: boolean }) {
+    return !permission.canCreate && !permission.canRead && !permission.canUpdate && !permission.canDelete;
 }

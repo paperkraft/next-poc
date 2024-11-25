@@ -4,14 +4,13 @@ import TitlePage from "@/components/custom/page-heading";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import Link from "next/link";
-import { IModuleFormat } from "./ModuleInterface";
 
 
 interface InputFormat {
   id: string,
   name: string,
   parentId: string | null,
-  SubModules: InputFormat[] | null
+  subModules: InputFormat[] | null
 }
 
 export default async function Page() {
@@ -45,11 +44,11 @@ export async function getModulesWithSubmodules(): Promise<Module[]> {
     // 3 level submodules
     const modules = await prisma.module.findMany({
       include: {
-        SubModules: {
+        subModules: {
           include: {
-            SubModules: {
+            subModules: {
               include: {
-                SubModules: true,
+                subModules: true,
               },
             },
           },
@@ -58,8 +57,8 @@ export async function getModulesWithSubmodules(): Promise<Module[]> {
     });
 
     const formattedModules = modules.map((module) => formatModule(module));
-    const submoduleIds = new Set(formattedModules.flatMap((module) => module.submodules.map((submodule) => submodule.id)));
-    const finalModules = formattedModules.filter((module) => !submoduleIds.has(module.id));
+    const subModuleIds = new Set(formattedModules.flatMap((module) => module.subModules.map((subModule) => subModule.id)));
+    const finalModules = formattedModules.filter((module) => !subModuleIds.has(module.id));
     return finalModules;
   } catch (error) {
     console.error('Error fetching modules with submodules:', error);
@@ -72,7 +71,7 @@ interface Module {
   id: string;
   name: string;
   parentId: string | null;
-  submodules: Module[]
+  subModules: Module[]
 }
 // Recursive function to process a module and its submodules
 function formatModule(module: InputFormat): Module {
@@ -80,8 +79,6 @@ function formatModule(module: InputFormat): Module {
     id: module.id,
     name: module.name,
     parentId: module?.parentId,
-    // permissions: 0,
-    // permissions: module.permissions.reduce((acc: number, perm: any) => acc | perm.bitmask, 0),
-    submodules: (module.SubModules || []).map((submodule) => formatModule(submodule)),
+    subModules: (module.subModules || []).map((submodule) => formatModule(submodule)),
   };
 }

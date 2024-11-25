@@ -47,7 +47,7 @@ export default function ModuleList({ data }: { data: IModule[] }) {
 function Nested({ data, level }: { data: IModule, level: number }) {
 
     const path = usePathname();
-    const hasSubModules = data?.submodules?.length > 0;
+    const hasSubModules = data?.subModules?.length > 0;
 
     const renderDash = (count: number) => {
         return <span className="text-muted-foreground">{`|${Array(count).fill('-').join('')} `}</span>
@@ -91,7 +91,7 @@ function Nested({ data, level }: { data: IModule, level: number }) {
 
                 <CollapsibleContent asChild>
                     <React.Fragment>
-                        {data && data?.submodules.map((sub) => (
+                        {data && data?.subModules.map((sub) => (
                             <Nested key={sub.id} data={sub} level={level + 1} />
                         ))}
                     </React.Fragment>

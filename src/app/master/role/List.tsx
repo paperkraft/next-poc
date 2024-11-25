@@ -15,7 +15,7 @@ import { usePathname } from "next/navigation";
 export type RoleType = {
   id: string;
   name: string;
-  permissions: number;
+  // permissions: number;
 };
 
 export default function RoleList({data}:{data:RoleType[]}) {
@@ -27,7 +27,7 @@ export default function RoleList({data}:{data:RoleType[]}) {
           <TableRow>
             <TableHead>#</TableHead>
             <TableHead>Role</TableHead>
-            <TableHead>Permisisions</TableHead>
+            {/* <TableHead>Permisisions</TableHead> */}
             <TableHead>Action</TableHead>
           </TableRow>
         </TableHeader>
@@ -38,7 +38,7 @@ export default function RoleList({data}:{data:RoleType[]}) {
               <TableRow key={item.name}>
                 <TableCell>{index + 1}</TableCell>
                 <TableCell>{item.name}</TableCell>
-                <TableCell>{item.permissions}</TableCell>
+                {/* <TableCell>{item.permissions}</TableCell> */}
                 <TableCell>
                   <Button variant={"ghost"} className="size-5" asChild>
                     <Link href={`${path}/${item.id}`}><Eye className="size-4" /></Link>

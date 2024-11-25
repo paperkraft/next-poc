@@ -5,24 +5,43 @@ type ModuleWithPermissions = {
     id: string;
     moduleId: string;
     roleId: string;
-    submoduleId: string | null;
-    permissions: number;
+    subModuleId: string | null;
+    canCreate: boolean;
+    canRead: boolean;
+    canUpdate: boolean;
+    canDelete: boolean;
+    canManage: boolean;
     module: {
         id: string;
         name: string;
         parentId: string | null;
-        SubModules: {
+        canCreate: boolean;
+        canRead: boolean;
+        canUpdate: boolean;
+        canDelete: boolean;
+        canManage: boolean;
+        subModules: {
             id: string;
             name: string;
             parentId: string;
-            SubModules: any[];
+            canCreate: boolean;
+            canRead: boolean;
+            canUpdate: boolean;
+            canDelete: boolean;
+            canManage: boolean;
+            subModules: any[];
         }[];
     };
-    submodule: {
+    subModule: {
         id: string;
         name: string;
         parentId: string;
-        SubModules: any[];
+        canCreate: boolean;
+        canRead: boolean;
+        canUpdate: boolean;
+        canDelete: boolean;
+        canManage: boolean;
+        subModules: any[];
     } | null;
 };
 
@@ -30,8 +49,12 @@ type GroupedModule = {
     id: string;
     name: string;
     parentId: string | null;
-    permissions: number;
-    submodules: GroupedModule[];
+    canCreate: boolean;
+    canRead: boolean;
+    canUpdate: boolean;
+    canDelete: boolean;
+    canManage: boolean;
+    subModules: GroupedModule[];
 };
 
 // Function to group modules by parent
@@ -46,50 +69,68 @@ function groupModulesByParent(modules: ModuleWithPermissions[]): GroupedModule[]
                 id: module.id,
                 name: module.name,
                 parentId: module.parentId,
-                permissions: item.permissions, // Assign permissions from module
-                submodules: []
+                // permissions: item.permissions, // Assign permissions from module
+                canCreate: item.canCreate,
+                canRead: item.canRead,
+                canUpdate: item.canUpdate,
+                canDelete: item.canDelete,
+                canManage: item.canManage,
+
+                subModules: []
             };
         }
     });
 
     // Assign submodules and their permissions
     modules.forEach(item => {
-        if (item.submodule) {
-            const submodule = item.submodule;
+        if (item.subModule) {
+            const subModule = item.subModule;
 
             // Ensure the submodule is correctly added to the module map
-            if (!moduleMap[submodule.id]) {
-                moduleMap[submodule.id] = {
-                    id: submodule.id,
-                    name: submodule.name,
-                    parentId: submodule.parentId,
-                    permissions: item.permissions, // Assign permissions from the submodule
-                    submodules: submodule.SubModules.map((sub: any) => ({
+            if (!moduleMap[subModule.id]) {
+                moduleMap[subModule.id] = {
+                    id: subModule.id,
+                    name: subModule.name,
+                    parentId: subModule.parentId,
+                    // permissions: item.permissions,
+                    canCreate: item.canCreate,
+                    canRead: item.canRead,
+                    canUpdate: item.canUpdate,
+                    canDelete: item.canDelete,
+                    canManage: item.canManage,
+
+                    subModules: subModule.subModules.map((sub: any) => ({
                         id: sub.id,
                         name: sub.name,
                         parentId: sub.parentId,
-                        permissions: item.permissions, // Assign permissions recursively for submodules
-                        submodules: [] // Empty submodules initially
+                        // permissions: item.permissions, // Assign permissions recursively for submodules
+                        canCreate: item.canCreate,
+                        canRead: item.canRead,
+                        canUpdate: item.canUpdate,
+                        canDelete: item.canDelete,
+                        canManage: item.canManage,
+
+                        subModules: [] // Empty submodules initially
                     }))
                 };
             }
 
             // Add the submodule to its parent module
-            if (moduleMap[submodule.parentId!]) {
-                moduleMap[submodule.parentId!].submodules.push(moduleMap[submodule.id]);
+            if (moduleMap[subModule.parentId!]) {
+                moduleMap[subModule.parentId!].subModules.push(moduleMap[subModule.id]);
             }
         }
     });
 
     // Ensure the module permissions are correctly aggregated from submodules
-    Object.values(moduleMap).forEach(module => {
-        if (module.submodules.length > 0) {
-            module.permissions = Math.max(
-                module.permissions,
-                ...module.submodules.map(sub => sub.permissions)
-            );
-        }
-    });
+    // Object.values(moduleMap).forEach(module => {
+    //     if (module.subModules.length > 0) {
+    //         module.permissions = Math.max(
+    //             module.permissions,
+    //             ...module.subModules.map(sub => sub.permissions)
+    //         );
+    //     }
+    // });
 
     // Return the top-level modules (modules with null parentId)
     return Object.values(moduleMap).filter(module => module.parentId === null);
@@ -115,18 +156,18 @@ export async function GET(request: Request) {
             include: {
                 module: {
                     include: {
-                        SubModules: {
+                        subModules: {
                             where: {
-                                SubModulePermissions: {
+                                subModulePermissions: {
                                     some: {
                                         roleId
                                     }
                                 }
                             },
                             include: {
-                                SubModules: {
+                                subModules: {
                                     where: {
-                                        SubModulePermissions: {
+                                        subModulePermissions: {
                                             some: {
                                                 roleId
                                             }
@@ -137,11 +178,11 @@ export async function GET(request: Request) {
                         }
                     }
                 },
-                submodule: {
+                subModule: {
                     include: {
-                        SubModules: {
+                        subModules: {
                             where: {
-                                SubModulePermissions: {
+                                subModulePermissions: {
                                     some: {
                                         roleId
                                     }
@@ -160,6 +201,71 @@ export async function GET(request: Request) {
             );
         }
 
+        const modules = await prisma.module.findMany({
+            where: {
+              parentId: null, // Only fetch top-level modules (parent modules)
+            },
+            select: {
+              id: true,
+              name: true,
+              parentId: true,
+              modulePermissions: {
+                where: {
+                  roleId: roleId, // Filter permissions based on the roleId
+                },
+                select: {
+                  canCreate: true,
+                  canRead: true,
+                  canUpdate: true,
+                  canDelete: true,
+                  canManage: true,
+                },
+              },
+              subModules: {
+                select: {
+                  id: true,
+                  name: true,
+                  parentId: true,
+                  modulePermissions: {
+                    where: {
+                      roleId: roleId, // Filter permissions based on roleId for submodules
+                    },
+                    select: {
+                      canCreate: true,
+                      canRead: true,
+                      canUpdate: true,
+                      canDelete: true,
+                      canManage: true,
+                    },
+                  },
+                  subModules: {
+                    select: {
+                      id: true,
+                      name: true,
+                      parentId: true,
+                      modulePermissions: {
+                        where: {
+                          roleId: roleId, // Filter permissions based on roleId for nested submodules
+                        },
+                        select: {
+                          canCreate: true,
+                          canRead: true,
+                          canUpdate: true,
+                          canDelete: true,
+                          canManage: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+        });
+
+
+        const data = formatModules(modules);
+        // console.log('MM-',JSON.stringify(data, null, 2));
+        
         // Group modules by their parent
         const groupedModules = groupModulesByParent(modulesWithPermissions as any);
 
@@ -177,3 +283,40 @@ export async function GET(request: Request) {
         );
     }
 }
+
+
+
+
+// Helper function to format the data into GroupedModule structure
+function formatModules(modules: any[]): GroupedModule[] {
+    return modules && modules.map((module) => {
+      return {
+        id: module.id,
+        name: module.name,
+        parentId: module.parentId,
+        canCreate: module.modulePermissions.length > 0 ? module.modulePermissions[0].canCreate : false,
+        canRead: module.modulePermissions.length > 0 ? module.modulePermissions[0].canRead : false,
+        canUpdate: module.modulePermissions.length > 0 ? module.modulePermissions[0].canUpdate : false,
+        canDelete: module.modulePermissions.length > 0 ? module.modulePermissions[0].canDelete : false,
+        canManage: module.modulePermissions.length > 0 ? module.modulePermissions[0].canManage : false,
+        subModules: formatSubModules(module.subModules),
+      };
+    });
+  }
+  
+  // Helper function to format submodules
+  function formatSubModules(subModules: any[]): GroupedModule[] {
+    return subModules && subModules.map((submodule) => {
+      return {
+        id: submodule.id,
+        name: submodule.name,
+        parentId: submodule.parentId,
+        canCreate: submodule.modulePermissions.length > 0 ? submodule.modulePermissions[0].canCreate : false,
+        canRead: submodule.modulePermissions.length > 0 ? submodule.modulePermissions[0].canRead : false,
+        canUpdate: submodule.modulePermissions.length > 0 ? submodule.modulePermissions[0].canUpdate : false,
+        canDelete: submodule.modulePermissions.length > 0 ? submodule.modulePermissions[0].canDelete : false,
+        canManage: submodule.modulePermissions.length > 0 ? submodule.modulePermissions[0].canManage : false,
+        subModules: formatSubModules(submodule.subModules), // Recursively fetch submodules
+      };
+    });
+  }

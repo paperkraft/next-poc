@@ -4,131 +4,28 @@ interface FormattedModule {
   id: string;
   name: string;
   parentId: string | null;
-  permissions: number;
-  submodules: FormattedModule[];
-}
-
-type InputFormat = {
-  moduleId: string;
-  submoduleId: string | null;
-  permissions: number;
-  module: {
-      id: string;
-      name: string;
-      parentId: string | null;
-  };
-  submodule: {
-      id: string;
-      name: string;
-      parentId: string | null;
-      SubModules: any[];
-  } | null;
-};
-
-export const createPermissions = async () => {
-  await prisma.permission.createMany({
-    data: [
-      { name: "VIEW", bitmask: 1 },
-      { name: "EDIT", bitmask: 2 },
-      { name: "CREATE", bitmask: 4 },
-      { name: "DELETE", bitmask: 8 },
-    ],
-  });
-};
-
- 
-export const getModulesByRole = async (roleId: string): Promise<FormattedModule[] | null> => {
-  const roleWithModules = await prisma.role.findUnique({
-    where: { id: roleId },
-    include: {
-      ModulePermissions: {
-        include: {
-          module: true,
-          submodule: {
-            include: {
-              SubModules: true
-            }
-          }
-        }
-      }
-    },
-  });
-  return roleWithModules && formatModules(roleWithModules?.ModulePermissions);
-}
-
-function formatModules(data: InputFormat[]): FormattedModule[] {
-  const moduleMap: Record<string, FormattedModule> = {};
-  data && data?.forEach((item) => {
-    const { moduleId, permissions, module, submodule } = item;
-
-    // Create or update the module
-    if (!moduleMap[moduleId]) {
-      moduleMap[moduleId] = {
-        id: moduleId,
-        name: module.name,
-        parentId: module.parentId,
-        permissions: 0,
-        submodules: [],
-      };
-    }
-
-    // Add the permission of the current item to the module
-    moduleMap[moduleId].permissions |= permissions;
-
-    // If there is a submodule, handle it separately
-    if (submodule && submodule.id) {
-      const submoduleId = submodule.id;
-      const submoduleData: FormattedModule = {
-        id: submoduleId,
-        name: submodule.name,
-        parentId: submodule.parentId,
-        permissions: permissions,
-        submodules: [],
-      };
-
-      // Handle SubModules (nested submodules)
-      if (submodule.SubModules && submodule.SubModules.length > 0) {
-        submoduleData.submodules = submodule.SubModules.map((childSubmodule) => ({
-          id: childSubmodule.id,
-          name: childSubmodule.name,
-          parentId: childSubmodule.parentId,
-          permissions: permissions,
-          submodules: [],
-        }));
-      }
-
-      // Push the submodule to the corresponding module
-      moduleMap[moduleId].submodules.push(submoduleData);
-    }
-  });
-  return Object.values(moduleMap);
+  canCreate: boolean;
+  canRead: boolean;
+  canUpdate: boolean;
+  canDelete: boolean;
+  canManage: boolean;
+  subModules: FormattedModule[];
 }
 
 export async function getModulesWithSubmodules(): Promise<FormattedModule[]> {
-  // Recursive function to process a module and its submodules
-  function formatModule(module: any): FormattedModule {
-    return {
-      id: module.id,
-      name: module.name,
-      parentId: module?.parentId,
-      permissions: module.permissions.reduce((acc: number, perm: any) => acc | perm.bitmask, 0),
-      submodules: (module.SubModules || []).map((submodule: any) => formatModule(submodule)),
-    };
-  }
-
   try {
     const modules = await prisma.module.findMany({
       include: {
-        permissions: true,
-        SubModules: {
+        modulePermissions: true,
+        subModules: {
           include: {
-            permissions: true,
-            SubModules: {
+            subModulePermissions: true,
+            subModules: {
               include: {
-                permissions: true,
-                SubModules: {
+                subModulePermissions: true,
+                subModules: {
                   include: {
-                    permissions: true,
+                    subModulePermissions: true,
                   },
                 },
               },
@@ -137,12 +34,90 @@ export async function getModulesWithSubmodules(): Promise<FormattedModule[]> {
         },
       },
     });
-    const formattedModules = modules.map((module) => formatModule(module));
-    const submoduleIds = new Set(formattedModules.flatMap((module) => module.submodules.map((submodule) => submodule.id)));
-    const finalModules = formattedModules.filter((module) => !submoduleIds.has(module.id));
-    return finalModules;
+
+    const formattedModules = formatModules(modules as any);
+    // console.log(JSON.stringify(formattedModules, null, 2));
+
+    return formattedModules;
   } catch (error) {
     console.error('Error fetching modules with submodules:', error);
     throw new Error('Failed to fetch modules with submodules');
   }
+}
+
+interface ModulePermission {
+  id: string;
+  moduleId: string;
+  roleId: string;
+  subModuleId: string | null;
+  canCreate: boolean;
+  canRead: boolean;
+  canUpdate: boolean;
+  canDelete: boolean;
+  canManage: boolean;
+}
+
+interface Module {
+  id: string;
+  name: string;
+  parentId: string | null;
+  modulePermissions: ModulePermission[];
+  subModules: Module[];
+}
+
+function formatModules(modules: Module[]): FormattedModule[] {
+  const formattedModulesMap: Map<string, FormattedModule> = new Map();
+
+  // First, we convert the modules into the desired format and store them in a map
+  modules.forEach((module) => {
+    const modulePermissions = module.modulePermissions.reduce(
+      (acc, permission) => {
+        acc.canCreate ||= permission.canCreate;
+        acc.canRead ||= permission.canRead;
+        acc.canUpdate ||= permission.canUpdate;
+        acc.canDelete ||= permission.canDelete;
+        acc.canManage ||= permission.canManage;
+        return acc;
+      },
+      {
+        canCreate: false,
+        canRead: false,
+        canUpdate: false,
+        canDelete: false,
+        canManage: false,
+      }
+    );
+
+    const formattedModule: FormattedModule = {
+      id: module.id,
+      name: module.name,
+      parentId: module.parentId,
+      canCreate: modulePermissions.canCreate,
+      canRead: modulePermissions.canRead,
+      canUpdate: modulePermissions.canUpdate,
+      canDelete: modulePermissions.canDelete,
+      canManage: modulePermissions.canManage,
+      subModules: [],
+    };
+
+    formattedModulesMap.set(module.id, formattedModule);
+  });
+
+  // Now, we link sub-modules to their parent modules
+  modules.forEach((module) => {
+    if (module.subModules.length > 0) {
+      module.subModules.forEach((subModule) => {
+        const parentModule = formattedModulesMap.get(module.id);
+        const subModuleFormatted = formattedModulesMap.get(subModule.id);
+        if (parentModule && subModuleFormatted) {
+          parentModule.subModules.push(subModuleFormatted);
+        }
+      });
+    }
+  });
+
+  // Return the top-level modules (those with no parentId)
+  return Array.from(formattedModulesMap.values()).filter(
+    (module) => module.parentId === null
+  );
 }

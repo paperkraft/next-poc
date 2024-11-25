@@ -2,13 +2,17 @@ export interface IModule {
     id: string;
     name: string;
     parentId: string | null;
-    permissions: number | null;
-    submodules: IModule[]
+    canCreate: boolean;
+    canRead: boolean;
+    canUpdate: boolean;
+    canDelete: boolean;
+    canManage: boolean;
+    subModules: IModule[]
 }
 
 export interface IModuleFormat {
     id: string;
     name: string;
     parentId: string | null;
-    submodules: IModuleFormat[] | null
+    subModules: IModuleFormat[] | null
 }

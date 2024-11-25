@@ -8,21 +8,41 @@ datasource db {
 }
 
 model Role {
-  id          String @id @default(auto()) @map("_id") @db.ObjectId
-  name        String
-  permissions Int
-  users       User[]
-
-  ModulePermissions ModulePermissions[]
+  id                String              @id @default(auto()) @map("_id") @db.ObjectId
+  name              String
+  users             User[]
+  modulePermissions ModulePermissions[]
 }
 
-model Permission {
-  id      String @id @default(auto()) @map("_id") @db.ObjectId
-  name    String
-  bitmask Int
+model Module {
+  id                   String              @id @default(auto()) @map("_id") @db.ObjectId
+  name                 String
+  parentId             String?             @db.ObjectId
+  parent               Module?             @relation("ModuleParent", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  modulePermissions    ModulePermissions[]
+  subModules           Module[]            @relation("ModuleParent")
+  subModulePermissions ModulePermissions[] @relation("ModuleParent")
+}
 
-  Module   Module? @relation(fields: [moduleId], references: [id])
-  moduleId String? @db.ObjectId
+model ModulePermissions {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  moduleId    String  @db.ObjectId
+  roleId      String  @db.ObjectId
+  subModuleId String? @db.ObjectId
+
+ // Granular permissions for actions
+  canCreate Boolean @default(false)
+  canRead   Boolean @default(false)
+  canUpdate Boolean @default(false)
+  canDelete Boolean @default(false)
+  canManage Boolean @default(false) // Admin-level permission
+
+  role      Role    @relation(fields: [roleId], references: [id])
+  module    Module  @relation(fields: [moduleId], references: [id])
+  subModule Module? @relation("ModuleParent", fields: [subModuleId], references: [id])
+
+  @@unique([roleId, moduleId]) // Ensure unique combinations of role and module
+  @@unique([roleId, moduleId, subModuleId]) // Ensure unique combinations for submodules
 }
 
 model User {
@@ -39,30 +59,4 @@ model User {
   city         String?
   roleId       String  @db.ObjectId
   role         Role    @relation(fields: [roleId], references: [id])
-}
-
-model ModulePermissions {
-  id          String  @id @default(auto()) @map("_id") @db.ObjectId
-  moduleId    String  @db.ObjectId
-  roleId      String  @db.ObjectId
-  submoduleId String? @db.ObjectId
-  permissions Int
-
-  role      Role    @relation(fields: [roleId], references: [id])
-  module    Module  @relation(fields: [moduleId], references: [id])
-  submodule Module? @relation("ModuleParent", fields: [submoduleId], references: [id])
-
-  @@unique([roleId, moduleId])
-  @@unique([roleId, moduleId, submoduleId])
-}
-
-model Module {
-  id                   String              @id @default(auto()) @map("_id") @db.ObjectId
-  name                 String
-  parentId             String?             @db.ObjectId
-  parent               Module?             @relation("ModuleParent", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  permissions          Permission[]
-  ModulePermissions    ModulePermissions[]
-  SubModules           Module[]            @relation("ModuleParent")
-  SubModulePermissions ModulePermissions[] @relation("ModuleParent")
 }

@@ -19,8 +19,12 @@ export const ModuleFormSchema = z.object({
   id: z.string(),
   name: z.string(),
   parentId: z.string().nullable(),
-  permissions: z.number().nullable(),
-  submodules: z.array(z.lazy((): z.ZodType<IModule> => ModuleFormSchema)),
+  canCreate: z.boolean(),
+  canRead: z.boolean(),
+  canUpdate: z.boolean(),
+  canDelete: z.boolean(),
+  canManage: z.boolean(),
+  subModules: z.array(z.lazy((): z.ZodType<IModule> => ModuleFormSchema)),
 });
 
 export type ModuleFormValues = z.infer<typeof ModuleFormSchema>;
@@ -37,14 +41,12 @@ export default function EditModule({ data }: { data: IModule }) {
       id: "",
       name: "",
       parentId: "",
-      permissions: 0,
-      submodules: [
+      subModules: [
         {
           id: "",
           name: "",
           parentId: "",
-          permissions: null,
-          submodules: []
+          subModules: []
         }
       ]
     }
@@ -52,7 +54,7 @@ export default function EditModule({ data }: { data: IModule }) {
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
-    name: "submodules",
+    name: "subModules",
   });
 
   useEffect(() => {
@@ -194,7 +196,7 @@ export default function EditModule({ data }: { data: IModule }) {
 
 function TreeView({data, level}:{data:IModule, level: number}){
 
-    const hasSubmenu = data?.submodules?.length
+    const hasSubmenu = data?.subModules?.length
 
     if(!hasSubmenu){
       return(
@@ -213,7 +215,7 @@ function TreeView({data, level}:{data:IModule, level: number}){
 
           <CollapsibleContent>
             <React.Fragment>
-              {data && data.submodules.map((sub)=>(
+              {data && data.subModules.map((sub)=>(
                 <TreeView key={sub.id} data={sub} level={level + 1}/>
               ))}
             </React.Fragment>

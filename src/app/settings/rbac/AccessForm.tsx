@@ -28,41 +28,21 @@ import { useRouter } from "next/navigation";
 import { WithPermission } from "@/components/custom/with-permission";
 import { SwitchButton } from "@/components/custom/form.control/SwitchButton";
 
-interface ISubmodules {
-  id: string;
-  name: string;
-  parentId: string | null;
-  permissions: number;
-  submodules: ISubmodules[] | null
-}
-
 interface IAccessProps {
   roles: RoleType[];
-  modules:{
-    id: string;
-    name: string;
-    parentId: string | null;
-    permissions: number;
-    submodules: ISubmodules[] | null
-  }[]
-}
-
-interface IPermission {
-  name: string;
-  bitmask: number;
-}
-
-interface IPermissionBoolean {
-  name?: string;
-  bitmask: boolean;
+  modules: IModule[]
 }
 
 interface IModule {
   id: string;
   name: string;
   parentId: string | null;
-  permissions?: IPermission[];
-  submodules: IModule[];
+  canCreate: boolean;
+  canRead: boolean;
+  canUpdate: boolean;
+  canDelete: boolean;
+  canManage: boolean;
+  subModules: IModule[];
 }
 
 interface IRenderRows {
@@ -72,59 +52,24 @@ interface IRenderRows {
   level: number;
 }
 
-const ModulePermissionsSchema = z.object({
-  name: z.string().optional(),
-  bitmask: z.boolean(),
-});
-
 const ModuleObjectSchema = z.object({
   id: z.string(),
   name: z.string(),
   parentId: z.string().nullable(),
-  permissions: z.array(ModulePermissionsSchema),
-  submodules: z.array(z.lazy((): z.ZodType<any> => ModuleObjectSchema)),
+  canCreate: z.boolean().optional(),
+  canRead: z.boolean().optional(),
+  canUpdate: z.boolean().optional(),
+  canDelete: z.boolean().optional(),
+  canManage: z.boolean().optional(),
+  subModules: z.array(z.lazy((): z.ZodType<any> => ModuleObjectSchema)),
 });
 
 const FormSchema = z.object({
-  userId: z.string().min(1, { message: "Role is required." }),
+  roleId: z.string().min(1, { message: "Role is required." }),
   modules: z.array(ModuleObjectSchema),
 });
 
 export type FormValues = z.infer<typeof FormSchema>;
-
-const bitmask = [
-  { name: "VIEW", bitmask: 1 },
-  { name: "EDIT", bitmask: 2 },
-  { name: "CREATE", bitmask: 4 },
-  { name: "DELETE", bitmask: 8 },
-];
-
-
-const processModulePermissions = (
-  module: IModule,
-  bitmask: IPermission[]
-): any => {
-  const permissionsArray = bitmask.map((permission) => ({
-    name: permission.name,
-    bitmask: (module?.permissions && +module?.permissions & permission.bitmask) === permission.bitmask,
-  }));
-
-  // Recursively process submodules
-  const updatedSubmodules = module.submodules && module.submodules.map((submodule) => {
-    const updatedSubmodule = processModulePermissions(submodule, bitmask);
-    return {
-      ...updatedSubmodule,
-      // permissions: permissionsArray,
-      // permissions: updatedSubmodule.permissions,
-    };
-  });
-
-  return {
-    ...module,
-    permissions: permissionsArray,
-    submodules: updatedSubmodules,
-  };
-};
 
 const processRolesOptions = (role: RoleType): any => {
   return {
@@ -133,61 +78,71 @@ const processRolesOptions = (role: RoleType): any => {
   };
 };
 
-function calculateBitmask(permissions: IPermissionBoolean[]) {
-  let combinedBitmask = 0;
-  permissions.forEach((permission) => {
-    const matchingBitmask = bitmask.find((b) => b.name === permission.name);
-    if (matchingBitmask && permission.bitmask) {
-      combinedBitmask |= matchingBitmask.bitmask;
-    }
-  });
-  return combinedBitmask;
-}
+// const processModulePermissions = (module: IModule, bitmask: IPermission[]): any => {
+//   const permissionsArray = bitmask.map((permission) => (
+//     { 
+//       name: permission.name, 
+//       bitmask: (+module?.permissions & permission.bitmask) === permission.bitmask 
+//     }
+//   ));
 
-const applyBitmaskRecursively = (item: any): IModule => {
-  const updatedItem = {
-    ...item,
-    permissions: calculateBitmask(item.permissions),
-  };
-  if (updatedItem.submodules && updatedItem.submodules.length > 0) {
-    updatedItem.submodules = updatedItem.submodules.map(
-      applyBitmaskRecursively
-    );
-  }
-  return updatedItem;
-};
+//   // Recursively process submodules
+//   const updatedSubmodules = module.subModules && module.subModules.map((submodule) => {
+//     const updatedSubmodule = processModulePermissions(submodule, bitmask);
+//     return {
+//       ...updatedSubmodule,
+//       // permissions: permissionsArray,
+//       // permissions: updatedSubmodule.permissions,
+//     };
+//   });
 
+//   return {
+//     ...module,
+//     permissions: permissionsArray,
+//     submodules: updatedSubmodules,
+//   };
+// };
 
-function removePermissions(modules: Module[]): any[] {
-  return modules.map(module => {
-    const { permissions, submodules, ...rest } = module;
-    const updatedSubmodules = removePermissions(submodules);
+function removePermissions(modules: IModule[]): any[] {
+  return modules && modules.map(module => {
+    const { canCreate, canRead, canUpdate, canDelete, canManage, subModules, ...rest } = module;
+    const updatedSubmodules = removePermissions(subModules);
     return {
       ...rest,
-      submodules: updatedSubmodules,
+      subModules: updatedSubmodules,
     };
   });
 }
 
+
 export default function AccessPage({ roles, modules }: IAccessProps) {
+
   
   const route = useRouter();
   const initialModules = removePermissions(modules as any);
+
+ 
+  
   const initialRoles = roles
   const Thead = ["", "Module", "View", "Edit", "Create", "Delete"];
-
+  
   const [loading, setLoading] = useState<boolean>(false);
   const [roleModules, setRoleModules] = useState<IModule[]>();
-  const [previousModules, setPreviousModules] = useState<Module[]>();
-
-  const defaultModules = initialModules.map((module) => processModulePermissions(module as any, bitmask));
+  const [previousModules, setPreviousModules] = useState<IModule[]>();
+  
+  // const defaultModules = initialModules.map((module) => processModulePermissions(module as any, bitmask));
+  const defaultModules = modules
   const roleOptions = initialRoles.map((role) => processRolesOptions(role));
+
+  // console.log('modules', modules);
+  // console.log('initialModules', initialModules);
+  // console.log('roleModules', roleModules);
 
   const form = useForm({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      userId: "",
-      modules: defaultModules,
+      roleId: "",
+      modules: initialModules,
     },
   });
 
@@ -196,7 +151,7 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
     name: "modules",
   });
 
-  const roleId = form.watch("userId");
+  const roleId = form.watch("roleId");
 
   useEffect(() => {
     const getRoleModules = async (roleId: string) => {
@@ -205,18 +160,22 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
       form.resetField("modules");
 
       try {
-        if(roleId){
-          const res = await fetch(`/api/master/module/${roleId}`).then((d)=>d.json())
+        if (roleId) {
+          const res = await fetch(`/api/master/module/${roleId}`).then((d) => d.json())
           const data = res.data;
+
+          console.log('org', data);
+          
 
           if (res.success) {
             // get previous modules of role
-            if(data && initialModules){
+            if (data && initialModules) {
               setPreviousModules(data);
-              const mergePreviousWithDefault = mergeModules(initialModules as any, data);
-              const previousModules = mergePreviousWithDefault.map((module) => processModulePermissions(module as any, bitmask));
-              setRoleModules(previousModules);
-              form.setValue("modules", previousModules);
+              const mergePreviousWithDefault = mergeModules(modules, data);
+              console.log('mergePreviousWithDefault', mergePreviousWithDefault)
+              // const previousModules = mergePreviousWithDefault.map((module) => processModulePermissions(module as any, bitmask));
+              setRoleModules(mergePreviousWithDefault);
+              form.setValue("modules", mergePreviousWithDefault);
             }
           } else {
             toast.error("Failed to fetch role modules");
@@ -234,17 +193,24 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
     getRoleModules(roleId);
   }, [roleId]);
 
+  console.log(form.formState.errors)
+
   const onSubmit = async (data: FormValues) => {
-    const submitted = data.modules.map(applyBitmaskRecursively);
-    const updatedModules = previousModules &&
-    updateModules(submitted as any, previousModules as any);
-    const formated = transformModules(updatedModules as any);
+
+    // const submitted = data.modules.map(applyBitmaskRecursively);
+    const updatedModules = updateModules(data.modules as any, previousModules as any);
+    const formated = transformModules(updatedModules);
+
+    console.log('submitted',JSON.stringify(data.modules, null, 2));
+    console.log('previousModules',JSON.stringify(previousModules, null, 2));
+    console.log('updatedModules',JSON.stringify(updatedModules, null, 2));
+    console.log('formated',JSON.stringify(formated, null, 2));
 
     const final = {
-      roleId: data.userId,
-      modulesData: formated,
+      roleId: data.roleId,
+      modulesData: formated
     };
-
+    
     try {
       const result = await fetch(`/api/master/rbac`, {
         method: "POST",
@@ -252,6 +218,7 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
       });
 
       const res = await result.json();
+      // const res = {success:true};
 
       if (res.success) {
         console.log("res", res);
@@ -267,62 +234,60 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
   };
 
   return (
-    <WithPermission permissionBit={7 & 8}>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <div className="px-4">
-            <SelectController name={"userId"} label={"Role"} options={roleOptions}/>
-          </div>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <div className="px-4">
+          <SelectController name={"roleId"} label={"Role"} options={roleOptions} />
+        </div>
 
-          <Table>
-            <TableHeader className="bg-gray-50 dark:bg-gray-800">
+        <Table>
+          <TableHeader className="bg-gray-50 dark:bg-gray-800">
+            <TableRow>
+              {Thead.map((item) => (
+                <TableHead key={item}>{item}</TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+
+          <TableBody>
+            {roleModules && !loading &&
+              roleModules.map((data, i) => (
+                <RenderRows key={i} data={data} parentIndex={""} index={i} level={0} />
+              ))}
+
+            {defaultModules && !loading &&
+              !roleModules &&
+              defaultModules.map((data, i) => (
+                <RenderRows key={i} data={data} parentIndex={""} index={i} level={0} />
+              ))}
+
+            {loading && (
               <TableRow>
-                {Thead.map((item) => (
-                  <TableHead key={item}>{item}</TableHead>
-                ))}
+                <TableCell colSpan={6} className="text-center">
+                  <span className="flex items-center justify-center" aria-live="polite">
+                    <LoaderCircleIcon className="mr-2 h-4 w-4 animate-spin" />
+                    Loading...
+                  </span>
+                </TableCell>
               </TableRow>
-            </TableHeader>
+            )}
+          </TableBody>
+        </Table>
 
-            <TableBody>
-              {roleModules && !loading &&
-                roleModules.map((data, i) => (
-                  <RenderRows key={i} data={data} parentIndex={""} index={i} level={0} />
-                ))}
-
-              {defaultModules && !loading &&
-                !roleModules &&
-                defaultModules.map((data, i) => (
-                  <RenderRows key={i} data={data} parentIndex={""} index={i} level={0} />
-                ))}
-
-              { loading && (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center">
-                    <span className="flex items-center justify-center" aria-live="polite">
-                      <LoaderCircleIcon className="mr-2 h-4 w-4 animate-spin" />
-                      Loading...
-                    </span>
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-
-          <div className="flex justify-end my-4 gap-2">
-            <Button
-              variant={"outline"}
-              onClick={(e) => {
-                e.preventDefault();
-                route.back();
-              }}
-            >
-              Cancel
-            </Button>
-            <Button type="submit">Submit</Button>
-          </div>
-        </form>
-      </Form>
-    </WithPermission>
+        <div className="flex justify-end my-4 gap-2">
+          <Button
+            variant={"outline"}
+            onClick={(e) => {
+              e.preventDefault();
+              route.back();
+            }}
+          >
+            Cancel
+          </Button>
+          <Button type="submit">Submit</Button>
+        </div>
+      </form>
+    </Form>
   );
 }
 
@@ -338,7 +303,7 @@ const renderDash = (count: number) => {
 
 const RenderRows = React.memo(
   ({ data, index, level, parentIndex }: IRenderRows) => {
-    const hasSubModules = data?.submodules?.length > 0;
+    const hasSubModules = data?.subModules?.length > 0;
     return (
       <Collapsible asChild key={index}>
         <React.Fragment>
@@ -361,30 +326,46 @@ const RenderRows = React.memo(
               {data?.name}
             </TableCell>
 
-              {
-                hasSubModules &&
-                <TableCell colSpan={4}></TableCell>
-              }
-            
-            {!hasSubModules && data?.permissions && data?.permissions.map((permission, i) => (
+
+
+            {/* {!hasSubModules && data?.permissions && data?.permissions.map((permission, i) => (
               <TableCell key={permission.name}>
                 <SwitchButton
                   name={`modules.${parentIndex}${index}.permissions.${i}.bitmask`}
                 />
               </TableCell>
-            ))}
+            ))} */}
+
+            {
+              hasSubModules
+                ? <TableCell colSpan={4}></TableCell>
+                : <>
+                  <TableCell>
+                    <SwitchButton name={`modules.${parentIndex}${index}.canRead`} />
+                  </TableCell>
+                  <TableCell>
+                    <SwitchButton name={`modules.${parentIndex}${index}.canUpdate`} />
+                  </TableCell>
+                  <TableCell>
+                    <SwitchButton name={`modules.${parentIndex}${index}.canCreate`} />
+                  </TableCell>
+                  <TableCell>
+                    <SwitchButton name={`modules.${parentIndex}${index}.canDelete`} />
+                  </TableCell>
+                </>
+            }
           </TableRow>
 
           <CollapsibleContent asChild>
             <React.Fragment>
-              {data?.submodules &&
-                data?.submodules.map((sub, ii) => (
+              {data?.subModules &&
+                data?.subModules.map((sub, ii) => (
                   <RenderRows
                     key={sub.id}
                     data={sub}
                     index={ii}
                     level={level + 1}
-                    parentIndex={`${parentIndex}${index}.submodules.`}
+                    parentIndex={`${parentIndex}${index}.subModules.`}
                   />
                 ))}
             </React.Fragment>
@@ -397,39 +378,22 @@ const RenderRows = React.memo(
 
 // ----------------------------- Merge default modules with role assigned modules ----------------------------- //
 
-type Module = {
-  id: string;
-  name: string;
-  parentId: string | null;
-  permissions: number;
-  submodules: Module[];
-};
-
-function mergeModules(
-  allModules: Module[],
-  roleAssignedModules: Module[]
-): Module[] {
+function mergeModules(allModules: IModule[], roleAssignedModules: IModule[]): IModule[] {
   // Helper function to merge modules
-  function mergeSingleModule(
-    module: Module,
-    roleAssignedModule: Module | undefined
-  ): Module {
+  function mergeSingleModule(module: IModule, roleAssignedModule: IModule | undefined): IModule {
     if (roleAssignedModule) {
-      module.permissions = roleAssignedModule.permissions;
-      module.submodules = mergeSubmodules(
-        module.submodules,
-        roleAssignedModule.submodules
-      );
+      module.canCreate = roleAssignedModule.canCreate;
+      module.canRead = roleAssignedModule.canRead;
+      module.canUpdate = roleAssignedModule.canUpdate;
+      module.canDelete = roleAssignedModule.canDelete;
+      module.subModules = mergeSubmodules(module.subModules, roleAssignedModule.subModules);
     }
     return module;
   }
 
   // Helper function to merge submodules
-  function mergeSubmodules(
-    allSubmodules: Module[],
-    roleAssignedSubmodules: Module[]
-  ): Module[] {
-    return allSubmodules.map((allSubmodule) => {
+  function mergeSubmodules(allSubmodules: IModule[], roleAssignedSubmodules: IModule[]): IModule[] {
+    return allSubmodules && allSubmodules.map((allSubmodule) => {
       const matchingRoleSubmodule = roleAssignedSubmodules.find(
         (roleSubmodule) => roleSubmodule.id === allSubmodule.id
       );
@@ -438,7 +402,7 @@ function mergeModules(
   }
 
   // Iterate over all modules and merge them with role-assigned modules
-  return allModules.map((allModule) => {
+  return allModules && allModules.map((allModule) => {
     const roleAssignedModule = roleAssignedModules.find(
       (roleModule) => roleModule.id === allModule.id
     );
@@ -449,69 +413,79 @@ function mergeModules(
 // ----------------------------- Format submitted data to API ----------------------------- //
 
 interface FormatSubmodule {
-  submoduleId: string;
-  permissions: number;
-  submodules?: FormatSubmodule[];
+  subModuleId: string;
+  canCreate: boolean;
+  canRead: boolean;
+  canUpdate: boolean;
+  canDelete: boolean;
+  canManage: boolean;
+  subModules?: FormatSubmodule[];
 }
 
 interface FormatModule {
   moduleId: string;
-  permissions: number;
-  submodules: FormatSubmodule[];
+  canCreate: boolean;
+  canRead: boolean;
+  canUpdate: boolean;
+  canDelete: boolean;
+  canManage: boolean;
+  subModules: FormatSubmodule[];
 }
 
-function transformModules(input: Module[]): FormatModule[] {
+function transformModules(input: IModule[]): FormatModule[] {
   return input.map((module) => ({
     moduleId: module.id,
-    permissions: module.permissions,
-    submodules: transformSubmodules(module.submodules),
+    canCreate: module.canCreate,
+    canRead: module.canRead,
+    canUpdate: module.canUpdate,
+    canDelete: module.canDelete,
+    canManage: module.canManage,
+    subModules: transformSubmodules(module.subModules),
   }));
 }
 
-function transformSubmodules(input: Module[]): FormatSubmodule[] {
-  return input.map((submodule) => ({
-    submoduleId: submodule.id,
-    permissions: submodule.permissions,
-    submodules:
-      submodule.submodules.length > 0
-        ? transformSubmodules(submodule.submodules)
+function transformSubmodules(input: IModule[]): FormatSubmodule[] {
+  return input.map((subModule) => ({
+    subModuleId: subModule.id,
+    canCreate: subModule.canCreate,
+    canRead: subModule.canRead,
+    canUpdate: subModule.canUpdate,
+    canDelete: subModule.canDelete,
+    canManage: subModule.canManage,
+    subModules:
+      subModule.subModules.length > 0
+        ? transformSubmodules(subModule.subModules)
         : [],
   }));
 }
 
 // ----------------------------- Update submited data from previous data  ----------------------------- //
 
-function updateModules(
-  submittedData: Module[],
-  previousData: Module[]
-): Module[] {
+function updateModules(submittedData: IModule[], previousData: IModule[]): IModule[] {
   const mapPreviousData = createIdMap(previousData);
 
-  return submittedData
-    .map((submodule) => {
-      const prevModule = mapPreviousData.get(submodule.id);
+  return submittedData.map((subModule) => {
+      const prevModule = mapPreviousData.get(subModule.id);
       if (prevModule) {
         return {
-          ...submodule,
-          permissions: submodule.permissions,
-          submodules: updateModules(
-            submodule.submodules,
-            prevModule.submodules
-          ),
-        };
-      } else if (submodule.permissions !== 0) {
-        return {
-          ...submodule,
-          submodules: updateModules(submodule.submodules, []),
+          ...subModule,
+          // permissions: submodule.permissions,
+          subModules: updateModules(subModule.subModules, prevModule.subModules),
         };
       }
+      //  else if (subModule.permissions !== 0) {
+      //   return {
+      //     ...subModule,
+      //     subModules: updateModules(subModule.subModules, []),
+      //   };
+      // }
       return null;
     })
-    .filter(Boolean) as Module[];
+    .filter(Boolean) as IModule[];
 }
 
-function createIdMap(data: Module[]): Map<string, Module> {
-  const map = new Map<string, Module>();
+function createIdMap(data: IModule[]): Map<string, IModule> {
+  const map = new Map<string, IModule>();
   data.forEach((module) => map.set(module.id, module));
   return map;
 }

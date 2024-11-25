@@ -15,7 +15,7 @@ export default async function Page() {
     try {
         const modules = await getModulesWithSubmodules();
         const roles = await prisma.role.findMany({
-            select: { id: true, name: true, permissions: true }
+            select: { id: true, name: true }
         });
 
         if (!modules) {
@@ -28,7 +28,7 @@ export default async function Page() {
         return (
             <>
                 <TitlePage title="Role Based Access Module" description="Define module access" />
-                {modules && <AccessPage roles={roles} modules={modules} />}
+                {modules && <AccessPage roles={roles} modules={modules as any} />}
             </>
         )
     } catch (error) {

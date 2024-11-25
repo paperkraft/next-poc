@@ -124,7 +124,7 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
  
   
   const initialRoles = roles
-  const Thead = ["", "Module", "View", "Edit", "Create", "Delete"];
+  const Thead = ["", "Module", "Create", "Read", "Update", "Delete"];
   
   const [loading, setLoading] = useState<boolean>(false);
   const [roleModules, setRoleModules] = useState<IModule[]>();
@@ -193,8 +193,6 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
     getRoleModules(roleId);
   }, [roleId]);
 
-  console.log(form.formState.errors)
-
   const onSubmit = async (data: FormValues) => {
 
     // const submitted = data.modules.map(applyBitmaskRecursively);
@@ -208,7 +206,7 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
 
     const final = {
       roleId: data.roleId,
-      modulesData: formated
+      modulesData: formated.length > 0 ? formated : data.modules
     };
     
     try {
@@ -337,17 +335,18 @@ const RenderRows = React.memo(
             ))} */}
 
             {
-              hasSubModules
-                ? <TableCell colSpan={4}></TableCell>
-                : <>
+              // hasSubModules
+              //   ? <TableCell colSpan={4}></TableCell>
+              //   : 
+                <>
+                  <TableCell>
+                    <SwitchButton name={`modules.${parentIndex}${index}.canCreate`} />
+                  </TableCell>
                   <TableCell>
                     <SwitchButton name={`modules.${parentIndex}${index}.canRead`} />
                   </TableCell>
                   <TableCell>
                     <SwitchButton name={`modules.${parentIndex}${index}.canUpdate`} />
-                  </TableCell>
-                  <TableCell>
-                    <SwitchButton name={`modules.${parentIndex}${index}.canCreate`} />
                   </TableCell>
                   <TableCell>
                     <SwitchButton name={`modules.${parentIndex}${index}.canDelete`} />
@@ -413,7 +412,7 @@ function mergeModules(allModules: IModule[], roleAssignedModules: IModule[]): IM
 // ----------------------------- Format submitted data to API ----------------------------- //
 
 interface FormatSubmodule {
-  subModuleId: string;
+  id: string;
   canCreate: boolean;
   canRead: boolean;
   canUpdate: boolean;
@@ -423,7 +422,7 @@ interface FormatSubmodule {
 }
 
 interface FormatModule {
-  moduleId: string;
+  id: string;
   canCreate: boolean;
   canRead: boolean;
   canUpdate: boolean;
@@ -434,7 +433,7 @@ interface FormatModule {
 
 function transformModules(input: IModule[]): FormatModule[] {
   return input.map((module) => ({
-    moduleId: module.id,
+    id: module.id,
     canCreate: module.canCreate,
     canRead: module.canRead,
     canUpdate: module.canUpdate,
@@ -446,7 +445,7 @@ function transformModules(input: IModule[]): FormatModule[] {
 
 function transformSubmodules(input: IModule[]): FormatSubmodule[] {
   return input.map((subModule) => ({
-    subModuleId: subModule.id,
+    id: subModule.id,
     canCreate: subModule.canCreate,
     canRead: subModule.canRead,
     canUpdate: subModule.canUpdate,

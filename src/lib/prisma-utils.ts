@@ -36,7 +36,7 @@ export async function getModulesWithSubmodules(): Promise<FormattedModule[]> {
     });
 
     const formattedModules = formatModules(modules as any);
-    // console.log(JSON.stringify(formattedModules, null, 2));
+    console.log(JSON.stringify(formattedModules, null, 2));
 
     return formattedModules;
   } catch (error) {
@@ -120,4 +120,67 @@ function formatModules(modules: Module[]): FormattedModule[] {
   return Array.from(formattedModulesMap.values()).filter(
     (module) => module.parentId === null
   );
+}
+
+interface TCreate{
+  name:string;
+  createdBy: string | null;
+}
+
+interface TUpdate extends TCreate{
+  id:string;
+  updatedBy: string | null;
+}
+
+export async function CreateRole (data:TCreate){
+  const { name, createdBy } = data;
+  const newRole = await prisma.role.create({
+    data: { name, createdBy }
+  });
+  return newRole
+}
+
+export async function UpdateRole (data:TUpdate){
+  const { id, name, updatedBy } = data;
+  const newRole = await prisma.role.update({
+    where: { id: id },
+    data: { name, updatedBy }
+  });
+  return newRole
+}
+
+
+export async function CreateModule (data:TCreate){
+  const { name, createdBy } = data;
+  const newModule = await prisma.module.create({
+    data: { name, createdBy }
+  });
+  return newModule
+}
+
+interface IModulePermission{
+  moduleId: string;
+  roleId: string;
+  canCreate: boolean;
+  canRead: boolean;
+  canUpdate: boolean;
+  canDelete: boolean;
+  createdBy: string | null;
+}
+
+
+export async function ModulePermission (data:IModulePermission){
+  const newPermission = await prisma.modulePermission.create({
+    data: {
+      moduleId: data.moduleId,
+      roleId: data.roleId,
+      canCreate: data.canCreate,
+      canRead: data.canRead,
+      canUpdate: data.canUpdate,
+      canDelete: data.canDelete,
+      createdBy: data.createdBy,
+    },
+  });
+  
+  return newPermission
 }

@@ -90,7 +90,7 @@ export async function DELETE(req:Request) {
             return NextResponse.json({ success: false, message: "Module ID is required" }, { status: 400 });
         }
         await prisma.$transaction([
-            prisma.modulePermissions.deleteMany({
+            prisma.modulePermission.deleteMany({
               where: { moduleId: id },
             }),
             prisma.module.delete({

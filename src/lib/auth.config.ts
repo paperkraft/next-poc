@@ -29,7 +29,7 @@ const authConfig: NextAuthConfig = {
                     include: { role: true }
                 });
 
-                const userModulesGrouped = await prisma.modulePermissions.findMany({
+                const userModulesGrouped = await prisma.modulePermission.findMany({
                     where: {
                         roleId: user?.roleId,
                     },

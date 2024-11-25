@@ -8,55 +8,77 @@ datasource db {
 }
 
 model Role {
-  id                String              @id @default(auto()) @map("_id") @db.ObjectId
+  id                String             @id @default(auto()) @map("_id") @db.ObjectId
   name              String
+  parentId          String?            @db.ObjectId
+  parent            Role?              @relation("RoleParent", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  subRoles          Role[]             @relation("RoleParent")
   users             User[]
-  modulePermissions ModulePermissions[]
+  modulePermissions ModulePermission[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  createdBy         String?            @db.ObjectId
+  updatedBy         String?            @db.ObjectId
 }
 
 model Module {
-  id                   String              @id @default(auto()) @map("_id") @db.ObjectId
+  id                   String             @id @default(auto()) @map("_id") @db.ObjectId
   name                 String
-  parentId             String?             @db.ObjectId
-  parent               Module?             @relation("ModuleParent", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  modulePermissions    ModulePermissions[]
-  subModules           Module[]            @relation("ModuleParent")
-  subModulePermissions ModulePermissions[] @relation("ModuleParent")
+  parentId             String?            @db.ObjectId
+  parent               Module?            @relation("ModuleParent", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  subModules           Module[]           @relation("ModuleParent")
+  modulePermissions    ModulePermission[]
+  subModulePermissions ModulePermission[] @relation("ModuleParent")
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  createdBy            String?            @db.ObjectId
+  updatedBy            String?            @db.ObjectId
 }
 
-model ModulePermissions {
+model ModulePermission {
   id          String  @id @default(auto()) @map("_id") @db.ObjectId
   moduleId    String  @db.ObjectId
   roleId      String  @db.ObjectId
   subModuleId String? @db.ObjectId
 
- // Granular permissions for actions
   canCreate Boolean @default(false)
   canRead   Boolean @default(false)
   canUpdate Boolean @default(false)
   canDelete Boolean @default(false)
-  canManage Boolean @default(false) // Admin-level permission
+  canManage Boolean @default(false)
 
-  role      Role    @relation(fields: [roleId], references: [id])
-  module    Module  @relation(fields: [moduleId], references: [id])
-  subModule Module? @relation("ModuleParent", fields: [subModuleId], references: [id])
+  role      Role     @relation(fields: [roleId], references: [id])
+  module    Module   @relation(fields: [moduleId], references: [id])
+  subModule Module?  @relation("ModuleParent", fields: [subModuleId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdBy String? @db.ObjectId
+  updatedBy String? @db.ObjectId
 
   @@unique([roleId, moduleId]) // Ensure unique combinations of role and module
   @@unique([roleId, moduleId, subModuleId]) // Ensure unique combinations for submodules
+  @@index([moduleId])
+  @@index([roleId])
+  @@index([subModuleId])
 }
 
 model User {
-  id           String  @id @default(auto()) @map("_id") @db.ObjectId
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
   firstName    String?
   lastName     String?
   name         String?
   username     String?
-  email        String  @unique
+  email        String   @unique
   password     String?
   phone        String?
   organization String?
   state        String?
   city         String?
-  roleId       String  @db.ObjectId
-  role         Role    @relation(fields: [roleId], references: [id])
+  roleId       String   @db.ObjectId
+  role         Role     @relation(fields: [roleId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  createdBy    String?  @db.ObjectId
+  updatedBy    String?  @db.ObjectId
 }

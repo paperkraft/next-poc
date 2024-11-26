@@ -52,30 +52,10 @@ async function UpsertAssignModulesToRole(roleId: string, modulesWithPermissions:
     }
 }
 
-// Helper function to check for non-zero permissions recursively in submodules
-function hasNonZeroChildPermission(module: any): boolean {
-    // Check if the module itself has permissions > 0
-    if (module.permissions > 0) {
-        return true;
-    }
-
-    // If the module has submodules, recursively check each submodule
-    for (let submodule of module.submodules) {
-        if (hasNonZeroChildPermission(submodule)) {
-            return true;
-        }
-    }
-
-    // If no submodules with permissions > 0 are found, return false
-    return false;
-}
-
-
 async function upsertModulePermissions(roleId: string, moduleData: Module, assignments: any[]) {
     // Check if the module has any submodules with non-zero permissions
-    // const hasNonZeroChildPermission = moduleData.submodules && moduleData.submodules.some(submodule => submodule.permissions > 0);
-    const hasNonZeroChildPermissionFlag = hasNonZeroChildPermission(moduleData);
-
+    const hasNonZeroChildPermission = moduleData.submodules && moduleData.submodules.some(submodule => submodule.permissions > 0);
+    
     // Check if the module was previously assigned (i.e., exists in the modulePermissions table for the role)
     const existingModulePermission = await prisma.modulePermissions.findUnique({
         where: {
@@ -87,7 +67,7 @@ async function upsertModulePermissions(roleId: string, moduleData: Module, assig
     });
 
     // Check if permissions are 0, in which case we remove the module access by deleting it
-    if (moduleData.permissions === 0  && !hasNonZeroChildPermissionFlag  && existingModulePermission) {
+    if (moduleData.permissions === 0  && !hasNonZeroChildPermission  && existingModulePermission) {
         // Delete the module permission for the role
         await prisma.modulePermissions.delete({
             where: {
@@ -123,6 +103,8 @@ async function upsertModulePermissions(roleId: string, moduleData: Module, assig
 
 async function upsertSubmodulePermissions(roleId: string, moduleId: string, submodule: SubModules, assignments: any[]) {
 
+    const hasNonZeroChildPermission = submodule.submodules && submodule.submodules.some(submodule => submodule.permissions > 0);
+
     const existingModulePermission = await prisma.modulePermissions.findUnique({
         where: {
             roleId_moduleId_submoduleId: {
@@ -134,7 +116,7 @@ async function upsertSubmodulePermissions(roleId: string, moduleId: string, subm
     });
 
     // If permission is 0 and already assigned, delete the submodule permission
-    if (submodule.permissions === 0 && existingModulePermission) {
+    if (submodule.permissions === 0 && !hasNonZeroChildPermission  && existingModulePermission) {
         await prisma.modulePermissions.delete({
             where: {
                 roleId_moduleId_submoduleId: {

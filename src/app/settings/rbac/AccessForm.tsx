@@ -14,7 +14,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { ChevronRight, LoaderCircleIcon } from "lucide-react";
+import { ChevronRight, LoaderCircle, LoaderCircleIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { SelectController } from "@/components/custom/form.control/SelectController";
@@ -159,6 +159,7 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
   const initialRoles = roles
   const Thead = ["", "Module", "View", "Edit", "Create", "Delete"];
 
+  const [disabled, setDisabled] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [roleModules, setRoleModules] = useState<IModule[]>();
   const [previousModules, setPreviousModules] = useState<Module[]>();
@@ -191,8 +192,6 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
         if (roleId) {
           const res = await fetch(`/api/master/module/${roleId}`).then((d) => d.json())
           const data = res.data;
-          console.log('org', data)
-          console.log('ext', res.ext)
           if (res.success) {
             // get previous modules of role
             if (data && initialModules) {
@@ -219,14 +218,10 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
   }, [roleId]);
 
   const onSubmit = async (data: FormValues) => {
+    setDisabled(true);
     const submitted = data.modules.map(applyBitmaskRecursively);
     const updatedModules = previousModules && updateModules(submitted as any, previousModules as any);
     const formated = transformModules(updatedModules as any);
-
-    console.log("submitted", JSON.stringify(submitted, null, 2))
-    console.log("previousModules", JSON.stringify(previousModules, null, 2))
-    console.log("updatedModules", JSON.stringify(updatedModules, null, 2))
-    console.log("formated", JSON.stringify(formated, null, 2))
 
     const final = {
       roleId: data.userId,
@@ -251,7 +246,20 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
     } catch (error) {
       console.error(error);
       toast.error("Failed to assigned module");
+    } finally {
+      setDisabled(false);
     }
+  };
+
+  const renderButtonContent = () => {
+    if (disabled) {
+      return (
+        <>
+          <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> Submitting...
+        </>
+      );
+    }
+    return "Submit";
   };
 
   return (
@@ -306,7 +314,7 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
             >
               Cancel
             </Button>
-            <Button type="submit">Submit</Button>
+            <Button type="submit" disabled={disabled}>{renderButtonContent()}</Button>
           </div>
         </form>
       </Form>
@@ -350,9 +358,9 @@ const RenderRows = React.memo(
               {hasSubModules ? ' *' : null}
             </TableCell>
 
-            {/* {hasSubModules && <TableCell colSpan={4}></TableCell>} */}
+            {hasSubModules && <TableCell colSpan={4}></TableCell>}
 
-            { data?.permissions && data?.permissions.map((permission, i) => (
+            { !hasSubModules && data?.permissions && data?.permissions.map((permission, i) => (
               <TableCell key={permission.name}>
                 <SwitchButton name={`modules.${parentIndex}${index}.permissions.${i}.bitmask`}/>
               </TableCell>

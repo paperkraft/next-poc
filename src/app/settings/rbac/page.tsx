@@ -27,8 +27,8 @@ export default async function Page() {
         }
         return (
             <>
-                <TitlePage title="Role Based Access Module" description="Define module access" />
-                {modules && <AccessPage roles={roles} modules={modules} />}
+                <TitlePage title="Role Based Access Control" description="Define role based module access" />
+                {modules && <AccessPage roles={roles} modules={modules as any} />}
             </>
         )
     } catch (error) {

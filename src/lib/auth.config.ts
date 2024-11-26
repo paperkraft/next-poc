@@ -173,7 +173,12 @@ function formatToParentChild(input: any[]): InputFormat[] {
             }
 
             // Add the submodule to the parent module's submodules
-            moduleMap[submodule.parentId!].submodules!.push(moduleMap[submodule.id]);
+            if (moduleMap[submodule.parentId!]) {
+                const parentModule = moduleMap[submodule.parentId!];
+                if (!parentModule.submodules!.some(s => s.id === submodule.id)) {
+                    parentModule.submodules!.push(moduleMap[submodule.id]);
+                }
+            }
         }
     });
 

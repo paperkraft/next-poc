@@ -191,7 +191,8 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
         if (roleId) {
           const res = await fetch(`/api/master/module/${roleId}`).then((d) => d.json())
           const data = res.data;
-          
+          console.log('org', data)
+          console.log('ext', res.ext)
           if (res.success) {
             // get previous modules of role
             if (data && initialModules) {
@@ -221,6 +222,11 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
     const submitted = data.modules.map(applyBitmaskRecursively);
     const updatedModules = previousModules && updateModules(submitted as any, previousModules as any);
     const formated = transformModules(updatedModules as any);
+
+    console.log("submitted", JSON.stringify(submitted, null, 2))
+    console.log("previousModules", JSON.stringify(previousModules, null, 2))
+    console.log("updatedModules", JSON.stringify(updatedModules, null, 2))
+    console.log("formated", JSON.stringify(formated, null, 2))
 
     const final = {
       roleId: data.userId,
@@ -344,9 +350,9 @@ const RenderRows = React.memo(
               {hasSubModules ? ' *' : null}
             </TableCell>
 
-            {hasSubModules && <TableCell colSpan={4}></TableCell>}
+            {/* {hasSubModules && <TableCell colSpan={4}></TableCell>} */}
 
-            {!hasSubModules && data?.permissions && data?.permissions.map((permission, i) => (
+            { data?.permissions && data?.permissions.map((permission, i) => (
               <TableCell key={permission.name}>
                 <SwitchButton name={`modules.${parentIndex}${index}.permissions.${i}.bitmask`}/>
               </TableCell>
@@ -466,6 +472,22 @@ function createIdMap(data: Module[]): Map<string, Module> {
   return map;
 }
 
+function hasValidPermissions(module: Module): boolean {
+  // Check if a module or any of its submodules has permissions > 0
+  if (module.permissions > 0) {
+    return true;
+  }
+
+  // Check if any submodule has permissions > 0
+  for (let submodule of module.submodules) {
+    if (hasValidPermissions(submodule)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+
 function updateModules(
   submittedData: Module[],
   previousData: Module[]
@@ -478,18 +500,16 @@ function updateModules(
 
       // If the module exists in previous data, update permissions and recurse on submodules
       if (prevModule) {
+        const updatedSubmodules = updateModules(submodule.submodules, prevModule.submodules);
         return {
           ...submodule,
-          permissions: submodule.permissions,  
-          submodules: updateModules(
-            submodule.submodules,
-            prevModule.submodules
-          ),
+          permissions: submodule.permissions,
+          submodules: updatedSubmodules,
         };
       }
 
       // If the module does not exist in previous data and its permissions > 0, include it
-      if (submodule.permissions > 0) {
+      if (submodule.permissions > 0 || hasValidPermissions(submodule)) {
         return {
           ...submodule,
           submodules: updateModules(submodule.submodules, []),  
@@ -497,15 +517,15 @@ function updateModules(
       }
 
       // If the module has permissions = 0, include it only if it has valid child modules (permissions > 0)
-      if (submodule.permissions === 0) {
-        const validSubmodules = submodule.submodules.filter(child => child.permissions > 0);
-        if (validSubmodules.length > 0) {
-          return {
-            ...submodule,
-            submodules: updateModules(validSubmodules, []),
-          };
-        }
-      }
+      // if (submodule.permissions === 0) {
+      //   const validSubmodules = submodule.submodules.filter(child => child.permissions > 0);
+      //   if (validSubmodules.length > 0) {
+      //     return {
+      //       ...submodule,
+      //       submodules: updateModules(validSubmodules, []),
+      //     };
+      //   }
+      // }
 
       // If no valid submodules and permissions == 0, exclude the module
       return null;

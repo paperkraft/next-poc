@@ -56,7 +56,7 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import Header from "./Header"
-import { defalutMenu, menuType, submenuType, transformMenuData } from "./data"
+import { defalutMenu, menuType, submenuType, transformMenuData, menus } from "./data"
 import { ChildProps } from "@/types/types"
 import { useForm } from "react-hook-form"
 import { FormField } from "@/components/ui/form"
@@ -78,8 +78,8 @@ export default function AppSidebar({ children }: ChildProps) {
                 .map((label) => filteredMenuData
                     .filter((menu) => menu.label === label))
                 .filter((menuGroup) => menuGroup.length > 0)
-            setFilter(userMenus);
-            setMenus(userMenus);
+            // setFilter(userMenus);
+            // setMenus(userMenus);
         }
     }, [data]);
 

@@ -5,7 +5,7 @@ interface Module {
     id: string;
     name: string;
     parentId: string | null;
-    SubModules: Module[];
+    SubModules: Module[] | null;
 }
 
 type ModuleWithPermissions = {
@@ -26,12 +26,11 @@ type GroupedModule = {
     submodules: GroupedModule[];
 };
 
-// Function to group modules by parent
 function groupModulesByParent(modules: ModuleWithPermissions[]): GroupedModule[] {
     const moduleMap: { [key: string]: GroupedModule } = {};
 
     // Step 1: Initialize the module map with the base module data and set initial permissions
-    modules.forEach(item => {
+    modules && modules.forEach(item => {
         const module = item.module;
         // Only set the permissions for a module if it's not already in the map
         if (!moduleMap[module.id]) {
@@ -46,7 +45,7 @@ function groupModulesByParent(modules: ModuleWithPermissions[]): GroupedModule[]
     });
 
     // Step 2: Add submodules and ensure permissions are handled correctly
-    modules.forEach(item => {
+    modules && modules.forEach(item => {
         if (item.submodule) {
             const submodule = item.submodule;
 
@@ -61,10 +60,12 @@ function groupModulesByParent(modules: ModuleWithPermissions[]): GroupedModule[]
                 };
             }
 
-            // Add submodule to its parent module
-            const parentModule = moduleMap[submodule.parentId!];
-            if (!parentModule.submodules.some(s => s.id === submodule.id)) {
-                parentModule.submodules.push(moduleMap[submodule.id]);
+            // Add the submodule to its parent module if not already present
+            if (moduleMap[submodule.parentId!]) {
+                const parentModule = moduleMap[submodule.parentId!];
+                if (!parentModule.submodules.some(s => s.id === submodule.id)) {
+                    parentModule.submodules.push(moduleMap[submodule.id]);
+                }
             }
         }
     });
@@ -176,11 +177,11 @@ export async function GET(request: Request) {
         });
 
         // Group modules by their parent
-        const groupedModules = groupModulesByParent(modulesWithPermissions as any);
+        const groupedModules = modulesWithPermissions && groupModulesByParent(modulesWithPermissions);
 
         // Respond with the grouped modules
         return NextResponse.json(
-            { success: true, data: groupedModules, mwp: modulesWithPermissions },
+            { success: true, data: groupedModules },
             { status: 200 }
         );
 

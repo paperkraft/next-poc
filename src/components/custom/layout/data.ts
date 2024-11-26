@@ -140,7 +140,7 @@ export const data = [
 
 export const uniqueLabels = Array.from(new Set(data.map((menu) => menu.label)));
 export const menus: menuType[][] = uniqueLabels.map((label) => data.filter((menu) => menu.label === label));
-export const defalutMenu: menuType[][] = uniqueLabels.map((label) => data.filter((menu) => menu.label === label));
+export const defalutMenu: menuType[][] = uniqueLabels.map((label) => dashboard.filter((menu) => menu.label === label));
 
 // Permissions bitmask checking function
 const hasPermission = (userPermissions: number, requiredPermissions: number) => {

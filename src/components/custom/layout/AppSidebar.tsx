@@ -78,8 +78,8 @@ export default function AppSidebar({ children }: ChildProps) {
                 .map((label) => filteredMenuData
                     .filter((menu) => menu.label === label))
                 .filter((menuGroup) => menuGroup.length > 0)
-            // setFilter(userMenus);
-            // setMenus(userMenus);
+            setFilter(userMenus);
+            setMenus(userMenus);
         }
     }, [data]);
 

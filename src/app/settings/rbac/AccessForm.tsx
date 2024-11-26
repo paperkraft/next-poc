@@ -16,8 +16,7 @@ import {
 } from "@/components/ui/collapsible";
 import { ChevronRight, LoaderCircleIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Form, FormField } from "@/components/ui/form";
+import { Form } from "@/components/ui/form";
 import { SelectController } from "@/components/custom/form.control/SelectController";
 import { RoleType } from "@/app/master/role/List";
 import { useFieldArray, useForm } from "react-hook-form";
@@ -28,23 +27,9 @@ import { useRouter } from "next/navigation";
 import { WithPermission } from "@/components/custom/with-permission";
 import { SwitchButton } from "@/components/custom/form.control/SwitchButton";
 
-interface ISubmodules {
-  id: string;
-  name: string;
-  parentId: string | null;
-  permissions: number;
-  submodules: ISubmodules[] | null
-}
-
 interface IAccessProps {
   roles: RoleType[];
-  modules:{
-    id: string;
-    name: string;
-    parentId: string | null;
-    permissions: number;
-    submodules: ISubmodules[] | null
-  }[]
+  modules: IModule[] | null
 }
 
 interface IPermission {
@@ -98,7 +83,6 @@ const bitmask = [
   { name: "CREATE", bitmask: 4 },
   { name: "DELETE", bitmask: 8 },
 ];
-
 
 const processModulePermissions = (
   module: IModule,
@@ -157,7 +141,6 @@ const applyBitmaskRecursively = (item: any): IModule => {
   return updatedItem;
 };
 
-
 function removePermissions(modules: Module[]): any[] {
   return modules.map(module => {
     const { permissions, submodules, ...rest } = module;
@@ -170,7 +153,7 @@ function removePermissions(modules: Module[]): any[] {
 }
 
 export default function AccessPage({ roles, modules }: IAccessProps) {
-  
+
   const route = useRouter();
   const initialModules = removePermissions(modules as any);
   const initialRoles = roles
@@ -205,14 +188,13 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
       form.resetField("modules");
 
       try {
-        if(roleId){
-          const res = await fetch(`/api/master/module/${roleId}`).then((d)=>d.json())
+        if (roleId) {
+          const res = await fetch(`/api/master/module/${roleId}`).then((d) => d.json())
           const data = res.data;
-          console.log('mwp', res.mwp);
-          console.log('org', data);
+          
           if (res.success) {
             // get previous modules of role
-            if(data && initialModules){
+            if (data && initialModules) {
               setPreviousModules(data);
               const mergePreviousWithDefault = mergeModules(initialModules as any, data);
               const previousModules = mergePreviousWithDefault.map((module) => processModulePermissions(module as any, bitmask));
@@ -239,11 +221,6 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
     const submitted = data.modules.map(applyBitmaskRecursively);
     const updatedModules = previousModules && updateModules(submitted as any, previousModules as any);
     const formated = transformModules(updatedModules as any);
-
-    console.log("submitted", JSON.stringify(submitted, null, 2));
-    console.log("previousModules", JSON.stringify(previousModules, null, 2));
-    console.log("updatedModules", JSON.stringify(updatedModules, null, 2));
-    console.log("formated", JSON.stringify(formated, null, 2));
 
     const final = {
       roleId: data.userId,
@@ -276,7 +253,7 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="px-4">
-            <SelectController name={"userId"} label={"Role"} options={roleOptions}/>
+            <SelectController name={"userId"} label={"Role"} options={roleOptions} />
           </div>
 
           <Table>
@@ -300,7 +277,7 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
                   <RenderRows key={i} data={data} parentIndex={""} index={i} level={0} />
                 ))}
 
-              { loading && (
+              {loading && (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center">
                     <span className="flex items-center justify-center" aria-live="polite">
@@ -361,21 +338,17 @@ const RenderRows = React.memo(
               ) : null}
             </TableCell>
 
-            <TableCell>
+            <TableCell className={`pl-${data?.parentId && level*2}`}>
               {data?.parentId ? renderDash(level) : null}
               {data?.name}
+              {hasSubModules ? ' *' : null}
             </TableCell>
 
-              {
-                hasSubModules &&
-                <TableCell colSpan={4}></TableCell>
-              }
-            
-            { !hasSubModules && data?.permissions && data?.permissions.map((permission, i) => (
+            {hasSubModules && <TableCell colSpan={4}></TableCell>}
+
+            {!hasSubModules && data?.permissions && data?.permissions.map((permission, i) => (
               <TableCell key={permission.name}>
-                <SwitchButton
-                  name={`modules.${parentIndex}${index}.permissions.${i}.bitmask`}
-                />
+                <SwitchButton name={`modules.${parentIndex}${index}.permissions.${i}.bitmask`}/>
               </TableCell>
             ))}
           </TableRow>
@@ -451,7 +424,7 @@ function mergeModules(
   });
 }
 
-// ----------------------------- Format submitted data to API ----------------------------- //
+// ----------------------------- Format submitted data to API Format ----------------------------- //
 
 interface FormatSubmodule {
   submoduleId: string;
@@ -485,43 +458,13 @@ function transformSubmodules(input: Module[]): FormatSubmodule[] {
 }
 
 // ----------------------------- Update submited data from previous data  ----------------------------- //
-
-function updateModulesOld(
-  submittedData: Module[],
-  previousData: Module[]
-): Module[] {
-  const mapPreviousData = createIdMap(previousData);
-
-  return submittedData
-    .map((submodule) => {
-      const prevModule = mapPreviousData.get(submodule.id);
-      if (prevModule) {
-        return {
-          ...submodule,
-          permissions: submodule.permissions,
-          submodules: updateModules(
-            submodule.submodules,
-            prevModule.submodules
-          ),
-        };
-      } else if (submodule.permissions !== 0) {
-        return {
-          ...submodule,
-          submodules: updateModules(submodule.submodules, []),
-        };
-      }
-      return null;
-    })
-    .filter(Boolean) as Module[];
-}
+ 
 
 function createIdMap(data: Module[]): Map<string, Module> {
   const map = new Map<string, Module>();
   data.forEach((module) => map.set(module.id, module));
   return map;
 }
-
-
 
 function updateModules(
   submittedData: Module[],
@@ -537,7 +480,7 @@ function updateModules(
       if (prevModule) {
         return {
           ...submodule,
-          permissions: submodule.permissions, // Update permissions from submitted data
+          permissions: submodule.permissions,  
           submodules: updateModules(
             submodule.submodules,
             prevModule.submodules
@@ -549,7 +492,7 @@ function updateModules(
       if (submodule.permissions > 0) {
         return {
           ...submodule,
-          submodules: updateModules(submodule.submodules, []), // Recurse on submodules with empty previous data
+          submodules: updateModules(submodule.submodules, []),  
         };
       }
 
@@ -559,7 +502,7 @@ function updateModules(
         if (validSubmodules.length > 0) {
           return {
             ...submodule,
-            submodules: updateModules(validSubmodules, []), // Include only valid child modules
+            submodules: updateModules(validSubmodules, []),
           };
         }
       }

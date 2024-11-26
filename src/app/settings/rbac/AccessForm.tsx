@@ -197,16 +197,18 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
 
     // const submitted = data.modules.map(applyBitmaskRecursively);
     const updatedModules = updateModules(data.modules as any, previousModules as any);
-    const formated = transformModules(updatedModules);
+    const updatedNew = mergeData(previousModules as any, data.modules as any)
+    // const formated = transformModules(updatedModules);
 
     console.log('submitted',JSON.stringify(data.modules, null, 2));
     console.log('previousModules',JSON.stringify(previousModules, null, 2));
     console.log('updatedModules',JSON.stringify(updatedModules, null, 2));
-    console.log('formated',JSON.stringify(formated, null, 2));
+    console.log('updatedNew',JSON.stringify(updatedNew, null, 2));
 
     const final = {
       roleId: data.roleId,
-      modulesData: formated.length > 0 ? formated : data.modules
+      modulesData: updatedModules
+      // modulesData: updatedModules.length > 0 ? updateModules : data.modules
     };
     
     try {
@@ -487,4 +489,77 @@ function createIdMap(data: IModule[]): Map<string, IModule> {
   const map = new Map<string, IModule>();
   data.forEach((module) => map.set(module.id, module));
   return map;
+}
+
+
+type Module = {
+  id: string;
+  name: string;
+  parentId: string | null;
+  canCreate: boolean;
+  canRead: boolean;
+  canUpdate: boolean;
+  canDelete: boolean;
+  canManage: boolean;
+  subModules: Module[];
+};
+
+function mergeData(previousData: Module[], submittedData: Module[]): Module[] {
+  const filterPermissions = (module: Module): boolean => {
+    // Keep the module or submodule only if at least one granular permission is true
+    return (
+      module.canCreate || module.canRead || module.canUpdate || module.canDelete || module.canManage
+    );
+  };
+
+  const mergeModules = (prevModule: Module, subModuleData: Module): void => {
+    if (prevModule.id === subModuleData.id) {
+      // Update permissions from submitted data
+      prevModule.canCreate = subModuleData.canCreate;
+      prevModule.canRead = subModuleData.canRead;
+      prevModule.canUpdate = subModuleData.canUpdate;
+      prevModule.canDelete = subModuleData.canDelete;
+      prevModule.canManage = subModuleData.canManage;
+
+      // Recursively merge submodules
+      prevModule.subModules.forEach((prevSubModule) => {
+        const matchingSubModule = subModuleData.subModules.find(
+          (subModule) => subModule.id === prevSubModule.id
+        );
+        if (matchingSubModule) {
+          mergeModules(prevSubModule, matchingSubModule);
+        }
+      });
+
+      // Add any new submodules from the submitted data that do not exist in the previous data
+      subModuleData.subModules.forEach((subModule) => {
+        if (!prevModule.subModules.some((prevSubModule) => prevSubModule.id === subModule.id)) {
+          if (filterPermissions(subModule)) {
+            prevModule.subModules.push(subModule);
+          }
+        }
+      });
+    }
+  };
+
+  // Merge the modules
+  return previousData.map((prevModule) => {
+    const matchingModule = submittedData.find((subModule) => subModule.id === prevModule.id);
+    if (matchingModule) {
+      // Merge the module if found in submitted data
+      mergeModules(prevModule, matchingModule);
+    }
+
+    // Add any new modules from the submitted data that do not exist in the previous data
+    const newModules = submittedData.filter(
+      (subModule) => !previousData.some((prev) => prev.id === subModule.id)
+    );
+    newModules.forEach((newModule) => {
+      if (filterPermissions(newModule)) {
+        previousData.push(newModule);
+      }
+    });
+
+    return prevModule;
+  });
 }

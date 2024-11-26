@@ -208,7 +208,8 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
         if(roleId){
           const res = await fetch(`/api/master/module/${roleId}`).then((d)=>d.json())
           const data = res.data;
-
+          console.log('mwp', res.mwp);
+          console.log('org', data);
           if (res.success) {
             // get previous modules of role
             if(data && initialModules){
@@ -236,9 +237,13 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
 
   const onSubmit = async (data: FormValues) => {
     const submitted = data.modules.map(applyBitmaskRecursively);
-    const updatedModules = previousModules &&
-    updateModules(submitted as any, previousModules as any);
+    const updatedModules = previousModules && updateModules(submitted as any, previousModules as any);
     const formated = transformModules(updatedModules as any);
+
+    console.log("submitted", JSON.stringify(submitted, null, 2));
+    console.log("previousModules", JSON.stringify(previousModules, null, 2));
+    console.log("updatedModules", JSON.stringify(updatedModules, null, 2));
+    console.log("formated", JSON.stringify(formated, null, 2));
 
     const final = {
       roleId: data.userId,
@@ -366,7 +371,7 @@ const RenderRows = React.memo(
                 <TableCell colSpan={4}></TableCell>
               }
             
-            {!hasSubModules && data?.permissions && data?.permissions.map((permission, i) => (
+            { !hasSubModules && data?.permissions && data?.permissions.map((permission, i) => (
               <TableCell key={permission.name}>
                 <SwitchButton
                   name={`modules.${parentIndex}${index}.permissions.${i}.bitmask`}
@@ -481,7 +486,7 @@ function transformSubmodules(input: Module[]): FormatSubmodule[] {
 
 // ----------------------------- Update submited data from previous data  ----------------------------- //
 
-function updateModules(
+function updateModulesOld(
   submittedData: Module[],
   previousData: Module[]
 ): Module[] {
@@ -514,4 +519,53 @@ function createIdMap(data: Module[]): Map<string, Module> {
   const map = new Map<string, Module>();
   data.forEach((module) => map.set(module.id, module));
   return map;
+}
+
+
+
+function updateModules(
+  submittedData: Module[],
+  previousData: Module[]
+): Module[] {
+  const mapPreviousData = createIdMap(previousData);
+
+  return submittedData
+    .map((submodule) => {
+      const prevModule = mapPreviousData.get(submodule.id);
+
+      // If the module exists in previous data, update permissions and recurse on submodules
+      if (prevModule) {
+        return {
+          ...submodule,
+          permissions: submodule.permissions, // Update permissions from submitted data
+          submodules: updateModules(
+            submodule.submodules,
+            prevModule.submodules
+          ),
+        };
+      }
+
+      // If the module does not exist in previous data and its permissions > 0, include it
+      if (submodule.permissions > 0) {
+        return {
+          ...submodule,
+          submodules: updateModules(submodule.submodules, []), // Recurse on submodules with empty previous data
+        };
+      }
+
+      // If the module has permissions = 0, include it only if it has valid child modules (permissions > 0)
+      if (submodule.permissions === 0) {
+        const validSubmodules = submodule.submodules.filter(child => child.permissions > 0);
+        if (validSubmodules.length > 0) {
+          return {
+            ...submodule,
+            submodules: updateModules(validSubmodules, []), // Include only valid child modules
+          };
+        }
+      }
+
+      // If no valid submodules and permissions == 0, exclude the module
+      return null;
+    })
+    .filter(Boolean) as Module[]; // Filter out null values
 }

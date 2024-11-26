@@ -1,29 +1,21 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
+interface Module {
+    id: string;
+    name: string;
+    parentId: string | null;
+    SubModules: Module[];
+}
+
 type ModuleWithPermissions = {
     id: string;
     moduleId: string;
     roleId: string;
     submoduleId: string | null;
     permissions: number;
-    module: {
-        id: string;
-        name: string;
-        parentId: string | null;
-        SubModules: {
-            id: string;
-            name: string;
-            parentId: string;
-            SubModules: any[];
-        }[];
-    };
-    submodule: {
-        id: string;
-        name: string;
-        parentId: string;
-        SubModules: any[];
-    } | null;
+    module: Module;
+    submodule: Module | null;
 };
 
 type GroupedModule = {
@@ -38,60 +30,46 @@ type GroupedModule = {
 function groupModulesByParent(modules: ModuleWithPermissions[]): GroupedModule[] {
     const moduleMap: { [key: string]: GroupedModule } = {};
 
-    // Initialize the module map with the base module data
+    // Step 1: Initialize the module map with the base module data and set initial permissions
     modules.forEach(item => {
         const module = item.module;
+        // Only set the permissions for a module if it's not already in the map
         if (!moduleMap[module.id]) {
             moduleMap[module.id] = {
                 id: module.id,
                 name: module.name,
                 parentId: module.parentId,
-                permissions: item.permissions, // Assign permissions from module
+                permissions: item.permissions,
                 submodules: []
             };
         }
     });
 
-    // Assign submodules and their permissions
+    // Step 2: Add submodules and ensure permissions are handled correctly
     modules.forEach(item => {
         if (item.submodule) {
             const submodule = item.submodule;
 
-            // Ensure the submodule is correctly added to the module map
+            // Ensure the submodule exists in the map and set its permissions
             if (!moduleMap[submodule.id]) {
                 moduleMap[submodule.id] = {
                     id: submodule.id,
                     name: submodule.name,
                     parentId: submodule.parentId,
-                    permissions: item.permissions, // Assign permissions from the submodule
-                    submodules: submodule.SubModules.map((sub: any) => ({
-                        id: sub.id,
-                        name: sub.name,
-                        parentId: sub.parentId,
-                        permissions: item.permissions, // Assign permissions recursively for submodules
-                        submodules: [] // Empty submodules initially
-                    }))
+                    permissions: item.permissions,
+                    submodules: []
                 };
             }
 
-            // Add the submodule to its parent module
-            if (moduleMap[submodule.parentId!]) {
-                moduleMap[submodule.parentId!].submodules.push(moduleMap[submodule.id]);
+            // Add submodule to its parent module
+            const parentModule = moduleMap[submodule.parentId!];
+            if (!parentModule.submodules.some(s => s.id === submodule.id)) {
+                parentModule.submodules.push(moduleMap[submodule.id]);
             }
         }
     });
 
-    // Ensure the module permissions are correctly aggregated from submodules
-    Object.values(moduleMap).forEach(module => {
-        if (module.submodules.length > 0) {
-            module.permissions = Math.max(
-                module.permissions,
-                ...module.submodules.map(sub => sub.permissions)
-            );
-        }
-    });
-
-    // Return the top-level modules (modules with null parentId)
+    // Step 3: Filter to return only top-level modules (modules with null parentId)
     return Object.values(moduleMap).filter(module => module.parentId === null);
 }
 
@@ -132,6 +110,28 @@ export async function GET(request: Request) {
                                             }
                                         }
                                     },
+                                    include: {
+                                        SubModules: {
+                                            where: {
+                                                SubModulePermissions: {
+                                                    some: {
+                                                        roleId
+                                                    }
+                                                }
+                                            },
+                                            include: {
+                                                SubModules: {
+                                                    where: {
+                                                        SubModulePermissions: {
+                                                            some: {
+                                                                roleId
+                                                            }
+                                                        }
+                                                    },
+                                                },
+                                            }
+                                        },
+                                    }
                                 },
                             }
                         }
@@ -147,25 +147,40 @@ export async function GET(request: Request) {
                                     }
                                 }
                             },
+                            include: {
+                                SubModules: {
+                                    where: {
+                                        SubModulePermissions: {
+                                            some: {
+                                                roleId
+                                            }
+                                        }
+                                    },
+                                    include: {
+                                        SubModules: {
+                                            where: {
+                                                SubModulePermissions: {
+                                                    some: {
+                                                        roleId
+                                                    }
+                                                }
+                                            },
+                                        },
+                                    }
+                                },
+                            }
                         },
                     }
                 }
             }
         });
 
-        if (!modulesWithPermissions) {
-            return NextResponse.json(
-                { success: false, message: "Module not found" },
-                { status: 404 }
-            );
-        }
-
         // Group modules by their parent
         const groupedModules = groupModulesByParent(modulesWithPermissions as any);
 
         // Respond with the grouped modules
         return NextResponse.json(
-            { success: true, data: groupedModules },
+            { success: true, data: groupedModules, mwp: modulesWithPermissions },
             { status: 200 }
         );
 

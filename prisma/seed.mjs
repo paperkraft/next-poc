@@ -1,6 +1,10 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
+
+const salt = await bcrypt.genSalt(10);
+const hash = await bcrypt.hash("123123", salt);
 
 async function main() {
   // Step 1: Create some Roles
@@ -60,7 +64,7 @@ async function main() {
   });
 
   await prisma.module.createMany({
-    data:[
+    data: [
       { name: "Settings" },
       { name: "Gallery" },
       { name: "Student" },
@@ -87,8 +91,9 @@ async function main() {
       firstName: 'Vishal',
       lastName: 'Sannake',
       username: 'vishal',
+      name: "Vishal Sannake",
       email: 'vishal.sannake@email.com',
-      password: await makePassword(123123),
+      password: hash,
       phone: '8888812345',
       organization: 'SV Design',
       state: 'Maharashtra',

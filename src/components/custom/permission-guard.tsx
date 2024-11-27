@@ -1,7 +1,6 @@
 "use client";
 import { ReactNode } from "react";
 import Loading from "@/app/loading";
-import AccessDenied from "./access-denied";
 import { useSession } from "next-auth/react";
 
 interface Module {

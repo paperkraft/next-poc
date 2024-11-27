@@ -3,11 +3,12 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbP
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useSidebar } from '@/components/ui/sidebar';
-import { MenuIcon } from 'lucide-react';
+import { BellDot, MenuIcon } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import React from 'react';
 import { data, menuType, submenuType } from './data';
 import { cn } from '@/lib/utils';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 export function CustomTrigger() {
     const { toggleSidebar } = useSidebar();
@@ -54,7 +55,7 @@ const Header: React.FC = React.memo(() => {
     return (
         //w-full transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12
         <header className="flex sticky top-0 bg-background h-16 shrink-0 items-center gap-2 border-b px-4 z-50">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 w-full">
                 <CustomTrigger />
                 
                 <Separator orientation="vertical" className="mr-2 h-4" />
@@ -82,6 +83,24 @@ const Header: React.FC = React.memo(() => {
                         }
                     </BreadcrumbList>
                 </Breadcrumb>
+
+                <div className='ml-auto'>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger>
+                            <Button variant={'ghost'} className='size-8'>
+                                <BellDot className='size-5'></BellDot>
+                            </Button>
+                        </DropdownMenuTrigger>
+                        
+                        <DropdownMenuContent align='end'>
+                            <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                             
+                            <DropdownMenuItem>Team</DropdownMenuItem>
+                             
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
             </div>
         </header>
     );

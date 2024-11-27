@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { InputController } from "@/components/custom/form.control/InputController";
+import { TextareaController } from "@/components/custom/form.control/TextareaController";
 
 const UpdateSchemaForm = () => {
   const form = useForm({
@@ -60,7 +60,7 @@ const UpdateSchemaForm = () => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        {formFields && <InputController name={"json"} label={"Schema"} />}
+        {formFields && <TextareaController name={"json"} label={"Schema"} rows={20}/>}
         <div className='flex justify-end gap-2'>
           <Button type="submit">Submit</Button>
         </div>

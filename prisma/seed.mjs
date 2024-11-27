@@ -27,50 +27,44 @@ async function main() {
 
   // Step 2: Create some Permissions
   console.log('Creating some Permissions')
-  const readPermission = await prisma.permission.create({
-    data: {
-      name: 'Read',
-      bitmask: 1,
-    },
+  await prisma.permission.createMany({
+    data:[
+      {
+        name: 'Read',
+        bitmask: 1,
+      },
+      {
+        name: 'Write',
+        bitmask: 2,
+      },
+      {
+        name: 'Update',
+        bitmask: 3,
+      },
+      {
+        name: 'Delete',
+        bitmask: 4,
+      },
+    ]
   });
-
-  const writePermission = await prisma.permission.create({
-    data: {
-      name: 'Write',
-      bitmask: 2,
-    },
-  });
-
-  const updatePermission = await prisma.permission.create({
-    data: {
-      name: 'Update',
-      bitmask: 3,
-    },
-  });
-
-  const deletePermission = await prisma.permission.create({
-    data: {
-      name: 'Delete',
-      bitmask: 4,
-    },
-  });
-
+ 
   // Step 3: Create some Modules
   console.log('Creating some Modules')
   const adminModule = await prisma.module.create({
     data: {
+      group:"Home",
       name: 'Dashboard',
     },
   });
 
   await prisma.module.createMany({
     data: [
-      { name: "Settings" },
-      { name: "Gallery" },
-      { name: "Student" },
-      { name: "Role" },
-      { name: "Module" },
-      { name: "Academics" },
+      { name: "Settings", group:"Home" },
+      { name: "Gallery", group:"Picture" },
+      { name: "Role", group:"Master" },
+      { name: "Module", group:"Master" },
+      { name: "Academics", group:"Module" },
+      { name: "Student", group:"Module" },
     ]
   });
 

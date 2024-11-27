@@ -59,6 +59,7 @@ model ModulePermissions {
 model Module {
   id                   String              @id @default(auto()) @map("_id") @db.ObjectId
   name                 String
+  group                String?             
   parentId             String?             @db.ObjectId
   parent               Module?             @relation("ModuleParent", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   permissions          Permission[]

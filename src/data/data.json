@@ -1,0 +1,117 @@
+{
+  "ProfileId": {
+    "type": "Number",
+    "value": 105,
+    "label": "Profile Id",
+    "hidden": true
+  },
+  "IsActive": {
+    "type": "Boolean",
+    "value": false,
+    "label": "Is Active"
+  },
+  "FirstName": {
+    "type": "String",
+    "value": "",
+    "label": "First Name AA",
+    "required": true,
+    "message": "First name cannot be empty."
+  },
+  "LastName": {
+    "type": "String",
+    "value": "",
+    "label": "Last Name",
+    "required": true
+  },
+  "DateOfBirth": {
+    "type": "Date",
+    "value": "",
+    "label": "Date of Birth",
+    "required": true,
+    "message": "Date cannot be empty."
+  },
+  "Gender": {
+    "type": "Select",
+    "options": [
+      {
+        "label": "Male",
+        "value": "Male"
+      },
+      {
+        "label": "Female",
+        "value": "Female"
+      },
+      {
+        "label": "Other",
+        "value": "Other"
+      }
+    ],
+    "value": "Male",
+    "label": "Gender",
+    "required": true
+  },
+  "Location": {
+    "type": "Object",
+    "label": "Location",
+    "fields": {
+      "AddressLine1": {
+        "type": "String",
+        "value": "",
+        "label": "Address Line 1"
+      },
+      "CountryId": {
+        "type": "Select",
+        "options": [
+          {
+            "label": "India",
+            "value": "India"
+          },
+          {
+            "label": "America",
+            "value": "America"
+          }
+        ],
+        "value": "India",
+        "label": "Country"
+      },
+      "StateId": {
+        "type": "Select",
+        "options": [
+          {
+            "label": "Maharashtra",
+            "value": "Maharashtra"
+          },
+          {
+            "label": "Goa",
+            "value": "Goa"
+          }
+        ],
+        "value": "",
+        "label": "State"
+      },
+      "CityId": {
+        "type": "String",
+        "value": "",
+        "label": "City"
+      },
+      "PostalCode": {
+        "type": "String",
+        "value": "",
+        "label": "Postal Code",
+        "required": true
+      }
+    }
+  },
+  "ContactNumber": {
+    "type": "String",
+    "value": "",
+    "label": "Contact Number"
+  },
+  "Email": {
+    "type": "String",
+    "value": "",
+    "label": "Email",
+    "required": true,
+    "message": "Email cannot be empty."
+  }
+}

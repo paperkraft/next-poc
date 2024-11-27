@@ -14,13 +14,16 @@ import { IModule } from "../ModuleInterface";
 import DialogBox from "@/components/custom/dialog-box";
 import { Collapsible } from "@radix-ui/react-collapsible";
 import { CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { SelectController } from "@/components/custom/form.control/SelectController";
+import { groupOptions } from "../add/AddModule";
 
 export const ModuleFormSchema = z.object({
   id: z.string(),
   name: z.string(),
+  group: z.object({ value: z.string() }),
   parentId: z.string().nullable(),
   permissions: z.number().nullable(),
-  submodules: z.array(z.lazy((): z.ZodType<IModule> => ModuleFormSchema)),
+  submodules: z.array(z.lazy((): z.ZodType<any> => ModuleFormSchema)),
 });
 
 export type ModuleFormValues = z.infer<typeof ModuleFormSchema>;
@@ -31,11 +34,14 @@ export default function EditModule({ data }: { data: IModule }) {
   const [open, setOpen] = useState(false);
   const [show, setShow] = useState(false);
 
+  const hasSubmenu = data.submodules && data.submodules.length > 0;
+
   const form = useForm<ModuleFormValues>({
     resolver: zodResolver(ModuleFormSchema),
     defaultValues: {
       id: "",
       name: "",
+      group: { value: "" },
       parentId: "",
       permissions: 0,
       submodules: [
@@ -50,7 +56,7 @@ export default function EditModule({ data }: { data: IModule }) {
     }
   });
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields } = useFieldArray({
     control: form.control,
     name: "submodules",
   });
@@ -58,6 +64,9 @@ export default function EditModule({ data }: { data: IModule }) {
   useEffect(() => {
     if (data) {
       Object.entries(data).map(([key, val])=> {
+        if(key === 'group'){
+          return form.setValue('group.value', `${val}`)
+        }
         return form.setValue(key as any, val);
       })
     }
@@ -67,7 +76,7 @@ export default function EditModule({ data }: { data: IModule }) {
 
     const res = await fetch(`/api/master/module`, {
       method: "PUT",
-      body: JSON.stringify(data)
+      body: JSON.stringify({...data, group: data.group.value})
     }).then((d) => d.json()).catch((err) => err);
 
     if (res.success) {
@@ -166,9 +175,14 @@ export default function EditModule({ data }: { data: IModule }) {
         {
           show &&
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="p-2">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="p-2 space-y-2">
+              
+              <SelectController name={`group.value`} label="Group" options={groupOptions} disabled={hasSubmenu}/>
+              
               <InputController name={'name'} label="Module" />
+              
               {renderSubmodules(fields, "submodules")}
+              
               <div className="flex justify-end my-4 gap-2">
                 <Button variant={"outline"} onClick={(e) =>{e.preventDefault(); setShow(false);}}>
                   Cancel
@@ -198,7 +212,7 @@ function TreeView({data, level}:{data:IModule, level: number}){
 
     if(!hasSubmenu){
       return(
-        <li style={{paddingLeft:`${level*24}px`}}>{data.name}</li>
+        <li style={{paddingLeft:`${level*24}px`}}>{data?.group} / {data.name}</li>
       )
     }
 

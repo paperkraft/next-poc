@@ -10,6 +10,7 @@ import { IModuleFormat } from "./ModuleInterface";
 interface InputFormat {
   id: string,
   name: string,
+  group: string | null;
   parentId: string | null,
   SubModules: InputFormat[] | null
 }
@@ -60,6 +61,7 @@ export async function getModulesWithSubmodules(): Promise<Module[]> {
     const formattedModules = modules.map((module) => formatModule(module));
     const submoduleIds = new Set(formattedModules.flatMap((module) => module.submodules.map((submodule) => submodule.id)));
     const finalModules = formattedModules.filter((module) => !submoduleIds.has(module.id));
+
     return finalModules;
   } catch (error) {
     console.error('Error fetching modules with submodules:', error);
@@ -71,6 +73,7 @@ export async function getModulesWithSubmodules(): Promise<Module[]> {
 interface Module {
   id: string;
   name: string;
+  group: string | null;
   parentId: string | null;
   submodules: Module[]
 }
@@ -79,9 +82,8 @@ function formatModule(module: InputFormat): Module {
   return {
     id: module.id,
     name: module.name,
+    group: module.group,
     parentId: module?.parentId,
-    // permissions: 0,
-    // permissions: module.permissions.reduce((acc: number, perm: any) => acc | perm.bitmask, 0),
     submodules: (module.SubModules || []).map((submodule) => formatModule(submodule)),
   };
 }

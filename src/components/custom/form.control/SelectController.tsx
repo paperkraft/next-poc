@@ -16,7 +16,7 @@ extends HTMLAttributes<HTMLInputElement> {
     options: Array<Options>
     description?: string;
     placeholder?: string;
-    // defaultValue?: PathValue<T, Path<T>> | undefined;
+    defaultValue?: PathValue<T, Path<T>> | undefined;
     disabled?: boolean;
     readOnly?: boolean;
 }
@@ -28,12 +28,12 @@ export const SelectController = <T extends FieldValues>({ options, name, label, 
             control={form.control}
             name={name}
             render={({field})=>(
-                <FormItem className="w-full">
+                <FormItem className="w-full relative">
                     <FormLabel>{label}</FormLabel>
                     <FormControl>
                         <Select 
                             onValueChange={field.onChange} 
-                            // defaultValue={field.value} 
+                            defaultValue={field.value} 
                             disabled={rest?.disabled}
                         >
                             <FormControl>
@@ -50,7 +50,7 @@ export const SelectController = <T extends FieldValues>({ options, name, label, 
                                 </SelectContent>
                         </Select>
                     </FormControl>
-                    <FormDescription>{rest?.description}</FormDescription>
+                    {rest?.description && <FormDescription>{rest?.description}</FormDescription>}
                     <FormMessage/>
                 </FormItem>
             )}

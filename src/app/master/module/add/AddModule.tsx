@@ -13,18 +13,20 @@ import { useEffect, useState } from "react";
 import { SelectController } from "@/components/custom/form.control/SelectController";
 import { toast } from "sonner";
 
+export const groupOptions = [
+  { label: "Home", value: "Home" },
+  { label: "Module", value: "Module" },
+  { label: "Master", value: "Master" },
+  { label: "Global Master", value: "Global Master" },
+  { label: "Gallery", value: "Gallery" },
+  { label: "Uncategorized", value: "Uncategorized" },
+]
+
 export const ModuleFormSchema = z.object({
-  name: z
-    .string({
-      required_error: "Module is required.",
-    })
-    .min(1, {
-      message: "Module is required.",
-    }),
+  name: z.string().min(1, { message: "Module is required." }),
+  group: z.object({ value: z.string() }),
   isParent: z.boolean(),
-  parent: z.object({
-    value: z.string()
-  }).optional()
+  parent: z.object({ value: z.string() }).optional()
 }).refine((data) => {
   if (data.isParent && !data?.parent?.value) {
     return false;
@@ -33,6 +35,15 @@ export const ModuleFormSchema = z.object({
 }, {
   message: "Parent field is required when 'is Submodule' is true",
   path: ['parent.value']
+}
+).refine((d)=>{
+  if(!d.isParent && !d?.group?.value){
+    return false;
+  }
+  return true;
+}, {
+  message: "Group is required to categorized",
+  path: ['group.value']
 }
 )
 
@@ -51,21 +62,24 @@ export default function AddModule() {
     resolver: zodResolver(ModuleFormSchema),
     defaultValues: {
       name: "",
+      group: { value: "" },
       parent: { value: "" },
       isParent: false
     },
   });
 
   const onSubmit = async (data: ModuleFormValues) => {
-    const final = data.isParent ? { name: data.name, parentId: data?.parent?.value } : { name: data.name, parentId: null }
+    const final = data.isParent
+      ? { name: data.name, parentId: data?.parent?.value }
+      : { name: data.name, parentId: null, group: data?.group?.value }
 
     const res = await fetch(`/api/master/module`, {
       method: "POST",
       body: JSON.stringify(final),
-    }).then((d)=> d.json()).catch((err)=> console.error(err));
+    }).then((d) => d.json()).catch((err) => console.error(err));
 
     // console.log(res);
-    if(res.success){
+    if (res.success) {
       toast.success('Module Created')
       route.push('.');
     } else {
@@ -101,6 +115,8 @@ export default function AddModule() {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 p-2">
+          
+
           <InputController
             name="name"
             label="Name"
@@ -108,6 +124,9 @@ export default function AddModule() {
             description={`This will be a ${form.watch('isParent') ? "sub" : "parent"} module.`}
             reset
           />
+
+          <SelectController name={`group.value`} label="Category" options={groupOptions} 
+            description={` ${form.watch('name')} will placed under : ${form.watch('group.value')}`} />
 
           <FormField
             name="isParent"

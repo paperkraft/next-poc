@@ -1,5 +1,6 @@
 import { getModulesWithSubmodules } from "@/app/master/module/page";
 import prisma from "@/lib/prisma";
+import { group } from "console";
 import { NextResponse } from "next/server";
 
 
@@ -7,7 +8,7 @@ export async function GET(){
     try {
         const data = await getModulesWithSubmodules()
         return NextResponse.json(
-            { success: true, message: 'Modules', data },
+            { success: true, message: 'Success', data },
             { status: 200 }
         );
     } catch (error) {
@@ -41,6 +42,7 @@ export async function PUT(req:Request) {
       } 
       : {
         name: data.name,
+        group: data.group
       }
 
     if(!data?.id){
@@ -64,12 +66,13 @@ export async function PUT(req:Request) {
 }
 
 export async function POST(req:Request) {
-    const {name, parentId} = await req.json();
+    const {name, parentId, group} = await req.json();
     try {
         const data = await prisma.module.create({
             data:{
                 name: name,
-                parentId: parentId
+                parentId: parentId,
+                group: group ?? "Uncategorized"
             }
         });
         return NextResponse.json(

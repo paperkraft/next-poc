@@ -2,6 +2,7 @@
 
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
+import { cn } from "@/lib/utils";
 import { useFormContext } from "react-hook-form";
 
 interface SwitchProps {
@@ -19,7 +20,7 @@ export const SwitchButton = ({ name, label, ...rest }: SwitchProps) => {
       control={form.control}
       name={name}
       render={({ field }) => (
-        <FormItem className="w-full">
+        <FormItem className={cn("w-full",{"flex flex-col": label})}>
             {label && <FormLabel>{label}</FormLabel>}
             <FormControl>
                 <Switch

@@ -6,6 +6,9 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useEffect, useState } from "react";
 import DynamicFormComponent from "@/components/custom/dynamic-components";
+import useModuleIdByName from "@/hooks/use-module-id";
+import { Guard } from "@/components/custom/permission-guard";
+import { usePathname, useRouter } from "next/navigation";
 
 async function fetchFormMetadata() {
     const res = await fetch('/api/json-data');
@@ -16,6 +19,10 @@ async function fetchFormMetadata() {
 }
 
 export default function SampleForm() {
+
+    const route = useRouter();
+    const path = usePathname();
+    const moduleId = useModuleIdByName("Student") as string;
 
     const [formFields, setFormFields] = useState<object>();
     const [loading, setLoading] = useState(true);
@@ -38,7 +45,6 @@ export default function SampleForm() {
 
     const dynamicSchema = formFields && z.object(createZodSchema(formFields));
     const defaultValues = formFields && createDefaultValues(formFields);
-    console.log('render');
 
     if (loading) {
         return <div>Loading...</div>;
@@ -49,8 +55,15 @@ export default function SampleForm() {
     }
 
     return (
-        dynamicSchema && formFields && defaultValues &&
-        <FormTemplate data={formFields} schema={dynamicSchema} defaultValues={defaultValues} />
+        <>
+            <Guard permissionBit={8} moduleId={moduleId}>
+                <div className="flex justify-end">
+                    <Button onClick={()=>route.push(`${path}/schema`)} variant={'outline'}>Schema</Button>
+                </div>
+            </Guard>
+            {dynamicSchema && formFields && defaultValues &&
+            <FormTemplate data={formFields} schema={dynamicSchema} defaultValues={defaultValues} />}
+        </>
     );
 }
 
@@ -73,7 +86,7 @@ const FormTemplate = React.memo(({ data, schema, defaultValues }: Props) => {
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-w-sm">
                 {data && <DynamicFormComponent formFields={data} />}
                 <div className='flex justify-end gap-2'>
                     <Button type="button" variant="outline" onClick={()=> form.reset()}>Reset</Button>

@@ -29,7 +29,6 @@ export default function ModuleList({ data }: { data: IModule[] }) {
     }
 
     const grouped = data && groupByGroupIfParentIdIsNull(data);
-
     const [toggle, setToggle] = useState(false);
 
     return (

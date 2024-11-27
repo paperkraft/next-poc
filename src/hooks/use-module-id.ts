@@ -25,7 +25,7 @@ const useModuleIdByName = (moduleName: string): string | null => {
     }
     return null;
   };
-  return findModuleId(session.user.modules);
+  return findModuleId(session && session.user.modules);
 };
 
 export default useModuleIdByName;

@@ -58,7 +58,7 @@ export async function getModulesWithSubmodules(): Promise<Module[]> {
       },
     });
 
-    const formattedModules = modules.map((module) => formatModule(module));
+    const formattedModules = modules.map((module) => formatModule(module as any));
     const submoduleIds = new Set(formattedModules.flatMap((module) => module.submodules.map((submodule) => submodule.id)));
     const finalModules = formattedModules.filter((module) => !submoduleIds.has(module.id));
 

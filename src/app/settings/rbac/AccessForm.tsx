@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { WithPermission } from "@/components/custom/with-permission";
 import { SwitchButton } from "@/components/custom/form.control/SwitchButton";
+import { cn } from "@/lib/utils";
 
 interface IAccessProps {
   roles: RoleType[];
@@ -157,7 +158,7 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
   const route = useRouter();
   const initialModules = removePermissions(modules as any);
   const initialRoles = roles
-  const Thead = ["", "Module", "View", "Edit", "Create", "Delete"];
+  const Thead = ["Module", "View", "Edit", "Create", "Delete"];
 
   const [disabled, setDisabled] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
@@ -338,25 +339,14 @@ const RenderRows = React.memo(
     return (
       <Collapsible asChild key={index}>
         <React.Fragment>
-          <TableRow>
-            <TableCell>
-              {hasSubModules ? (
-                <CollapsibleTrigger
-                  asChild
-                  className="data-[state=open]:bg-muted [&[data-state=open]>svg]:rotate-90"
-                >
-                  <Button variant={"ghost"} className="flex h-6 w-6 p-0">
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </CollapsibleTrigger>
-              ) : null}
-            </TableCell>
-
-            <TableCell className={`pl-${data?.parentId && level*2}`}>
-              {data?.parentId ? renderDash(level) : null}
-              {data?.name}
-              {hasSubModules ? ' *' : null}
-            </TableCell>
+          <TableRow className="">
+              <CollapsibleTrigger asChild className="[&[data-state=open]>svg]:rotate-90">
+                <TableCell className={cn(`pl-${data?.parentId && level*2}`, { "flex items-center first:gap-2 cursor-pointer": hasSubModules })}>
+                    {data?.parentId ? renderDash(level) : null}
+                    {data?.name}
+                    { hasSubModules ? <ChevronRight className="h-4 w-4" /> : null }
+                  </TableCell>
+              </CollapsibleTrigger>
 
             {hasSubModules && <TableCell colSpan={4}></TableCell>}
 

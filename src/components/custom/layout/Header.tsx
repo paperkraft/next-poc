@@ -86,7 +86,7 @@ const Header: React.FC = React.memo(() => {
 
                 <div className='ml-auto'>
                     <DropdownMenu>
-                        <DropdownMenuTrigger>
+                        <DropdownMenuTrigger asChild>
                             <Button variant={'ghost'} className='size-8'>
                                 <BellDot className='size-5'></BellDot>
                             </Button>

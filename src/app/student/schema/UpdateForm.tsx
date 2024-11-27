@@ -6,8 +6,12 @@ import { Button } from "@/components/ui/button";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { TextareaController } from "@/components/custom/form.control/TextareaController";
+import { useRouter } from "next/navigation";
 
 const UpdateSchemaForm = () => {
+
+  const route = useRouter();
+
   const form = useForm({
     defaultValues: {
       json: ""
@@ -46,6 +50,8 @@ const UpdateSchemaForm = () => {
     } catch (error) {
       console.error("Invalid JSON:", error);
       toast.error("Invalid JSON");
+    } finally {
+      route.back();
     }
   };
 

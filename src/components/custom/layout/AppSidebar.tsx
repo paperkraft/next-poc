@@ -61,6 +61,7 @@ import { ChildProps } from "@/types/types"
 import { useForm } from "react-hook-form"
 import { FormField } from "@/components/ui/form"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { Session } from "next-auth"
 
 
 interface IGroups {
@@ -196,7 +197,7 @@ export default function AppSidebar({ children }: ChildProps) {
                 </SidebarContent>
 
                 <SidebarFooter>
-                    <FooterMenuOptions />
+                    { data && <FooterMenuOptions data={data} /> }
                 </SidebarFooter>
             </Sidebar>
 
@@ -233,10 +234,9 @@ function HeaderMenuOptions() {
     )
 }
 
-function FooterMenuOptions() {
-    const { data: session } = useSession();
-    const user = session?.user;
-    const initials = user?.name.split(' ').map((word: any[]) => word[0]).join('').toUpperCase();
+function FooterMenuOptions({ data }:{ data:Session }) {
+    const user = data.user;
+    const initials = user && user?.name?.split(' ').map((word: any[]) => word[0]).join('').toUpperCase();
     const logout = () => signOut({ redirect: false });
 
     const options = [
@@ -283,10 +283,8 @@ function FooterMenuOptions() {
                     </DropdownMenuTrigger>
 
                     <DropdownMenuContent
-                        className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg [&_svg]:size-4 [&_svg]:stroke-[1.5] [&_svg]:mr-2"
-                        side="bottom"
-                        align="end"
-                        sideOffset={4}
+                        className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg [&_svg]:size-4 [&_svg]:stroke-[1.5] [&_svg]:mr-2 mb-2"
+                        // side="right"
                     >
                         <DropdownMenuLabel className="p-0 font-normal">
                             <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">

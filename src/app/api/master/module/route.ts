@@ -42,7 +42,7 @@ export async function PUT(req:Request) {
       } 
       : {
         name: data.name,
-        group: data.group
+        groupId: data.group
       }
 
     if(!data?.id){

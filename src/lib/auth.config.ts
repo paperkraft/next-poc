@@ -60,7 +60,7 @@ const authConfig: NextAuthConfig = {
 
                 return {
                     id: user?.id,
-                    name: `${user?.firstName} ${user?.lastName}`,
+                    name: user && `${user?.firstName} ${user?.lastName}`,
                     email: data.email,
                     roleId: user?.roleId,
                     permissions: user?.role?.permissions,

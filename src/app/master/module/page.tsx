@@ -1,10 +1,9 @@
 import prisma from "@/lib/prisma";
-import ModuleList from "./ModuleList";
 import TitlePage from "@/components/custom/page-heading";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import Link from "next/link";
-import { IModuleFormat } from "./ModuleInterface";
+import { ModuleList } from "./ModuleList";
 
 interface IGroup {
   id: string,

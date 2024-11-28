@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     const { name } = await request.json();
     try {
 
-        const exist = await prisma.group.findMany({
+        const exist = await prisma.group.findFirst({
             where:{ name }
         });
 

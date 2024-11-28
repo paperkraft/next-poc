@@ -15,42 +15,35 @@ import DialogBox from "@/components/custom/dialog-box";
 import { Collapsible } from "@radix-ui/react-collapsible";
 import { CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { SelectController } from "@/components/custom/form.control/SelectController";
+import { IData } from "./page";
 
-type Options = {
-  label: string;
-  value: string;
-}
 
-export const ModuleFormSchema = z.object({
+const SubModuleSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  parentId: z.string().nullable(),
+  permissions: z.number().nullable(),
+  subModules: z.array(z.lazy((): z.ZodType<any> => SubModuleSchema)),
+});
+
+const ModuleFormSchema = z.object({
   id: z.string(),
   name: z.string(),
   group: z.object({ value: z.string() }),
   parentId: z.string().nullable(),
   permissions: z.number().nullable(),
-  subModules: z.array(z.lazy((): z.ZodType<any> => ModuleFormSchema)),
+  subModules: z.array(SubModuleSchema),
 });
 
-export type ModuleFormValues = z.infer<typeof ModuleFormSchema>;
+type ModuleFormValues = z.infer<typeof ModuleFormSchema>;
 
-export default function EditModule({ data }: { data: IModule }) {
+export default function EditModule({ moduleData, groupOptions }: IData) {
 
   const route = useRouter();
   const [open, setOpen] = useState(false);
   const [show, setShow] = useState(false);
-  const [groupOptions, setGroupOptions] = useState<Options[]>([])
 
-  const hasSubmenu = data.subModules && data.subModules.length > 0;
-
-  useEffect(() => {
-    const getGroups = async () => {
-      const response = await fetch('/api/master/group').then((res) => res.json()).catch((err) => console.error(err));
-      if (response.success) {
-        const data = response.data.map((item: any) => { return { label: item.name, value: item.id }});
-        setGroupOptions(data)
-      }
-    }
-    getGroups();
-  }, []);
+  const hasSubmenu = moduleData.subModules && moduleData.subModules.length > 0;
 
   const form = useForm<ModuleFormValues>({
     resolver: zodResolver(ModuleFormSchema),
@@ -78,24 +71,25 @@ export default function EditModule({ data }: { data: IModule }) {
   });
 
   useEffect(() => {
-    if (data) {
-      console.log(data);
-      
-      Object.entries(data).map(([key, val])=> {
-        if(key === 'group'){
-          return form.setValue('group.value', `${val}`)
+    if (moduleData && groupOptions) {
+      console.log(moduleData);
+      Object.entries(moduleData).map(([key, val]) => {
+        if (key === 'group') {
+          return form.setValue('group.value', val.id)
         }
         return form.setValue(key as any, val);
       })
     }
   }, []);
 
-  const onSubmit = async (data:ModuleFormValues) => {
+  const onSubmit = async (data: ModuleFormValues) => {
 
     const res = await fetch(`/api/master/module`, {
       method: "PUT",
-      body: JSON.stringify({...data, group: data.group.value})
+      body: JSON.stringify({ ...data, group: data.group.value })
     }).then((d) => d.json()).catch((err) => err);
+
+    // const res = { success: "" }
 
     if (res.success) {
       toast.success('Module updated')
@@ -106,22 +100,22 @@ export default function EditModule({ data }: { data: IModule }) {
     }
   };
 
-  const getLabel = useCallback(( index: number, parentIndexes: number[] = []) => {
+  const getLabel = useCallback((index: number, parentIndexes: number[] = []) => {
     const labelParts = [...parentIndexes, index + 1];
     return `Sub Module-${labelParts.join('.')}`;
-  }, []); 
-  
+  }, []);
+
   const renderSubmodules = useCallback(
     (subModules: any[], path: string, depth: number = 1, parentIndexes: number[] = []) => {
       return subModules.map((field, index) => {
         const label = getLabel(index, parentIndexes);
         const key = `${depth}-${index}-${field.id}`;
-  
+
         return (
           <React.Fragment key={key}>
             <InputController name={`${path}[${index}].name`} label={label} />
             {field.subModules && field.subModules.length > 0 &&
-              renderSubmodules(field.subModules, `${path}[${index}].subModules`, depth + 1, [...parentIndexes, index+1])}
+              renderSubmodules(field.subModules, `${path}[${index}].subModules`, depth + 1, [...parentIndexes, index + 1])}
           </React.Fragment>
         );
       });
@@ -152,37 +146,35 @@ export default function EditModule({ data }: { data: IModule }) {
   return (
     <>
       <div className="space-y-8 p-2">
-        <TitlePage title="Module" description={show ? "Update module and submodule": "Overview module and submodule"}>
+        <TitlePage title="Module" description={show ? "Update module and submodule" : "Overview module and submodule"}>
           <div className="flex gap-2">
-              <Button className="size-7" variant={"outline"} size={"sm"} onClick={() => route.back()}>
-                <ArrowLeft className="size-5" />
-              </Button>
-              {!show && (
-                <>
-                  <Button className="size-7" variant={"outline"} size={"sm"} onClick={() => setShow(true)}>
-                    <Edit className="size-5" />
-                  </Button>
-                  <Button className="size-7" variant={"outline"} size={"sm"} onClick={() => setOpen(true)}>
-                    <Trash2 className="size-5 text-red-500" />
-                  </Button>
-                </>
-              )}
-            </div>
+            <Button className="size-7" variant={"outline"} size={"sm"} onClick={() => route.back()}>
+              <ArrowLeft className="size-5" />
+            </Button>
+            {!show && (
+              <>
+                <Button className="size-7" variant={"outline"} size={"sm"} onClick={() => setShow(true)}>
+                  <Edit className="size-5" />
+                </Button>
+                <Button className="size-7" variant={"outline"} size={"sm"} onClick={() => setOpen(true)}>
+                  <Trash2 className="size-5 text-red-500" />
+                </Button>
+              </>
+            )}
+          </div>
         </TitlePage>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="p-2 space-y-2">
-            
-            <SelectController name={`group.value`} label="Group" options={groupOptions} disabled={hasSubmenu}/>
+            <SelectController name={`group.value`} label="Group" options={groupOptions} disabled={hasSubmenu} /> 
             
             <InputController name={'name'} label="Module" />
             
-            {renderSubmodules(fields, "subModules")}
-            
+            { moduleData && renderSubmodules(fields, "subModules")}
             {
               show &&
               <div className="flex justify-end my-4 gap-2">
-                <Button variant={"outline"} onClick={(e) =>{e.preventDefault(); setShow(false);}}>
+                <Button variant={"outline"} onClick={(e) => { e.preventDefault(); setShow(false); }}>
                   Cancel
                 </Button>
                 <Button type="submit">Submit</Button>
@@ -190,14 +182,14 @@ export default function EditModule({ data }: { data: IModule }) {
             }
           </form>
         </Form>
-        
+
       </div>
 
-      { open && 
+      {open &&
         <DialogBox open={open} title={"Delete Confirmation"} preventClose setClose={handleClose}>
-          <h1 className="pb-4">Are you sure? Do you want to delete module {data.name}</h1>
+          <h1 className="pb-4">Are you sure? Do you want to delete module {moduleData.name}</h1>
           <div className="flex justify-end">
-            <Button onClick={()=>handleDelete(data.id)} variant={'destructive'}>Confirm</Button>
+            <Button onClick={() => handleDelete(moduleData.id)} variant={'destructive'}>Confirm</Button>
           </div>
         </DialogBox>
       }
@@ -205,33 +197,33 @@ export default function EditModule({ data }: { data: IModule }) {
   );
 }
 
-function TreeView({data, level}:{data:IModule, level: number}){
+function TreeView({ data, level }: { data: IModule, level: number }) {
 
-    const hasSubmenu = data?.subModules?.length
+  const hasSubmenu = data?.subModules?.length
 
-    if(!hasSubmenu){
-      return(
-        <li style={{paddingLeft:`${level*24}px`}}>{data?.group} / {data.name}</li>
-      )
-    }
-
+  if (!hasSubmenu) {
     return (
-      <Collapsible defaultOpen>
-          <CollapsibleTrigger asChild>
-            <ul className={`flex gap-2 items-center [&[data-state=open]>svg]:rotate-90`} style={{paddingLeft:`${level*24}px`}}>
-              <ChevronRight className="h-4 w-4" />
-              {data.name}
-            </ul>
-          </CollapsibleTrigger>
-
-          <CollapsibleContent>
-            <React.Fragment>
-              {data && data.subModules.map((sub)=>(
-                <TreeView key={sub.id} data={sub} level={level + 1}/>
-              ))}
-            </React.Fragment>
-          </CollapsibleContent>
-      </Collapsible>
+      <li style={{ paddingLeft: `${level * 24}px` }}>{data?.group} / {data.name}</li>
     )
+  }
+
+  return (
+    <Collapsible defaultOpen>
+      <CollapsibleTrigger asChild>
+        <ul className={`flex gap-2 items-center [&[data-state=open]>svg]:rotate-90`} style={{ paddingLeft: `${level * 24}px` }}>
+          <ChevronRight className="h-4 w-4" />
+          {data.name}
+        </ul>
+      </CollapsibleTrigger>
+
+      <CollapsibleContent>
+        <React.Fragment>
+          {data && data.subModules.map((sub) => (
+            <TreeView key={sub.id} data={sub} level={level + 1} />
+          ))}
+        </React.Fragment>
+      </CollapsibleContent>
+    </Collapsible>
+  )
 
 }

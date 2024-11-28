@@ -66,7 +66,7 @@ export default function ModuleList({ data }: { data: IModule[] }) {
 
                     <TableBody>
                         {
-                            grouped.map((item, index) => (
+                            grouped && grouped.map((item, index) => (
                                 <Collapsible asChild key={index}>
                                     <React.Fragment>
                                         <CollapsibleTrigger asChild>

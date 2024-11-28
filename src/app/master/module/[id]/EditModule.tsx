@@ -15,7 +15,11 @@ import DialogBox from "@/components/custom/dialog-box";
 import { Collapsible } from "@radix-ui/react-collapsible";
 import { CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { SelectController } from "@/components/custom/form.control/SelectController";
-import { groupOptions } from "../add/AddModule";
+
+type Options = {
+  label: string;
+  value: string;
+}
 
 export const ModuleFormSchema = z.object({
   id: z.string(),
@@ -23,7 +27,7 @@ export const ModuleFormSchema = z.object({
   group: z.object({ value: z.string() }),
   parentId: z.string().nullable(),
   permissions: z.number().nullable(),
-  submodules: z.array(z.lazy((): z.ZodType<any> => ModuleFormSchema)),
+  subModules: z.array(z.lazy((): z.ZodType<any> => ModuleFormSchema)),
 });
 
 export type ModuleFormValues = z.infer<typeof ModuleFormSchema>;
@@ -33,8 +37,20 @@ export default function EditModule({ data }: { data: IModule }) {
   const route = useRouter();
   const [open, setOpen] = useState(false);
   const [show, setShow] = useState(false);
+  const [groupOptions, setGroupOptions] = useState<Options[]>([])
 
-  const hasSubmenu = data.submodules && data.submodules.length > 0;
+  const hasSubmenu = data.subModules && data.subModules.length > 0;
+
+  useEffect(() => {
+    const getGroups = async () => {
+      const response = await fetch('/api/master/group').then((res) => res.json()).catch((err) => console.error(err));
+      if (response.success) {
+        const data = response.data.map((item: any) => { return { label: item.name, value: item.id }});
+        setGroupOptions(data)
+      }
+    }
+    getGroups();
+  }, []);
 
   const form = useForm<ModuleFormValues>({
     resolver: zodResolver(ModuleFormSchema),
@@ -44,13 +60,13 @@ export default function EditModule({ data }: { data: IModule }) {
       group: { value: "" },
       parentId: "",
       permissions: 0,
-      submodules: [
+      subModules: [
         {
           id: "",
           name: "",
           parentId: "",
           permissions: null,
-          submodules: []
+          subModules: []
         }
       ]
     }
@@ -58,11 +74,13 @@ export default function EditModule({ data }: { data: IModule }) {
 
   const { fields } = useFieldArray({
     control: form.control,
-    name: "submodules",
+    name: "subModules",
   });
 
   useEffect(() => {
     if (data) {
+      console.log(data);
+      
       Object.entries(data).map(([key, val])=> {
         if(key === 'group'){
           return form.setValue('group.value', `${val}`)
@@ -94,16 +112,16 @@ export default function EditModule({ data }: { data: IModule }) {
   }, []); 
   
   const renderSubmodules = useCallback(
-    (submodules: any[], path: string, depth: number = 1, parentIndexes: number[] = []) => {
-      return submodules.map((field, index) => {
+    (subModules: any[], path: string, depth: number = 1, parentIndexes: number[] = []) => {
+      return subModules.map((field, index) => {
         const label = getLabel(index, parentIndexes);
         const key = `${depth}-${index}-${field.id}`;
   
         return (
           <React.Fragment key={key}>
             <InputController name={`${path}[${index}].name`} label={label} />
-            {field.submodules && field.submodules.length > 0 &&
-              renderSubmodules(field.submodules, `${path}[${index}].submodules`, depth + 1, [...parentIndexes, index+1])}
+            {field.subModules && field.subModules.length > 0 &&
+              renderSubmodules(field.subModules, `${path}[${index}].subModules`, depth + 1, [...parentIndexes, index+1])}
           </React.Fragment>
         );
       });
@@ -136,30 +154,15 @@ export default function EditModule({ data }: { data: IModule }) {
       <div className="space-y-8 p-2">
         <TitlePage title="Module" description={show ? "Update module and submodule": "Overview module and submodule"}>
           <div className="flex gap-2">
-              <Button
-                className="size-7"
-                variant={"outline"}
-                size={"sm"}
-                onClick={() => route.back()}
-              >
+              <Button className="size-7" variant={"outline"} size={"sm"} onClick={() => route.back()}>
                 <ArrowLeft className="size-5" />
               </Button>
               {!show && (
                 <>
-                  <Button
-                    className="size-7"
-                    variant={"outline"}
-                    size={"sm"}
-                    onClick={() => setShow(true)}
-                  >
+                  <Button className="size-7" variant={"outline"} size={"sm"} onClick={() => setShow(true)}>
                     <Edit className="size-5" />
                   </Button>
-                  <Button
-                    className="size-7"
-                    variant={"outline"}
-                    size={"sm"}
-                    onClick={()=> setOpen(true)}
-                  >
+                  <Button className="size-7" variant={"outline"} size={"sm"} onClick={() => setOpen(true)}>
                     <Trash2 className="size-5 text-red-500" />
                   </Button>
                 </>
@@ -167,31 +170,27 @@ export default function EditModule({ data }: { data: IModule }) {
             </div>
         </TitlePage>
 
-        {
-          !show &&
-          <TreeView data={data} level={0}/>
-        }
-
-        {
-          show &&
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="p-2 space-y-2">
-              
-              <SelectController name={`group.value`} label="Group" options={groupOptions} disabled={hasSubmenu}/>
-              
-              <InputController name={'name'} label="Module" />
-              
-              {renderSubmodules(fields, "submodules")}
-              
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="p-2 space-y-2">
+            
+            <SelectController name={`group.value`} label="Group" options={groupOptions} disabled={hasSubmenu}/>
+            
+            <InputController name={'name'} label="Module" />
+            
+            {renderSubmodules(fields, "subModules")}
+            
+            {
+              show &&
               <div className="flex justify-end my-4 gap-2">
                 <Button variant={"outline"} onClick={(e) =>{e.preventDefault(); setShow(false);}}>
                   Cancel
                 </Button>
                 <Button type="submit">Submit</Button>
               </div>
-            </form>
-          </Form>
-        }
+            }
+          </form>
+        </Form>
+        
       </div>
 
       { open && 
@@ -208,7 +207,7 @@ export default function EditModule({ data }: { data: IModule }) {
 
 function TreeView({data, level}:{data:IModule, level: number}){
 
-    const hasSubmenu = data?.submodules?.length
+    const hasSubmenu = data?.subModules?.length
 
     if(!hasSubmenu){
       return(
@@ -227,7 +226,7 @@ function TreeView({data, level}:{data:IModule, level: number}){
 
           <CollapsibleContent>
             <React.Fragment>
-              {data && data.submodules.map((sub)=>(
+              {data && data.subModules.map((sub)=>(
                 <TreeView key={sub.id} data={sub} level={level + 1}/>
               ))}
             </React.Fragment>

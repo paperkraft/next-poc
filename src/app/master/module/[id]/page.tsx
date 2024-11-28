@@ -14,21 +14,21 @@ export default async function Page({ params }: { params: { id: string } }) {
       parent:true,
       parentId:true,
       permissions: true,
-      SubModules: {
+      subModules: {
         select: {
           id: true,
           name:true,
           parent:true,
           parentId:true,
           permissions: true,
-          SubModules: {
+          subModules: {
             select: {
               id: true,
               name:true,
               parent:true,
               parentId:true,
               permissions: true,
-              SubModules: {
+              subModules: {
                 select: {
                   id: true,
                   name:true,
@@ -44,21 +44,22 @@ export default async function Page({ params }: { params: { id: string } }) {
     },
   });
 
-  function formatModule(module: any): IModule {
-    return {
-      id: module.id,
-      name: module.name,
-      group: module.group,
-      parentId: module?.parentId,
-      permissions: module.permissions.reduce((acc: number, perm: any) => acc | perm.bitmask, 0),
-      submodules: (module.SubModules || []).map((submodule: any) => formatModule(submodule)),
-    };
-  }
-
-  const formattedModules =  module && formatModule(module)
+  const formattedModules =  module && formatModule(module);
 
   if (!module || !formattedModules) {
     return <>No module found</>;
   }
   return formattedModules && <EditModule data={formattedModules} />;
+}
+
+
+function formatModule(module: any): IModule {
+  return {
+    id: module.id,
+    name: module.name,
+    group: module.group.id,
+    parentId: module?.parentId,
+    permissions: module.permissions.reduce((acc: number, perm: any) => acc | perm.bitmask, 0),
+    subModules: (module.subModules || []).map((subModule: any) => formatModule(subModule)),
+  };
 }

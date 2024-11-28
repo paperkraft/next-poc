@@ -47,30 +47,45 @@ async function main() {
       },
     ]
   });
+
+  // Create groups
+
+  await prisma.group.createMany({
+    data: [
+      { name: "Home" },
+      { name: "Master" },
+      { name: "Global Master" },
+      { name: "Module" },
+      { name: "Picture" },
+      { name: "Uncategorized" },
+    ]
+  });
+  // Fetch the groups to get their IDs since createMany doesn't return created records
+  const groupList = await prisma.group.findMany();
  
   // Step 3: Create some Modules
   console.log('Creating some Modules')
   const adminModule = await prisma.module.create({
     data: {
-      group:"Home",
+      groupId: groupList[0].id,
       name: 'Dashboard',
     },
   });
 
   await prisma.module.createMany({
     data: [
-      { name: "Settings", group:"Home" },
-      { name: "Gallery", group:"Picture" },
-      { name: "Role", group:"Master" },
-      { name: "Module", group:"Master" },
-      { name: "Academics", group:"Module" },
-      { name: "Student", group:"Module" },
+      { name: "Settings", groupId: groupList[0].id },
+      { name: "Gallery", groupId: groupList[4].id },
+      { name: "Role", groupId: groupList[1].id },
+      { name: "Module", groupId: groupList[1].id },
+      { name: "Academics", groupId: groupList[3].id },
+      { name: "Student", groupId: groupList[3].id },
     ]
   });
 
   // Step 4: Create some ModulePermissions
   console.log('Creating some ModulePermissions')
-  await prisma.modulePermissions.create({
+  await prisma.modulePermission.create({
     data: {
       roleId: adminRole.id,
       moduleId: adminModule.id,
@@ -85,8 +100,8 @@ async function main() {
       firstName: 'Vishal',
       lastName: 'Sannake',
       username: 'vishal',
-      name: "Vishal Sannake",
-      email: 'vishal.sannake@email.com',
+      // name: 'Vishal Sannake',
+      email: 'vishal.sannake@akronsystems.com',
       password: hash,
       phone: '8888812345',
       organization: 'SV Design',

@@ -7,7 +7,7 @@ interface Module {
     id: string;
     name: string;
     permissions: number;
-    submodules?: Module[];
+    subModules?: Module[];
 }
 
 interface WithPermissionProps {
@@ -25,8 +25,8 @@ export const Guard = ({ children, permissionBit, moduleId }: WithPermissionProps
         return (module.permissions & permissionBit) === permissionBit;
       }
       
-      if (module.submodules && module.submodules.length > 0) {
-        return module.submodules.some(submodule => checkModulePermission(submodule));
+      if (module.subModules && module.subModules.length > 0) {
+        return module.subModules.some(subModule => checkModulePermission(subModule));
       }
       return false;
     };

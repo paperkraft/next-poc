@@ -6,13 +6,17 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import { IModuleFormat } from "./ModuleInterface";
 
+interface IGroup {
+  id: string,
+  name: string,
+}
 
 interface InputFormat {
   id: string,
   name: string,
-  group: string | null;
+  group: IGroup | null;
   parentId: string | null,
-  SubModules: InputFormat[] | null
+  subModules: InputFormat[] | null
 }
 
 export default async function Page() {
@@ -46,11 +50,12 @@ export async function getModulesWithSubmodules(): Promise<Module[]> {
     // 3 level submodules
     const modules = await prisma.module.findMany({
       include: {
-        SubModules: {
+        group:true,
+        subModules: {
           include: {
-            SubModules: {
+            subModules: {
               include: {
-                SubModules: true,
+                subModules: true,
               },
             },
           },
@@ -59,7 +64,7 @@ export async function getModulesWithSubmodules(): Promise<Module[]> {
     });
 
     const formattedModules = modules.map((module) => formatModule(module as any));
-    const submoduleIds = new Set(formattedModules.flatMap((module) => module.submodules.map((submodule) => submodule.id)));
+    const submoduleIds = new Set(formattedModules.flatMap((module) => module.subModules.map((subModule) => subModule.id)));
     const finalModules = formattedModules.filter((module) => !submoduleIds.has(module.id));
 
     return finalModules;
@@ -73,17 +78,17 @@ export async function getModulesWithSubmodules(): Promise<Module[]> {
 interface Module {
   id: string;
   name: string;
-  group: string | null;
+  group: string | undefined | null;
   parentId: string | null;
-  submodules: Module[]
+  subModules: Module[]
 }
 // Recursive function to process a module and its submodules
 function formatModule(module: InputFormat): Module {
   return {
     id: module.id,
     name: module.name,
-    group: module.group,
+    group: module.group?.name,
     parentId: module?.parentId,
-    submodules: (module.SubModules || []).map((submodule) => formatModule(submodule)),
+    subModules: (module.subModules || []).map((subModule) => formatModule(subModule)),
   };
 }

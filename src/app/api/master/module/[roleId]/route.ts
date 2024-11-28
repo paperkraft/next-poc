@@ -13,7 +13,7 @@ export async function GET(request: NextRequest, { params }: { params: { roleId: 
 
     try {
 
-        const userModulesGrouped = await prisma.modulePermissions.findMany({
+        const userModulesGrouped = await prisma.modulePermission.findMany({
             where: {
                 roleId: roleId,
             },
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest, { params }: { params: { roleId: 
                         parentId: true,
                     },
                 },
-                submodule: {
+                subModule: {
                     select: {
                         id: true,
                         name: true,
@@ -60,7 +60,7 @@ type ModulePermission = {
         name: string;
         parentId: string | null;
     } | null;
-    submodule: {
+    subModule: {
         id: string;
         name: string;
         parentId: string | null;
@@ -73,13 +73,13 @@ type StructuredData = {
     name: string;
     parentId: string | null;
     permissions: number;
-    submodules: StructuredData[];
+    subModules: StructuredData[];
 };
 
 function nestModules(data: ModulePermission[]): StructuredData[] {
     const moduleMap = new Map<string, StructuredData>();
 
-    data && data.forEach(({ module, submodule, permissions }) => {
+    data && data.forEach(({ module, subModule, permissions }) => {
         if (module) {
             if (!moduleMap.has(module.id)) {
                 moduleMap.set(module.id, {
@@ -87,7 +87,7 @@ function nestModules(data: ModulePermission[]): StructuredData[] {
                     name: module.name,
                     parentId: module.parentId,
                     permissions: permissions,
-                    submodules: [],
+                    subModules: [],
                 });
             }
 
@@ -96,26 +96,26 @@ function nestModules(data: ModulePermission[]): StructuredData[] {
             // moduleEntry.permissions += permissions;
         }
 
-        if (submodule) {
-            if (!moduleMap.has(submodule.id)) {
-                moduleMap.set(submodule.id, {
-                    id: submodule.id,
-                    name: submodule.name,
-                    parentId: submodule.parentId,
+        if (subModule) {
+            if (!moduleMap.has(subModule.id)) {
+                moduleMap.set(subModule.id, {
+                    id: subModule.id,
+                    name: subModule.name,
+                    parentId: subModule.parentId,
                     permissions: 0,
-                    submodules: [],
+                    subModules: [],
                 });
             }
 
             // Aggregate permissions
-            const submoduleEntry = moduleMap.get(submodule.id)!;
-            submoduleEntry.permissions += permissions;
+            const subModuleEntry = moduleMap.get(subModule.id)!;
+            subModuleEntry.permissions += permissions;
 
-            // Nest the submodule under its parent module
-            if (submodule.parentId && moduleMap.has(submodule.parentId)) {
-                const parentModule = moduleMap.get(submodule.parentId)!;
-                if (!parentModule.submodules.some(sm => sm.id === submodule.id)) {
-                    parentModule.submodules.push(submoduleEntry);
+            // Nest the subModule under its parent module
+            if (subModule.parentId && moduleMap.has(subModule.parentId)) {
+                const parentModule = moduleMap.get(subModule.parentId)!;
+                if (!parentModule.subModules.some(sm => sm.id === subModule.id)) {
+                    parentModule.subModules.push(subModuleEntry);
                 }
             }
         }

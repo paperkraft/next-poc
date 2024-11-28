@@ -13,14 +13,14 @@ import { useEffect, useState } from "react";
 import { SelectController } from "@/components/custom/form.control/SelectController";
 import { toast } from "sonner";
 
-export const groupOptions = [
-  { label: "Home", value: "Home" },
-  { label: "Module", value: "Module" },
-  { label: "Master", value: "Master" },
-  { label: "Global Master", value: "Global Master" },
-  { label: "Gallery", value: "Gallery" },
-  { label: "Uncategorized", value: "Uncategorized" },
-]
+// export const groupOptions = [
+//   { label: "Home", value: "Home" },
+//   { label: "Module", value: "Module" },
+//   { label: "Master", value: "Master" },
+//   { label: "Global Master", value: "Global Master" },
+//   { label: "Gallery", value: "Gallery" },
+//   { label: "Uncategorized", value: "Uncategorized" },
+// ]
 
 export const ModuleFormSchema = z.object({
   name: z.string().min(1, { message: "Module is required." }),
@@ -36,8 +36,8 @@ export const ModuleFormSchema = z.object({
   message: "Parent field is required when 'is Submodule' is true",
   path: ['parent.value']
 }
-).refine((d)=>{
-  if(!d.isParent && !d?.group?.value){
+).refine((d) => {
+  if (!d.isParent && !d?.group?.value) {
     return false;
   }
   return true;
@@ -57,6 +57,29 @@ type Options = {
 export default function AddModule() {
   const route = useRouter();
   const [options, setOptions] = useState<Options[]>()
+  const [groupOptions, setGroupOptions] = useState<Options[]>()
+
+  useEffect(() => {
+    const getGroups = async () => {
+      const response = await fetch('/api/master/group').then((res) => res.json()).catch((err) => console.error(err));
+      if (response.success) {
+        const data = response.data.map((item: any) => { return { label: item.name, value: item.id }});
+        data && setGroupOptions(data)
+      }
+    }
+    getGroups();
+  }, []);
+
+  useEffect(() => {
+    const getModules = async () => {
+      const response = await fetch('/api/master/module').then((res) => res.json()).catch((err) => console.error(err));
+      if (response.success) {
+        const data = formatModules(response.data)
+        setOptions(data)
+      }
+    }
+    getModules();
+  }, []);
 
   const form = useForm<ModuleFormValues>({
     resolver: zodResolver(ModuleFormSchema),
@@ -71,7 +94,7 @@ export default function AddModule() {
   const onSubmit = async (data: ModuleFormValues) => {
     const final = data.isParent
       ? { name: data.name, parentId: data?.parent?.value }
-      : { name: data.name, parentId: null, group: data?.group?.value }
+      : { name: data.name, parentId: null, groupId: data?.group?.value }
 
     const res = await fetch(`/api/master/module`, {
       method: "POST",
@@ -87,16 +110,7 @@ export default function AddModule() {
     }
   };
 
-  useEffect(() => {
-    const getModules = async () => {
-      const response = await fetch('/api/master/module').then((res) => res.json()).catch((err) => console.error(err));
-      if (response.success) {
-        const data = formatModules(response.data)
-        setOptions(data)
-      }
-    }
-    getModules();
-  }, []);
+  
 
   return (
     <div className="space-y-8 p-2">
@@ -115,7 +129,7 @@ export default function AddModule() {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 p-2">
-          
+
 
           <InputController
             name="name"
@@ -125,7 +139,7 @@ export default function AddModule() {
             reset
           />
 
-          <SelectController name={`group.value`} label="Category" options={groupOptions} 
+          <SelectController name={`group.value`} label="Category" options={groupOptions as any}
             description={` ${form.watch('name')} will placed under : ${form.watch('group.value')}`} />
 
           <FormField
@@ -162,7 +176,7 @@ interface Module {
   name: string;
   parentId: string | null;
   permissions: number | null;
-  submodules: Module[];
+  subModules: Module[];
 }
 
 interface FormattedModule {
@@ -178,9 +192,9 @@ function formatModules(modules: Module[], parentLabel: string = ''): FormattedMo
     result.push({ label, value: module.id });
 
     // Recursively process submodules if any
-    if (module.submodules && module.submodules.length > 0) {
-      const submodules = formatModules(module.submodules, label);
-      result.push(...submodules);
+    if (module.subModules && module.subModules.length > 0) {
+      const subModules = formatModules(module.subModules, label);
+      result.push(...subModules);
     }
   });
 

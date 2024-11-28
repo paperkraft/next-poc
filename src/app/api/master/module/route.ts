@@ -19,15 +19,15 @@ export async function GET(){
 
 export async function PUT(req:Request) {
     const data = await req.json();
-    const hasSubmodule = data && data?.submodules?.length;
+    const hasSubmodule = data && data?.subModules?.length;
 
-    const updateSubmodules = (submodules: any) => {
-        return submodules.map((submodule:any) => ({
-          where: { id: submodule.id },
+    const updateSubmodules = (subModule: any) => {
+        return subModule.map((subModule:any) => ({
+          where: { id: subModule.id },
           data: {
-            name: submodule.name,
-            SubModules: submodule.submodules.length ? {
-              update: updateSubmodules(submodule.submodules)
+            name: subModule.name,
+            subModules: subModule.subModules.length ? {
+              update: updateSubmodules(subModule.subModules)
             } : undefined,
           },
         }));
@@ -36,8 +36,8 @@ export async function PUT(req:Request) {
     const final = hasSubmodule 
       ? {
         name: data.name,
-        SubModules: {
-          update: updateSubmodules(data.submodules),
+        subModules: {
+          update: updateSubmodules(data.subModules),
         }
       } 
       : {
@@ -66,13 +66,13 @@ export async function PUT(req:Request) {
 }
 
 export async function POST(req:Request) {
-    const {name, parentId, group} = await req.json();
+    const {name, parentId, groupId} = await req.json();
     try {
         const data = await prisma.module.create({
             data:{
                 name: name,
-                parentId: parentId,
-                group: group ?? "Uncategorized"
+                parentId: parentId ? parentId : null,
+                groupId: parentId ? null : groupId
             }
         });
         return NextResponse.json(
@@ -93,7 +93,7 @@ export async function DELETE(req:Request) {
             return NextResponse.json({ success: false, message: "Module ID is required" }, { status: 400 });
         }
         await prisma.$transaction([
-            prisma.modulePermissions.deleteMany({
+            prisma.modulePermission.deleteMany({
               where: { moduleId: id },
             }),
             prisma.module.delete({

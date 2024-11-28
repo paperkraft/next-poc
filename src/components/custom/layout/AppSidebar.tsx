@@ -56,30 +56,49 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import Header from "./Header"
-import { defalutMenu, menuType, submenuType, transformMenuData, menus } from "./data"
+import { defalutMenu, menuType, submenuType, transformMenuData } from "./data"
 import { ChildProps } from "@/types/types"
 import { useForm } from "react-hook-form"
 import { FormField } from "@/components/ui/form"
 import { useIsMobile } from "@/hooks/use-mobile"
+
+
+interface IGroups {
+    id: string;
+    label: string;
+}
 
 export default function AppSidebar({ children }: ChildProps) {
 
     const { data } = useSession();
     const [filter, setFilter] = React.useState<menuType[][]>(defalutMenu);
     const [menus, setMenus] = React.useState<menuType[][]>(defalutMenu);
+    const [groups, setGroups] = React.useState<IGroups[]>();
+
+    React.useEffect(() => {
+        const getGroups = async () => {
+          const response = await fetch('/api/master/group').then((res) => res.json()).catch((err) => console.error(err));
+          if (response.success) {
+            const data = response.data.map((item: any) => { return { label: item.name, id: item.id }});
+            data && setGroups(data)
+          }
+        }
+        getGroups();
+    }, []);
 
     React.useEffect(() => {
         if (data) {
-            const serverMenuData = data?.user?.modules
-            const userPermissions = data?.user?.permissions
+            const serverMenuData = data?.user?.modules;
+            const userPermissions = data?.user?.permissions;
+
             const filteredMenuData = transformMenuData(serverMenuData, userPermissions);
-            const uniqueLabels = Array.from(new Set(filteredMenuData.map((menu) => menu.label)));
-            const userMenus: menuType[][] = uniqueLabels
-                .map((label) => filteredMenuData
-                    .filter((menu) => menu.label === label))
+
+            const userMenus = groups && groups.map((item) => filteredMenuData
+                .filter((menu) => menu.label === item.label))
                 .filter((menuGroup) => menuGroup.length > 0)
-            setFilter(userMenus);
-            setMenus(userMenus);
+
+            userMenus && setFilter(userMenus);
+            userMenus && setMenus(userMenus);
         }
     }, [data]);
 
@@ -162,7 +181,7 @@ export default function AppSidebar({ children }: ChildProps) {
                     {/* Menus */}
 
                     {
-                        filter.map((data, index) => (
+                        filter && filter.map((data, index) => (
                             <SidebarGroup key={index}>
                                 <SidebarGroupLabel>{data.at(0)?.label}</SidebarGroupLabel>
                                 <SidebarMenu>

@@ -29,7 +29,7 @@ const authConfig: NextAuthConfig = {
                     include: { role: true }
                 });
 
-                const userModulesGrouped = await prisma.modulePermissions.findMany({
+                const userModulesGrouped = await prisma.modulePermission.findMany({
                     where: {
                         roleId: user?.roleId,
                     },
@@ -41,7 +41,7 @@ const authConfig: NextAuthConfig = {
                                 parentId: true
                             },
                         },
-                        submodule: {
+                        subModule: {
                             select: {
                                 id: true,
                                 name: true,
@@ -60,7 +60,7 @@ const authConfig: NextAuthConfig = {
 
                 return {
                     id: user?.id,
-                    name: user?.name,
+                    name: `${user?.firstName} ${user?.lastName}`,
                     email: data.email,
                     roleId: user?.roleId,
                     permissions: user?.role?.permissions,
@@ -137,7 +137,7 @@ interface InputFormat {
     name: string;
     parentId: string | null;
     permissions: number;
-    submodules: InputFormat[] | null;
+    subModules: InputFormat[] | null;
 }
 
 // Function to transform the input into a parent-child hierarchical format
@@ -148,7 +148,7 @@ function formatToParentChild(input: any[]): InputFormat[] {
     // Step 1: Create a module map where each module/submodule is keyed by id
     input.forEach((item) => {
         const module = item.module;
-        const submodule = item.submodule;
+        const subModule = item.subModule;
 
         if (!moduleMap[module.id]) {
             moduleMap[module.id] = {
@@ -156,27 +156,27 @@ function formatToParentChild(input: any[]): InputFormat[] {
                 name: module.name,
                 parentId: module.parentId,
                 permissions: item.permissions,
-                submodules: []
+                subModules: []
             };
         }
 
         // If there is a submodule, process it similarly
-        if (submodule) {
-            if (!moduleMap[submodule.id]) {
-                moduleMap[submodule.id] = {
-                    id: submodule.id,
-                    name: submodule.name,
-                    parentId: submodule.parentId,
+        if (subModule) {
+            if (!moduleMap[subModule.id]) {
+                moduleMap[subModule.id] = {
+                    id: subModule.id,
+                    name: subModule.name,
+                    parentId: subModule.parentId,
                     permissions: item.permissions,
-                    submodules: []
+                    subModules: []
                 };
             }
 
             // Add the submodule to the parent module's submodules
-            if (moduleMap[submodule.parentId!]) {
-                const parentModule = moduleMap[submodule.parentId!];
-                if (!parentModule.submodules!.some(s => s.id === submodule.id)) {
-                    parentModule.submodules!.push(moduleMap[submodule.id]);
+            if (moduleMap[subModule.parentId!]) {
+                const parentModule = moduleMap[subModule.parentId!];
+                if (!parentModule.subModules!.some(s => s.id === subModule.id)) {
+                    parentModule.subModules!.push(moduleMap[subModule.id]);
                 }
             }
         }

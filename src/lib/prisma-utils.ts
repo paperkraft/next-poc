@@ -5,23 +5,23 @@ interface FormattedModule {
   name: string;
   parentId: string | null;
   permissions: number;
-  submodules: FormattedModule[];
+  subModules: FormattedModule[];
 }
 
 type InputFormat = {
   moduleId: string;
-  submoduleId: string | null;
+  subModuleId: string | null;
   permissions: number;
   module: {
       id: string;
       name: string;
       parentId: string | null;
   };
-  submodule: {
+  subModule: {
       id: string;
       name: string;
       parentId: string | null;
-      SubModules: any[];
+      subModules: any[];
   } | null;
 };
 
@@ -41,25 +41,25 @@ export const getModulesByRole = async (roleId: string): Promise<FormattedModule[
   const roleWithModules = await prisma.role.findUnique({
     where: { id: roleId },
     include: {
-      ModulePermissions: {
+      modulePermissions: {
         include: {
           module: true,
-          submodule: {
+          subModule: {
             include: {
-              SubModules: true
+              subModules: true
             }
           }
         }
       }
     },
   });
-  return roleWithModules && formatModules(roleWithModules?.ModulePermissions);
+  return roleWithModules && formatModules(roleWithModules?.modulePermissions);
 }
 
 function formatModules(data: InputFormat[]): FormattedModule[] {
   const moduleMap: Record<string, FormattedModule> = {};
   data && data?.forEach((item) => {
-    const { moduleId, permissions, module, submodule } = item;
+    const { moduleId, permissions, module, subModule } = item;
 
     // Create or update the module
     if (!moduleMap[moduleId]) {
@@ -68,7 +68,7 @@ function formatModules(data: InputFormat[]): FormattedModule[] {
         name: module.name,
         parentId: module.parentId,
         permissions: 0,
-        submodules: [],
+        subModules: [],
       };
     }
 
@@ -76,29 +76,29 @@ function formatModules(data: InputFormat[]): FormattedModule[] {
     moduleMap[moduleId].permissions |= permissions;
 
     // If there is a submodule, handle it separately
-    if (submodule && submodule.id) {
-      const submoduleId = submodule.id;
-      const submoduleData: FormattedModule = {
-        id: submoduleId,
-        name: submodule.name,
-        parentId: submodule.parentId,
+    if (subModule && subModule.id) {
+      const subModuleId = subModule.id;
+      const subModuleData: FormattedModule = {
+        id: subModuleId,
+        name: subModule.name,
+        parentId: subModule.parentId,
         permissions: permissions,
-        submodules: [],
+        subModules: [],
       };
 
       // Handle SubModules (nested submodules)
-      if (submodule.SubModules && submodule.SubModules.length > 0) {
-        submoduleData.submodules = submodule.SubModules.map((childSubmodule) => ({
+      if (subModule.subModules && subModule.subModules.length > 0) {
+        subModuleData.subModules = subModule.subModules.map((childSubmodule) => ({
           id: childSubmodule.id,
           name: childSubmodule.name,
           parentId: childSubmodule.parentId,
           permissions: permissions,
-          submodules: [],
+          subModules: [],
         }));
       }
 
       // Push the submodule to the corresponding module
-      moduleMap[moduleId].submodules.push(submoduleData);
+      moduleMap[moduleId].subModules.push(subModuleData);
     }
   });
   return Object.values(moduleMap);
@@ -112,7 +112,7 @@ export async function getModulesWithSubmodules(): Promise<FormattedModule[]> {
       name: module.name,
       parentId: module?.parentId,
       permissions: module.permissions.reduce((acc: number, perm: any) => acc | perm.bitmask, 0),
-      submodules: (module.SubModules || []).map((submodule: any) => formatModule(submodule)),
+      subModules: (module.subModules || []).map((submodule: any) => formatModule(submodule)),
     };
   }
 
@@ -120,13 +120,13 @@ export async function getModulesWithSubmodules(): Promise<FormattedModule[]> {
     const modules = await prisma.module.findMany({
       include: {
         permissions: true,
-        SubModules: {
+        subModules: {
           include: {
             permissions: true,
-            SubModules: {
+            subModules: {
               include: {
                 permissions: true,
-                SubModules: {
+                subModules: {
                   include: {
                     permissions: true,
                   },
@@ -138,7 +138,7 @@ export async function getModulesWithSubmodules(): Promise<FormattedModule[]> {
       },
     });
     const formattedModules = modules.map((module) => formatModule(module));
-    const submoduleIds = new Set(formattedModules.flatMap((module) => module.submodules.map((submodule) => submodule.id)));
+    const submoduleIds = new Set(formattedModules.flatMap((module) => module.subModules.map((submodule) => submodule.id)));
     const finalModules = formattedModules.filter((module) => !submoduleIds.has(module.id));
     return finalModules;
   } catch (error) {

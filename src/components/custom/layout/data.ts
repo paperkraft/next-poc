@@ -148,21 +148,21 @@ const hasPermission = (userPermissions: number, requiredPermissions: number) => 
 };
 
 // Recursive function to transform submodules and assign URLs
-const transformSubmodules = (submodules: any[], userPermissions: number): any => {
-    return submodules
-        .filter((submodule) => hasPermission(userPermissions, submodule.permissions))
-        .map((submodule) => {
+const transformSubmodules = (subModules: any[], userPermissions: number): any => {
+    return subModules
+        .filter((subModule) => hasPermission(userPermissions, subModule.permissions))
+        .map((subModule) => {
             // Find the matching submenu from the original data
-            const matchedSubmenu = findMenuByTitle(data, submodule.name);
+            const matchedSubmenu = findMenuByTitle(data, subModule.name);
             const submenuUrl = matchedSubmenu ? matchedSubmenu.url : "#";
 
             // Recursively handle submodules within submodules
-            const transformedSubmodules = submodule.submodules
-                ? transformSubmodules(submodule.submodules, userPermissions)
+            const transformedSubmodules = subModule.subModules
+                ? transformSubmodules(subModule.subModules, userPermissions)
                 : [];
 
             return {
-                title: submodule.name,
+                title: subModule.name,
                 url: submenuUrl,
                 submenu: transformedSubmodules,
             };
@@ -192,7 +192,7 @@ export const transformMenuData = (serverData: any[], userPermissions: number): m
 
             if (matchedMenu && hasPermission(userPermissions, menuItem.permissions)) {
                 // Transform the submodules using the recursive function
-                const submenus = transformSubmodules(menuItem.submodules, userPermissions);
+                const submenus = transformSubmodules(menuItem.subModules, userPermissions);
 
                 return {
                     ...matchedMenu,
@@ -204,7 +204,7 @@ export const transformMenuData = (serverData: any[], userPermissions: number): m
             // If no match is found in the hardcoded data, add the item dynamically
             if (hasPermission(userPermissions, menuItem.permissions)) {
                 // Transform the submodules recursively, even if the parent is dynamically added
-                const submenus = transformSubmodules(menuItem.submodules, userPermissions);
+                const submenus = transformSubmodules(menuItem.subModules, userPermissions);
 
                 return {
                     label: "Uncategorized",  // Assign a default label if no match found

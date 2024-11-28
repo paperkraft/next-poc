@@ -3,15 +3,15 @@ import { NextResponse } from "next/server";
 
 
 interface SubModules {
-    submoduleId: string;
+    subModuleId: string;
     permissions: number;
-    submodules: SubModules[]
+    subModules: SubModules[]
 }
 
 interface Module {
     moduleId: string;
     permissions: number;
-    submodules: SubModules[]
+    subModules: SubModules[]
 }
 
 export async function POST(req: Request) {
@@ -38,9 +38,9 @@ async function UpsertAssignModulesToRole(roleId: string, modulesWithPermissions:
             await upsertModulePermissions(roleId, moduleData, assignments);
 
             // Process nested submodules (if any)
-            if (moduleData.submodules && moduleData.submodules.length > 0) {
-                for (const submodule of moduleData.submodules) {
-                    await upsertSubmodulePermissions(roleId, moduleData.moduleId, submodule, assignments);
+            if (moduleData.subModules && moduleData.subModules.length > 0) {
+                for (const subModule of moduleData.subModules) {
+                    await upsertSubmodulePermissions(roleId, moduleData.moduleId, subModule, assignments);
                 }
             }
         }
@@ -54,10 +54,10 @@ async function UpsertAssignModulesToRole(roleId: string, modulesWithPermissions:
 
 async function upsertModulePermissions(roleId: string, moduleData: Module, assignments: any[]) {
     // Check if the module has any submodules with non-zero permissions
-    const hasNonZeroChildPermission = moduleData.submodules && moduleData.submodules.some(submodule => submodule.permissions > 0);
+    const hasNonZeroChildPermission = moduleData.subModules && moduleData.subModules.some(subModule => subModule.permissions > 0);
     
     // Check if the module was previously assigned (i.e., exists in the modulePermissions table for the role)
-    const existingModulePermission = await prisma.modulePermissions.findUnique({
+    const existingModulePermission = await prisma.modulePermission.findUnique({
         where: {
             roleId_moduleId: {
                 roleId: roleId,
@@ -69,7 +69,7 @@ async function upsertModulePermissions(roleId: string, moduleData: Module, assig
     // Check if permissions are 0, in which case we remove the module access by deleting it
     if (moduleData.permissions === 0  && !hasNonZeroChildPermission  && existingModulePermission) {
         // Delete the module permission for the role
-        await prisma.modulePermissions.delete({
+        await prisma.modulePermission.delete({
             where: {
                 roleId_moduleId: {
                     roleId: roleId,
@@ -80,7 +80,7 @@ async function upsertModulePermissions(roleId: string, moduleData: Module, assig
         assignments.push({ moduleId: moduleData.moduleId, status: 'deleted' });
     } else {
         // Otherwise, upsert the module permission (update or create)
-        const modulePermission = await prisma.modulePermissions.upsert({
+        const modulePermission = await prisma.modulePermission.upsert({
             where: {
                 roleId_moduleId: {
                     roleId: roleId,
@@ -101,60 +101,50 @@ async function upsertModulePermissions(roleId: string, moduleData: Module, assig
     }
 }
 
-async function upsertSubmodulePermissions(roleId: string, moduleId: string, submodule: SubModules, assignments: any[]) {
+async function upsertSubmodulePermissions(roleId: string, moduleId: string, subModule: SubModules, assignments: any[]) {
 
-    const hasNonZeroChildPermission = submodule.submodules && submodule.submodules.some(submodule => submodule.permissions > 0);
-
-    const existingModulePermission = await prisma.modulePermissions.findUnique({
-        where: {
-            roleId_moduleId_submoduleId: {
-                roleId: roleId,
-                moduleId: moduleId,
-                submoduleId: submodule.submoduleId,
-            },
-        },
-    });
+    const hasNonZeroChildPermission = subModule.subModules && subModule.subModules.some(subModule => subModule.permissions > 0);
 
     // If permission is 0 and already assigned, delete the submodule permission
-    if (submodule.permissions === 0 && !hasNonZeroChildPermission  && existingModulePermission) {
-        await prisma.modulePermissions.delete({
+    if (subModule.permissions === 0 && !hasNonZeroChildPermission) {
+        await prisma.modulePermission.delete({
             where: {
-                roleId_moduleId_submoduleId: {
+                roleId_moduleId_subModuleId: {
                     roleId: roleId,
                     moduleId: moduleId,
-                    submoduleId: submodule.submoduleId,
+                    subModuleId: subModule.subModuleId,
                 },
             },
         });
-        assignments.push({ submoduleId: submodule.submoduleId, status: 'deleted' });
+        assignments.push({ subModuleId: subModule.subModuleId, status: 'deleted' });
     } else {
         // Otherwise, upsert the submodule permission (update or create)
-        const submodulePermission = await prisma.modulePermissions.upsert({
+        const subModulePermission = await prisma.modulePermission.upsert({
             where: {
-                roleId_moduleId_submoduleId: {
+                roleId_moduleId_subModuleId: {
                     roleId: roleId,
                     moduleId: moduleId,
-                    submoduleId: submodule.submoduleId,
+                    subModuleId: subModule.subModuleId,
                 },
             },
             // Update the submodule permissions if they exist
             update: {
-                permissions: submodule.permissions,
+                permissions: subModule.permissions,
             },
             create: {
                 roleId: roleId,
                 moduleId: moduleId,
-                submoduleId: submodule.submoduleId,
-                permissions: submodule.permissions,
+                subModuleId: subModule.subModuleId,
+                permissions: subModule.permissions,
             },
         });
-        assignments.push(submodulePermission);
+        assignments.push(subModulePermission);
     }
 
     // If the submodule has its own submodules (nested submodules), recursively handle them
-    if (submodule.submodules && submodule.submodules.length > 0) {
-        for (const nestedSubmodule of submodule.submodules) {
-            await upsertSubmodulePermissions(roleId, moduleId, nestedSubmodule, assignments);
+    if (subModule.subModules && subModule.subModules.length > 0) {
+        for (const nestedSubModule of subModule.subModules) {
+            await upsertSubmodulePermissions(roleId, moduleId, nestedSubModule, assignments);
         }
     }
 }

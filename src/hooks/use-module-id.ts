@@ -18,9 +18,9 @@ const useModuleIdByName = (moduleName: string): string | null => {
         return module.id;
       }
 
-      if (module.submodules && module.submodules.length > 0) {
-        const submoduleId = findModuleId(module.submodules);
-        if (submoduleId) return submoduleId;
+      if (module.subModules && module.subModules.length > 0) {
+        const subModuleId = findModuleId(module.subModules);
+        if (subModuleId) return subModuleId;
       }
     }
     return null;

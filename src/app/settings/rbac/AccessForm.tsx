@@ -48,7 +48,7 @@ interface IModule {
   name: string;
   parentId: string | null;
   permissions?: IPermission[];
-  submodules: IModule[];
+  subModules: IModule[];
 }
 
 interface IRenderRows {
@@ -68,7 +68,7 @@ const ModuleObjectSchema = z.object({
   name: z.string(),
   parentId: z.string().nullable(),
   permissions: z.array(ModulePermissionsSchema),
-  submodules: z.array(z.lazy((): z.ZodType<any> => ModuleObjectSchema)),
+  subModules: z.array(z.lazy((): z.ZodType<any> => ModuleObjectSchema)),
 });
 
 const FormSchema = z.object({
@@ -95,8 +95,8 @@ const processModulePermissions = (
   }));
 
   // Recursively process submodules
-  const updatedSubmodules = module.submodules && module.submodules.map((submodule) => {
-    const updatedSubmodule = processModulePermissions(submodule, bitmask);
+  const updatedSubmodules = module.subModules && module.subModules.map((subModule) => {
+    const updatedSubmodule = processModulePermissions(subModule, bitmask);
     return {
       ...updatedSubmodule,
       // permissions: permissionsArray,
@@ -107,7 +107,7 @@ const processModulePermissions = (
   return {
     ...module,
     permissions: permissionsArray,
-    submodules: updatedSubmodules,
+    subModules: updatedSubmodules,
   };
 };
 
@@ -134,8 +134,8 @@ const applyBitmaskRecursively = (item: any): IModule => {
     ...item,
     permissions: calculateBitmask(item.permissions),
   };
-  if (updatedItem.submodules && updatedItem.submodules.length > 0) {
-    updatedItem.submodules = updatedItem.submodules.map(
+  if (updatedItem.subModules && updatedItem.subModules.length > 0) {
+    updatedItem.subModules = updatedItem.subModules.map(
       applyBitmaskRecursively
     );
   }
@@ -144,11 +144,11 @@ const applyBitmaskRecursively = (item: any): IModule => {
 
 function removePermissions(modules: Module[]): any[] {
   return modules.map(module => {
-    const { permissions, submodules, ...rest } = module;
-    const updatedSubmodules = removePermissions(submodules);
+    const { permissions, subModules, ...rest } = module;
+    const updatedSubmodules = removePermissions(subModules);
     return {
       ...rest,
-      submodules: updatedSubmodules,
+      subModules: updatedSubmodules,
     };
   });
 }
@@ -238,9 +238,7 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
       const res = await result.json();
 
       if (res.success) {
-        console.log("res", res);
         toast.success("Modules assigned");
-        route.refresh();
       } else {
         toast.error("Failed to assigned module");
       }
@@ -249,6 +247,7 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
       toast.error("Failed to assigned module");
     } finally {
       setDisabled(false);
+      route.refresh();
     }
   };
 
@@ -335,38 +334,38 @@ const renderDash = (count: number) => {
 
 const RenderRows = React.memo(
   ({ data, index, level, parentIndex }: IRenderRows) => {
-    const hasSubModules = data?.submodules?.length > 0;
+    const hasSubModules = data?.subModules?.length > 0;
     return (
       <Collapsible asChild key={index}>
         <React.Fragment>
           <TableRow className="">
-              <CollapsibleTrigger asChild className="[&[data-state=open]>svg]:rotate-90">
-                <TableCell className={cn(`pl-${data?.parentId && level*2}`, { "flex items-center first:gap-2 cursor-pointer": hasSubModules })}>
-                    {data?.parentId ? renderDash(level) : null}
-                    {data?.name}
-                    { hasSubModules ? <ChevronRight className="h-4 w-4" /> : null }
-                  </TableCell>
-              </CollapsibleTrigger>
+            <CollapsibleTrigger asChild className="[&[data-state=open]>svg]:rotate-90">
+              <TableCell className={cn(`pl-${data?.parentId && level * 2}`, { "flex items-center first:gap-2 cursor-pointer": hasSubModules })}>
+                {data?.parentId ? renderDash(level) : null}
+                {data?.name}
+                {hasSubModules ? <ChevronRight className="h-4 w-4" /> : null}
+              </TableCell>
+            </CollapsibleTrigger>
 
             {hasSubModules && <TableCell colSpan={4}></TableCell>}
 
-            { !hasSubModules && data?.permissions && data?.permissions.map((permission, i) => (
+            {!hasSubModules && data?.permissions && data?.permissions.map((permission, i) => (
               <TableCell key={permission.name}>
-                <SwitchButton name={`modules.${parentIndex}${index}.permissions.${i}.bitmask`}/>
+                <SwitchButton name={`modules.${parentIndex}${index}.permissions.${i}.bitmask`} />
               </TableCell>
             ))}
           </TableRow>
 
           <CollapsibleContent asChild>
             <React.Fragment>
-              {data?.submodules &&
-                data?.submodules.map((sub, ii) => (
+              {data?.subModules &&
+                data?.subModules.map((sub, ii) => (
                   <RenderRows
                     key={sub.id}
                     data={sub}
                     index={ii}
                     level={level + 1}
-                    parentIndex={`${parentIndex}${index}.submodules.`}
+                    parentIndex={`${parentIndex}${index}.subModules.`}
                   />
                 ))}
             </React.Fragment>
@@ -384,7 +383,7 @@ type Module = {
   name: string;
   parentId: string | null;
   permissions: number;
-  submodules: Module[];
+  subModules: Module[];
 };
 
 function mergeModules(
@@ -398,9 +397,9 @@ function mergeModules(
   ): Module {
     if (roleAssignedModule) {
       module.permissions = roleAssignedModule.permissions;
-      module.submodules = mergeSubmodules(
-        module.submodules,
-        roleAssignedModule.submodules
+      module.subModules = mergeSubmodules(
+        module.subModules,
+        roleAssignedModule.subModules
       );
     }
     return module;
@@ -431,38 +430,38 @@ function mergeModules(
 // ----------------------------- Format submitted data to API Format ----------------------------- //
 
 interface FormatSubmodule {
-  submoduleId: string;
+  subModuleId: string;
   permissions: number;
-  submodules?: FormatSubmodule[];
+  subModules?: FormatSubmodule[];
 }
 
 interface FormatModule {
   moduleId: string;
   permissions: number;
-  submodules: FormatSubmodule[];
+  subModules: FormatSubmodule[];
 }
 
 function transformModules(input: Module[]): FormatModule[] {
   return input.map((module) => ({
     moduleId: module.id,
     permissions: module.permissions,
-    submodules: transformSubmodules(module.submodules),
+    subModules: transformSubmodules(module.subModules),
   }));
 }
 
 function transformSubmodules(input: Module[]): FormatSubmodule[] {
-  return input.map((submodule) => ({
-    submoduleId: submodule.id,
-    permissions: submodule.permissions,
-    submodules:
-      submodule.submodules.length > 0
-        ? transformSubmodules(submodule.submodules)
+  return input.map((subModule) => ({
+    subModuleId: subModule.id,
+    permissions: subModule.permissions,
+    subModules:
+      subModule.subModules.length > 0
+        ? transformSubmodules(subModule.subModules)
         : [],
   }));
 }
 
 // ----------------------------- Update submited data from previous data  ----------------------------- //
- 
+
 
 function createIdMap(data: Module[]): Map<string, Module> {
   const map = new Map<string, Module>();
@@ -477,14 +476,13 @@ function hasValidPermissions(module: Module): boolean {
   }
 
   // Check if any submodule has permissions > 0
-  for (let submodule of module.submodules) {
-    if (hasValidPermissions(submodule)) {
+  for (let subModule of module.subModules) {
+    if (hasValidPermissions(subModule)) {
       return true;
     }
   }
   return false;
 }
-
 
 function updateModules(
   submittedData: Module[],
@@ -493,37 +491,26 @@ function updateModules(
   const mapPreviousData = createIdMap(previousData);
 
   return submittedData
-    .map((submodule) => {
-      const prevModule = mapPreviousData.get(submodule.id);
+    .map((subModule) => {
+      const prevModule = mapPreviousData.get(subModule.id);
 
       // If the module exists in previous data, update permissions and recurse on submodules
       if (prevModule) {
-        const updatedSubmodules = updateModules(submodule.submodules, prevModule.submodules);
+        const updatedSubmodules = updateModules(subModule.subModules, prevModule.subModules);
         return {
-          ...submodule,
-          permissions: submodule.permissions,
-          submodules: updatedSubmodules,
+          ...subModule,
+          permissions: subModule.permissions,
+          subModules: updatedSubmodules,
         };
       }
 
       // If the module does not exist in previous data and its permissions > 0, include it
-      if (submodule.permissions > 0 || hasValidPermissions(submodule)) {
+      if (subModule.permissions > 0 || hasValidPermissions(subModule)) {
         return {
-          ...submodule,
-          submodules: updateModules(submodule.submodules, []),  
+          ...subModule,
+          subModules: updateModules(subModule.subModules, []),
         };
       }
-
-      // If the module has permissions = 0, include it only if it has valid child modules (permissions > 0)
-      // if (submodule.permissions === 0) {
-      //   const validSubmodules = submodule.submodules.filter(child => child.permissions > 0);
-      //   if (validSubmodules.length > 0) {
-      //     return {
-      //       ...submodule,
-      //       submodules: updateModules(validSubmodules, []),
-      //     };
-      //   }
-      // }
 
       // If no valid submodules and permissions == 0, exclude the module
       return null;

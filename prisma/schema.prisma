@@ -7,29 +7,29 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// User roles in the system
 model Role {
-  id          String @id @default(auto()) @map("_id") @db.ObjectId
-  name        String
-  permissions Int
-  users       User[]
-
-  ModulePermissions ModulePermissions[]
+  id                String             @id @default(auto()) @map("_id") @db.ObjectId
+  name              String
+  permissions       Int
+  users             User[] // One-to-many relation to Users
+  modulePermissions ModulePermission[] // One-to-many relation to ModulePermissions
 }
 
+// Permissions assigned to modules
 model Permission {
-  id      String @id @default(auto()) @map("_id") @db.ObjectId
-  name    String
-  bitmask Int
-
-  Module   Module? @relation(fields: [moduleId], references: [id])
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId
+  name     String  @unique
+  bitmask  Int // Store permission bits for granular access control
+  module   Module? @relation(fields: [moduleId], references: [id])
   moduleId String? @db.ObjectId
 }
 
+// Users in the system
 model User {
   id           String  @id @default(auto()) @map("_id") @db.ObjectId
   firstName    String?
   lastName     String?
-  name         String?
   username     String?
   email        String  @unique
   password     String?
@@ -41,29 +41,40 @@ model User {
   role         Role    @relation(fields: [roleId], references: [id])
 }
 
-model ModulePermissions {
+// Define a module, which can have submodules (hierarchical)
+model Module {
+  id                   String             @id @default(auto()) @map("_id") @db.ObjectId
+  name                 String
+  groupId              String?            @db.ObjectId
+  parentId             String?            @db.ObjectId
+  group                Group?             @relation(fields: [groupId], references: [id])
+  parent               Module?            @relation("ModuleParent", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  permissions          Permission[] // Module permissions
+  modulePermissions    ModulePermission[] // ModulePermissions relation
+  subModules           Module[]           @relation("ModuleParent") // Many-to-many for submodules
+  subModulePermissions ModulePermission[] @relation("ModuleParent") // Many-to-many relation for submodule permissions
+}
+
+// Permissions assigned to specific roles and modules (including submodules)
+model ModulePermission {
   id          String  @id @default(auto()) @map("_id") @db.ObjectId
   moduleId    String  @db.ObjectId
   roleId      String  @db.ObjectId
-  submoduleId String? @db.ObjectId
+  subModuleId String? @db.ObjectId
   permissions Int
 
   role      Role    @relation(fields: [roleId], references: [id])
   module    Module  @relation(fields: [moduleId], references: [id])
-  submodule Module? @relation("ModuleParent", fields: [submoduleId], references: [id])
+  subModule Module? @relation("ModuleParent", fields: [subModuleId], references: [id])
 
-  @@unique([roleId, moduleId])
-  @@unique([roleId, moduleId, submoduleId])
+  @@unique([roleId, moduleId]) // Ensure that each role can have only one set of permissions per module
+  @@unique([roleId, moduleId, subModuleId]) // Unique constraint for module and submodule permissions
 }
 
-model Module {
-  id                   String              @id @default(auto()) @map("_id") @db.ObjectId
-  name                 String
-  group                String?
-  parentId             String?             @db.ObjectId
-  parent               Module?             @relation("ModuleParent", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  permissions          Permission[]
-  ModulePermissions    ModulePermissions[]
-  SubModules           Module[]            @relation("ModuleParent")
-  SubModulePermissions ModulePermissions[] @relation("ModuleParent")
+// Group of modules
+model Group {
+  id   String @id @default(auto()) @map("_id") @db.ObjectId
+  name String @unique
+
+  modules Module[] // One-to-many relation with modules
 }

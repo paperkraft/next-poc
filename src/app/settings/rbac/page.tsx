@@ -2,7 +2,6 @@ import AccessPage from "./AccessForm";
 import TitlePage from "@/components/custom/page-heading";
 import { Metadata } from "next";
 import prisma from "@/lib/prisma";
-import { auth } from "@/auth";
 import { getModulesWithSubmodules } from "@/lib/prisma-utils";
 
 export const metadata: Metadata = {

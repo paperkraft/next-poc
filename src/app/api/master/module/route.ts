@@ -1,14 +1,31 @@
-import { getModulesWithSubmodules } from "@/app/master/module/page";
+import { IModule } from "@/app/master/module/ModuleInterface";
 import prisma from "@/lib/prisma";
-import { group } from "console";
 import { NextResponse } from "next/server";
 
 
 export async function GET(){
     try {
-        const data = await getModulesWithSubmodules()
+        const modules = await prisma.module.findMany({
+            include: {
+              group:true,
+              subModules: {
+                include: {
+                  subModules: {
+                    include: {
+                      subModules: true,
+                    },
+                  },
+                },
+              },
+            },
+          });
+      
+          const formattedModules = modules.map((module) => formatModule(module as any));
+          const submoduleIds = new Set(formattedModules.flatMap((module) => module.subModules.map((subModule) => subModule.id)));
+          const finalModules = formattedModules.filter((module) => !submoduleIds.has(module.id));
+      
         return NextResponse.json(
-            { success: true, message: 'Success', data },
+            { success: true, message: 'Success', data:finalModules },
             { status: 200 }
         );
     } catch (error) {
@@ -108,3 +125,28 @@ export async function DELETE(req:Request) {
         return NextResponse.json({ success: false, message: 'Failed to delete module' }, { status: 500 });
     }
 }
+
+
+interface IGroup {
+    id: string,
+    name: string,
+  }
+  
+  interface InputFormat {
+    id: string,
+    name: string,
+    group: IGroup | null;
+    parentId: string | null,
+    subModules: InputFormat[] | null
+  }
+
+function formatModule(module: InputFormat): IModule {
+    return {
+      id: module.id,
+      name: module.name,
+      group: module.group?.name,
+      parentId: module?.parentId,
+      permissions: null,
+      subModules: (module.subModules || []).map((subModule) => formatModule(subModule)),
+    };
+  }

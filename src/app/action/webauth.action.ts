@@ -27,7 +27,7 @@ export const getRegistrationOptions = async () => {
         rpID: RP_ID,
         rpName: rpName,
         userID: user.id,
-        userName: user.name as string,
+        userName: user.username as string,
         timeout: 60000,
         attestationType: "none",
         authenticatorSelection: {
@@ -39,11 +39,13 @@ export const getRegistrationOptions = async () => {
 
     await prisma.user.upsert({
         where: { email: user.email },
-        update: { challenge },
+        // update: { challenge },
+        update: { email: user.email },
         create: {
             id: user.id,
             email: user.email,
-            challenge: challenge,
+            roleId: user.roleId
+            // challenge: challenge,
         },
     });
 
@@ -77,14 +79,14 @@ export const registerDevice = async (registrationOptions: any, challenge: string
     }
 
     // Save the credential info in the database
-    await prisma.credential.create({
-        data: {
-            credentialID: isoBase64URL.fromBuffer(info.credentialID),
-            publicKey: isoBase64URL.fromBuffer(info.credentialPublicKey),
-            counter: info.counter,
-            userId: user.id,
-        },
-    });
+    // await prisma.credential.create({
+    //     data: {
+    //         credentialID: isoBase64URL.fromBuffer(info.credentialID),
+    //         publicKey: isoBase64URL.fromBuffer(info.credentialPublicKey),
+    //         counter: info.counter,
+    //         userId: user.id,
+    //     },
+    // });
 
     return NextResponse.json({ success: true });
 }
@@ -94,29 +96,29 @@ export const getAuthenticationOptions = async (email: string) => {
     // Retrieve the user from the database
     const user = await prisma.user.findUnique({
         where: { email: email },
-        include: { credentials: true },
+        // include: { credentials: true },
     });
 
     if (!user) {
         return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const userCredential = user.credentials[0];
+    // const userCredential = user.credentials[0];
 
-    if (!userCredential) {
-        return NextResponse.json({ error: 'User has no credentials for authentication' }, { status: 400 });
-    }
+    // if (!userCredential) {
+    //     return NextResponse.json({ error: 'User has no credentials for authentication' }, { status: 400 });
+    // }
 
     // Generate authentication options
-    const authenticationOptions = await generateAuthenticationOptions({
-        challenge: isoBase64URL.toBuffer(user.challenge as string),
-        userVerification: 'preferred'
-    });
+    // const authenticationOptions = await generateAuthenticationOptions({
+    //     challenge: isoBase64URL.toBuffer(user.challenge as string),
+    //     userVerification: 'preferred'
+    // });
 
-    if (authenticationOptions.rpId) {
-        return NextResponse.json(authenticationOptions);
+    // if (authenticationOptions.rpId) {
+        // return NextResponse.json(authenticationOptions);
         // return NextResponse.json({ data: { option: authenticationOptions, userId: user.id } });
-    }
+    // }
 
     return NextResponse.json({ error: 'Error in authentication process' }, { status: 500 });
 }
@@ -126,7 +128,7 @@ export const verifyAuthResponse = async (data: any) => {
 
     const user = await prisma.user.findUnique({
         where: { id: userId },
-        include: { credentials: true },
+        // include: { credentials: true },
     });
 
     if (!user) {
@@ -134,33 +136,33 @@ export const verifyAuthResponse = async (data: any) => {
     }
 
     // Get the credential the user is using for authentication
-    const userCredential = user.credentials.find((passKey) => passKey.credentialID == option.rawId);
+    // const userCredential = user.credentials.find((passKey) => passKey.credentialID == option.rawId);
 
-    if (!userCredential) {
-        return NextResponse.json({ error: 'User has no credentials for authentication' }, { status: 400 });
-    }
+    // if (!userCredential) {
+    //     return NextResponse.json({ error: 'User has no credentials for authentication' }, { status: 400 });
+    // }
 
     // Verify the authentication response from the client
-    const { verified, authenticationInfo: info } = await verifyAuthenticationResponse({
-        response: option,
-        expectedChallenge: user.challenge as string,
-        expectedOrigin: CLIENT_URL,
-        expectedRPID: RP_ID,
-        authenticator: {
-            credentialID: isoBase64URL.toBuffer(userCredential.credentialID),
-            credentialPublicKey: isoBase64URL.toBuffer(userCredential.publicKey),
-            counter: userCredential.counter
-        }
-    })
+    // const { verified, authenticationInfo: info } = await verifyAuthenticationResponse({
+    //     response: option,
+    //     expectedChallenge: user.challenge as string,
+    //     expectedOrigin: CLIENT_URL,
+    //     expectedRPID: RP_ID,
+    //     authenticator: {
+    //         credentialID: isoBase64URL.toBuffer(userCredential.credentialID),
+    //         credentialPublicKey: isoBase64URL.toBuffer(userCredential.publicKey),
+    //         counter: userCredential.counter
+    //     }
+    // })
 
-    if (!verified || !info) {
-        return NextResponse.json({ error: 'Authentication failed' }, { status: 400 });
-    }
+    // if (!verified || !info) {
+    //     return NextResponse.json({ error: 'Authentication failed' }, { status: 400 });
+    // }
 
-    await prisma.credential.update({
-        where: { id: userCredential.id },
-        data: { counter: info.newCounter },
-    });
+    // await prisma.credential.update({
+    //     where: { id: userCredential.id },
+    //     data: { counter: info.newCounter },
+    // });
 
     return NextResponse.json({ success: true });
 

@@ -92,11 +92,13 @@ const AppSidebar = React.memo(({ children }: ChildProps) => {
             const filteredMenuData = transformMenuData(serverMenuData, userPermissions);
 
             const userMenus = groups && groups.map((item) => filteredMenuData
-                .filter((menu) => menu.label === item.label))
-                .filter((menuGroup) => menuGroup.length > 0)
+                .filter((menu) => menu.label.toLowerCase() === item.label.toLowerCase()))
+                .filter((menuGroup) => menuGroup.length > 0);
 
-            userMenus && setFilter(userMenus);
-            userMenus && setMenus(userMenus);
+            if(userMenus){
+                setFilter(userMenus);
+                setMenus(userMenus);
+            }
         }
     }, [data]);
 
@@ -390,4 +392,4 @@ FooterMenuOptions.displayName = "FooterMenuOptions";
 NestedMenu.displayName = "NestedMenu";
 AppSidebar.displayName = "AppSidebar";
 
-export default AppSidebar
+export default AppSidebar;

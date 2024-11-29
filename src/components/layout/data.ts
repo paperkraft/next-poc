@@ -147,7 +147,7 @@ export const data = [
     }
 ]
 
-export const uniqueLabels = Array.from(new Set(data.map((menu) => menu.label)));
+const uniqueLabels = Array.from(new Set(data.map((menu) => menu.label)));
 export const menus: menuType[][] = uniqueLabels.map((label) => data.filter((menu) => menu.label === label));
 export const defalutMenu: menuType[][] = uniqueLabels.map((label) => dashboard.filter((menu) => menu.label === label));
 
@@ -178,10 +178,10 @@ const transformSubmodules = (subModules: any[], userPermissions: number): any =>
         });
 };
 
-// Recursive function to search for a submenu by its title in the entire menu data (including nested submenus)
+// Recursive function to search for a submenu by its title (including nested submenus)
 const findMenuByTitle = (menuData: menuType[], title: string): menuType | null => {
     for (let item of menuData) {
-        if (item.title === title) {
+        if (item.title.toLowerCase() === title.toLowerCase()) {
             return item;
         }
         if (item.submenu && item.submenu.length > 0) {
@@ -197,7 +197,7 @@ export const transformMenuData = (serverData: any[], userPermissions: number): m
     return serverData
         .map((menuItem) => {
             // Find the matching menu item from the original data
-            const matchedMenu = data.find((item) => item.title === menuItem.name);
+            const matchedMenu = data.find((item) => item.title.toLowerCase() === menuItem.name.toLowerCase());
 
             if (matchedMenu && hasPermission(userPermissions, menuItem.permissions)) {
                 // Transform the submodules using the recursive function
@@ -216,12 +216,12 @@ export const transformMenuData = (serverData: any[], userPermissions: number): m
                 const submenus = transformSubmodules(menuItem.subModules, userPermissions);
 
                 return {
-                    label: "Uncategorized",  // Assign a default label if no match found
+                    label: "Uncategorized",
                     title: menuItem.name,
-                    url: "#",  // Assign a default URL if no match found
-                    icon: Dot,  // Optionally set a default icon
+                    url: "#",
+                    icon: Dot,
                     isActive: false,
-                    submenu: submenus && submenus.length > 0 ? submenus : [],  // Include submodules if they exist
+                    submenu: submenus && submenus.length > 0 ? submenus : []
                 };
             }
 

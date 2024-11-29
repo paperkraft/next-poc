@@ -1,8 +1,9 @@
+'use client'
 import CustomCard from "@/components/custom/card-component";
 import Link from "next/link";
+import { memo } from "react";
 
-export default async function News() {
-
+const News = memo(() => {
   return(
     <CustomCard header={'News'} description="description">
       <div>
@@ -16,4 +17,7 @@ export default async function News() {
       </div>
     </CustomCard>
   )
-} 
+}) 
+
+News.displayName = "News";
+export default News;

@@ -1,9 +1,12 @@
+'use client'
 import CustomCard from "@/components/custom/card-component";
 import Link from "next/link";
+import { memo } from "react";
 
-export default async function ArchivedNews() {
-  return(
-    <CustomCard header={'Archived News'} description="description">
+const ArchivedNews = memo(() => {
+  return (
+    <>
+      <CustomCard header={'Archived News'} description="description">
       <div>
         <i>- {new Date(new Date().setDate(new Date().getDate() - 1)).toDateString()}</i><br/>
         Lorem ipsum dolor sit amet consectetur adipisicing elit. 
@@ -15,5 +18,9 @@ export default async function ArchivedNews() {
         <Link href={'/dashboard'} className="text-blue-600">Default</Link>
       </div>
     </CustomCard>
-  )
-} 
+    </>
+  );
+})
+
+ArchivedNews.displayName = "ArchivedNews";
+export default ArchivedNews

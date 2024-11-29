@@ -1,4 +1,4 @@
-import AppLayout from "@/components/custom/layout/AppLayout";
+import AppLayout from "@/components/layout/AppLayout";
 import Profile from "./ProfileForm";
 import { Metadata } from "next";
 import TitlePage from "@/components/custom/page-heading";

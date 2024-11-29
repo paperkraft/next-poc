@@ -12,10 +12,11 @@ import { Eye } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { IGroup } from "./page";
+import { memo } from "react";
 
 
 
-export default function GroupList({data}:{data:IGroup[]}) {
+ const GroupList = memo(({data}:{data:IGroup[]}) => {
   const path = usePathname();
   return (
     <div className="space-y-8 p-2">
@@ -50,4 +51,7 @@ export default function GroupList({data}:{data:IGroup[]}) {
       </Table>
     </div>
   );
-}
+})
+
+GroupList.displayName = "GroupList";
+export default GroupList

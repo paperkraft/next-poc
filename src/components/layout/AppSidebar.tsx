@@ -4,8 +4,6 @@ import * as React from "react"
 import {
     Bell,
     ChevronRight,
-    ChevronsUpDown,
-    CreditCard,
     LifeBuoy,
     LogOut,
     SearchIcon,
@@ -13,7 +11,7 @@ import {
     UserIcon,
     Settings2,
     X,
-    Ellipsis
+    EllipsisVertical
 } from "lucide-react"
 import {
     Avatar,
@@ -63,13 +61,12 @@ import { FormField } from "@/components/ui/form"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Session } from "next-auth"
 
-
 interface IGroups {
     id: string;
     label: string;
 }
 
-export default function AppSidebar({ children }: ChildProps) {
+const AppSidebar = React.memo(({ children }: ChildProps) => {
 
     const { data } = useSession();
     const [filter, setFilter] = React.useState<menuType[][]>(defalutMenu);
@@ -209,14 +206,14 @@ export default function AppSidebar({ children }: ChildProps) {
             </SidebarInset>
         </SidebarProvider>
     )
-}
+})
 
-function HeaderMenuOptions() {
+const HeaderMenuOptions = React.memo(() => {
     const route = useRouter();
     return (
         <SidebarMenu>
             <SidebarMenuItem>
-                <SidebarMenuButton onClick={() => route.push('/')} size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
+                <SidebarMenuButton onClick={() => route.push('/dashboard')} size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
                     <div className="flex aspect-square size-8 items-center justify-center rounded-full bg-sidebar-primary text-sidebar-primary-foreground">
                         <span className="text-xs">WD</span>
                     </div>
@@ -232,9 +229,9 @@ function HeaderMenuOptions() {
             </SidebarMenuItem>
         </SidebarMenu>
     )
-}
+})
 
-function FooterMenuOptions({ data }:{ data:Session }) {
+const FooterMenuOptions = React.memo(({ data }:{ data:Session }) => {
     const user = data.user;
     const initials = user && user?.name?.split(' ').map((word: any[]) => word[0]).join('').toUpperCase();
     const logout = () => signOut({ redirect: false });
@@ -257,49 +254,40 @@ function FooterMenuOptions({ data }:{ data:Session }) {
         },
     ]
 
+    const RenderUserInfo = () => {
+        return(
+            <>
+                <Avatar className="h-8 w-8 rounded-full border border-blue-500">
+                    <AvatarImage src={user?.image} alt={user?.name} />
+                    <AvatarFallback className="rounded-full">{initials ?? "UN"}</AvatarFallback>
+                </Avatar>
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                    <span className="truncate font-semibold">
+                        {user?.name}
+                    </span>
+                    <span className="truncate text-xs">
+                        {user?.email}
+                    </span>
+                </div>
+            </>
+        )
+    }
+
     return (
-        user &&
         <SidebarMenu>
             <SidebarMenuItem>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <SidebarMenuButton size="lg"
-                            className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
-                            <Avatar className="h-8 w-8 rounded-full border border-blue-500">
-                                <AvatarImage src={user?.image} alt={user?.name} />
-                                <AvatarFallback className="rounded-full">{initials ?? "UN"}</AvatarFallback>
-                            </Avatar>
-
-                            <div className="grid flex-1 text-left text-sm leading-tight">
-                                <span className="truncate font-semibold">
-                                    {user?.name}
-                                </span>
-                                <span className="truncate text-xs">
-                                    {user?.email}
-                                </span>
-                            </div>
-                            <Ellipsis className="ml-auto size-4" />
+                        <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
+                            <RenderUserInfo/>
+                            <EllipsisVertical className="ml-auto size-4" />
                         </SidebarMenuButton>
                     </DropdownMenuTrigger>
 
-                    <DropdownMenuContent
-                        className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg [&_svg]:size-4 [&_svg]:stroke-[1.5] [&_svg]:mr-2 mb-2"
-                        // side="right"
-                    >
+                    <DropdownMenuContent className={cn("w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg [&_svg]:size-4 [&_svg]:stroke-[1.5] [&_svg]:mr-2 mb-2")}>
                         <DropdownMenuLabel className="p-0 font-normal">
                             <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                                <Avatar className="h-8 w-8 rounded-full border border-blue-500">
-                                    <AvatarImage src={user?.image} alt={user?.name} />
-                                    <AvatarFallback className="rounded-full">{initials ?? "UN"}</AvatarFallback>
-                                </Avatar>
-                                <div className="grid flex-1 text-left text-sm leading-tight">
-                                    <span className="truncate font-semibold">
-                                        {user?.name}
-                                    </span>
-                                    <span className="truncate text-xs">
-                                        {user?.email}
-                                    </span>
-                                </div>
+                                <RenderUserInfo/>
                             </div>
                         </DropdownMenuLabel>
 
@@ -328,7 +316,7 @@ function FooterMenuOptions({ data }:{ data:Session }) {
             </SidebarMenuItem>
         </SidebarMenu>
     )
-}
+})
 
 function OtherOptions() {
     return (
@@ -351,7 +339,7 @@ function OtherOptions() {
     )
 }
 
-function NestedMenu({ item }: { item: menuType }) {
+const NestedMenu = React.memo(({ item }: { item: menuType }) => {
 
     const { toggleSidebar } = useSidebar();
     const isMobile = useIsMobile();
@@ -395,4 +383,11 @@ function NestedMenu({ item }: { item: menuType }) {
             </Collapsible>
         </SidebarMenuItem>
     )
-}
+})
+
+HeaderMenuOptions.displayName = "HeaderMenuOptions";
+FooterMenuOptions.displayName = "FooterMenuOptions";
+NestedMenu.displayName = "NestedMenu";
+AppSidebar.displayName = "AppSidebar";
+
+export default AppSidebar

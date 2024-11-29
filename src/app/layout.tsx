@@ -5,7 +5,7 @@ import ThemeProvider from "@/components/custom/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { NextAuthProvider } from "@/components/custom/auth-provider";
 import { cn } from "@/lib/utils";
-import AppLayout from "@/components/custom/layout/AppLayout";
+import AppLayout from "@/components/layout/AppLayout";
 import { ChildProps } from "@/types/types";
 
 const inter = Inter({subsets: ["latin"]});

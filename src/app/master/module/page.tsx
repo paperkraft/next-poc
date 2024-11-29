@@ -3,7 +3,7 @@ import TitlePage from "@/components/custom/page-heading";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import Link from "next/link";
-import { ModuleList } from "./ModuleList";
+import ModuleList from "./ModuleList";
 
 interface IGroup {
   id: string,

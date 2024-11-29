@@ -5,14 +5,14 @@ import { Button } from "@/components/ui/button";
 import { useMounted } from "@/hooks/use-mounted";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-
-export default function Dashboard() {
+import { memo, useEffect, useState } from "react";
+ 
+const Dashboard = memo(() => {
   const [open, setOpen] = useState(false);
 
   const mounted = useMounted();
   const { data: session } = useSession();
-  const user = session?.user;
+  const user = session && session?.user;
 
   useEffect(() => {
     if (mounted && user?.name === null) {
@@ -42,4 +42,7 @@ export default function Dashboard() {
       )}
     </>
   );
-}
+})
+
+Dashboard.displayName = "Dashboard";
+export default Dashboard;

@@ -1,5 +1,5 @@
 import { CarouselPlugin } from "@/components/custom/carousel-content";
-import ToggleButtons from "@/components/custom/layout/ToggleButtons";
+import ToggleButtons from "@/components/layout/ToggleButtons";
 import { Button } from "@/components/ui/button";
 import { ChildProps } from "@/types/types";
 import { ChevronLeft } from "lucide-react";

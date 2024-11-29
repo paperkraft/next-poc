@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
 import { Toggle } from "@/components/ui/toggle";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
-export const ModuleList = memo(({ data }: { data: IModule[] }) => {
+const ModuleList = memo(({ data }: { data: IModule[] }) => {
 
     if (!data) {
         return <>No Data</>
@@ -203,3 +203,5 @@ function groupByGroupIfParentIdIsNull(modules: IModule[]): { group: string, modu
 Tree.displayName = 'Tree';
 Nested.displayName = 'Nested';
 ModuleList.displayName = 'ModuleList';
+
+export default ModuleList;

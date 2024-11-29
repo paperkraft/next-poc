@@ -1,5 +1,5 @@
 import React from "react";
-import NotFoundPage from "@/components/custom/layout/NotFound";
+import NotFoundPage from "@/components/layout/NotFound";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {

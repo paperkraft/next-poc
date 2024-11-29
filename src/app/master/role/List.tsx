@@ -11,6 +11,7 @@ import {
 import { Eye } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { memo } from "react";
 
 export type RoleType = {
   id: string;
@@ -18,7 +19,7 @@ export type RoleType = {
   permissions: number;
 };
 
-export default function RoleList({data}:{data:RoleType[]}) {
+const RoleList = memo(({data}:{data:RoleType[]}) => {
   const path = usePathname();
   return (
     <div className="space-y-8 p-2">
@@ -55,4 +56,8 @@ export default function RoleList({data}:{data:RoleType[]}) {
       </Table>
     </div>
   );
-}
+});
+
+RoleList.displayName = "RoleList";
+
+export default  RoleList

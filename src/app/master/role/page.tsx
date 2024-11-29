@@ -1,9 +1,9 @@
 import prisma from "@/lib/prisma";
-import RoleList from "./List";
 import TitlePage from "@/components/custom/page-heading";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import Link from "next/link";
+import RoleList from "./List";
 
 export default async function Page() {
 

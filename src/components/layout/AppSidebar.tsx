@@ -11,7 +11,8 @@ import {
     UserIcon,
     Settings2,
     X,
-    EllipsisVertical
+    EllipsisVertical,
+    Home,
 } from "lucide-react"
 import {
     Avatar,
@@ -54,12 +55,12 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import Header from "./Header"
-import { defalutMenu, menuType, submenuType, transformMenuData } from "./data"
+import { menuType, submenuType, transformMenuData } from "./data"
 import { ChildProps } from "@/types/types"
 import { useForm } from "react-hook-form"
 import { FormField } from "@/components/ui/form"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { Session } from "next-auth"
+import { Skeleton } from "../ui/skeleton"
 
 interface IGroups {
     id: string;
@@ -67,85 +68,6 @@ interface IGroups {
 }
 
 const AppSidebar = React.memo(({ children }: ChildProps) => {
-
-    const { data } = useSession();
-    const [filter, setFilter] = React.useState<menuType[][]>(defalutMenu);
-    const [menus, setMenus] = React.useState<menuType[][]>(defalutMenu);
-    const [groups, setGroups] = React.useState<IGroups[]>();
-
-    React.useEffect(() => {
-        const getGroups = async () => {
-          const response = await fetch('/api/master/group').then((res) => res.json()).catch((err) => console.error(err));
-          if (response.success) {
-            const data = response.data.map((item: any) => { return { label: item.name, id: item.id }});
-            data && setGroups(data)
-          }
-        }
-        getGroups();
-    }, []);
-
-    React.useEffect(() => {
-        if (data) {
-            const serverMenuData = data?.user?.modules;
-            const userPermissions = data?.user?.permissions;
-
-            const filteredMenuData = transformMenuData(serverMenuData, userPermissions);
-
-            const userMenus = groups && groups.map((item) => filteredMenuData
-                .filter((menu) => menu.label.toLowerCase() === item.label.toLowerCase()))
-                .filter((menuGroup) => menuGroup.length > 0);
-
-            if(userMenus){
-                setFilter(userMenus);
-                setMenus(userMenus);
-            }
-        }
-    }, [data]);
-
-
-    const form = useForm({
-        defaultValues: {
-            query: ""
-        }
-    });
-
-    const query = form.watch('query');
-
-    const filterMenu = (query: string) => {
-
-        const lowerCaseQuery = query.toLowerCase();
-
-        function searchSubmenu(submenu: submenuType[], query: string): boolean {
-            if (!submenu) return false;
-            return submenu.some((item) => {
-                return (
-                    item.title.toLowerCase().includes(query) ||
-                    (item.submenu && searchSubmenu(item.submenu, query))
-                );
-            });
-        }
-
-        const filtered = menus.map((menuItem) => {
-            return menuItem.filter((item) => {
-                return (
-                    item.label.toLowerCase().includes(lowerCaseQuery) ||
-                    item.title.toLowerCase().includes(lowerCaseQuery) ||
-                    searchSubmenu(item.submenu, lowerCaseQuery)
-                );
-            })
-        }).filter(menuItem => menuItem.length > 0);
-
-        setFilter(filtered);
-    };
-
-    React.useEffect(() => {
-        if (query) {
-            filterMenu(query);
-        } else {
-            setFilter(menus);
-        }
-    }, [query])
-
     return (
         <SidebarProvider>
             <Sidebar>
@@ -154,49 +76,12 @@ const AppSidebar = React.memo(({ children }: ChildProps) => {
                 </SidebarHeader>
 
                 <SidebarContent>
-                    <SidebarGroup className="sticky top-0 z-40 bg-sidebar">
-                        <FormField
-                            control={form.control}
-                            name="query"
-                            render={({ field }) => (
-                                <SidebarGroupContent className="relative">
-                                    <SidebarInput
-                                        id="search"
-                                        placeholder="Search for menu..."
-                                        className="px-8"
-                                        {...field}
-                                    />
-                                    <SearchIcon className="pointer-events-none absolute left-2 top-1/2 size-4 -translate-y-1/2 select-none opacity-50" />
-                                    {
-                                        field.value &&
-                                        <span className="cursor-pointer absolute right-2 top-1/2 size-4 -translate-y-1/2" onClick={() => form.resetField('query')}>
-                                            <X className="size-4" />
-                                        </span>
-                                    }
-                                </SidebarGroupContent>
-                            )}
-                        />
-                    </SidebarGroup>
-
-                    {/* Menus */}
-
-                    {
-                        filter && filter.map((data, index) => (
-                            <SidebarGroup key={index}>
-                                <SidebarGroupLabel>{data.at(0)?.label}</SidebarGroupLabel>
-                                <SidebarMenu>
-                                    {data.map((item, index) => (
-                                        <NestedMenu key={index} item={item} />
-                                    ))}
-                                </SidebarMenu>
-                            </SidebarGroup>
-                        ))
-                    }
+                    <RenderMenus />
                     <OtherOptions />
                 </SidebarContent>
 
                 <SidebarFooter>
-                    { data && <FooterMenuOptions data={data} /> }
+                    <FooterMenuOptions />
                 </SidebarFooter>
             </Sidebar>
 
@@ -210,31 +95,33 @@ const AppSidebar = React.memo(({ children }: ChildProps) => {
     )
 })
 
-const HeaderMenuOptions = React.memo(() => {
-    const route = useRouter();
+const HeaderMenuOptions = () => {
     return (
         <SidebarMenu>
             <SidebarMenuItem>
-                <SidebarMenuButton onClick={() => route.push('/dashboard')} size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
-                    <div className="flex aspect-square size-8 items-center justify-center rounded-full bg-sidebar-primary text-sidebar-primary-foreground">
-                        <span className="text-xs">WD</span>
-                    </div>
-                    <div className="grid flex-1 text-left text-sm leading-tight">
-                        <span className="truncate font-semibold">
-                            Webdesk
-                        </span>
-                        <span className="truncate text-xs">
-                            Educational ERP
-                        </span>
-                    </div>
+                <SidebarMenuButton asChild size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
+                    <Link href={'/dashboard'}>
+                        <div className="flex aspect-square size-8 items-center justify-center rounded-full bg-sidebar-primary text-sidebar-primary-foreground">
+                            <span className="text-xs">WD</span>
+                        </div>
+                        <div className="grid flex-1 text-left text-sm leading-tight">
+                            <span className="truncate font-semibold">
+                                Webdesk
+                            </span>
+                            <span className="truncate text-xs">
+                                Educational ERP
+                            </span>
+                        </div>
+                    </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
         </SidebarMenu>
     )
-})
+}
 
-const FooterMenuOptions = React.memo(({ data }:{ data:Session }) => {
-    const user = data.user;
+const FooterMenuOptions = () => {
+    const { data } = useSession();
+    const user = data && data?.user;
     const initials = user && user?.name?.split(' ').map((word: any[]) => word[0]).join('').toUpperCase();
     const logout = () => signOut({ redirect: false });
 
@@ -257,7 +144,7 @@ const FooterMenuOptions = React.memo(({ data }:{ data:Session }) => {
     ]
 
     const RenderUserInfo = () => {
-        return(
+        return (
             <>
                 <Avatar className="h-8 w-8 rounded-full border border-blue-500">
                     <AvatarImage src={user?.image} alt={user?.name} />
@@ -281,7 +168,7 @@ const FooterMenuOptions = React.memo(({ data }:{ data:Session }) => {
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
-                            <RenderUserInfo/>
+                            <RenderUserInfo />
                             <EllipsisVertical className="ml-auto size-4" />
                         </SidebarMenuButton>
                     </DropdownMenuTrigger>
@@ -289,7 +176,7 @@ const FooterMenuOptions = React.memo(({ data }:{ data:Session }) => {
                     <DropdownMenuContent className={cn("w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg [&_svg]:size-4 [&_svg]:stroke-[1.5] [&_svg]:mr-2 mb-2")}>
                         <DropdownMenuLabel className="p-0 font-normal">
                             <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                                <RenderUserInfo/>
+                                <RenderUserInfo />
                             </div>
                         </DropdownMenuLabel>
 
@@ -318,9 +205,9 @@ const FooterMenuOptions = React.memo(({ data }:{ data:Session }) => {
             </SidebarMenuItem>
         </SidebarMenu>
     )
-})
+}
 
-function OtherOptions() {
+const OtherOptions = () => {
     return (
         <SidebarGroup className="mt-auto">
             <SidebarGroupContent>
@@ -337,6 +224,44 @@ function OtherOptions() {
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarGroupContent>
+        </SidebarGroup>
+    )
+}
+
+const SkeletonMenuGroup = () => {
+    return (
+        Array.from({ length: 3 }).map((_, idx) => (
+            <SidebarGroup key={idx}>
+                <SidebarGroupLabel>
+                    <Skeleton className="w-10 h-3" />
+                </SidebarGroupLabel>
+                <SidebarMenu>
+                    {
+                        Array.from([16, 24, 20]).map((el, idx) => (
+                            <SidebarMenuItem key={idx}>
+                                <Skeleton className={cn("h-4 ml-2", `w-${el}`)} />
+                            </SidebarMenuItem>
+                        ))
+                    }
+                </SidebarMenu>
+            </SidebarGroup>
+        ))
+    )
+}
+
+const DashboardMenu = () => {
+    return (
+        <SidebarGroup>
+            <SidebarGroupLabel>Home</SidebarGroupLabel>
+            <SidebarMenu>
+                <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                        <Link href={'/dashboard'}>
+                            <Home /> Dashboard
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+            </SidebarMenu>
         </SidebarGroup>
     )
 }
@@ -387,8 +312,139 @@ const NestedMenu = React.memo(({ item }: { item: menuType }) => {
     )
 })
 
-HeaderMenuOptions.displayName = "HeaderMenuOptions";
-FooterMenuOptions.displayName = "FooterMenuOptions";
+const RenderMenus = () => {
+
+    const { data } = useSession();
+    const [filter, setFilter] = React.useState<menuType[][]>();
+    const [menus, setMenus] = React.useState<menuType[][]>([]);
+    const [groups, setGroups] = React.useState<IGroups[]>();
+    const [loading, setLoading] = React.useState<boolean>(false);
+
+    React.useEffect(() => {
+        setLoading(true)
+        const getGroups = async () => {
+            try {
+                const response = await fetch('/api/master/group').then((res) => res.json());
+                if (response.success) {
+                    const data = response.data.map((item: any) => { return { label: item.name, id: item.id } });
+                    data && setGroups(data)
+                }
+            } catch (error) {
+                console.error(error)
+            } finally {
+                setLoading(false)
+            }
+        }
+        getGroups();
+    }, []);
+
+    React.useEffect(() => {
+
+        if (data && groups) {
+            const serverMenuData = data?.user?.modules;
+            const userPermissions = data?.user?.permissions;
+
+            const filteredMenuData = transformMenuData(serverMenuData, userPermissions);
+
+            const userMenus = groups && groups.map((item) => filteredMenuData
+                .filter((menu) => menu.label.toLowerCase() === item.label.toLowerCase()))
+                .filter((menuGroup) => menuGroup.length > 0);
+
+            if (userMenus) {
+                setFilter(userMenus);
+                setMenus(userMenus);
+            }
+        }
+    }, [data]);
+
+    const form = useForm({
+        defaultValues: {
+            query: ""
+        }
+    });
+
+    const query = form.watch('query');
+
+    const filterMenu = (query: string) => {
+
+        const lowerCaseQuery = query.toLowerCase();
+
+        function searchSubmenu(submenu: submenuType[], query: string): boolean {
+            if (!submenu) return false;
+            return submenu.some((item) => {
+                return (
+                    item.title.toLowerCase().includes(query) ||
+                    (item.submenu && searchSubmenu(item.submenu, query))
+                );
+            });
+        }
+
+        const filtered = menus?.map((menuItem) => {
+            return menuItem.filter((item) => {
+                return (
+                    item.label.toLowerCase().includes(lowerCaseQuery) ||
+                    item.title.toLowerCase().includes(lowerCaseQuery) ||
+                    searchSubmenu(item.submenu, lowerCaseQuery)
+                );
+            })
+        }).filter(menuItem => menuItem.length > 0);
+
+        setFilter(filtered);
+    };
+
+    React.useEffect(() => {
+        if (query) {
+            filterMenu(query);
+        } else {
+            setFilter(menus);
+        }
+    }, [query]);
+
+    return (
+        <>
+            <SidebarGroup className="sticky top-0 z-40 bg-sidebar">
+                <FormField
+                    control={form.control}
+                    name="query"
+                    render={({ field }) => (
+                        <SidebarGroupContent className="relative">
+                            <SidebarInput
+                                id="search"
+                                placeholder="Search for menu..."
+                                className="px-8"
+                                {...field}
+                            />
+                            <SearchIcon className="pointer-events-none absolute left-2 top-1/2 size-4 -translate-y-1/2 select-none opacity-50" />
+                            {
+                                field.value &&
+                                <span className="cursor-pointer absolute right-2 top-1/2 size-4 -translate-y-1/2" onClick={() => form.resetField('query')}>
+                                    <X className="size-4" />
+                                </span>
+                            }
+                        </SidebarGroupContent>
+                    )}
+                />
+            </SidebarGroup>
+
+            {!loading && !filter && <DashboardMenu />}
+            {
+                !loading && filter?.map((data, index) => (
+                    <SidebarGroup key={index}>
+                        <SidebarGroupLabel>{data.at(0)?.label}</SidebarGroupLabel>
+                        <SidebarMenu>
+                            {data.map((item, index) => (
+                                <NestedMenu key={index} item={item} />
+                            ))}
+                        </SidebarMenu>
+                    </SidebarGroup>
+                ))
+            }
+            {loading && <SkeletonMenuGroup />}
+
+        </>
+    )
+}
+
 NestedMenu.displayName = "NestedMenu";
 AppSidebar.displayName = "AppSidebar";
 

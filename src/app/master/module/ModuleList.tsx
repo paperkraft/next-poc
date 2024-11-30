@@ -19,7 +19,6 @@ import { usePathname } from "next/navigation";
 import React, { memo, useState } from "react";
 import { IModule } from "./ModuleInterface";
 import { cn } from "@/lib/utils";
-import { Toggle } from "@/components/ui/toggle";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 const ModuleList = memo(({ data }: { data: IModule[] }) => {

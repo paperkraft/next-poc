@@ -42,33 +42,23 @@ export default function GroupForm() {
     }
 
     return (
-        <div className="space-y-8 p-2">
-            <TitlePage title="Create Group" description="Define a new group">
-                <div>
-                    <Button className="size-7" variant={"outline"} size={"sm"} onClick={() => route.back()}>
-                        <ArrowLeft className="size-5" />
+        <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 p-2">
+                <InputController
+                    name="name"
+                    label="Group"
+                    placeholder="Enter group"
+                    description="This group will get added."
+                    reset
+                />
+
+                <div className="flex justify-end my-4 gap-2">
+                    <Button variant={"outline"} onClick={(e) => { e.preventDefault(); form.reset() }}>
+                        Reset
                     </Button>
+                    <Button type="submit">Submit</Button>
                 </div>
-            </TitlePage>
-
-            <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 p-2">
-                    <InputController
-                        name="name"
-                        label="Group"
-                        placeholder="Enter group"
-                        description="This group will get added."
-                        reset
-                    />
-
-                    <div className="flex justify-end my-4 gap-2">
-                        <Button variant={"outline"} onClick={(e) => { e.preventDefault(); form.reset() }}>
-                            Reset
-                        </Button>
-                        <Button type="submit">Submit</Button>
-                    </div>
-                </form>
-            </Form>
-        </div>
+            </form>
+        </Form>
     );
 }

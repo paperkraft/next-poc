@@ -14,8 +14,6 @@ import { usePathname } from "next/navigation";
 import { IGroup } from "./page";
 import { memo } from "react";
 
-
-
  const GroupList = memo(({data}:{data:IGroup[]}) => {
   const path = usePathname();
   return (

@@ -39,7 +39,7 @@ export const SelectController = <T extends FieldValues>({ options, name, label, 
                                 <SelectContent>
                                     {
                                         options?.map((item, i)=>(
-                                            <SelectItem value={item?.value as string} key={i}>{item?.label}</SelectItem>
+                                            <SelectItem value={item?.value as string} key={`${i}.${item?.value}`}>{item?.label}</SelectItem>
                                         ))
                                     }
                                 </SelectContent>

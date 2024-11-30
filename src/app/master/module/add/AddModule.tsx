@@ -12,15 +12,8 @@ import { Switch } from "@/components/ui/switch";
 import { useEffect, useState } from "react";
 import { SelectController } from "@/components/custom/form.control/SelectController";
 import { toast } from "sonner";
-
-// export const groupOptions = [
-//   { label: "Home", value: "Home" },
-//   { label: "Module", value: "Module" },
-//   { label: "Master", value: "Master" },
-//   { label: "Global Master", value: "Global Master" },
-//   { label: "Gallery", value: "Gallery" },
-//   { label: "Uncategorized", value: "Uncategorized" },
-// ]
+import { SwitchButton } from "@/components/custom/form.control/SwitchButton";
+import { useQuery } from "@tanstack/react-query";
 
 export const ModuleFormSchema = z.object({
   name: z.string().min(1, { message: "Module is required." }),
@@ -47,39 +40,45 @@ export const ModuleFormSchema = z.object({
 }
 )
 
-export type ModuleFormValues = z.infer<typeof ModuleFormSchema>;
+type ModuleFormValues = z.infer<typeof ModuleFormSchema>;
 
 type Options = {
   label: string;
   value: string;
 }
 
+const fetchGroups = async () => {
+  const response = await fetch('/api/master/group');
+  if (!response.ok) {
+      throw new Error('Network response was not ok');
+  }
+  const data = await response.json();
+  if (data.success) {
+      return data.data.map((item:any) => ({ label: item.name, value: item.id }))
+  }
+  throw new Error('Failed to fetch groups');
+};
+
+const fetchModules = async () => {
+  const response = await fetch('/api/master/module');
+  if (!response.ok) {
+      throw new Error('Network response was not ok');
+  }
+  const data = await response.json();
+  if (data.success) {
+    return formatModules(data.data)
+  }
+  throw new Error('Failed to fetch modules');
+};
+
 export default function AddModule() {
   const route = useRouter();
-  const [options, setOptions] = useState<Options[]>()
-  const [groupOptions, setGroupOptions] = useState<Options[]>()
-
-  useEffect(() => {
-    const getGroups = async () => {
-      const response = await fetch('/api/master/group').then((res) => res.json()).catch((err) => console.error(err));
-      if (response.success) {
-        const data = response.data.map((item: any) => { return { label: item.name, value: item.id }});
-        data && setGroupOptions(data)
-      }
-    }
-    getGroups();
-  }, []);
-
-  useEffect(() => {
-    const getModules = async () => {
-      const response = await fetch('/api/master/module').then((res) => res.json()).catch((err) => console.error(err));
-      if (response.success) {
-        const data = formatModules(response.data)
-        setOptions(data)
-      }
-    }
-    getModules();
-  }, []);
+  const { data: moduleOptions, isLoading: isLoadingModule, isError: isErrorModule, error: moduleError } = useQuery({ queryKey: ['moduleoptions'], queryFn: fetchModules });
+  const { data: groupOptions, isLoading: isLoadingGroups, isError: isErrorGroups, error: groupsError } = useQuery({ queryKey: ['groupOptions'], queryFn: fetchGroups });
+ 
+  if (isErrorModule || isErrorGroups) {
+    console.log('Error', moduleError?.message || groupsError?.message)
+  }
 
   const form = useForm<ModuleFormValues>({
     resolver: zodResolver(ModuleFormSchema),
@@ -110,63 +109,36 @@ export default function AddModule() {
     }
   };
 
-  
-
   return (
-    <div className="space-y-8 p-2">
-      <TitlePage title="Create Module" description="Define a new module">
-        <div>
-          <Button
-            className="size-7"
-            variant={"outline"}
-            size={"sm"}
-            onClick={() => route.back()}
-          >
-            <ArrowLeft className="size-5" />
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 p-2">
+        <InputController
+          name="name"
+          label="Name"
+          placeholder="Enter module"
+          description={`This will be a ${form.watch('isParent') ? "sub" : "parent"} module.`}
+          reset
+        />
+
+        <SelectController name={`group.value`} label="Category" options={groupOptions}
+          description={` ${form.watch('name')} will placed under : ${form.watch('group.value')}`} />
+
+        <SwitchButton name="isParent" label="Is Sub Module?"/>
+
+        {
+          form.watch('isParent') && moduleOptions && (
+          <SelectController name={`parent.value`} label="Select Parent Module" options={moduleOptions} 
+            description={`This will be parent module of ${form.watch('name')}`} /> )
+        }
+
+        <div className="flex justify-end my-4 gap-2">
+          <Button variant={"outline"} onClick={(e) => { e.preventDefault(); form.reset(); }} >
+            Reset
           </Button>
+          <Button type="submit">Submit</Button>
         </div>
-      </TitlePage>
-
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 p-2">
-
-
-          <InputController
-            name="name"
-            label="Name"
-            placeholder="Enter module"
-            description={`This will be a ${form.watch('isParent') ? "sub" : "parent"} module.`}
-            reset
-          />
-
-          <SelectController name={`group.value`} label="Category" options={groupOptions as any}
-            description={` ${form.watch('name')} will placed under : ${form.watch('group.value')}`} />
-
-          <FormField
-            name="isParent"
-            control={form.control}
-            render={({ field }) => (
-              <FormItem className="flex items-center">
-                <FormLabel className="mr-2 mt-2">Is Sub Module?</FormLabel>
-                <Switch checked={field.value} onCheckedChange={field.onChange} />
-              </FormItem>
-            )}
-          />
-
-          {
-            form.watch('isParent') && options &&
-            <SelectController name={`parent.value`} label="Select Parent Module" options={options} description={`This will be parent module of ${form.watch('name')}`} />
-          }
-
-          <div className="flex justify-end my-4 gap-2">
-            <Button variant={"outline"} onClick={(e) => { e.preventDefault(); form.reset(); }} >
-              Reset
-            </Button>
-            <Button type="submit">Submit</Button>
-          </div>
-        </form>
-      </Form>
-    </div>
+      </form>
+    </Form>
   );
 }
 

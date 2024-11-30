@@ -61,6 +61,7 @@ import { useForm } from "react-hook-form"
 import { FormField } from "@/components/ui/form"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Skeleton } from "../ui/skeleton"
+import { useQuery, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 interface IGroups {
     id: string;
@@ -68,30 +69,33 @@ interface IGroups {
 }
 
 const AppSidebar = React.memo(({ children }: ChildProps) => {
+    const queryClient = new QueryClient();
     return (
-        <SidebarProvider>
-            <Sidebar>
-                <SidebarHeader className="h-16 border-b">
-                    <HeaderMenuOptions />
-                </SidebarHeader>
+        <QueryClientProvider client={queryClient}>
+            <SidebarProvider>
+                <Sidebar>
+                    <SidebarHeader className="h-16 border-b">
+                        <HeaderMenuOptions />
+                    </SidebarHeader>
 
-                <SidebarContent>
-                    <RenderMenus />
-                    <OtherOptions />
-                </SidebarContent>
+                    <SidebarContent>
+                        <RenderMenus />
+                        <OtherOptions />
+                    </SidebarContent>
 
-                <SidebarFooter>
-                    <FooterMenuOptions />
-                </SidebarFooter>
-            </Sidebar>
+                    <SidebarFooter>
+                        <FooterMenuOptions />
+                    </SidebarFooter>
+                </Sidebar>
 
-            <SidebarInset>
-                <Header />
-                <div className="flex flex-1 flex-col gap-4 p-4 pb-6">
-                    {children}
-                </div>
-            </SidebarInset>
-        </SidebarProvider>
+                <SidebarInset>
+                    <Header />
+                    <div className="flex flex-1 flex-col gap-4 p-4 pb-6">
+                        {children}
+                    </div>
+                </SidebarInset>
+            </SidebarProvider>
+        </QueryClientProvider>
     )
 })
 
@@ -237,9 +241,9 @@ const SkeletonMenuGroup = () => {
                 </SidebarGroupLabel>
                 <SidebarMenu>
                     {
-                        Array.from([16, 24, 20]).map((el, idx) => (
+                        Array.from({ length: 3 }).map((el, idx) => (
                             <SidebarMenuItem key={idx}>
-                                <Skeleton className={cn("h-4 ml-2", `w-${el}`)} />
+                                <Skeleton className={cn("w-24 h-4 ml-2")} />
                             </SidebarMenuItem>
                         ))
                     }
@@ -317,38 +321,36 @@ const RenderMenus = () => {
     const { data } = useSession();
     const [filter, setFilter] = React.useState<menuType[][]>();
     const [menus, setMenus] = React.useState<menuType[][]>([]);
-    const [groups, setGroups] = React.useState<IGroups[]>();
-    const [loading, setLoading] = React.useState<boolean>(false);
 
-    React.useEffect(() => {
-        setLoading(true)
-        const getGroups = async () => {
-            try {
-                const response = await fetch('/api/master/group').then((res) => res.json());
-                if (response.success) {
-                    const data = response.data.map((item: any) => { return { label: item.name, id: item.id } });
-                    data && setGroups(data)
-                }
-            } catch (error) {
-                console.error(error)
-            } finally {
-                setLoading(false)
-            }
+    // Define your API call function
+    const fetchGroups = async () => {
+        const response = await fetch('/api/master/group');
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
         }
-        getGroups();
-    }, []);
+        const data = await response.json();
+        if (data.success) {
+            return data.data.map((item: any) => ({ label: item.name, id: item.id })) as IGroups[]
+        }
+        throw new Error('Failed to fetch groups');
+    };
+
+    const { data: groups, isLoading, isError, error } = useQuery({ queryKey: ['groups'], queryFn: fetchGroups });
+
+    if (isError) {
+        console.log('isError', error.message)
+    }
 
     React.useEffect(() => {
-
-        if (data && groups) {
+        if (data) {
             const serverMenuData = data?.user?.modules;
             const userPermissions = data?.user?.permissions;
 
             const filteredMenuData = transformMenuData(serverMenuData, userPermissions);
 
-            const userMenus = groups && groups.map((item) => filteredMenuData
-                .filter((menu) => menu.label.toLowerCase() === item.label.toLowerCase()))
-                .filter((menuGroup) => menuGroup.length > 0);
+            const userMenus = groups?.map((item) => filteredMenuData
+                .filter((menu) => menu.label?.toLowerCase() === item.label?.toLowerCase()))
+                .filter((menuGroup) => menuGroup?.length > 0);
 
             if (userMenus) {
                 setFilter(userMenus);
@@ -357,11 +359,7 @@ const RenderMenus = () => {
         }
     }, [data]);
 
-    const form = useForm({
-        defaultValues: {
-            query: ""
-        }
-    });
+    const form = useForm({ defaultValues: { query: "" } });
 
     const query = form.watch('query');
 
@@ -426,9 +424,9 @@ const RenderMenus = () => {
                 />
             </SidebarGroup>
 
-            {!loading && !filter && <DashboardMenu />}
+            {!isLoading && !filter && <DashboardMenu />}
             {
-                !loading && filter?.map((data, index) => (
+                !isLoading && filter?.map((data, index) => (
                     <SidebarGroup key={index}>
                         <SidebarGroupLabel>{data.at(0)?.label}</SidebarGroupLabel>
                         <SidebarMenu>
@@ -439,7 +437,8 @@ const RenderMenus = () => {
                     </SidebarGroup>
                 ))
             }
-            {loading && <SkeletonMenuGroup />}
+
+            {isLoading && <SkeletonMenuGroup />}
 
         </>
     )

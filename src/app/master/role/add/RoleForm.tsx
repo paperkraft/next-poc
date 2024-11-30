@@ -72,61 +72,51 @@ export default function RoleForm() {
   };
 
   return (
-    <div className="space-y-8 p-2">
-      <TitlePage title="Create Role" description="Define a new role">
-        <div>
-          <Button className="size-7" variant={"outline"} size={"sm"} onClick={()=> route.back()}>
-            <ArrowLeft className="size-5" />
-          </Button>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 p-2">
+        <InputController
+          name="name"
+          label="Role"
+          placeholder="Enter role"
+          description="This role will get added."
+          reset
+        />
+
+        <div className="flex flex-col gap-2">
+          <FormLabel>Permissions</FormLabel>
+          <div className="grid md:grid-cols-4">
+            {bitmask.map((item, index) => (
+              <FormField
+                key={index}
+                name={`permissions.${index}.bitmask`}
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem className="flex items-center">
+                    <FormLabel className="mr-2 mt-2">{item.name}</FormLabel>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormItem>
+                )}
+              />
+            ))}
+          </div>
         </div>
-      </TitlePage>
-
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 p-2">
-          <InputController
-            name="name"
-            label="Role"
-            placeholder="Enter role"
-            description="This role will get added."
-            reset
-          />
-
-          <div className="flex flex-col gap-2">
-            <FormLabel>Permissions</FormLabel>
-            <div className="grid md:grid-cols-4">
-              {bitmask.map((item, index) => (
-                <FormField
-                  key={index}
-                  name={`permissions.${index}.bitmask`}
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem className="flex items-center">
-                      <FormLabel className="mr-2 mt-2">{item.name}</FormLabel>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormItem>
-                  )}
-                />
-              ))}
-            </div>
-          </div>
-          <div className="flex justify-end my-4 gap-2">
-            <Button
-              variant={"outline"}
-              onClick={(e) => {
-                e.preventDefault();
-                form.reset();
-              }}
-            >
-              Reset
-            </Button>
-            <Button type="submit">Submit</Button>
-          </div>
-        </form>
-      </Form>
-    </div>
+        <div className="flex justify-end my-4 gap-2">
+          <Button
+            variant={"outline"}
+            onClick={(e) => {
+              e.preventDefault();
+              form.reset();
+            }}
+          >
+            Reset
+          </Button>
+          <Button type="submit">Submit</Button>
+        </div>
+      </form>
+    </Form>
   );
 }
 

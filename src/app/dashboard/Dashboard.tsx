@@ -5,11 +5,11 @@ import { Button } from "@/components/ui/button";
 import { useMounted } from "@/hooks/use-mounted";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { memo, useEffect, useState } from "react";
  
 const Dashboard = memo(() => {
   const [open, setOpen] = useState(false);
-
   const mounted = useMounted();
   const { data: session } = useSession();
   const user = session && session?.user;

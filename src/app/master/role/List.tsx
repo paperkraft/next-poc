@@ -60,4 +60,4 @@ const RoleList = memo(({data}:{data:RoleType[]}) => {
 
 RoleList.displayName = "RoleList";
 
-export default  RoleList
+export default RoleList;

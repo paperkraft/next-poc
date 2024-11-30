@@ -1,28 +1,63 @@
+'use client'
 import { Separator } from "@/components/ui/separator"
-import { ReactNode } from "react"
+import { memo, ReactNode } from "react"
 import { Button } from "../ui/button"
-import { ArrowLeft, Edit, Edit2, Trash2 } from "lucide-react"
+import { ArrowLeft, Plus } from "lucide-react"
+import Link from "next/link"
+import { usePathname, useRouter } from "next/navigation"
+import { Guard } from "./permission-guard"
 
 type Props = {
     title: string
     description?: string
     children?: ReactNode
+    listPage?: boolean
+    createPage?: boolean
+    viewPage?: boolean
+    moduleId?: string
 }
 
-export default function TitlePage({ title, description, children }: Props) {
+const TitlePage = memo(({ title, description, children, createPage, listPage, viewPage, moduleId }: Props) => {
+    const path = usePathname();
+    const route = useRouter();
     return (
         <div className="flex flex-col gap-4">
             <div className="flex items-center">
                 <div className="space-y-0.5">
                     <h1 className="text-lg font-semibold">{title}</h1>
-                    { description && <p className="text-sm text-muted-foreground">{description}</p> }
+                    {description && <p className="text-sm text-muted-foreground">{description}</p>}
                 </div>
-                <div className="ml-auto">
-                    {children}
+
+                <div className="ml-auto flex gap-2">
+                    {listPage && (
+                        <div>
+                            <Guard permissionBit={4} moduleId={moduleId as string}>
+                                <Button className="size-7" variant={"outline"} size={"sm"} asChild>
+                                    <Link href={`${path}/add`}>
+                                        <Plus className="size-5" />
+                                    </Link>
+                                </Button>
+                            </Guard>
+                        </div>
+                    )}
+
+                    {(createPage || viewPage) && (
+                        <div>
+                            <Button className="size-7" variant={"outline"} size={"sm"} onClick={() => route.back()}>
+                                <ArrowLeft className="size-5" />
+                            </Button>
+                        </div>
+                    )}
+
+                    {viewPage && children}
+
+                    {!listPage && !createPage && !viewPage && children}
                 </div>
             </div>
             <Separator />
         </div>
     )
-}
+})
 
+TitlePage.displayName = "TitlePage";
+export default TitlePage;

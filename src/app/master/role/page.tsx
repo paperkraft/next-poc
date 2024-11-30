@@ -1,12 +1,13 @@
 import prisma from "@/lib/prisma";
 import TitlePage from "@/components/custom/page-heading";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import Link from "next/link";
 import RoleList from "./List";
+import NoRecordPage from "@/components/custom/no-record";
+import useModuleIdByName from "@/hooks/use-module-id";
+import { IModule } from "../module/ModuleInterface";
+import { auth } from "@/auth";
+import { findModuleId } from "@/utils/helper";
 
-export default async function Page() {
-
+export async function fetchRoles() {
   try {
     const roles = await prisma.role.findMany({
       select: {
@@ -15,24 +16,26 @@ export default async function Page() {
         permissions: true,
       },
     });
-  
-    return (
-      <div className="space-y-8 p-2">
-        <TitlePage title="Roles" description="List of all roles">
-          <div className="flex gap-2">
-            <Button className="size-7" variant={"outline"} size={"sm"} asChild>
-              <Link href={"/master/role/add"}>
-                <Plus className="size-5" />
-              </Link>
-            </Button>
-          </div>
-        </TitlePage>
-        {roles && <RoleList data={roles} />}
-        {!roles && <>No role created</>}
-      </div>
-    );
+    return roles;
   } catch (error) {
-    console.error(error);
-    return <>Failed to fetch data...</>
+    console.error("Error fetching roles:", error);
+    return null;
   }
+}
+
+export default async function Page() {
+  const roles = await fetchRoles();
+  const session = await auth();
+  const moduleId = findModuleId( session?.user.modules, "Role") as string;
+
+  return (
+    <div className="space-y-4 p-2">
+      <TitlePage title="Role" description="List of all roles" listPage moduleId={moduleId}/>
+      {roles && roles.length > 0 ? (
+        <RoleList data={roles} />
+      ) : (
+        <NoRecordPage text={"role"}/>
+      )}
+    </div>
+  );
 }

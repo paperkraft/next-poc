@@ -1,19 +1,30 @@
 import prisma from "@/lib/prisma";
 import EditGroup from "./EditGroup";
+import NoRecordPage from "@/components/custom/no-record";
 
-export default async function Page({ params }: { params: { id: string } }) {
-    const { id } = params;
-  
-    const role = await prisma.group.findUnique({
+async function fetchUniqueGroup(id: string) {
+  try {
+    const group = await prisma.group.findUnique({
       where: { id: id },
       select: {
         id: true,
         name: true,
       },
     });
-  
-    if (!role) {
-      return <>No group found</>;
-    }
-    return role && <EditGroup data={role} />;
+    return group;
+  } catch (error) {
+    console.error("Error fetching group:", error);
+    return null;
   }
+}
+
+export default async function Page({ params }: { params: { id: string } }) {
+  const { id } = params;
+  const group = await fetchUniqueGroup(id);
+
+  return (group ? (
+    <EditGroup data={group} />
+  ) : (
+    <NoRecordPage text={"group"} />
+  ));
+}

@@ -25,6 +25,7 @@ const useModuleIdByName = (moduleName: string): string | null => {
     }
     return null;
   };
+  
   return findModuleId(session && session.user.modules);
 };
 

@@ -1,8 +1,9 @@
 import AccessPage from "./AccessForm";
 import TitlePage from "@/components/custom/page-heading";
 import { Metadata } from "next";
-import prisma from "@/lib/prisma";
 import { getModulesWithSubmodules } from "@/lib/prisma-utils";
+import NoRecordPage from "@/components/custom/no-record";
+import { fetchRoles } from "@/app/master/role/page";
 
 export const metadata: Metadata = {
     title: "Access Control",
@@ -10,28 +11,17 @@ export const metadata: Metadata = {
 };
 
 export default async function Page() {
-    
-    try {
-        const modules = await getModulesWithSubmodules();
-        const roles = await prisma.role.findMany({
-            select: { id: true, name: true, permissions: true }
-        });
+    const modules = await getModulesWithSubmodules();
+    const roles = await fetchRoles();
 
-        if (!modules) {
-            return <>Failed to fetch data Modules</>
-        }
-    
-        if (!roles) {
-            return <>Failed to fetch data Roles</>
-        }
-        return (
-            <>
-                <TitlePage title="Role Based Access Control" description="Define role based module access" />
-                {modules && <AccessPage roles={roles} modules={modules as any} />}
-            </>
-        )
-    } catch (error) {
-        console.error(error);
-        return <>Failed to fetch data...</>
-    }
+    return (
+        <div className="space-y-8 p-2">
+            <TitlePage title="Role Based Access Control" description="Define role based module access" createPage />
+            {roles && modules ? (
+                <AccessPage roles={roles} modules={modules as any} />
+            ) : (
+                <NoRecordPage text={"access"} />
+            )}
+        </div>
+    );
 }

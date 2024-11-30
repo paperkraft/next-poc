@@ -7,8 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Switch } from "@/components/ui/switch";
 import { useRouter } from "next/navigation";
 import TitlePage from "@/components/custom/page-heading";
-import { ArrowLeft, Edit, Plus, Trash2 } from "lucide-react";
-import { useParams } from "next/navigation";
+import { Edit, Trash2 } from "lucide-react";
 import {
   bitmask,
   calculateBitmask,
@@ -17,9 +16,10 @@ import {
   RoleFormValues,
 } from "../add/RoleForm";
 import { useEffect, useState } from "react";
-import Loading from "@/app/loading";
 import DialogBox from "@/components/custom/dialog-box";
 import { toast } from "sonner";
+import useModuleIdByName from "@/hooks/use-module-id";
+import { Guard } from "@/components/custom/permission-guard";
 
 type Role = {
   id: string;
@@ -33,17 +33,18 @@ type Bitmask = {
 };
 
 export default function RoleEdit({ data }: { data: Role }) {
+  const { id } = data
   const route = useRouter();
+  const moduleId = useModuleIdByName("Role") as string;
+
   const [open, setOpen] = useState(false);
   const [show, setShow] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [permissions, setPermission] = useState<Bitmask[]>();
-  const { id } = useParams();
 
   const form = useForm<RoleFormValues>({
     resolver: zodResolver(roleFormSchema),
     defaultValues: {
-      name: "",
+      name: data.name || "",
       permissions: [
         { name: "VIEW", bitmask: false },
         { name: "EDIT", bitmask: false },
@@ -54,14 +55,9 @@ export default function RoleEdit({ data }: { data: Role }) {
   });
 
   useEffect(() => {
-    setLoading(true);
-    if (data) {
-      const permission = reverseBitmask(data.permissions);
-      form.setValue("name", data.name);
-      form.setValue("permissions", permission);
-      setPermission(permission);
-      setLoading(false);
-    }
+    const permission = reverseBitmask(data.permissions);
+    form.setValue("permissions", permission);
+    setPermission(permission);
   }, []);
 
   const onSubmit = async (data: RoleFormValues) => {
@@ -70,33 +66,45 @@ export default function RoleEdit({ data }: { data: Role }) {
       permissions: calculateBitmask(data.permissions),
     };
 
-    const res = await fetch(`/api/master/role/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(final),
-    });
+    try {
+      const res = await fetch(`/api/master/role/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(final),
+      });
 
-    if (res.status === 200) {
-      toast.success('Role updated');
-      route.refresh();
-    } else {
-      toast.error('Failed to update role');
+      if (res.status === 200) {
+        toast.success('Role updated');
+        route.refresh();
+      } else {
+        toast.error('Failed to update role');
+      }
+
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to update role. Please try again later.");
     }
+
   };
 
   const handleDelete = async (id: string) => {
-    
-    const res = await fetch("/api/master/role", {
-      method: "DELETE",
-      body: JSON.stringify({ id }),
-    });
+    try {
+      const res = await fetch("/api/master/role", {
+        method: "DELETE",
+        body: JSON.stringify({ id }),
+      });
 
-    if (res.status === 200) {
+      if (res.status === 200) {
+        handleClose();
+        toast.success('Role deleted');
+        route.push('.');
+      } else {
+        toast.error('Failed to delete role');
+        handleClose();
+      }
+    } catch (error) {
+      toast.error("Failed to delete role. Please try again later.");
       handleClose();
-      toast.success('Role deleted');
-      route.push('.');
-    } else {
-      toast.error('Failed to delete role');
-      handleClose();
+      console.error(error);
     }
   };
 
@@ -106,41 +114,23 @@ export default function RoleEdit({ data }: { data: Role }) {
 
   return (
     <>
-      <div className="space-y-8 p-2">
-        <TitlePage title="Role" description={show ? "Update role and permissions": "View role and permissions"}>
-          <div className="flex gap-2">
-            <Button
-              className="size-7"
-              variant={"outline"}
-              size={"sm"}
-              onClick={() => route.back()}
-            >
-              <ArrowLeft className="size-5" />
-            </Button>
-            {!show && (
-              <>
-                <Button
-                  className="size-7"
-                  variant={"outline"}
-                  size={"sm"}
-                  onClick={() => setShow(true)}
-                >
+      <div className="space-y-4 p-2">
+        <TitlePage title="Role" description={show ? "Update role and permissions" : "View role and permissions"} viewPage>
+          {!show && (
+            <>
+              <Guard permissionBit={2} moduleId={moduleId}>
+                <Button className="size-7" variant={"outline"} size={"sm"} onClick={() => setShow(true)}>
                   <Edit className="size-5" />
                 </Button>
-                <Button
-                  className="size-7"
-                  variant={"outline"}
-                  size={"sm"}
-                  onClick={()=> setOpen(true)}
-                >
+              </Guard>
+              <Guard permissionBit={8} moduleId={moduleId}>
+                <Button className="size-7" variant={"outline"} size={"sm"} onClick={() => setOpen(true)}>
                   <Trash2 className="size-5 text-red-500" />
                 </Button>
-              </>
-            )}
-          </div>
+              </Guard>
+            </>
+          )}
         </TitlePage>
-
-        {loading && <Loading />}
 
         {!show && permissions && (
           <div>
@@ -204,14 +194,14 @@ export default function RoleEdit({ data }: { data: Role }) {
         )}
       </div>
 
-      { open && 
+      {open && (
         <DialogBox open={open} title={"Delete Confirmation"} preventClose setClose={handleClose}>
           <h1>Are you sure? Do you want to delete role {data.name}</h1>
           <div className="flex justify-end">
-            <Button onClick={()=>handleDelete(id as string)} variant={'destructive'}>Confirm</Button>
+            <Button onClick={() => handleDelete(id as string)} variant={'destructive'}>Confirm</Button>
           </div>
         </DialogBox>
-      }
+      )}
     </>
   );
 }

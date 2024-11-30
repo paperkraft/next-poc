@@ -1,10 +1,10 @@
 import prisma from "@/lib/prisma";
 import TitlePage from "@/components/custom/page-heading";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import Link from "next/link";
 import ModuleList from "./ModuleList";
 import { IModule } from "./ModuleInterface";
+import NoRecordPage from "@/components/custom/no-record";
+import { auth } from "@/auth";
+import { findModuleId } from "@/utils/helper";
 
 interface IGroup {
   id: string,
@@ -19,12 +19,11 @@ interface InputFormat {
   subModules: InputFormat[] | null
 }
 
-export default async function Page() {
-
+async function fetchModules() {
   try {
     const modules = await prisma.module.findMany({
       include: {
-        group:true,
+        group: true,
         subModules: {
           include: {
             subModules: {
@@ -40,27 +39,10 @@ export default async function Page() {
     const formattedModules = modules.map((module) => formatModule(module as any));
     const submoduleIds = new Set(formattedModules.flatMap((module) => module.subModules.map((subModule) => subModule.id)));
     const finalModules = formattedModules.filter((module) => !submoduleIds.has(module.id));
-
-    // return finalModules;
-
-    return (
-      <div className="space-y-8 p-2">
-        <TitlePage title="Module List" description="List of all module and submodule">
-          <div className="flex gap-2">
-            <Button className="size-7" variant={"outline"} size={"sm"} asChild>
-              <Link href={'/master/module/add'}>
-                <Plus className="size-5" />
-              </Link>
-            </Button>
-          </div>
-        </TitlePage>
-        {!finalModules && <>No data found...</>}
-        {finalModules && <ModuleList data={finalModules} />}
-      </div>
-    )
+    return finalModules;
   } catch (error) {
-    console.error(error);
-    return <>Failed to fetch data...</>
+    console.error("Error fetching modules:", error);
+    return null;
   }
 }
 
@@ -74,4 +56,20 @@ function formatModule(module: InputFormat): IModule {
     permissions: null,
     subModules: (module.subModules || []).map((subModule) => formatModule(subModule)),
   };
+}
+
+export default async function Page() {
+  const modules = await fetchModules();
+  const session = await auth();
+  const moduleId = findModuleId( session?.user.modules, "Role") as string;
+  return (
+    <div className="space-y-4 p-2">
+      <TitlePage title="Module List" description="List of all module and submodule" listPage moduleId={moduleId}/>
+      {modules && modules.length > 0 ? (
+        <ModuleList data={modules} />
+      ) : (
+        <NoRecordPage text={"module"} />
+      )}
+    </div>
+  )
 }

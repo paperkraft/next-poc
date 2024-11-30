@@ -43,7 +43,7 @@ export const data = [
         submenu: [],
     },
     {
-        label: "Master",
+        label: "Module",
         title: "Student",
         url: "/student",
         icon: GraduationCapIcon,
@@ -75,7 +75,7 @@ export const data = [
         submenu: [],
     },
     {
-        label: "Master",
+        label: "Module",
         title: "Academics",
         url: "#",
         icon: Book,

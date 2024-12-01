@@ -1,4 +1,3 @@
-import { fetchUniqueGroup } from "@/app/action/group.action";
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -40,7 +39,6 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
 }
 
-
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
     const { id } = params;
     if (!id) {
@@ -50,11 +48,23 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         );
     }
     try {
-        const res = await fetchUniqueGroup(id).then((d)=>d.json());
+        const data = await prisma.group.findUnique({
+            where: { id: id },
+            select: { id: true, name: true },
+        });
+
+        if (!data) {
+            return NextResponse.json(
+                { success: false, message: 'Not Found', data: null },
+                { status: 404 }
+            );
+        }
+
         return NextResponse.json(
-            { success: true, message: "Group", data: res.data },
+            { success: true, message: 'Success', data },
             { status: 200 }
         );
+
     } catch (error) {
         console.error(error);
         return NextResponse.json(

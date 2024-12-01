@@ -8,12 +8,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import TitlePage from "@/components/custom/page-heading";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Edit, Trash2 } from "lucide-react";
 import DialogBox from "@/components/custom/dialog-box";
 import useModuleIdByName from "@/hooks/use-module-id";
 import { Guard } from "@/components/custom/permission-guard";
 import { IGroup } from "@/app/_Interface/Group";
+import ButtonContent from "@/components/custom/button-content";
 
 const groupSchema = z.object({
     name: z.string().trim().min(1, { message: "Enter group" }),
@@ -21,55 +22,75 @@ const groupSchema = z.object({
 
 type FormValues = z.infer<typeof groupSchema>;
 
-export default function EditGroup({ data }: { data: IGroup }) {
-    const { id } = data
-    const route = useRouter();
+export default function EditGroup({ id }: { id: string }) {
+    const router = useRouter();
     const moduleId = useModuleIdByName("Groups") as string;
 
     const [open, setOpen] = useState(false);
     const [show, setShow] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [data, setData] = useState<IGroup>();
 
     const form = useForm<FormValues>({
         resolver: zodResolver(groupSchema),
         defaultValues: {
-            name: data.name || ""
+            name: data?.name || ""
         },
     });
 
+    useEffect(() => {
+        const fetchData = async (id: string) => {
+            try {
+                const res = await fetch(`/api/master/group/${id}`).then((d) => d.json());
+                const data = res.data
+                if (res.success && data) {
+                    setData(data);
+                    form.setValue("name", data.name);
+                } else {
+                    toast.error(res.message)
+                }
+            } catch (error) {
+                console.error("Failed to fetch data", error)
+                toast.error("Something went wrong. Please try again later.");
+            }
+        }
+        fetchData(id)
+    }, [id]);
+
     const onSubmit = async (data: FormValues) => {
+        setLoading(true);
         try {
             const res = await fetch(`/api/master/group/${id}`, {
                 method: "PUT",
                 body: JSON.stringify(data)
             }).then((d) => d.json());
-    
+
             if (res.success) {
                 toast.success(res.message);
-                route.push('.')
+                router.push('.');
             } else {
                 toast.error(res.message);
             }
-            
         } catch (error) {
             console.error(error);
             toast.error("Failed to update group. Please try again later.");
         } finally {
-            route.push('.')
+            router.refresh();
+            setLoading(false);
         }
     }
 
     const handleDelete = async (id: string) => {
-
         try {
             const res = await fetch("/api/master/group", {
                 method: "DELETE",
                 body: JSON.stringify({ id }),
             }).then((d) => d.json())
-    
+
             if (res.success) {
                 handleClose();
                 toast.success('Group deleted');
-                route.push('.');
+                router.push('.');
             } else {
                 toast.error(res.message);
                 handleClose();
@@ -79,7 +100,7 @@ export default function EditGroup({ data }: { data: IGroup }) {
             console.error(error);
         } finally {
             handleClose();
-            route.push('.');
+            router.refresh();
         }
     };
 
@@ -90,7 +111,7 @@ export default function EditGroup({ data }: { data: IGroup }) {
     return (
         <>
             <div className="space-y-4 p-2">
-                <TitlePage title="Group" description={show ? "Update group" : "View group"} viewPage>
+                <TitlePage title="Group" description={show ? "Modifcation" : "Overview"} viewPage>
                     {!show && (
                         <>
                             <Guard permissionBit={2} moduleId={moduleId}>
@@ -108,20 +129,23 @@ export default function EditGroup({ data }: { data: IGroup }) {
                 </TitlePage>
 
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 p-2">
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 p-2">
                         <InputController
                             name="name"
-                            label="Group"
+                            label="Name"
                             placeholder="Enter group"
-                            description="This group will get updated."
-                            reset
+                            description={show ? "This change will get updated" : "To update click pencil button above right corner"}
+                            reset={show}
+                            readOnly={!show}
                         />
                         {show && (
-                            <div className="flex justify-end my-4 gap-2">
-                                <Button variant={"outline"} onClick={(e) => { e.preventDefault(); form.reset() }}>
-                                    Reset
+                            <div className="flex justify-end gap-2">
+                                <Button type="button" variant={"outline"} onClick={() => router.back()}>
+                                    Cancel
                                 </Button>
-                                <Button type="submit">Submit</Button>
+                                <Button type="submit" disabled={loading}>
+                                    <ButtonContent status={loading} text={"Update"}/>
+                                </Button>
                             </div>
                         )}
                     </form>
@@ -130,9 +154,9 @@ export default function EditGroup({ data }: { data: IGroup }) {
 
             {open && (
                 <DialogBox open={open} title={"Delete Confirmation"} preventClose setClose={handleClose}>
-                    <h1>Are you sure? Do you want to delete group : {data.name}</h1>
+                    <h1>Are you sure? Do you want to delete group : {data?.name}</h1>
                     <div className="flex justify-end">
-                        <Button onClick={() => handleDelete(id as string)} variant={'destructive'}>Confirm</Button>
+                        <Button onClick={() => handleDelete(id)} variant={'destructive'}>Confirm</Button>
                     </div>
                 </DialogBox>
             )}

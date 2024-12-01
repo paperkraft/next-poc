@@ -31,7 +31,13 @@ export async function fetchUniqueGroup(id: string) {
             where: { id: id },
             select: { id: true, name: true },
         });
-        // return group;
+
+        if(!group){
+            return NextResponse.json(
+                { success: false, message: 'No Record', data: null },
+                { status: 404 }
+            );
+        }
         return NextResponse.json(
             { success: true, message: 'Success', data: group },
             { status: 200 }

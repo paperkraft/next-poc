@@ -7,6 +7,8 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useState } from "react";
+import ButtonContent from "@/components/custom/button-content";
 
 const groupSchema = z.object({
     name: z.string().trim().min(1, { message: "Enter group" }),
@@ -16,7 +18,8 @@ type FormValues = z.infer<typeof groupSchema>;
 
 export default function GroupForm() {
 
-    const route = useRouter();
+    const router = useRouter();
+    const [loading, setLoading] = useState(false);
 
     const form = useForm<FormValues>({
         resolver: zodResolver(groupSchema),
@@ -26,6 +29,7 @@ export default function GroupForm() {
     });
 
     const onSubmit = async (data: FormValues) => {
+        setLoading(true);
         try {
             const res = await fetch('/api/master/group', {
                 method: "POST",
@@ -34,7 +38,7 @@ export default function GroupForm() {
     
             if (res.success) {
                 toast.success(res.message);
-                route.push('.')
+                router.push('.')
             } else {
                 toast.error(res.message);
             }
@@ -42,26 +46,29 @@ export default function GroupForm() {
             console.error(error);
             toast.error("Failed to create group. Please try again later.");
         } finally {
-            route.push('.')
+            router.refresh();
+            setLoading(false);
         }
     }
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 p-2">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 p-2">
                 <InputController
                     name="name"
-                    label="Group"
+                    label="Name"
                     placeholder="Enter group"
                     description="This group will get added."
                     reset
                 />
 
-                <div className="flex justify-end my-4 gap-2">
+                <div className="flex justify-end gap-2">
                     <Button variant={"outline"} onClick={(e) => { e.preventDefault(); form.reset() }}>
                         Reset
                     </Button>
-                    <Button type="submit">Submit</Button>
+                    <Button type="submit" disabled={loading}>
+                        <ButtonContent status={loading} text={"Create"}/>
+                    </Button>
                 </div>
             </form>
         </Form>

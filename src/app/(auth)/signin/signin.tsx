@@ -14,8 +14,6 @@ import { signIn } from "next-auth/react";
 import { RECAPTCHA_SITE_KEY } from "@/utils/constants";
 import { InputController } from "@/components/custom/form.control/InputController";
 import Divider from "@/components/custom/divider";
-import { getAuthenticationOptions } from "@/app/action/webauth.action";
-import { startAuthentication } from "@simplewebauthn/browser";
 
 const signInSchema = z.object({
   email: z

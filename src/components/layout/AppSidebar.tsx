@@ -62,13 +62,11 @@ import { FormField } from "@/components/ui/form"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Skeleton } from "../ui/skeleton"
 import { useQuery, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { IOption } from "@/app/_Interface/Module"
+import { IGroup } from "@/app/_Interface/Group"
+import { toast } from "sonner"
 
-interface IGroups {
-    id: string;
-    label: string;
-}
-
-const AppSidebar = React.memo(({ children }: ChildProps) => {
+const AppSidebar = ({ children }: ChildProps) => {
     const queryClient = new QueryClient();
     return (
         <QueryClientProvider client={queryClient}>
@@ -97,7 +95,7 @@ const AppSidebar = React.memo(({ children }: ChildProps) => {
             </SidebarProvider>
         </QueryClientProvider>
     )
-})
+}
 
 const HeaderMenuOptions = () => {
     return (
@@ -241,9 +239,9 @@ const SkeletonMenuGroup = () => {
                 </SidebarGroupLabel>
                 <SidebarMenu>
                     {
-                        Array.from({ length: 3 }).map((el, idx) => (
+                        Array.from([80, 100, 90].sort(() => Math.random() - 0.5)).map((el, idx) => (
                             <SidebarMenuItem key={idx}>
-                                <Skeleton className={cn("w-24 h-4 ml-2")} />
+                                <Skeleton className={cn("w-24 h-5 ml-2 my-1")} style={{width:`${el}px`}}/>
                             </SidebarMenuItem>
                         ))
                     }
@@ -321,41 +319,40 @@ const RenderMenus = () => {
     const { data } = useSession();
     const [filter, setFilter] = React.useState<menuType[][]>();
     const [menus, setMenus] = React.useState<menuType[][]>([]);
-
-    // Define your API call function
-    const fetchGroups = async () => {
-        const response = await fetch('/api/master/group');
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        const data = await response.json();
-        if (data.success) {
-            return data.data.map((item: any) => ({ label: item.name, id: item.id })) as IGroups[]
-        }
-        throw new Error('Failed to fetch groups');
-    };
-
-    const { data: groups, isLoading, isError, error } = useQuery({ queryKey: ['groups'], queryFn: fetchGroups });
-
-    if (isError) {
-        console.log('isError', error.message)
-    }
+    const [loading, setLoading] = React.useState<boolean>(false);
 
     React.useEffect(() => {
-        if (data) {
-            const serverMenuData = data?.user?.modules;
-            const userPermissions = data?.user?.permissions;
+        setLoading(true);
 
-            const filteredMenuData = transformMenuData(serverMenuData, userPermissions);
-
-            const userMenus = groups?.map((item) => filteredMenuData
-                .filter((menu) => menu.label?.toLowerCase() === item.label?.toLowerCase()))
-                .filter((menuGroup) => menuGroup?.length > 0);
-
-            if (userMenus) {
-                setFilter(userMenus);
-                setMenus(userMenus);
+        const fetchGroups = async () => {
+            try {
+                const response = await fetch('/api/master/group').then((d)=>d.json());
+                if (response.success) {
+                    setLoading(false);
+    
+                    const groups:IGroup[] =  response.data;
+                    const serverMenuData = data?.user?.modules;
+                    const userPermissions = data?.user?.permissions;
+                    const filteredMenuData = transformMenuData(serverMenuData, userPermissions);
+                    const userMenus = groups?.map((item) => filteredMenuData
+                        .filter((menu) => menu.label?.toLowerCase() === item.name?.toLowerCase()))
+                        .filter((menuGroup) => menuGroup?.length > 0);
+    
+                    if (userMenus) {
+                        setFilter(userMenus);
+                        setMenus(userMenus);
+                    }
+                } else {
+                    toast.error("Error in fecting groups");
+                }  
+            } catch (error) {
+                console.error("Error in fecting groups", error);
+                toast.error("Error in fecting groups");
             }
+        };
+
+        if (data) {
+            fetchGroups()
         }
     }, [data]);
 
@@ -423,10 +420,13 @@ const RenderMenus = () => {
                     )}
                 />
             </SidebarGroup>
+            
+            {loading && !filter && <SkeletonMenuGroup />}
 
-            {!isLoading && !filter && <DashboardMenu />}
+            {!loading && !filter && <DashboardMenu />}
+
             {
-                !isLoading && filter?.map((data, index) => (
+                !loading && filter?.map((data, index) => (
                     <SidebarGroup key={index}>
                         <SidebarGroupLabel>{data.at(0)?.label}</SidebarGroupLabel>
                         <SidebarMenu>
@@ -437,14 +437,9 @@ const RenderMenus = () => {
                     </SidebarGroup>
                 ))
             }
-
-            {isLoading && <SkeletonMenuGroup />}
-
         </>
     )
 }
 
 NestedMenu.displayName = "NestedMenu";
-AppSidebar.displayName = "AppSidebar";
-
 export default AppSidebar;

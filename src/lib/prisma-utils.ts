@@ -38,22 +38,28 @@ export const createPermissions = async () => {
 
  
 export const getModulesByRole = async (roleId: string): Promise<FormattedModule[] | null> => {
-  const roleWithModules = await prisma.role.findUnique({
-    where: { id: roleId },
-    include: {
-      modulePermissions: {
-        include: {
-          module: true,
-          subModule: {
-            include: {
-              subModules: true
+
+  try {
+    const roleWithModules = await prisma.role.findUnique({
+      where: { id: roleId },
+      include: {
+        modulePermissions: {
+          include: {
+            module: true,
+            subModule: {
+              include: {
+                subModules: true
+              }
             }
           }
         }
-      }
-    },
-  });
-  return roleWithModules && formatModules(roleWithModules?.modulePermissions);
+      },
+    });
+    return roleWithModules && formatModules(roleWithModules?.modulePermissions);
+  } catch (error) {
+    console.error('Error fetching modules with submodules:', error);
+    throw new Error('Failed to fetch modules with submodules');
+  }
 }
 
 function formatModules(data: InputFormat[]): FormattedModule[] {

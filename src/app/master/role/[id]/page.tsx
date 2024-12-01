@@ -1,31 +1,14 @@
-import prisma from "@/lib/prisma";
 import RoleEdit from "./RoleEdit";
-import NoRecordPage from "@/components/custom/no-record";
-
-async function fetchUniqueRoles(id: string) {
-  try {
-    const role = await prisma.role.findUnique({
-      where: { id: id },
-      select: {
-        id: true,
-        name: true,
-        permissions: true,
-      },
-    });
-    return role;
-  } catch (error) {
-    console.error("Error fetching role:", error);
-    return null;
-  }
-}
+import { fetchUniqueRoles } from "@/app/action/role.action";
+import SomethingWentWrong from "@/components/custom/somthing-wrong";
 
 export default async function Page({ params }: { params: { id: string } }) {
   const { id } = params;
-  const role = await fetchUniqueRoles(id);
+  const role = await fetchUniqueRoles(id).then((d)=>d.json());
 
-  return (role ? (
-    <RoleEdit data={role} />
+  return (role.success ? (
+    <RoleEdit data={role.data} />
   ) : (
-    <NoRecordPage text={"role"} />
+    <SomethingWentWrong message={role.message} />
   ));
 }

@@ -1,13 +1,11 @@
 'use client';
-import { Form, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { Form } from "@/components/ui/form";
 import { InputController } from "@/components/custom/form.control/InputController";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import TitlePage from "@/components/custom/page-heading";
-import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 const groupSchema = z.object({
@@ -28,16 +26,23 @@ export default function GroupForm() {
     });
 
     const onSubmit = async (data: FormValues) => {
-        const res = await fetch('/api/master/group', {
-            method: "POST",
-            body: JSON.stringify(data)
-        }).then((d) => d.json());
-
-        if (res.success) {
-            toast.success(res.message);
+        try {
+            const res = await fetch('/api/master/group', {
+                method: "POST",
+                body: JSON.stringify(data)
+            }).then((d) => d.json());
+    
+            if (res.success) {
+                toast.success(res.message);
+                route.push('.')
+            } else {
+                toast.error(res.message);
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to create group. Please try again later.");
+        } finally {
             route.push('.')
-        } else {
-            toast.error(res.message);
         }
     }
 

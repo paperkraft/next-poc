@@ -20,6 +20,7 @@ import DialogBox from "@/components/custom/dialog-box";
 import { toast } from "sonner";
 import useModuleIdByName from "@/hooks/use-module-id";
 import { Guard } from "@/components/custom/permission-guard";
+import { SwitchButton } from "@/components/custom/form.control/SwitchButton";
 
 type Role = {
   id: string;
@@ -37,28 +38,18 @@ export default function RoleEdit({ data }: { data: Role }) {
   const route = useRouter();
   const moduleId = useModuleIdByName("Role") as string;
 
+  const permissions = reverseBitmask(data.permissions);
+
   const [open, setOpen] = useState(false);
   const [show, setShow] = useState(false);
-  const [permissions, setPermission] = useState<Bitmask[]>();
 
   const form = useForm<RoleFormValues>({
     resolver: zodResolver(roleFormSchema),
     defaultValues: {
       name: data.name || "",
-      permissions: [
-        { name: "VIEW", bitmask: false },
-        { name: "EDIT", bitmask: false },
-        { name: "CREATE", bitmask: false },
-        { name: "DELETE", bitmask: false },
-      ],
+      permissions: permissions
     },
   });
-
-  useEffect(() => {
-    const permission = reverseBitmask(data.permissions);
-    form.setValue("permissions", permission);
-    setPermission(permission);
-  }, []);
 
   const onSubmit = async (data: RoleFormValues) => {
     const final = {
@@ -78,12 +69,12 @@ export default function RoleEdit({ data }: { data: Role }) {
       } else {
         toast.error('Failed to update role');
       }
-
     } catch (error) {
       console.error(error);
       toast.error("Failed to update role. Please try again later.");
+    } finally {
+      route.refresh();
     }
-
   };
 
   const handleDelete = async (id: string) => {
@@ -103,8 +94,10 @@ export default function RoleEdit({ data }: { data: Role }) {
       }
     } catch (error) {
       toast.error("Failed to delete role. Please try again later.");
-      handleClose();
       console.error(error);
+    } finally {
+      handleClose();
+      route.push('.');
     }
   };
 
@@ -158,7 +151,7 @@ export default function RoleEdit({ data }: { data: Role }) {
                 name="name"
                 label="Role"
                 placeholder="Enter role"
-                description="This role will get added."
+                description="This role will get updated."
                 reset
               />
 
@@ -166,20 +159,7 @@ export default function RoleEdit({ data }: { data: Role }) {
                 <FormLabel>Permissions</FormLabel>
                 <div className="grid md:grid-cols-4">
                   {bitmask.map((item, index) => (
-                    <FormField
-                      key={index}
-                      name={`permissions.${index}.bitmask`}
-                      control={form.control}
-                      render={({ field }) => (
-                        <FormItem className="flex items-center">
-                          <FormLabel className="mr-2 mt-2">{item.name}</FormLabel>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormItem>
-                      )}
-                    />
+                    <SwitchButton key={index} name={`permissions.${index}.bitmask`} label={item.name} />
                   ))}
                 </div>
               </div>

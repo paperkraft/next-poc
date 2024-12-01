@@ -7,9 +7,8 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Switch } from "@/components/ui/switch";
 import { useRouter } from "next/navigation";
-import TitlePage from "@/components/custom/page-heading";
-import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { SwitchButton } from "@/components/custom/form.control/SwitchButton";
 
 export const bitmask = [
   { name: "VIEW", bitmask: 1 },
@@ -58,16 +57,23 @@ export default function RoleForm() {
       permissions: calculateBitmask(data.permissions),
     };
 
-    const res = await fetch("/api/master/role", {
-      method: "POST",
-      body: JSON.stringify(final),
-    });
+    try {
+      const res = await fetch("/api/master/role", {
+        method: "POST",
+        body: JSON.stringify(final),
+      });
 
-    if (res.status === 200) {
-      toast.success('Role created');
+      if (res.status === 200) {
+        toast.success('Role created');
+        route.push('.')
+      } else {
+        toast.error('Failed to create role');
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to create role. Please try again later.");
+    } finally {
       route.push('.')
-    } else {
-      toast.error('Failed to create role');
     }
   };
 
@@ -86,20 +92,7 @@ export default function RoleForm() {
           <FormLabel>Permissions</FormLabel>
           <div className="grid md:grid-cols-4">
             {bitmask.map((item, index) => (
-              <FormField
-                key={index}
-                name={`permissions.${index}.bitmask`}
-                control={form.control}
-                render={({ field }) => (
-                  <FormItem className="flex items-center">
-                    <FormLabel className="mr-2 mt-2">{item.name}</FormLabel>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormItem>
-                )}
-              />
+              <SwitchButton key={index} name={`permissions.${index}.bitmask`} label={item.name} />
             ))}
           </div>
         </div>

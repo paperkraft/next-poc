@@ -8,13 +8,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import TitlePage from "@/components/custom/page-heading";
 import { toast } from "sonner";
-import { IGroup } from "../page";
 import { useState } from "react";
-import Loading from "@/app/loading";
 import { Edit, Trash2 } from "lucide-react";
 import DialogBox from "@/components/custom/dialog-box";
 import useModuleIdByName from "@/hooks/use-module-id";
 import { Guard } from "@/components/custom/permission-guard";
+import { IGroup } from "@/app/_Interface/Group";
 
 const groupSchema = z.object({
     name: z.string().trim().min(1, { message: "Enter group" }),
@@ -54,6 +53,8 @@ export default function EditGroup({ data }: { data: IGroup }) {
         } catch (error) {
             console.error(error);
             toast.error("Failed to update group. Please try again later.");
+        } finally {
+            route.push('.')
         }
     }
 
@@ -75,8 +76,10 @@ export default function EditGroup({ data }: { data: IGroup }) {
             }
         } catch (error) {
             toast.error("Failed to delete group. Please try again later.");
-            handleClose();
             console.error(error);
+        } finally {
+            handleClose();
+            route.push('.');
         }
     };
 

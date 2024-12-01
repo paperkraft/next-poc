@@ -5,20 +5,21 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import TitlePage from "@/components/custom/page-heading";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { InputController } from "@/components/custom/form.control/InputController";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { IModule } from "../ModuleInterface";
 import DialogBox from "@/components/custom/dialog-box";
-import { Collapsible } from "@radix-ui/react-collapsible";
-import { CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { SelectController } from "@/components/custom/form.control/SelectController";
-import { IData } from "./page";
 import useModuleIdByName from "@/hooks/use-module-id";
 import { Guard } from "@/components/custom/permission-guard";
+import { IModule, IOption } from "@/app/_Interface/Module";
 
+interface IData {
+  moduleData: IModule,
+  groupOptions: IOption[]
+}
 
 const SubModuleSchema = z.object({
   id: z.string(),
@@ -84,6 +85,9 @@ export default function EditModule({ moduleData, groupOptions }: IData) {
     } catch (error) {
       console.error(error);
       toast.error("Failed to update module. Please try again later.");
+    } finally {
+      route.push('.');
+      form.reset();
     }
 
   };
@@ -188,35 +192,4 @@ export default function EditModule({ moduleData, groupOptions }: IData) {
       )}
     </>
   );
-}
-
-function TreeView({ data, level }: { data: IModule, level: number }) {
-
-  const hasSubmenu = data?.subModules?.length
-
-  if (!hasSubmenu) {
-    return (
-      <li style={{ paddingLeft: `${level * 24}px` }}>{data?.group} / {data.name}</li>
-    )
-  }
-
-  return (
-    <Collapsible defaultOpen>
-      <CollapsibleTrigger asChild>
-        <ul className={`flex gap-2 items-center [&[data-state=open]>svg]:rotate-90`} style={{ paddingLeft: `${level * 24}px` }}>
-          <ChevronRight className="h-4 w-4" />
-          {data.name}
-        </ul>
-      </CollapsibleTrigger>
-
-      <CollapsibleContent>
-        <React.Fragment>
-          {data && data.subModules.map((sub) => (
-            <TreeView key={sub.id} data={sub} level={level + 1} />
-          ))}
-        </React.Fragment>
-      </CollapsibleContent>
-    </Collapsible>
-  )
-
 }

@@ -1,19 +1,15 @@
 "use client";
-import { Form, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import TitlePage from "@/components/custom/page-heading";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { InputController } from "@/components/custom/form.control/InputController";
-import { Switch } from "@/components/ui/switch";
-import { useEffect, useState } from "react";
 import { SelectController } from "@/components/custom/form.control/SelectController";
 import { toast } from "sonner";
 import { SwitchButton } from "@/components/custom/form.control/SwitchButton";
-import { useQuery } from "@tanstack/react-query";
+import { IModule, IOption } from "@/app/_Interface/Module";
 
 export const ModuleFormSchema = z.object({
   name: z.string().min(1, { message: "Module is required." }),
@@ -42,43 +38,9 @@ export const ModuleFormSchema = z.object({
 
 type ModuleFormValues = z.infer<typeof ModuleFormSchema>;
 
-type Options = {
-  label: string;
-  value: string;
-}
-
-const fetchGroups = async () => {
-  const response = await fetch('/api/master/group');
-  if (!response.ok) {
-      throw new Error('Network response was not ok');
-  }
-  const data = await response.json();
-  if (data.success) {
-      return data.data.map((item:any) => ({ label: item.name, value: item.id }))
-  }
-  throw new Error('Failed to fetch groups');
-};
-
-const fetchModules = async () => {
-  const response = await fetch('/api/master/module');
-  if (!response.ok) {
-      throw new Error('Network response was not ok');
-  }
-  const data = await response.json();
-  if (data.success) {
-    return formatModules(data.data)
-  }
-  throw new Error('Failed to fetch modules');
-};
-
-export default function AddModule() {
+export default function AddModule({ modules, groups }: { modules: IModule[], groups: IOption[] }) {
   const route = useRouter();
-  const { data: moduleOptions, isLoading: isLoadingModule, isError: isErrorModule, error: moduleError } = useQuery({ queryKey: ['moduleoptions'], queryFn: fetchModules });
-  const { data: groupOptions, isLoading: isLoadingGroups, isError: isErrorGroups, error: groupsError } = useQuery({ queryKey: ['groupOptions'], queryFn: fetchGroups });
- 
-  if (isErrorModule || isErrorGroups) {
-    console.log('Error', moduleError?.message || groupsError?.message)
-  }
+  const moduleOptions = formatModules(modules);
 
   const form = useForm<ModuleFormValues>({
     resolver: zodResolver(ModuleFormSchema),
@@ -95,18 +57,24 @@ export default function AddModule() {
       ? { name: data.name, parentId: data?.parent?.value }
       : { name: data.name, parentId: null, groupId: data?.group?.value }
 
-    const res = await fetch(`/api/master/module`, {
-      method: "POST",
-      body: JSON.stringify(final),
-    }).then((d) => d.json()).catch((err) => console.error(err));
-
-    // console.log(res);
-    if (res.success) {
-      toast.success('Module Created')
-      route.push('.');
-    } else {
-      toast.error('Failed to create module')
-    }
+      try {
+        const res = await fetch(`/api/master/module`, {
+          method: "POST",
+          body: JSON.stringify(final),
+        }).then((d) => d.json()).catch((err) => console.error(err));
+    
+        if (res.success) {
+          toast.success('Module Created')
+          route.push('.');
+        } else {
+          toast.error('Failed to create module')
+        }
+      } catch (error) {
+        console.error(error)        
+        toast.error("Failed to create module. Please try again later.");
+      } finally {
+        route.push('.');
+      }
   };
 
   return (
@@ -120,15 +88,16 @@ export default function AddModule() {
           reset
         />
 
-        <SelectController name={`group.value`} label="Category" options={groupOptions}
+        <SelectController name={`group.value`} label="Category"
+          options={groups ?? []}
           description={` ${form.watch('name')} will placed under : ${form.watch('group.value')}`} />
 
-        <SwitchButton name="isParent" label="Is Sub Module?"/>
+        <SwitchButton name="isParent" label="Is Sub Module?" />
 
         {
           form.watch('isParent') && moduleOptions && (
-          <SelectController name={`parent.value`} label="Select Parent Module" options={moduleOptions} 
-            description={`This will be parent module of ${form.watch('name')}`} /> )
+            <SelectController name={`parent.value`} label="Select Parent Module" options={moduleOptions}
+              description={`This will be parent module of ${form.watch('name')}`} />)
         }
 
         <div className="flex justify-end my-4 gap-2">
@@ -142,22 +111,8 @@ export default function AddModule() {
   );
 }
 
-
-interface Module {
-  id: string;
-  name: string;
-  parentId: string | null;
-  permissions: number | null;
-  subModules: Module[];
-}
-
-interface FormattedModule {
-  label: string;
-  value: string;
-}
-
-function formatModules(modules: Module[], parentLabel: string = ''): FormattedModule[] {
-  const result: FormattedModule[] = [];
+function formatModules(modules: IModule[], parentLabel: string = ''): IOption[] {
+  const result: IOption[] = [];
 
   modules.forEach(module => {
     const label = parentLabel ? `${parentLabel} - ${module.name}` : module.name;

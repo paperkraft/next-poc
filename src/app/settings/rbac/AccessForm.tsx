@@ -176,7 +176,7 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
     },
   });
 
-  const { fields } = useFieldArray({
+  useFieldArray({
     control: form.control,
     name: "modules",
   });
@@ -185,28 +185,20 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
 
   useEffect(() => {
     const getRoleModules = async (roleId: string) => {
-      setLoading(true);
-      setRoleModules(undefined);
-      form.resetField("modules");
-
       try {
-        if (roleId) {
-          const res = await fetch(`/api/master/module/${roleId}`).then((d) => d.json())
-          const data = res.data;
-          if (res.success) {
-            // get previous modules of role
-            if (data && initialModules) {
-              setPreviousModules(data);
-              const mergePreviousWithDefault = mergeModules(initialModules as any, data);
-              const previousModules = mergePreviousWithDefault.map((module) => processModulePermissions(module as any, bitmask));
-              setRoleModules(previousModules);
-              form.setValue("modules", previousModules);
-            }
-          } else {
-            toast.error("Failed to fetch role modules");
+        const res = await fetch(`/api/master/module/${roleId}`).then((d) => d.json())
+        const data = res.data;
+        if (res.success) {
+          // get previous modules of role
+          if (data && initialModules) {
+            setPreviousModules(data);
+            const mergePreviousWithDefault = mergeModules(initialModules as any, data);
+            const previousModules = mergePreviousWithDefault.map((module) => processModulePermissions(module as any, bitmask));
+            setRoleModules(previousModules);
+            form.setValue("modules", previousModules);
           }
         } else {
-          form.resetField("modules");
+          toast.error("Failed to fetch role modules");
         }
       } catch (error) {
         console.error(error);
@@ -215,7 +207,13 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
         setLoading(false);
       }
     };
-    getRoleModules(roleId);
+
+    if(roleId){
+      getRoleModules(roleId);
+      setLoading(true);
+      setRoleModules(undefined);
+      form.resetField("modules");
+    }
   }, [roleId]);
 
   const onSubmit = async (data: FormValues) => {
@@ -343,7 +341,7 @@ const RenderRows = React.memo(
               <TableCell className={cn(`pl-${data?.parentId && level * 2}`, { "flex items-center first:gap-2 cursor-pointer": hasSubModules })}>
                 {data?.parentId ? renderDash(level) : null}
                 {data?.name}
-                {hasSubModules ? <ChevronRight className="h-4 w-4" /> : null}
+                {hasSubModules ? <ChevronRight className="size-4 transition-transform" /> : null}
               </TableCell>
             </CollapsibleTrigger>
 

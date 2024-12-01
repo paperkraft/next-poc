@@ -1,3 +1,5 @@
+import { IGroup } from "./Group";
+
 interface ISubModule {
     id: string;
     name: string;
@@ -21,4 +23,19 @@ export interface IModuleFormat {
     name: string;
     parentId: string | null;
     subModules: IModuleFormat[] | null
+}
+
+
+export interface InputFormat {
+    id: string,
+    name: string,
+    group?: IGroup | null;
+    parentId: string | null,
+    subModules: InputFormat[] | null
+}
+
+
+export interface IOption {
+    label: string;
+    value: string;
 }

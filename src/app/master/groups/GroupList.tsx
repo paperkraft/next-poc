@@ -1,4 +1,5 @@
 "use client";
+import { IOptionGroup } from "@/app/_Interface/Group";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -11,10 +12,9 @@ import {
 import { Eye } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { IGroup } from "./page";
 import { memo } from "react";
 
- const GroupList = memo(({data}:{data:IGroup[]}) => {
+ const GroupList = memo(({data}:{data:IOptionGroup[]}) => {
   const path = usePathname();
   return (
     <div className="space-y-8 p-2">
@@ -30,12 +30,12 @@ import { memo } from "react";
         <TableBody>
           {data &&
             data.map((item, index) => (
-              <TableRow key={item.name}>
+              <TableRow key={item.label}>
                 <TableCell>{index + 1}</TableCell>
-                <TableCell>{item.name}</TableCell>
+                <TableCell>{item.label}</TableCell>
                 <TableCell>
                   <Button variant={"ghost"} className="size-5" asChild>
-                    <Link href={`${path}/${item.id}`}><Eye className="size-4" /></Link>
+                    <Link href={`${path}/${item.value}`}><Eye className="size-4" /></Link>
                   </Button>
                 </TableCell>
               </TableRow>

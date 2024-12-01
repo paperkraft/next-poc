@@ -33,7 +33,6 @@ export async function GET(request: NextRequest, { params }: { params: { roleId: 
                     },
                 },
                 permissions: true,
-                // submoduleId: true,
             },
         });
 
@@ -102,14 +101,14 @@ function nestModules(data: ModulePermission[]): StructuredData[] {
                     id: subModule.id,
                     name: subModule.name,
                     parentId: subModule.parentId,
-                    permissions: 0,
+                    permissions: permissions,
                     subModules: [],
                 });
             }
 
             // Aggregate permissions
             const subModuleEntry = moduleMap.get(subModule.id)!;
-            subModuleEntry.permissions += permissions;
+            // subModuleEntry.permissions += permissions;
 
             // Nest the subModule under its parent module
             if (subModule.parentId && moduleMap.has(subModule.parentId)) {

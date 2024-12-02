@@ -89,7 +89,7 @@ export default function RoleEdit({ data }: { data: Role }) {
       if (res.status === 200) {
         handleClose();
         toast.success('Role deleted');
-        router.push('.');
+        router.replace('.');
       } else {
         toast.error('Failed to delete role');
         handleClose();

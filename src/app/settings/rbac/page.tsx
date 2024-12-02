@@ -13,19 +13,22 @@ export const metadata: Metadata = {
 
 export default async function Page() {
     const modules = await fetchModules().then((d) => d.json());
+    const isModules = modules && modules.success
+    const hasModules = isModules && modules?.data?.length > 0;
+
     const roles = await fetchRoles().then((d) => d.json());
-    const hasModules = modules && modules?.data?.length > 0;
-    const hasRoles = roles && roles?.data?.length > 0;
+    const isRoles = roles && roles.success
+    const hasRoles = isRoles && roles?.data?.length > 0;
 
     return (
         <div className="space-y-8 p-2">
             <TitlePage title="Role Based Access Control" description="Define role based module access" createPage />
             {
-                modules.success && roles.success
+                isModules && isRoles
                     ? hasModules && hasRoles
                         ? <AccessPage roles={roles.data} modules={modules.data} />
                         : <NoRecordPage text={hasModules ? "role" : "module"} />
-                    : <SomethingWentWrong message={modules.success ? roles.message : modules.message} />
+                    : <SomethingWentWrong message={isModules ? roles.message : modules.message} />
             }
         </div>
     );

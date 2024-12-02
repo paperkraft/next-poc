@@ -10,6 +10,8 @@ import { SelectController } from "@/components/custom/form.control/SelectControl
 import { toast } from "sonner";
 import { SwitchButton } from "@/components/custom/form.control/SwitchButton";
 import { IModule, IOption } from "@/app/_Interface/Module";
+import { useState } from "react";
+import ButtonContent from "@/components/custom/button-content";
 
 export const ModuleFormSchema = z.object({
   name: z.string().min(1, { message: "Module is required." }),
@@ -39,7 +41,8 @@ export const ModuleFormSchema = z.object({
 type ModuleFormValues = z.infer<typeof ModuleFormSchema>;
 
 export default function AddModule({ modules, groups }: { modules: IModule[], groups: IOption[] }) {
-  const route = useRouter();
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
   const moduleOptions = formatModules(modules);
 
   const form = useForm<ModuleFormValues>({
@@ -57,6 +60,7 @@ export default function AddModule({ modules, groups }: { modules: IModule[], gro
       ? { name: data.name, parentId: data?.parent?.value }
       : { name: data.name, parentId: null, groupId: data?.group?.value }
 
+      setLoading(true);
       try {
         const res = await fetch(`/api/master/module`, {
           method: "POST",
@@ -65,7 +69,7 @@ export default function AddModule({ modules, groups }: { modules: IModule[], gro
     
         if (res.success) {
           toast.success('Module Created')
-          route.push('.');
+          router.push('.');
         } else {
           toast.error('Failed to create module')
         }
@@ -73,7 +77,8 @@ export default function AddModule({ modules, groups }: { modules: IModule[], gro
         console.error(error)        
         toast.error("Failed to create module. Please try again later.");
       } finally {
-        route.push('.');
+        router.refresh();
+        setLoading(false);
       }
   };
 
@@ -104,7 +109,9 @@ export default function AddModule({ modules, groups }: { modules: IModule[], gro
           <Button variant={"outline"} onClick={(e) => { e.preventDefault(); form.reset(); }} >
             Reset
           </Button>
-          <Button type="submit">Submit</Button>
+          <Button type="submit" disabled={loading}>
+              <ButtonContent status={loading} text={"Create"}/>
+          </Button>
         </div>
       </form>
     </Form>

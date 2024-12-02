@@ -8,20 +8,22 @@ import SomethingWentWrong from "@/components/custom/somthing-wrong";
 
 
 export default async function Page() {
-  const roles = await fetchRoles().then((d)=>d.json());
-  
+  const roles = await fetchRoles().then((d) => d.json());
+  const isRole = roles && roles.success
+  const hasRoles = isRole && roles?.data?.length > 0;
+
   const session = await auth();
-  const moduleId = session && findModuleId( session?.user.modules, "Role") as string;
+  const moduleId = session && findModuleId(session?.user.modules, "Role") as string;
 
   return (
     <div className="space-y-4 p-2">
-      <TitlePage title="Role" description="List of all roles" listPage moduleId={moduleId}/>
+      <TitlePage title="Role" description="List of all roles" listPage moduleId={moduleId} />
       {
-        roles.success 
-        ? roles.data && roles.data.length > 0
-        ? <RoleList data={roles.data} /> 
-        : <NoRecordPage text={"module"} />
-        : <SomethingWentWrong message={roles.message} />
+        isRole
+          ? hasRoles
+            ? <RoleList data={roles.data} />
+            : <NoRecordPage text={"module"} />
+          : <SomethingWentWrong message={roles.message} />
       }
     </div>
   );

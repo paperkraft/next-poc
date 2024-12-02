@@ -27,6 +27,7 @@ import { useRouter } from "next/navigation";
 import { WithPermission } from "@/components/custom/with-permission";
 import { SwitchButton } from "@/components/custom/form.control/SwitchButton";
 import { cn } from "@/lib/utils";
+import ButtonContent from "@/components/custom/button-content";
 
 interface IAccessProps {
   roles: RoleType[];
@@ -249,22 +250,11 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
     }
   };
 
-  const renderButtonContent = () => {
-    if (disabled) {
-      return (
-        <>
-          <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> Submitting...
-        </>
-      );
-    }
-    return "Submit";
-  };
-
   return (
     <WithPermission permissionBit={15}>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <div className="px-4">
+          <div>
             <SelectController name={"userId"} label={"Role"} options={roleOptions} />
           </div>
 
@@ -303,16 +293,10 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
           </Table>
 
           <div className="flex justify-end my-4 gap-2">
-            <Button
-              variant={"outline"}
-              onClick={(e) => {
-                e.preventDefault();
-                route.back();
-              }}
-            >
-              Cancel
+            <Button variant={"outline"} onClick={()=> route.back()}>Cancel</Button>
+            <Button type="submit" disabled={disabled}>
+              <ButtonContent status={disabled} text={"Submit"}/>
             </Button>
-            <Button type="submit" disabled={disabled}>{renderButtonContent()}</Button>
           </div>
         </form>
       </Form>
@@ -459,7 +443,6 @@ function transformSubmodules(input: Module[]): FormatSubmodule[] {
 }
 
 // ----------------------------- Update submited data from previous data  ----------------------------- //
-
 
 function createIdMap(data: Module[]): Map<string, Module> {
   const map = new Map<string, Module>();

@@ -30,7 +30,6 @@ export default function EditGroup({ data }: { data: IGroup }) {
     const [open, setOpen] = useState(false);
     const [show, setShow] = useState(false);
     const [loading, setLoading] = useState(false);
-    // const [data, setData] = useState<IGroup>();
 
     const form = useForm<FormValues>({
         resolver: zodResolver(groupSchema),
@@ -38,25 +37,6 @@ export default function EditGroup({ data }: { data: IGroup }) {
             name: data?.name || ""
         },
     });
-
-    // useEffect(() => {
-    //     const fetchData = async (id: string) => {
-    //         try {
-    //             const res = await fetch(`/api/master/group/${id}`).then((d) => d.json());
-    //             const data = res.data
-    //             if (res.success && data) {
-    //                 setData(data);
-    //                 form.setValue("name", data.name);
-    //             } else {
-    //                 toast.error(res.message)
-    //             }
-    //         } catch (error) {
-    //             console.error("Failed to fetch data", error)
-    //             toast.error("Something went wrong. Please try again later.");
-    //         }
-    //     }
-    //     fetchData(id)
-    // }, [id]);
 
     const onSubmit = async (data: FormValues) => {
         setLoading(true);
@@ -91,7 +71,7 @@ export default function EditGroup({ data }: { data: IGroup }) {
             if (res.success) {
                 handleClose();
                 toast.success('Group deleted');
-                router.push('.');
+                router.replace('.');
             } else {
                 toast.error(res.message);
                 handleClose();

@@ -7,11 +7,14 @@ export default async function Page({ params }: { params: { id: string } }) {
   const { id } = params;
 
   const module = await fetchUniqueModule(id).then((d)=>d.json());
+  const isModule = module && module.success
+  
   const groups = await fetchGroups().then((d)=> d.json());
+  const isGroup = groups && groups.success
 
-  return (module.success && groups.success  ? (
+  return (isModule && isGroup ? (
     <EditModule moduleData={module.data} groupOptions={groups.data}   />
   ) : (
-    <SomethingWentWrong message={module.success ? groups.message : module.message} />
+    <SomethingWentWrong message={isModule ? groups.message : module.message} />
   ));
 }

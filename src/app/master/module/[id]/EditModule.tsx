@@ -125,7 +125,7 @@ export default function EditModule({ moduleData, groupOptions }: PageProps) {
       if (res.success) {
         handleClose();
         toast.success('Module deleted');
-        router.push('.');
+        router.replace('.');
       } else {
         toast.error('Failed to delete module');
         handleClose();

@@ -4,6 +4,9 @@ import Credentials from "next-auth/providers/credentials";
 import GitHub from "next-auth/providers/github";
 import bcrypt from 'bcryptjs';
 import { AUTH_SECRET, GITHUB_ID, GITHUB_SECRET } from "@/utils/constants";
+import { userConfig } from "@/hooks/use-config";
+
+
 
 const authConfig: NextAuthConfig = {
     secret: AUTH_SECRET,
@@ -15,6 +18,9 @@ const authConfig: NextAuthConfig = {
                 email: { label: "Email", type: "text" },
                 password: { label: "Password", type: "password" },
             },
+
+            
+
 
             async authorize(credentials): Promise<User | null> {
 
@@ -84,7 +90,7 @@ const authConfig: NextAuthConfig = {
 
     callbacks: {
         async signIn({ user, account, profile }) {
-
+            
             console.log("signIn - user", user,); // info related user
             console.log("signIn - account", account,); // info related auth provider
             console.log("signIn - profile", profile,); // same as user

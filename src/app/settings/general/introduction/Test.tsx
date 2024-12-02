@@ -10,7 +10,6 @@ export default function TestPage() {
     return (
         <>
             <Guard permissionBit={1} moduleId={moduleId}>
-                <p>Introduction</p>
                 <div className="flex gap-2">
                     <Guard permissionBit={1} moduleId={moduleId}>
                         <Button>View</Button>

@@ -22,14 +22,15 @@ const groupSchema = z.object({
 
 type FormValues = z.infer<typeof groupSchema>;
 
-export default function EditGroup({ id }: { id: string }) {
+export default function EditGroup({ data }: { data: IGroup }) {
+    const id = data.id
     const router = useRouter();
     const moduleId = useModuleIdByName("Groups") as string;
 
     const [open, setOpen] = useState(false);
     const [show, setShow] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [data, setData] = useState<IGroup>();
+    // const [data, setData] = useState<IGroup>();
 
     const form = useForm<FormValues>({
         resolver: zodResolver(groupSchema),
@@ -38,24 +39,24 @@ export default function EditGroup({ id }: { id: string }) {
         },
     });
 
-    useEffect(() => {
-        const fetchData = async (id: string) => {
-            try {
-                const res = await fetch(`/api/master/group/${id}`).then((d) => d.json());
-                const data = res.data
-                if (res.success && data) {
-                    setData(data);
-                    form.setValue("name", data.name);
-                } else {
-                    toast.error(res.message)
-                }
-            } catch (error) {
-                console.error("Failed to fetch data", error)
-                toast.error("Something went wrong. Please try again later.");
-            }
-        }
-        fetchData(id)
-    }, [id]);
+    // useEffect(() => {
+    //     const fetchData = async (id: string) => {
+    //         try {
+    //             const res = await fetch(`/api/master/group/${id}`).then((d) => d.json());
+    //             const data = res.data
+    //             if (res.success && data) {
+    //                 setData(data);
+    //                 form.setValue("name", data.name);
+    //             } else {
+    //                 toast.error(res.message)
+    //             }
+    //         } catch (error) {
+    //             console.error("Failed to fetch data", error)
+    //             toast.error("Something went wrong. Please try again later.");
+    //         }
+    //     }
+    //     fetchData(id)
+    // }, [id]);
 
     const onSubmit = async (data: FormValues) => {
         setLoading(true);

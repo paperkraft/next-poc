@@ -8,6 +8,7 @@ const verifyCaptcha = async (captcha: string) => {
     });
 
     const data = await response.json();
+
     if (!data.success) {
         return NextResponse.json({ success: false, message: 'Captcha verification failed' }, { status: 400 });
     }
@@ -23,7 +24,10 @@ export async function POST(request: Request) {
         if (verify.success) {
             try {
                 await signIn('credentials', { email, password, redirect:false });
-                return NextResponse.json({ message: 'Success' }, { status: 200 });
+                return NextResponse.json(
+                    { success: true, message: 'Success' }, 
+                    { status: 200 }
+                );
             } catch (error: any) {
                 return NextResponse.json({ ...error });
             }

@@ -14,7 +14,7 @@ type Props = {
     listPage?: boolean
     createPage?: boolean
     viewPage?: boolean
-    moduleId?: string
+    moduleId?: string | null
 }
 
 const TitlePage = memo(({ title, description, children, createPage, listPage, viewPage, moduleId }: Props) => {
@@ -29,9 +29,9 @@ const TitlePage = memo(({ title, description, children, createPage, listPage, vi
                 </div>
 
                 <div className="ml-auto flex gap-2">
-                    {listPage && (
+                    {listPage && moduleId && (
                         <div>
-                            <Guard permissionBit={4} moduleId={moduleId as string}>
+                            <Guard permissionBit={4} moduleId={moduleId}>
                                 <Button className="size-7" variant={"outline"} size={"sm"} asChild>
                                     <Link href={`${path}/add`}>
                                         <Plus className="size-5" />

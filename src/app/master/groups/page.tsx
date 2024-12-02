@@ -12,14 +12,14 @@ export default async function Page() {
   const groups = await fetchGroups().then((d)=>d.json());
   
   const session = await auth();
-  const moduleId = findModuleId( session?.user.modules, "Role") as string;
+  const moduleId = session && findModuleId(session?.user.modules, "Role");
 
   return (
     <div className="space-y-4 p-2">
       <TitlePage title="Group" description="List of all groups, basically to catagorized menu" listPage moduleId={moduleId}/>
       {
         groups.success
-        ? groups.data && groups.data.length > 0
+        ? groups?.data && groups?.data?.length > 0
         ? <GroupList data={groups.data} />
         : <NoRecordPage text={"group"} />
         : <SomethingWentWrong message={groups.message} />

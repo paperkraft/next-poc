@@ -1,28 +1,21 @@
 "use client";
 import { ReactNode } from "react";
-import Loading from "@/app/loading";
-import { useSession } from "next-auth/react";
+import { menusConfig } from "@/hooks/use-config";
+import { IModule } from "@/app/_Interface/Module";
 
-interface Module {
-  id: string;
-  name: string;
-  permissions: number;
-  subModules?: Module[];
-}
-
-interface WithPermissionProps {
+interface GuardProps {
   permissionBit: number;
   moduleId: string;
   children: ReactNode;
 }
+ 
+export const Guard = ({ children, permissionBit, moduleId }: GuardProps) => {
+  const [serverMenu] = menusConfig();
 
-export const Guard = ({ children, permissionBit, moduleId }: WithPermissionProps) => {
-  const { data: session, status } = useSession();
-
-  const hasPermissionForModule = session?.user?.modules?.some((module: Module) => {
-    const checkModulePermission = (module: Module): boolean => {
+  const hasPermissionForModule = serverMenu?.some((module: IModule) => {
+    const checkModulePermission = (module: IModule): boolean => {
       if (module.id === moduleId) {
-        return (module.permissions & permissionBit) === permissionBit;
+        return (module.permissions! & permissionBit) === permissionBit;
       }
 
       if (module.subModules && module.subModules.length > 0) {
@@ -34,13 +27,9 @@ export const Guard = ({ children, permissionBit, moduleId }: WithPermissionProps
     return checkModulePermission(module);
   });
 
-  if (status === "loading") {
-    return <Loading />;
-  }
-
   if (!hasPermissionForModule) {
     return null
   }
 
-  return <>{children}</>;
+  return children
 };

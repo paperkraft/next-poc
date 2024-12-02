@@ -15,8 +15,9 @@ import { SelectController } from "@/components/custom/form.control/SelectControl
 import useModuleIdByName from "@/hooks/use-module-id";
 import { Guard } from "@/components/custom/permission-guard";
 import { IModule, IOption } from "@/app/_Interface/Module";
+import ButtonContent from "@/components/custom/button-content";
 
-interface IData {
+interface PageProps {
   moduleData: IModule,
   groupOptions: IOption[]
 }
@@ -40,13 +41,14 @@ const ModuleFormSchema = z.object({
 
 type ModuleFormValues = z.infer<typeof ModuleFormSchema>;
 
-export default function EditModule({ moduleData, groupOptions }: IData) {
+export default function EditModule({ moduleData, groupOptions }: PageProps) {
 
-  const route = useRouter();
-  const moduleId = useModuleIdByName("Groups") as string;
+  const router = useRouter();
+  const moduleId = useModuleIdByName("Module") as string;
 
   const [open, setOpen] = useState(false);
   const [show, setShow] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const hasSubmenu = moduleData.subModules && moduleData.subModules.length > 0;
 
@@ -68,7 +70,7 @@ export default function EditModule({ moduleData, groupOptions }: IData) {
   });
 
   const onSubmit = async (data: ModuleFormValues) => {
-
+    setLoading(true);
     try {
       const res = await fetch(`/api/master/module`, {
         method: "PUT",
@@ -77,8 +79,7 @@ export default function EditModule({ moduleData, groupOptions }: IData) {
 
       if (res.success) {
         toast.success('Module updated')
-        route.push('.');
-        form.reset();
+        router.push('.');
       } else {
         toast.error('Failed to update module');
       }
@@ -86,10 +87,9 @@ export default function EditModule({ moduleData, groupOptions }: IData) {
       console.error(error);
       toast.error("Failed to update module. Please try again later.");
     } finally {
-      route.push('.');
-      form.reset();
+      router.refresh();
+      setLoading(false);
     }
-
   };
 
   const getLabel = useCallback((index: number, parentIndexes: number[] = []) => {
@@ -120,12 +120,12 @@ export default function EditModule({ moduleData, groupOptions }: IData) {
       const res = await fetch("/api/master/module", {
         method: "DELETE",
         body: JSON.stringify({ id }),
-      });
+      }).then((d) => d.json());
 
-      if (res.status === 200) {
+      if (res.success) {
         handleClose();
         toast.success('Module deleted');
-        route.push('.');
+        router.push('.');
       } else {
         toast.error('Failed to delete module');
         handleClose();
@@ -133,8 +133,10 @@ export default function EditModule({ moduleData, groupOptions }: IData) {
 
     } catch (error) {
       toast.error("Failed to delete module. Please try again later.");
-      handleClose();
       console.error(error);
+    } finally {
+      handleClose();
+      router.refresh();
     }
   };
 
@@ -172,10 +174,12 @@ export default function EditModule({ moduleData, groupOptions }: IData) {
 
             {show && (
               <div className="flex justify-end my-4 gap-2">
-                <Button variant={"outline"} onClick={(e) => { e.preventDefault(); setShow(false); }}>
-                  Cancel
+                <Button type="button" variant={"outline"} onClick={() => router.back()}>
+                    Cancel
                 </Button>
-                <Button type="submit">Submit</Button>
+                <Button type="submit" disabled={loading}>
+                    <ButtonContent status={loading} text={"Update"}/>
+                </Button>
               </div>
             )}
           </form>

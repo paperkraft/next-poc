@@ -1,10 +1,9 @@
 "use client";
-import { Form, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { Form, FormLabel } from "@/components/ui/form";
 import { InputController } from "@/components/custom/form.control/InputController";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Switch } from "@/components/ui/switch";
 import { useRouter } from "next/navigation";
 import TitlePage from "@/components/custom/page-heading";
 import { Edit, Trash2 } from "lucide-react";
@@ -15,12 +14,13 @@ import {
   roleFormSchema,
   RoleFormValues,
 } from "../add/RoleForm";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import DialogBox from "@/components/custom/dialog-box";
 import { toast } from "sonner";
 import useModuleIdByName from "@/hooks/use-module-id";
 import { Guard } from "@/components/custom/permission-guard";
 import { SwitchButton } from "@/components/custom/form.control/SwitchButton";
+import ButtonContent from "@/components/custom/button-content";
 
 type Role = {
   id: string;
@@ -35,13 +35,14 @@ type Bitmask = {
 
 export default function RoleEdit({ data }: { data: Role }) {
   const { id } = data
-  const route = useRouter();
+  const router = useRouter();
   const moduleId = useModuleIdByName("Role") as string;
 
   const permissions = reverseBitmask(data.permissions);
 
   const [open, setOpen] = useState(false);
   const [show, setShow] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const form = useForm<RoleFormValues>({
     resolver: zodResolver(roleFormSchema),
@@ -56,16 +57,16 @@ export default function RoleEdit({ data }: { data: Role }) {
       name: data.name,
       permissions: calculateBitmask(data.permissions),
     };
-
+    setLoading(true);
     try {
       const res = await fetch(`/api/master/role/${id}`, {
         method: "PUT",
         body: JSON.stringify(final),
-      });
+      }).then((d) => d.json());
 
-      if (res.status === 200) {
+      if (res.success) {
         toast.success('Role updated');
-        route.refresh();
+        router.push('.');
       } else {
         toast.error('Failed to update role');
       }
@@ -73,7 +74,8 @@ export default function RoleEdit({ data }: { data: Role }) {
       console.error(error);
       toast.error("Failed to update role. Please try again later.");
     } finally {
-      route.refresh();
+      router.refresh();
+      setLoading(false);
     }
   };
 
@@ -87,7 +89,7 @@ export default function RoleEdit({ data }: { data: Role }) {
       if (res.status === 200) {
         handleClose();
         toast.success('Role deleted');
-        route.push('.');
+        router.push('.');
       } else {
         toast.error('Failed to delete role');
         handleClose();
@@ -97,7 +99,7 @@ export default function RoleEdit({ data }: { data: Role }) {
       console.error(error);
     } finally {
       handleClose();
-      route.push('.');
+      router.refresh();
     }
   };
 
@@ -164,10 +166,12 @@ export default function RoleEdit({ data }: { data: Role }) {
                 </div>
               </div>
               <div className="flex justify-end my-4 gap-2">
-                <Button variant={"outline"} onClick={(e) => { e.preventDefault(); route.back(); }} >
+                <Button variant={"outline"} onClick={() => router.back()} >
                   Cancel
                 </Button>
-                <Button type="submit">Submit</Button>
+                <Button type="submit" disabled={loading}>
+                    <ButtonContent status={loading} text={"Update"}/>
+                </Button>
               </div>
             </form>
           </Form>

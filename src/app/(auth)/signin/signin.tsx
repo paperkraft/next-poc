@@ -55,10 +55,11 @@ export default function SignInPage() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...data, token }),
-    }).then((res) => {
+    }).then((res) =>res.json())
+    
+    if(response.success){
       setLoading(false);
-      return res.json();
-    });
+    }
 
     if (
       response.type === "CredentialsSignin" ||

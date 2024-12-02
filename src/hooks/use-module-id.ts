@@ -1,13 +1,13 @@
 import { useSession } from "next-auth/react";
 
 const useModuleIdByName = (moduleName: string): string | null => {
-  const { data: session, status } = useSession();
+  const { data, status } = useSession();
 
   if (status === "loading") {
     return null;
   }
 
-  if (!session || !session.user || !session.user.modules) {
+  if (!data) {
     console.warn("Session or modules not found");
     return null;
   }
@@ -26,7 +26,7 @@ const useModuleIdByName = (moduleName: string): string | null => {
     return null;
   };
   
-  return findModuleId(session && session.user.modules);
+  return data && findModuleId(data.user.modules);
 };
 
 export default useModuleIdByName;

@@ -261,7 +261,7 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
   };
 
   return (
-    <WithPermission permissionBit={8}>
+    <WithPermission permissionBit={15}>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="px-4">

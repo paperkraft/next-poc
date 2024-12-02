@@ -10,7 +10,7 @@ export default async function Page() {
   const modules = await fetchModules().then((d)=> d.json());
 
   const session = await auth();
-  const moduleId = findModuleId( session?.user.modules, "Role") as string;
+  const moduleId = session && findModuleId( session?.user.modules, "Role") as string;
   
   return (
     <div className="space-y-4 p-2">

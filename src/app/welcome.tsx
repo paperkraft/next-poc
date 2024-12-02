@@ -7,12 +7,8 @@ import React, { useEffect } from "react";
 export default function WelcomePage() {
   const mounted = useMounted();
   const route = useRouter();
-  const { data: session, status } = useSession();
-  const user = session?.user;
-
-  if(user){
-    console.log(user.modules);
-  }
+  const { data, status } = useSession();
+  
 
   useEffect(() => {
     if (mounted && status !== "authenticated") {
@@ -21,10 +17,10 @@ export default function WelcomePage() {
   }, [mounted, status, route]);
 
   return (
-    mounted && user &&
+    mounted && data &&
     <div>
-      <p>Welcome, {user?.name ?? user?.email}</p>
-      <p>Your Unique Id: {user?.id ?? ""}</p>
+      <p>Welcome, {data?.user?.name ?? data?.user?.email}</p>
+      <p>Your Unique Id: {data?.user?.id ?? ""}</p>
     </div>
   );
 }

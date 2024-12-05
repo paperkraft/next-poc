@@ -104,9 +104,9 @@ export default function FormBuilder() {
 
   const RenderFormFieldList = useCallback(() => (
     <FormFieldList formFields={formFields}
-      setFormFields={setFormFields}
-      updateFormField={updateFormField}
-      openEditDialog={openEditDialog} />
+    setFormFields={setFormFields}
+    updateFormField={updateFormField}
+    openEditDialog={openEditDialog} />
   ),[formFields])
 
   return (
@@ -120,8 +120,8 @@ export default function FormBuilder() {
       <If
         condition={formFields.length > 0}
         render={() => (
-          <div className="grid grid-cols-1 md:grid-cols-2 items-start gap-4 h-full">
-            <div className="w-full h-full auto-cols-max md:space-x-3 md:max-h-[75vh] flex flex-col md:flex-row ">
+          <div className="grid grid-cols-1 md:grid-cols-3 items-start gap-8 h-full">
+            <div className="w-full col-span-2 h-full auto-cols-max md:space-x-3 md:max-h-[75vh] flex flex-col md:flex-row ">
               <FieldSelectorWithSeparator
                 addFormField={(variant: string, index: number = 0) =>
                   addFormField(variant, index)
@@ -130,12 +130,11 @@ export default function FormBuilder() {
 
               <div className="flex-1">
                 Components:
-                  <RenderFormFieldList/>
+                  <RenderFormFieldList/> 
               </div>
             </div>
 
             <div className="w-full h-full space-y-3 ">
-              {/* <SpecialComponentsNotice formFields={formFields} /> */}
               <FormPreview formFields={formFields} />
             </div>
           </div>

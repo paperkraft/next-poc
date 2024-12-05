@@ -130,7 +130,7 @@ export const FormPreview: React.FC<FormPreviewProps> = ({ formFields }) => {
               <Form {...form}>
                 <form
                   onSubmit={form.handleSubmit(onSubmit)}
-                  className="space-y-4 py-5 max-w-lg mx-auto"
+                  className="space-y-4 py-5 max-w-lg mx-auto px-2"
                 >
                   {renderFormFields(formFields, form)}
                   <div>
@@ -198,9 +198,9 @@ export const FormPreview: React.FC<FormPreviewProps> = ({ formFields }) => {
                       style={style}
                     >
                       {tokens.map((line: any, i: number) => (
-                        <div {...getLineProps({ line, key: i })}>
+                        <div {...getLineProps({ line, key: i })} key={i}>
                           {line.map((token: any, key: any) => (
-                            <span {...getTokenProps({ token, key })} />
+                            <span {...getTokenProps({ token, key })} key={key} />
                           ))}
                         </div>
                       ))}

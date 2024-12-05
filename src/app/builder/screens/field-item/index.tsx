@@ -147,6 +147,7 @@ export const FieldItem = memo(({
 
   return (
     <Reorder.Item
+      as='div'
       value={field}
       id={field.name}
       initial={{ opacity: 0, y: 30 }}
@@ -155,7 +156,7 @@ export const FieldItem = memo(({
         y: 0,
         transition: { duration: 0.15 },
       }}
-      exit={{ opacity: 0, y: 20, transition: { duration: 0.3 } }}
+      exit={{ opacity: 0, y: 20, transition: { duration: 0.5 } }}
       whileDrag={{ backgroundColor: '#9ca3af', borderRadius: '12px' }}
       className={cn('w-full', {
         'col-span-12': columnCount === 1,
@@ -166,7 +167,7 @@ export const FieldItem = memo(({
     >
     
 
-      <motion.div layout="position"  className="flex items-center gap-3 w-full"  key={`${field.name}-${columnCount}`}>
+      <motion.div layout="position" className="flex items-center gap-3 w-full"  key={`${field.name}-${columnCount}`}>
         <div className="flex items-center gap-1 border rounded-xl px-3 py-1.5 w-full">
           <If
             condition={Array.isArray(formFields[index])}

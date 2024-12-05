@@ -30,7 +30,7 @@ export const FormFieldList = React.memo(({
       setTimeout(() => {
         setFormFields((prevFields) => {
           const updatedFields = [...prevFields];
-          updatedFields[index] = newOrder;  // Replace with the new order
+          updatedFields[index] = newOrder;
           return updatedFields;
         });
       }, 1000);
@@ -45,7 +45,7 @@ export const FormFieldList = React.memo(({
         axis="y"
         onReorder={setFormFields}
         values={formFields}
-        className="flex flex-col gap-1 xxxx"
+        className="flex flex-col gap-1"
       >
         {formFields.map((item, index) => (
           <Reorder.Item
@@ -58,7 +58,7 @@ export const FormFieldList = React.memo(({
 
             {Array.isArray(item) ? (
               <Reorder.Group as='ul' axis="x" onReorder={(newOrder) => handleHorizontalReorder(index, newOrder)} values={rowTabs[index] || item} 
-              className="w-full grid grid-cols-12 gap-1">
+               className="w-full grid grid-cols-12 gap-1">
 
                 <AnimatePresence initial={false}>
                   {(rowTabs[index] || item).map((field, fieldIndex) => (

@@ -314,8 +314,6 @@ export const renderFormField = (field: FormFieldType, form: any) => {
                   ))}
               </FileUploaderContent>
             </FileUploader>
-
-            File Upload
           </FormControl>
           <FormDescription>{field.description}</FormDescription>
         </FormItem>
@@ -539,7 +537,6 @@ export const renderFormField = (field: FormFieldType, form: any) => {
               }}
               placeholder="Enter your tags"
             />
-            TagsInput
           </FormControl>
           <FormDescription>{field.description}</FormDescription>
           <FormMessage />
@@ -548,7 +545,7 @@ export const renderFormField = (field: FormFieldType, form: any) => {
     case 'Textarea':
       return (
         <FormItem>
-          <FormLabel>{field.label}</FormLabel>
+          <FormLabel>{field.label}</FormLabel> {field.required && '*'}
           <FormControl>
             <Textarea
               placeholder={field.placeholder}
@@ -563,7 +560,7 @@ export const renderFormField = (field: FormFieldType, form: any) => {
     case 'Password':
       return (
         <FormItem>
-          <FormLabel>{field.label}</FormLabel>
+          <FormLabel>{field.label}</FormLabel> {field.required && '*'}
           <FormControl>
             <PasswordInput
               value={password}

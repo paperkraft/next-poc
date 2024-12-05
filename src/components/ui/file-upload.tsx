@@ -58,10 +58,7 @@ type FileUploaderProps = {
  * File upload Docs: {@link: https://localhost:3000/docs/file-upload}
  */
 
-export const FileUploader = forwardRef<
-  HTMLDivElement,
-  FileUploaderProps & React.HTMLAttributes<HTMLDivElement>
->(
+export const FileUploader = forwardRef<HTMLDivElement, FileUploaderProps & React.HTMLAttributes<HTMLDivElement>>(
   (
     {
       className,
@@ -91,8 +88,7 @@ export const FileUploader = forwardRef<
     const reSelectAll = maxFiles === 1 ? true : reSelect;
     const direction: DirectionOptions = dir === "rtl" ? "rtl" : "ltr";
 
-    const removeFileFromSet = useCallback(
-      (i: number) => {
+    const removeFileFromSet = useCallback((i: number) => {
         if (!value) return;
         const newFiles = value.filter((_, index) => index !== i);
         onValueChange(newFiles);
@@ -100,8 +96,7 @@ export const FileUploader = forwardRef<
       [value, onValueChange],
     );
 
-    const handleKeyDown = useCallback(
-      (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -156,8 +151,7 @@ export const FileUploader = forwardRef<
       [value, activeIndex, removeFileFromSet],
     );
 
-    const onDrop = useCallback(
-      (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
+    const onDrop = useCallback((acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
         const files = acceptedFiles;
 
         if (!files) {
@@ -254,10 +248,7 @@ export const FileUploader = forwardRef<
 
 FileUploader.displayName = "FileUploader";
 
-export const FileUploaderContent = forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ children, className, ...props }, ref) => {
+export const FileUploaderContent = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({ children, className, ...props }, ref) => {
   const { orientation } = useFileUpload();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -284,10 +275,7 @@ export const FileUploaderContent = forwardRef<
 
 FileUploaderContent.displayName = "FileUploaderContent";
 
-export const FileUploaderItem = forwardRef<
-  HTMLDivElement,
-  { index: number } & React.HTMLAttributes<HTMLDivElement>
->(({ className, index, children, ...props }, ref) => {
+export const FileUploaderItem = forwardRef<HTMLDivElement,{ index: number } & React.HTMLAttributes<HTMLDivElement>>(({ className, index, children, ...props }, ref) => {
   const { removeFileFromSet, activeIndex, direction } = useFileUpload();
   const isSelected = index === activeIndex;
   return (
@@ -321,10 +309,7 @@ export const FileUploaderItem = forwardRef<
 
 FileUploaderItem.displayName = "FileUploaderItem";
 
-export const FileInput = forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, children, ...props }, ref) => {
+export const FileInput = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({ className, children, ...props }, ref) => {
   const { dropzoneState, isFileTooBig, isLOF } = useFileUpload();
   const rootProps = isLOF ? {} : dropzoneState.getRootProps();
   return (

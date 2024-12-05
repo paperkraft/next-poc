@@ -1,4 +1,4 @@
-import { FieldType } from "@/types/types";
+import { FieldType } from "@/types";
 
 export const fieldTypes: FieldType[] = [
   { name: 'Checkbox', isNew: false },
@@ -10,12 +10,11 @@ export const fieldTypes: FieldType[] = [
   { name: 'Input OTP', isNew: false },
   { name: 'Location Input', isNew: true },
   { name: 'Multi Select', isNew: false },
-  { name: 'Password', isNew: false },
+  { name: 'Password', isNew: true },
   { name: 'Phone', isNew: false },
   { name: 'Select', isNew: false },
   { name: 'Signature Input', isNew: true },
   { name: 'Slider', isNew: false },
-  { name: 'Smart Datetime Input', isNew: true },
   { name: 'Switch', isNew: false },
   { name: 'Tags Input', isNew: false },
   { name: 'Textarea', isNew: false },

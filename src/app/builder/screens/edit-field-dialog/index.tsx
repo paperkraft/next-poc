@@ -20,7 +20,7 @@ import {
   SelectContent,
   SelectItem,
 } from '@/components/ui/select'
-import { FormFieldType } from '@/types/types'
+import { FormFieldType } from '@/types'
 
 type EditFieldDialogProps = {
   isOpen: boolean
@@ -39,7 +39,7 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
   const [fieldType, setFieldType] = useState<string>()
 
   useEffect(() => {
-    setEditedField(field)
+    if (field) setEditedField(field);
   }, [field])
 
   const handleSave = () => {
@@ -263,6 +263,7 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
               </div>
             )}
           />
+
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1 border p-3 rounded">
               <Checkbox
@@ -276,6 +277,7 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
               />
               <Label>Required</Label>
             </div>
+
             <div className="flex items-center gap-1 border p-3 rounded">
               <Checkbox
                 checked={editedField.disabled}

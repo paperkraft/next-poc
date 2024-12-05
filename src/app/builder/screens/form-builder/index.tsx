@@ -1,18 +1,17 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 
 import { Separator } from '@/components/ui/separator'
 import If from '@/components/ui/if'
 import { useMediaQuery } from '@/hooks/use-media-query'
-import Link from 'next/link'
-import { FormFieldType } from '@/types/types'
-import SpecialComponentsNotice from '@/app/playground/special-component-notice'
+import { FormFieldType } from '@/types'
 import { EditFieldDialog } from '../edit-field-dialog'
 import { FieldSelector } from '../field-selector'
 import { FormFieldList } from '../form-field-list'
 import { FormPreview } from '../form-preview'
 import { defaultFieldConfig } from '@/constants'
+import { FileBox } from 'lucide-react'
 
 export type FormFieldOrGroup = FormFieldType | FormFieldType[]
 
@@ -38,27 +37,22 @@ export default function FormBuilder() {
       disabled: false,
       label: label || newFieldName,
       name: newFieldName,
-      onChange: () => {},
-      onSelect: () => {},
+      onChange: () => { },
+      onSelect: () => { },
       placeholder: placeholder || 'Placeholder',
       required: true,
       rowIndex: index,
-      setValue: () => {},
+      setValue: () => { },
       type: '',
       value: '',
       variant,
     }
+
     setFormFields([...formFields, newField])
   }
 
-  const findFieldPath = (
-    fields: FormFieldOrGroup[],
-    name: string,
-  ): number[] | null => {
-    const search = (
-      currentFields: FormFieldOrGroup[],
-      currentPath: number[],
-    ): number[] | null => {
+  const findFieldPath = (fields: FormFieldOrGroup[], name: string): number[] | null => {
+    const search = (currentFields: FormFieldOrGroup[], currentPath: number[]): number[] | null => {
       for (let i = 0; i < currentFields.length; i++) {
         const field = currentFields[i]
         if (Array.isArray(field)) {
@@ -74,7 +68,7 @@ export default function FormBuilder() {
   }
 
   const updateFormField = (path: number[], updates: Partial<FormFieldType>) => {
-    const updatedFields = JSON.parse(JSON.stringify(formFields)) // Deep clone
+    const updatedFields = JSON.parse(JSON.stringify(formFields))
     let current: any = updatedFields
     for (let i = 0; i < path.length - 1; i++) {
       current = current[path[i]]
@@ -101,57 +95,52 @@ export default function FormBuilder() {
     setIsDialogOpen(false)
   }
 
-  const FieldSelectorWithSeparator = ({
-    addFormField,
-  }: {
-    addFormField: (variant: string, index?: number) => void
-  }) => (
+  const FieldSelectorWithSeparator = ({ addFormField }: { addFormField: (variant: string, index?: number) => void }) => (
     <div className="flex flex-col md:flex-row gap-3">
       <FieldSelector addFormField={addFormField} />
       <Separator orientation={isDesktop ? 'vertical' : 'horizontal'} />
     </div>
   )
 
+  const RenderFormFieldList = useCallback(() => (
+    <FormFieldList formFields={formFields}
+      setFormFields={setFormFields}
+      updateFormField={updateFormField}
+      openEditDialog={openEditDialog} />
+  ),[formFields])
+
   return (
-    <section className="md:max-h-screen space-y-8">
-      <div className="max-w-5xl mx-auto space-y-4">
-        <h1 className="text-2xl font-semibold">Playground</h1>
-        <p className="text-sm text-muted-foreground">
-          After successfully installing Shadcn, you can simply copy and paste
-          the generated form components to get started. Some components may have
-          additional dependencies, so make sure to review their documentation in
-          the{' '}
-          <Link href="#" className="underline text-slate-800">
-            README
-          </Link>{' '}
-          for further instructions.
-        </p>
+    <section className="md:max-h-screen space-y-4 my-4">
+
+      <div>
+        <h1 className='text-lg font-semibold'>Form Builder</h1>
+        <p className='text-sm'>Click on element from the list to add</p>
       </div>
+
       <If
         condition={formFields.length > 0}
         render={() => (
-          <div className="grid grid-cols-1 md:grid-cols-2 items-start gap-8 md:px-5 h-full">
-            <div className="w-full h-full col-span-1 md:space-x-3 md:max-h-[75vh] flex flex-col md:flex-row ">
+          <div className="grid grid-cols-1 md:grid-cols-2 items-start gap-4 h-full">
+            <div className="w-full h-full auto-cols-max md:space-x-3 md:max-h-[75vh] flex flex-col md:flex-row ">
               <FieldSelectorWithSeparator
                 addFormField={(variant: string, index: number = 0) =>
                   addFormField(variant, index)
                 }
               />
-              <div className="overflow-y-auto flex-1 ">
-                <FormFieldList
-                  formFields={formFields}
-                  setFormFields={setFormFields}
-                  updateFormField={updateFormField}
-                  openEditDialog={openEditDialog}
-                />
+
+              <div className="flex-1">
+                Components:
+                  <RenderFormFieldList/>
               </div>
             </div>
-            <div className="col-span-1 w-full h-full space-y-3">
-              <SpecialComponentsNotice formFields={formFields} />
+
+            <div className="w-full h-full space-y-3 ">
+              {/* <SpecialComponentsNotice formFields={formFields} /> */}
               <FormPreview formFields={formFields} />
             </div>
           </div>
         )}
+
         otherwise={() => (
           <div className="flex flex-col md:flex-row items-center gap-3 md:px-5">
             <FieldSelectorWithSeparator
@@ -159,12 +148,14 @@ export default function FormBuilder() {
                 addFormField(variant, index)
               }
             />
-            {/* <EmptyListSvg className="mx-auto" /> */}
-
-            <>EMPTY</>
+            <div className="mx-auto flex flex-col gap-2 items-center">
+              <FileBox />
+              <p>Build form</p>
+            </div>
           </div>
         )}
       />
+
       <EditFieldDialog
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}

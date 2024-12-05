@@ -17,7 +17,7 @@ export const SPECIAL_COMPONENTS = [
     },
     {
       variant: 'Multi Select',
-      url: 'https://shadcn-extension.vercel.app/docs/multi-select',
+      url: 'https://shadcn-extension.vercel.app/docs/multi-select', 
     },
     {
       variant: 'Password',

@@ -2,7 +2,6 @@
 
 import { ChangeEvent, useRef, useState } from 'react'
 
-// import { FormFieldType } from '@/types'
 import { cn } from '@/lib/utils'
 
 import {
@@ -46,17 +45,17 @@ import {
 } from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'
 import { format } from 'date-fns'
-// import { PasswordInput } from '@/components/ui/password-input'
+import { PasswordInput } from '@/components/ui/password-input'
 // import { PhoneInput } from '@/components/ui/phone-input'
-// import {
-//   FileUploader,
-//   FileUploaderContent,
-//   FileUploaderItem,
-//   FileInput,
-// } from '@/components/ui/file-upload'
+import {
+  FileUploader,
+  FileUploaderContent,
+  FileUploaderItem,
+  FileInput,
+} from '@/components/ui/file-upload'
 import { Slider } from '@/components/ui/slider'
 import { CalendarIcon, Check, ChevronsUpDown, Paperclip } from 'lucide-react'
-// import { TagsInput } from '@/components/ui/tags-input'
+import { TagsInput } from '@/components/ui/tags-input'
 // import {
 //   MultiSelector,
 //   MultiSelectorContent,
@@ -69,7 +68,7 @@ import { CalendarIcon, Check, ChevronsUpDown, Paperclip } from 'lucide-react'
 // import { SmartDatetimeInput } from '@/components/ui/smart-datetime-input'
 import LocationSelector from '@/components/ui/location-input'
 import SignatureInput from '@/components/ui/signature-input'
-import { FormFieldType } from '@/types/types'
+import { FormFieldType } from '@/types'
 
 const languages = [
   { label: 'English', value: 'en' },
@@ -289,7 +288,7 @@ export const renderFormField = (field: FormFieldType, form: any) => {
         <FormItem>
           <FormLabel>{field.label}</FormLabel> {field.required && '*'}
           <FormControl>
-            {/* <FileUploader
+            <FileUploader
               value={files}
               onValueChange={setFiles}
               dropzoneOptions={dropZoneConfig}
@@ -303,6 +302,7 @@ export const renderFormField = (field: FormFieldType, form: any) => {
                   <FileSvgDraw />
                 </div>
               </FileInput>
+
               <FileUploaderContent>
                 {files &&
                   files.length > 0 &&
@@ -313,7 +313,7 @@ export const renderFormField = (field: FormFieldType, form: any) => {
                     </FileUploaderItem>
                   ))}
               </FileUploaderContent>
-            </FileUploader> */}
+            </FileUploader>
 
             File Upload
           </FormControl>
@@ -528,7 +528,7 @@ export const renderFormField = (field: FormFieldType, form: any) => {
         <FormItem>
           <FormLabel>{field.label}</FormLabel>
           <FormControl>
-            {/* <TagsInput
+            <TagsInput
               value={tagsValue}
               onValueChange={(newTags) => {
                 setTagsValue(newTags)
@@ -538,8 +538,7 @@ export const renderFormField = (field: FormFieldType, form: any) => {
                 })
               }}
               placeholder="Enter your tags"
-            /> */}
-
+            />
             TagsInput
           </FormControl>
           <FormDescription>{field.description}</FormDescription>
@@ -566,7 +565,7 @@ export const renderFormField = (field: FormFieldType, form: any) => {
         <FormItem>
           <FormLabel>{field.label}</FormLabel>
           <FormControl>
-            {/* <PasswordInput
+            <PasswordInput
               value={password}
               placeholder="password"
               onChange={(e: ChangeEvent<HTMLInputElement>) => {
@@ -576,8 +575,7 @@ export const renderFormField = (field: FormFieldType, form: any) => {
                   shouldDirty: true,
                 })
               }}
-            /> */}
-            PasswordInput
+            />
           </FormControl>
           <FormDescription>{field.description}</FormDescription>
           <FormMessage />

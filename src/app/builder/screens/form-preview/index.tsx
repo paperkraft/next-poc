@@ -12,7 +12,7 @@ import If from '@/components/ui/if'
 
 import { Files } from 'lucide-react'
 import { formatJSXCode } from '@/lib/utils'
-import { FormFieldType } from '@/types/types'
+import { FormFieldType } from '@/types'
 import { renderFormField } from '../render-form-field'
 import { generateDefaultValues, generateFormCode, generateZodSchema } from '../generate-code-parts'
 
@@ -120,8 +120,8 @@ export const FormPreview: React.FC<FormPreviewProps> = ({ formFields }) => {
           <TabsTrigger value="json">JSON</TabsTrigger>
           <TabsTrigger value="code">Code</TabsTrigger>
         </TabsList>
-        <TabsContent
-          value="preview"
+
+        <TabsContent value="preview"
           className="space-y-4 h-full md:max-h-[70vh] overflow-auto"
         >
           <If
@@ -133,7 +133,9 @@ export const FormPreview: React.FC<FormPreviewProps> = ({ formFields }) => {
                   className="space-y-4 py-5 max-w-lg mx-auto"
                 >
                   {renderFormFields(formFields, form)}
-                  <Button type="submit">Submit</Button>
+                  <div>
+                   <Button type="submit">Submit</Button>
+                  </div>
                 </form>
               </Form>
             )}
@@ -144,6 +146,7 @@ export const FormPreview: React.FC<FormPreviewProps> = ({ formFields }) => {
             )}
           />
         </TabsContent>
+
         <TabsContent value="json">
           <If
             condition={formFields.length > 0}
@@ -159,6 +162,7 @@ export const FormPreview: React.FC<FormPreviewProps> = ({ formFields }) => {
             )}
           />
         </TabsContent>
+
         <TabsContent value="code">
           <If
             condition={formFields.length > 0}
@@ -175,6 +179,7 @@ export const FormPreview: React.FC<FormPreviewProps> = ({ formFields }) => {
                 >
                   <Files />
                 </Button>
+
                 <Highlight
                   code={formattedCode}
                   language="tsx"

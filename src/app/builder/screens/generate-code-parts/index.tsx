@@ -1,5 +1,5 @@
 import { z, ZodTypeAny } from 'zod'
-import { FormFieldType } from '@/types/types'
+import { FormFieldType } from '@/types'
 import { generateCodeSnippet } from '../generate-code-field'
 
 type FormFieldOrGroup = FormFieldType | FormFieldType[]
@@ -175,9 +175,7 @@ export const getZodSchemaString = (formFields: FormFieldOrGroup[]): string => {
   return `const formSchema = z.object({\n${schemaEntries}\n});`
 }
 
-export const generateImports = (
-  formFields: FormFieldOrGroup[],
-): Set<string> => {
+export const generateImports = (formFields: FormFieldOrGroup[]): Set<string> => {
   const importSet = new Set([
     '"use client"',
     'import { useState } from "react"',
@@ -427,7 +425,7 @@ export default function MyForm() {
   ${constants}
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-     ${defaultValuesString}
+    ${defaultValuesString}
   })
 
   function onSubmit(values: z.infer<typeof formSchema>) {

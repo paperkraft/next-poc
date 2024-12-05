@@ -6,7 +6,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { NextAuthProvider } from "@/components/custom/auth-provider";
 import { cn } from "@/lib/utils";
 import AppLayout from "@/components/layout/AppLayout";
-import { ChildProps } from "@/types/types";
+import { ChildProps } from "@/types";
 
 const inter = Inter({subsets: ["latin"]});
 

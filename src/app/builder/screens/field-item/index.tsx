@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { memo, useEffect, useState } from 'react'
 import { motion, Reorder } from 'framer-motion'
 
 import { cn } from '@/lib/utils'
@@ -12,8 +12,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import If from '@/components/ui/if'
-import { FormFieldType } from '@/types/types'
-import { LucideColumns, LucidePencil, LucideTrash2 } from 'lucide-react'
+import { FormFieldType } from '@/types'
+import { LucideColumns, LucidePencil, LucideTrash2, PlusIcon } from 'lucide-react'
 import { defaultFieldConfig, fieldTypes } from '@/constants'
 
 export type FormFieldOrGroup = FormFieldType | FormFieldType[]
@@ -28,7 +28,7 @@ interface Props {
   openEditDialog: (field: FormFieldType) => void
 }
 
-export const FieldItem = ({
+export const FieldItem = memo(({
   index,
   subIndex,
   field,
@@ -37,11 +37,11 @@ export const FieldItem = ({
   updateFormField,
   openEditDialog,
 }: Props) => {
-  const showColumnButton =
-    subIndex === undefined ||
-    subIndex === (formFields[index] as FormFieldType[]).length - 1
+
+  const showColumnButton = subIndex === undefined || subIndex === (formFields[index] as FormFieldType[]).length - 1
 
   const path = subIndex !== undefined ? [index, subIndex] : [index]
+
   const [columnCount, setColumnCount] = useState(() =>
     Array.isArray(formFields[index]) ? formFields[index].length : 1,
   )
@@ -112,8 +112,7 @@ export const FieldItem = ({
       const newFields = [...prevFields]
 
       if (Array.isArray(newFields[rowIndex])) {
-        const row = [...(newFields[rowIndex] as FormFieldType[])]
-
+        const row = [...(newFields[rowIndex] as FormFieldType[])];
         if (subIndex !== null && subIndex >= 0 && subIndex < row.length) {
           row.splice(subIndex, 1)
 
@@ -131,7 +130,11 @@ export const FieldItem = ({
         setColumnCount(1)
       }
 
-      return newFields
+       // Clean up empty rows after column removal
+       const cleanedFields = newFields.filter((field) => {
+        return Array.isArray(field) ? field.length > 0 : field
+      })
+      return cleanedFields
     })
   }
 
@@ -161,45 +164,41 @@ export const FieldItem = ({
       })}
       key={`${field.name}-${columnCount}`}
     >
-      {/* Rest of your component JSX */}
-      <motion.div
-        layout="position"
-        className="flex items-center gap-3"
-        key={`${field.name}-${columnCount}`}
-      >
+    
+
+      <motion.div layout="position"  className="flex items-center gap-3 w-full"  key={`${field.name}-${columnCount}`}>
         <div className="flex items-center gap-1 border rounded-xl px-3 py-1.5 w-full">
           <If
             condition={Array.isArray(formFields[index])}
             render={() => <LucideColumns className="cursor-grab w-4 h-4" />}
           />
+
           <div className="flex items-center w-full">
             <div className="w-full text-sm">{field.variant}</div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => openEditDialog(field)}
-            >
+            
+            <Button variant="ghost" size="icon" onClick={() => openEditDialog(field)}>
               <LucidePencil />
             </Button>
+
             <Button variant="ghost" size="icon" onClick={removeColumn}>
               <LucideTrash2 />
             </Button>
           </div>
         </div>
+
+        {/* Add button */}
+
         <If
-          condition={showColumnButton}
+          condition={showColumnButton && columnCount < 3}
           render={() => (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="min-w-9 w-9 h-9 rounded-full"
-                >
-                  +
+                <Button variant="outline" size="icon" className="min-w-9 w-9 h-9 rounded-full">
+                  <PlusIcon/>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent>
+
+              <DropdownMenuContent className='max-h-64 overflow-y-auto'>
                 <DropdownMenuLabel>Select Component</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {fieldTypes.map((fieldType) => (
@@ -220,4 +219,6 @@ export const FieldItem = ({
       </motion.div>
     </Reorder.Item>
   )
-}
+});
+
+FieldItem.displayName = 'FieldItem'

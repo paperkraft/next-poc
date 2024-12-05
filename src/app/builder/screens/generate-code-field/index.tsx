@@ -1,4 +1,4 @@
-import { FormFieldType } from "@/types/types"
+import { FormFieldType } from "@/types"
 
 export const generateCodeSnippet = (field: FormFieldType) => {
   switch (field.variant) {
@@ -342,7 +342,7 @@ export const generateCodeSnippet = (field: FormFieldType) => {
             <SignatureInput
               canvasRef={canvasRef}
               onSignatureChange={field.onChange}
-            />
+            /> 
             </FormControl>
             ${
               field.description &&
@@ -352,31 +352,6 @@ export const generateCodeSnippet = (field: FormFieldType) => {
           </FormItem>
           )}
         />`
-    case 'Smart Datetime Input':
-      return `
-            <FormField
-              control={form.control}
-              name="${field.name}"
-              render={({ field }) => (
-              <FormItem>
-                <FormLabel>${field.label}</FormLabel>
-                <FormControl>
-                  <SmartDatetimeInput
-                    value={field.value}
-                    onValueChange={field.onChange}
-                    placeholder="e.g. Tomorrow morning 9am"
-                    ${field.locale ? `locale={${field.locale}}` : ''}
-                    ${field.hour12 ? `hour12` : ''}
-                  />
-                </FormControl>
-                ${
-                  field.description &&
-                  `<FormDescription>${field.description}</FormDescription>`
-                }
-                <FormMessage />
-              </FormItem>
-              )}
-            />`
     case 'Switch':
       return `
           <FormField
@@ -402,29 +377,6 @@ export const generateCodeSnippet = (field: FormFieldType) => {
                 </FormItem>
               )}
             />`
-    case 'Tags Input':
-      return `
-        <FormField
-          control={form.control}
-          name="${field.name}"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>${field.label}</FormLabel>
-              <FormControl>
-                <TagsInput
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  placeholder="Enter your tags"
-                />
-              </FormControl>
-              ${
-                field.description &&
-                `<FormDescription>${field.description}</FormDescription>`
-              }
-              <FormMessage />
-            </FormItem>
-          )}
-        />`
     case 'Textarea':
       return `
         <FormField

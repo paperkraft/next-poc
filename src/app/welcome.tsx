@@ -3,7 +3,7 @@ import { useMounted } from "@/hooks/use-mounted";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
-import FormBuilder from "./screens/form-builder";
+import FormBuilder from "./builder/screens/form-builder";
 
 export default function WelcomePage() {
   const mounted = useMounted();
@@ -20,9 +20,10 @@ export default function WelcomePage() {
   return (
     mounted && data &&
     <div>
-      <p>Welcome, {data?.user?.name ?? data?.user?.email}</p>
-      <p>Your Unique Id: {data?.user?.id ?? ""}</p>
-
+      <div className="hidden">
+        <p>Welcome, {data?.user?.name ?? data?.user?.email}</p>
+        <p>Your Unique Id: {data?.user?.id ?? ""}</p>
+      </div>
       <FormBuilder/>
     </div>
   );

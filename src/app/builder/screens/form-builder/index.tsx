@@ -107,14 +107,14 @@ export default function FormBuilder() {
     setFormFields={setFormFields}
     updateFormField={updateFormField}
     openEditDialog={openEditDialog} />
-  ),[formFields])
+  ),[formFields]);
 
   return (
     <section className="md:max-h-screen space-y-4 my-4">
 
       <div>
         <h1 className='text-lg font-semibold'>Form Builder</h1>
-        <p className='text-sm'>Click on element from the list to add</p>
+        <p className='text-sm'>Click on component from the list to add</p>
       </div>
 
       <If
@@ -129,8 +129,7 @@ export default function FormBuilder() {
               />
 
               <div className="flex-1">
-                Components:
-                  <RenderFormFieldList/> 
+                <RenderFormFieldList/> 
               </div>
             </div>
 
@@ -147,9 +146,10 @@ export default function FormBuilder() {
                 addFormField(variant, index)
               }
             />
-            <div className="mx-auto flex flex-col gap-2 items-center">
-              <FileBox />
-              <p>Build form</p>
+            <div className="mx-auto flex flex-col gap-2 items-center border p-8 rounded">
+              <FileBox className='size-10' />
+              <p>To add</p>
+              <p>Click on component from the list</p>
             </div>
           </div>
         )}

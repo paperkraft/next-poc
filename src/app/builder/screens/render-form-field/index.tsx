@@ -69,17 +69,19 @@ import { TagsInput } from '@/components/ui/tags-input'
 import LocationSelector from '@/components/ui/location-input'
 import SignatureInput from '@/components/ui/signature-input'
 import { FormFieldType } from '@/types'
+import { Separator } from '@/components/ui/separator'
+import Divider from '@/components/ui/divider'
 
 const languages = [
   { label: 'English', value: 'en' },
-  { label: 'French', value: 'fr' },
-  { label: 'German', value: 'de' },
-  { label: 'Spanish', value: 'es' },
-  { label: 'Portuguese', value: 'pt' },
-  { label: 'Russian', value: 'ru' },
-  { label: 'Japanese', value: 'ja' },
-  { label: 'Korean', value: 'ko' },
-  { label: 'Chinese', value: 'zh' },
+  { label: 'Hindi', value: 'hi' },
+  { label: 'Marathi', value: 'mr' },
+  { label: 'Other', value: 'or' },
+] as const
+
+const options = [
+  { label: 'Option A', value: 'A' },
+  { label: 'Option B', value: 'B' },
 ] as const
 
 const FileSvgDraw = () => {
@@ -413,16 +415,16 @@ export const renderFormField = (field: FormFieldType, form: any) => {
       return (
         <FormItem>
           <FormLabel>{field.label}</FormLabel> {field.required && '*'}
-          <Select onValueChange={field.onChange} defaultValue="m@example.com">
+          <Select onValueChange={field.onChange} defaultValue="">
             <FormControl>
               <SelectTrigger>
-                <SelectValue placeholder="Select a verified email to display" />
+                <SelectValue placeholder="Select" />
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              <SelectItem value="m@example.com">m@example.com</SelectItem>
-              <SelectItem value="m@google.com">m@google.com</SelectItem>
-              <SelectItem value="m@support.com">m@support.com</SelectItem>
+              {options.map((item)=>(
+                <SelectItem value={item.value}>{item.label}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <FormDescription>{field.description}</FormDescription>
@@ -597,6 +599,10 @@ export const renderFormField = (field: FormFieldType, form: any) => {
           <FormDescription>{field.description}</FormDescription>
           <FormMessage />
         </FormItem>
+      )
+    case 'Divider':
+      return (
+        <Divider />
       )
     default:
       return null

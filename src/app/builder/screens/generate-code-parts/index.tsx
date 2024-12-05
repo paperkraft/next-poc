@@ -264,6 +264,11 @@ export const generateImports = (formFields: FormFieldOrGroup[]): Set<string> => 
           'import { PhoneInput } from "@/components/ui/phone-input";',
         )
         break
+      case 'Divider':
+        importSet.add(
+          'import Divider from "@/components/ui/divider";',
+        )
+        break
       default:
         importSet.add(
           `import { ${field.variant} } from "@/components/ui/${field.variant.toLowerCase()}"`,
@@ -285,15 +290,10 @@ export const generateConstants = (
   formFields.flat().forEach((field) => {
     if (field.variant === 'Combobox') {
       constantSet.add(`const languages = [
-        { label: "English", value: "en" },
-        { label: "French", value: "fr" },
-        { label: "German", value: "de" },
-        { label: "Spanish", value: "es" },
-        { label: "Portuguese", value: "pt" },
-        { label: "Russian", value: "ru" },
-        { label: "Japanese", value: "ja" },
-        { label: "Korean", value: "ko" },
-        { label: "Chinese", value: "zh" },
+        { label: 'English', value: 'en' },
+        { label: 'Hindi', value: 'hi' },
+        { label: 'Marathi', value: 'mr' },
+        { label: 'Other', value: 'or' },
       ] as const;`)
     } else if (field.variant === 'File Input') {
       constantSet.add(`
@@ -311,6 +311,11 @@ export const generateConstants = (
         `)
     } else if (field.variant === 'Signature Input') {
       constantSet.add(`const canvasRef = useRef<HTMLCanvasElement>(null)`)
+    } else if (field.variant === 'Select'){
+      constantSet.add(`const options = [
+        { label: "Option A", value: "A" },
+        { label: "Option B", value: "B" },
+      ] as const;`)
     }
   })
 
@@ -390,6 +395,7 @@ export const generateDefaultValuesString = (
 }
 
 export const generateFormCode = (formFields: FormFieldOrGroup[]): string => {
+  
   const imports = Array.from(generateImports(formFields)).join('\n')
   const constants = Array.from(generateConstants(formFields)).join('\n')
   const schema = getZodSchemaString(formFields)
@@ -419,13 +425,15 @@ export const generateFormCode = (formFields: FormFieldOrGroup[]): string => {
   }
 
   const defaultValuesString = generateDefaultValuesString(formFields)
+  const defaultValues = generateDefaultValues(formFields)
 
   const component = `
 export default function MyForm() {
   ${constants}
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    ${defaultValuesString}
+    defaultValues: ${JSON.stringify(defaultValues, null, 2)}
+    
   })
 
   function onSubmit(values: z.infer<typeof formSchema>) {

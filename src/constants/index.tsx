@@ -18,6 +18,7 @@ export const fieldTypes: FieldType[] = [
   { name: 'Switch', isNew: false },
   { name: 'Tags Input', isNew: false },
   { name: 'Textarea', isNew: false },
+  { name: 'Divider', isNew: false },
 ]
 
 export const defaultFieldConfig: Record<

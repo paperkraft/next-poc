@@ -71,6 +71,7 @@ import SignatureInput from '@/components/ui/signature-input'
 import { FormFieldType } from '@/types'
 import { Separator } from '@/components/ui/separator'
 import Divider from '@/components/ui/divider'
+import { PhoneInput } from '@/components/ui/phone-input'
 
 const languages = [
   { label: 'English', value: 'en' },
@@ -585,16 +586,15 @@ export const renderFormField = (field: FormFieldType, form: any) => {
         <FormItem>
           <FormLabel>{field.label}</FormLabel>
           <FormControl>
-            {/* <PhoneInput
-              defaultCountry="TR"
+            <PhoneInput
+              defaultCountry="IN"
               onChange={(phoneNumber) => {
                 form.setValue(field.name, phoneNumber, {
                   shouldValidate: true,
                   shouldDirty: true,
                 })
               }}
-            /> */}
-            PhoneInput
+            />
           </FormControl>
           <FormDescription>{field.description}</FormDescription>
           <FormMessage />

@@ -290,11 +290,11 @@ export const generateCodeSnippet = (field: FormFieldType) => {
                     <SelectValue placeholder="${field.placeholder}" />
                   </SelectTrigger>
                 </FormControl>
-                <SelectContent>
-                  <SelectItem value="m@example.com">m@example.com</SelectItem>
-                  <SelectItem value="m@google.com">m@google.com</SelectItem>
-                  <SelectItem value="m@support.com">m@support.com</SelectItem>
-                </SelectContent>
+                  <SelectContent>
+                    {options.map((item)=>(
+                      <SelectItem value={item.value} key={item.value}>{item.label}</SelectItem>
+                    ))}
+                  </SelectContent>
               </Select>
                 ${
                   field.description &&
@@ -493,16 +493,7 @@ export const generateCodeSnippet = (field: FormFieldType) => {
             `
     case 'Divider':
       return `
-        <div className={cn(relative)}>
-            <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">
-                   {text}
-                </span>
-            </div>
-        </div>
+        <Divider />
       `
     default:
       return null

@@ -20,10 +20,6 @@ export const SPECIAL_COMPONENTS = [
       url: 'https://shadcn-extension.vercel.app/docs/multi-select', 
     },
     {
-      variant: 'Password',
-      url: 'https://gist.github.com/mjbalcueva/b21f39a8787e558d4c536bf68e267398',
-    },
-    {
       variant: 'Phone',
       url: 'https://shadcn-phone-input.vercel.app/',
     },

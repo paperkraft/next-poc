@@ -1,30 +1,40 @@
 import { FieldType } from "@/types";
 
 export const fieldTypes: FieldType[] = [
+  { name: 'Input', isNew: false },
+  { name: 'Select', isNew: false },
+  { name: 'Phone', isNew: false },
+  { name: 'Password', isNew: false },
+  { name: 'Date Picker', isNew: false },
+  { name: 'Divider', isNew: false },
   { name: 'Checkbox', isNew: false },
   { name: 'Combobox', isNew: false },
-  { name: 'Date Picker', isNew: false },
-  { name: 'Datetime Picker', isNew: true },
   { name: 'File Input', isNew: false },
-  { name: 'Input', isNew: false },
   { name: 'Input OTP', isNew: false },
   { name: 'Location Input', isNew: true },
-  { name: 'Multi Select', isNew: false },
-  { name: 'Password', isNew: true },
-  { name: 'Phone', isNew: false },
-  { name: 'Select', isNew: false },
   { name: 'Signature Input', isNew: true },
   { name: 'Slider', isNew: false },
   { name: 'Switch', isNew: false },
   { name: 'Tags Input', isNew: false },
   { name: 'Textarea', isNew: false },
-  { name: 'Divider', isNew: false },
+  // { name: 'Multi Select', isNew: false },
+  // { name: 'Datetime Picker', isNew: true },
 ]
 
 export const defaultFieldConfig: Record<
   string,
   { label: string; description: string; placeholder?: any }
 > = {
+  Input: {
+    label: 'Label',
+    description: 'This is sample description.',
+    placeholder: 'Placeholder',
+  },
+  Select: {
+    label: 'Select',
+    description: 'This is sample description.',
+    placeholder: 'Select',
+  },
   Checkbox: {
     label: 'Use different settings for my mobile devices',
     description:
@@ -46,11 +56,7 @@ export const defaultFieldConfig: Record<
     label: 'Select File',
     description: 'Select a file to upload.',
   },
-  Input: {
-    label: 'Username',
-    description: 'This is your public display name.',
-    placeholder: 'shadcn',
-  },
+  
   'Input OTP': {
     label: 'One-Time Password',
     description: 'Please enter the one-time password sent to your phone.',
@@ -64,11 +70,7 @@ export const defaultFieldConfig: Record<
     label: 'Select your framework',
     description: 'Select multiple options.',
   },
-  Select: {
-    label: 'Email',
-    description: 'You can manage email addresses in your email settings.',
-    placeholder: 'Select a verified email to display',
-  },
+ 
   Slider: {
     label: 'Set Price Range',
     description: 'Adjust the price by sliding.',

@@ -4,6 +4,7 @@ import React from 'react'
 import { hasPermission } from '@/lib/rbac';
 import TitlePage from '@/components/custom/page-heading';
 import TestPage from './Test';
+import MyForm from '@/app/builder/form-test/page';
 
 export default async function Page() {
   // const session = await auth();
@@ -18,6 +19,7 @@ export default async function Page() {
     <>
        <TitlePage title='Introduction' description='Sample page to test access'/>
        <TestPage/>
+       <MyForm/>
     </>
   )
 }

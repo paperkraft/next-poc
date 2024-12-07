@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import If from '@/components/ui/if'
 import { FormFieldType } from '@/types'
-import { LucideColumns, LucidePencil, LucideTrash2, PlusIcon } from 'lucide-react'
+import { GripVerticalIcon, LucideColumns, LucidePencil, LucideTrash2, PlusIcon } from 'lucide-react'
 import { defaultFieldConfig, fieldTypes } from '@/constants'
 
 export type FormFieldOrGroup = FormFieldType | FormFieldType[]
@@ -171,7 +171,7 @@ export const FieldItem = memo(({
         <div className="flex items-center gap-1 border rounded-xl px-3 py-1.5 w-full">
           <If
             condition={Array.isArray(formFields[index])}
-            render={() => <LucideColumns className="cursor-grab w-4 h-4" />}
+            render={() => <GripVerticalIcon className="cursor-grab w-4 h-4" />}
           />
 
           <div className="flex items-center w-full">

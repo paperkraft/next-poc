@@ -66,6 +66,7 @@ import { IModule } from "@/app/_Interface/Module"
 import { IGroup } from "@/app/_Interface/Group"
 import { toast } from "sonner"
 import { groupConfig, menusConfig, userConfig } from "@/hooks/use-config"
+import { ScrollArea, ScrollBar } from "../ui/scroll-area"
 
 const AppSidebar = ({ children }: ChildProps) => {
     const queryClient = new QueryClient();
@@ -78,8 +79,10 @@ const AppSidebar = ({ children }: ChildProps) => {
                     </SidebarHeader>
 
                     <SidebarContent>
-                        <RenderMenus />
-                        <OtherOptions />
+                        <ScrollArea className="h-[100vh]">
+                            <RenderMenus />
+                            <ScrollBar orientation="vertical" />
+                        </ScrollArea>
                     </SidebarContent>
 
                     <SidebarFooter>

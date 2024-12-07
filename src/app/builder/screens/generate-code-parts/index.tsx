@@ -15,6 +15,9 @@ export const generateZodSchema = (
     let fieldSchema: z.ZodTypeAny
 
     switch (field.variant) {
+      case 'Divider':
+        fieldSchema = z.undefined()
+        break
       case 'Checkbox':
         fieldSchema = z.boolean().default(true)
         break

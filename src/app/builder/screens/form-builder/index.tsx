@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useState } from 'react'
+import React, { Dispatch, useCallback, useEffect, useState } from 'react'
 
 import { Separator } from '@/components/ui/separator'
 import If from '@/components/ui/if'
@@ -49,6 +49,8 @@ export default function FormBuilder() {
     }
 
     setFormFields([...formFields, newField])
+
+
   }
 
   const findFieldPath = (fields: FormFieldOrGroup[], name: string): number[] | null => {
@@ -77,6 +79,7 @@ export default function FormBuilder() {
       ...current[path[path.length - 1]],
       ...updates,
     }
+
     setFormFields(updatedFields)
   }
 
@@ -102,12 +105,15 @@ export default function FormBuilder() {
     </div>
   )
 
-  const RenderFormFieldList = useCallback(() => (
-    <FormFieldList formFields={formFields}
-    setFormFields={setFormFields}
-    updateFormField={updateFormField}
-    openEditDialog={openEditDialog} />
-  ),[formFields]);
+  const RenderFormFieldList = ({formFields}:{formFields:FormFieldOrGroup[]}) => {
+    return (
+      <FormFieldList formFields={formFields}
+        setFormFields={setFormFields}
+        updateFormField={updateFormField}
+        openEditDialog={openEditDialog}
+      />
+    )
+  };
 
   return (
     <section className="md:max-h-screen space-y-4 my-4">
@@ -129,7 +135,7 @@ export default function FormBuilder() {
               />
 
               <div className="flex-1">
-                <RenderFormFieldList/> 
+                <RenderFormFieldList formFields={formFields}/>
               </div>
             </div>
 
@@ -164,3 +170,5 @@ export default function FormBuilder() {
     </section>
   )
 }
+
+

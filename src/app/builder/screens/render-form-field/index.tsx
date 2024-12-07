@@ -424,7 +424,7 @@ export const renderFormField = (field: FormFieldType, form: any) => {
             </FormControl>
             <SelectContent>
               {options.map((item)=>(
-                <SelectItem value={item.value}>{item.label}</SelectItem>
+                <SelectItem value={item.value} key={item.value}>{item.label}</SelectItem>
               ))}
             </SelectContent>
           </Select>

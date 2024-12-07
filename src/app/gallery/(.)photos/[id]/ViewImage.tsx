@@ -1,6 +1,6 @@
 'use client'
 import DialogBox from "@/components/custom/dialog-box";
-import { ImgProps } from "@/types/types";
+import { ImgProps } from "@/types";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";

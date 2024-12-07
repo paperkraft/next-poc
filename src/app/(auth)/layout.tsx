@@ -1,7 +1,7 @@
 import { CarouselPlugin } from "@/components/custom/carousel-content";
 import ToggleButtons from "@/components/layout/ToggleButtons";
 import { Button } from "@/components/ui/button";
-import { ChildProps } from "@/types/types";
+import { ChildProps } from "@/types";
 import { ChevronLeft } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";

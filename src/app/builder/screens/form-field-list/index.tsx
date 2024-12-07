@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useMemo } from 'react'
 import { Reorder, AnimatePresence } from 'framer-motion'
 import { GripHorizontalIcon } from 'lucide-react'
 import { FormFieldType } from '@/types'
@@ -13,10 +13,8 @@ type FormFieldListProps = {
   openEditDialog: (field: FormFieldType) => void
 }
 
-export const FormFieldList = React.memo(({ formFields, setFormFields, updateFormField, openEditDialog }: FormFieldListProps) => {
-  console.log('FormFieldList');
-  
-  const [rowTabs, setRowTabs] = useState<{ [key: number]: FormFieldType[] }>({})
+export const FormFieldList =  ({ formFields, setFormFields, updateFormField, openEditDialog }: FormFieldListProps) => {
+  const [rowTabs, setRowTabs] = useState<{ [key: number]: FormFieldType[] }>({});
 
   const handleHorizontalReorder = useCallback((index: number, newOrder: FormFieldType[]) => {
     // Ensure the row is reordered correctly
@@ -27,10 +25,30 @@ export const FormFieldList = React.memo(({ formFields, setFormFields, updateForm
       setFormFields((prevFields) => {
         const updatedFields = [...prevFields];
         updatedFields[index] = newOrder;
-        return updatedFields;
+        return updatedFields
       });
     }, 500);
-  }, [rowTabs]);
+  }, [setRowTabs]);
+
+
+  // Handle both horizontal and vertical reordering
+  const handleReorder = useCallback((index: number, newOrder: FormFieldType[], isHorizontal: boolean = false) => {
+    if (isHorizontal) {
+      // Horizontal reordering
+      setRowTabs((prev) => ({ ...prev, [index]: newOrder }));
+
+      setTimeout(() => {
+        setFormFields((prevFields) => {
+          const updatedFields = [...prevFields];
+          updatedFields[index] = newOrder;
+          return updatedFields
+        });
+      }, 500);
+    } else {
+      // Vertical reordering
+      setFormFields(newOrder);
+    }
+  }, [setFormFields]);
 
   return (
     <div className="mt-3 lg:mt-0">
@@ -53,7 +71,8 @@ export const FormFieldList = React.memo(({ formFields, setFormFields, updateForm
               <Reorder.Group
                 as='ul'
                 axis="x"
-                onReorder={(newOrder) => handleHorizontalReorder(index, newOrder)}
+                // onReorder={(newOrder) => handleHorizontalReorder(index, newOrder)}
+                onReorder={(newOrder) => handleReorder(index, newOrder, true)} // Horizontal reorder handling
                 values={rowTabs[index] || item}
                 className="w-full grid grid-cols-12 gap-1"
               >
@@ -87,6 +106,6 @@ export const FormFieldList = React.memo(({ formFields, setFormFields, updateForm
       </Reorder.Group>
     </div>
   )
-})
+}
 
-FormFieldList.displayName = "FormFieldList";
+// FormFieldList.displayName = "FormFieldList";

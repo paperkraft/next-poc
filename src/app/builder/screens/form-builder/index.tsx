@@ -109,7 +109,7 @@ const FormBuilder = memo(() => {
   ), [formFields] as any);
 
 
-  const renderFormFields = () => (
+  const renderFormFields = useCallback(() => (
     <div className="grid grid-cols-1 md:grid-cols-3 items-start gap-8 h-full">
       <div className="w-full col-span-2 h-full flex flex-col md:flex-row space-x-3">
         <FieldSelectorWithSeparator addFormField={addFormField} />
@@ -127,7 +127,7 @@ const FormBuilder = memo(() => {
         <FormPreview formFields={formFields} />
       </div>
     </div>
-  );
+  ),[formFields]);
 
   const renderEmptyState = () => (
     <div className="flex flex-col md:flex-row items-center gap-3 md:px-5">

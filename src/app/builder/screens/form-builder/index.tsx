@@ -1,6 +1,6 @@
 'use client'
 
-import React, { Dispatch, useCallback, useEffect, useState } from 'react'
+import React, { memo, useCallback, useState } from 'react'
 
 import { Separator } from '@/components/ui/separator'
 import If from '@/components/ui/if'
@@ -15,21 +15,17 @@ import { FileBox } from 'lucide-react'
 
 export type FormFieldOrGroup = FormFieldType | FormFieldType[]
 
-export default function FormBuilder() {
+const FormBuilder = memo(() => {
   const isDesktop = useMediaQuery('(min-width: 768px)')
 
   const [formFields, setFormFields] = useState<FormFieldOrGroup[]>([])
   const [selectedField, setSelectedField] = useState<FormFieldType | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
-  const addFormField = (variant: string, index: number) => {
+  const addFormField = (variant: string, index: number = 0) => {
     const newFieldName = `name_${Math.random().toString().slice(-10)}`
 
-    const { label, description, placeholder } = defaultFieldConfig[variant] || {
-      label: '',
-      description: '',
-      placeholder: '',
-    }
+    const { label, description, placeholder } = defaultFieldConfig[variant] || {}
 
     const newField: FormFieldType = {
       checked: true,
@@ -48,9 +44,7 @@ export default function FormBuilder() {
       variant,
     }
 
-    setFormFields([...formFields, newField])
-
-
+    setFormFields([...formFields, newField]);
   }
 
   const findFieldPath = (fields: FormFieldOrGroup[], name: string): number[] | null => {
@@ -105,61 +99,55 @@ export default function FormBuilder() {
     </div>
   )
 
-  const RenderFormFieldList = ({formFields}:{formFields:FormFieldOrGroup[]}) => {
-    return (
-      <FormFieldList formFields={formFields}
-        setFormFields={setFormFields}
-        updateFormField={updateFormField}
-        openEditDialog={openEditDialog}
-      />
-    )
-  };
+  const RenderFormFieldList = memo(() => (
+    <FormFieldList
+      formFields={formFields}
+      setFormFields={setFormFields}
+      updateFormField={updateFormField}
+      openEditDialog={openEditDialog}
+    />
+  ), [formFields] as any);
+
+
+  const renderFormFields = () => (
+    <div className="grid grid-cols-1 md:grid-cols-3 items-start gap-8 h-full">
+      <div className="w-full col-span-2 h-full flex flex-col md:flex-row space-x-3">
+        <FieldSelectorWithSeparator addFormField={addFormField} />
+        <div className="flex-1">
+          {/* <RenderFormFieldList /> */}
+          <FormFieldList
+            formFields={formFields}
+            setFormFields={setFormFields}
+            updateFormField={updateFormField}
+            openEditDialog={openEditDialog}
+          />
+        </div>
+      </div>
+      <div className="w-full h-full space-y-3">
+        <FormPreview formFields={formFields} />
+      </div>
+    </div>
+  );
+
+  const renderEmptyState = () => (
+    <div className="flex flex-col md:flex-row items-center gap-3 md:px-5">
+      <FieldSelectorWithSeparator addFormField={addFormField} />
+      <div className="mx-auto flex flex-col gap-2 items-center border p-8 rounded">
+        <FileBox className="size-10" />
+        <p>To add</p>
+        <p>Click on component from the list</p>
+      </div>
+    </div>
+  );
 
   return (
     <section className="md:max-h-screen space-y-4 my-4">
-
       <div>
         <h1 className='text-lg font-semibold'>Form Builder</h1>
         <p className='text-sm'>Click on component from the list to add</p>
       </div>
 
-      <If
-        condition={formFields.length > 0}
-        render={() => (
-          <div className="grid grid-cols-1 md:grid-cols-3 items-start gap-8 h-full">
-            <div className="w-full col-span-2 h-full auto-cols-max md:space-x-3 md:max-h-[75vh] flex flex-col md:flex-row ">
-              <FieldSelectorWithSeparator
-                addFormField={(variant: string, index: number = 0) =>
-                  addFormField(variant, index)
-                }
-              />
-
-              <div className="flex-1">
-                <RenderFormFieldList formFields={formFields}/>
-              </div>
-            </div>
-
-            <div className="w-full h-full space-y-3 ">
-              <FormPreview formFields={formFields} />
-            </div>
-          </div>
-        )}
-
-        otherwise={() => (
-          <div className="flex flex-col md:flex-row items-center gap-3 md:px-5">
-            <FieldSelectorWithSeparator
-              addFormField={(variant: string, index: number = 0) =>
-                addFormField(variant, index)
-              }
-            />
-            <div className="mx-auto flex flex-col gap-2 items-center border p-8 rounded">
-              <FileBox className='size-10' />
-              <p>To add</p>
-              <p>Click on component from the list</p>
-            </div>
-          </div>
-        )}
-      />
+      <If condition={formFields.length > 0} render={renderFormFields} otherwise={renderEmptyState} />
 
       <EditFieldDialog
         isOpen={isDialogOpen}
@@ -169,6 +157,6 @@ export default function FormBuilder() {
       />
     </section>
   )
-}
+})
 
-
+export default FormBuilder;

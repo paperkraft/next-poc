@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useMemo } from 'react'
-import { Reorder, AnimatePresence } from 'framer-motion'
+import React, { useState, useCallback, useMemo, useEffect } from 'react'
+import { motion, Reorder, AnimatePresence } from 'framer-motion'
 import { GripHorizontalIcon } from 'lucide-react'
 import { FormFieldType } from '@/types'
 import { FieldItem } from '../field-item'
@@ -28,27 +28,8 @@ export const FormFieldList =  ({ formFields, setFormFields, updateFormField, ope
         return updatedFields
       });
     }, 500);
-  }, [setRowTabs]);
-
-
-  // Handle both horizontal and vertical reordering
-  const handleReorder = useCallback((index: number, newOrder: FormFieldType[], isHorizontal: boolean = false) => {
-    if (isHorizontal) {
-      // Horizontal reordering
-      setRowTabs((prev) => ({ ...prev, [index]: newOrder }));
-
-      setTimeout(() => {
-        setFormFields((prevFields) => {
-          const updatedFields = [...prevFields];
-          updatedFields[index] = newOrder;
-          return updatedFields
-        });
-      }, 500);
-    } else {
-      // Vertical reordering
-      setFormFields(newOrder);
-    }
   }, [setFormFields]);
+
 
   return (
     <div className="mt-3 lg:mt-0">
@@ -71,8 +52,7 @@ export const FormFieldList =  ({ formFields, setFormFields, updateFormField, ope
               <Reorder.Group
                 as='ul'
                 axis="x"
-                // onReorder={(newOrder) => handleHorizontalReorder(index, newOrder)}
-                onReorder={(newOrder) => handleReorder(index, newOrder, true)} // Horizontal reorder handling
+                onReorder={(newOrder) => handleHorizontalReorder(index, newOrder)}
                 values={rowTabs[index] || item}
                 className="w-full grid grid-cols-12 gap-1"
               >

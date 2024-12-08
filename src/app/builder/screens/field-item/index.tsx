@@ -1,5 +1,5 @@
 import { memo, useEffect, useState } from 'react'
-import { motion, Reorder } from 'framer-motion'
+import { motion, Reorder, useDragControls } from 'framer-motion'
 
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -55,16 +55,9 @@ export const FieldItem = memo(({
       : [formFields[index]?.name]
 
     // Check if the new field name already exists in the existing fields
-    if (existingFields.includes(newFieldName)) {
-      // If a field with the same name exists, do not add a new field
-      return
-    }
+    if (existingFields.includes(newFieldName)) return
 
-    const { label, description, placeholder } = defaultFieldConfig[variant] || {
-      label: '',
-      description: '',
-      placeholder: '',
-    }
+    const { label, description, placeholder } = defaultFieldConfig[variant] || {}
 
     const newField: FormFieldType = {
       checked: true,
@@ -72,26 +65,28 @@ export const FieldItem = memo(({
       disabled: false,
       label: label || newFieldName,
       name: newFieldName,
-      onChange: () => {},
-      onSelect: () => {},
+      onChange: () => { },
+      onSelect: () => { },
       placeholder: placeholder || 'Placeholder',
       required: true,
       rowIndex: index,
-      setValue: () => {},
+      setValue: () => { },
       type: '',
       value: '',
       variant,
     }
 
     setFormFields((prevFields) => {
-      const newFields = [...prevFields]
+      // const newFields = [...prevFields]
+      const newFields = JSON.parse(JSON.stringify(formFields))
+
       if (Array.isArray(newFields[index])) {
         // If it's already an array, check for duplicates before adding
         const currentFieldNames = (newFields[index] as FormFieldType[]).map(
           (field) => field.name,
         )
         if (!currentFieldNames.includes(newFieldName)) {
-          ;(newFields[index] as FormFieldType[]).push(newField)
+          (newFields[index] as FormFieldType[]).push(newField)
         }
       } else if (newFields[index]) {
         // If it's a single field, convert it to an array with the existing field and the new one
@@ -101,40 +96,52 @@ export const FieldItem = memo(({
         newFields[index] = newField
       }
       return newFields
-    })
+    });
+
+    console.log('added from + dropdown')
   }
 
   const removeColumn = () => {
     const rowIndex = path[0]
     const subIndex = path.length > 1 ? path[1] : null
 
+    console.log('rowIndex:subIndex', rowIndex + ' : ' + subIndex);
+
     setFormFields((prevFields) => {
       const newFields = [...prevFields]
-
+      
       if (Array.isArray(newFields[rowIndex])) {
         const row = [...(newFields[rowIndex] as FormFieldType[])];
+
         if (subIndex !== null && subIndex >= 0 && subIndex < row.length) {
-          row.splice(subIndex, 1)
+          row.splice(subIndex, 1);
 
           if (row.length > 0) {
             newFields[rowIndex] = row
-            // Update column count immediately after removal
             setColumnCount(row.length)
           } else {
             newFields.splice(rowIndex, 1)
             setColumnCount(1)
           }
+
+          // if (row.length === 1) {
+          //   // Convert array with one item to an object
+          //   newFields[rowIndex] = row[0];
+          // } else if (row.length === 0) {
+          //   // Remove empty rows
+          //   newFields.splice(rowIndex, 1);
+          // } else {
+          //   // Update the row with the remaining columns
+          //   newFields[rowIndex] = row;
+          // }
         }
       } else {
-        newFields.splice(rowIndex, 1)
-        setColumnCount(1)
+        newFields.splice(rowIndex, 1);
+        setColumnCount(1);
       }
 
-       // Clean up empty rows after column removal
-       const cleanedFields = newFields.filter((field) => {
-        return Array.isArray(field) ? field.length > 0 : field
-      })
-      return cleanedFields
+      // Clean up empty rows after column removal
+      return newFields.filter((field) => (Array.isArray(field) ? field.length > 0 : field !== null));
     })
   }
 
@@ -143,13 +150,17 @@ export const FieldItem = memo(({
       ? formFields[index].length
       : 1
     setColumnCount(newColumnCount)
-  }, [formFields, index])
+  }, [formFields, index]);
+
+
+  const controls = useDragControls()
 
   return (
     <Reorder.Item
       as='div'
       value={field}
       id={field.name}
+      key={`${field.name}-${columnCount}`}
       initial={{ opacity: 0, y: 30 }}
       animate={{
         opacity: 1,
@@ -163,20 +174,24 @@ export const FieldItem = memo(({
         'col-span-6': columnCount === 2,
         'col-span-4': columnCount === 3,
       })}
-      key={`${field.name}-${columnCount}`}
-    >
-    
 
-      <motion.div layout="position" className="flex items-center gap-3 w-full"  key={`${field.name}-${columnCount}`}>
+      dragListener={false}
+      dragControls={controls}
+    >
+
+
+      <motion.div layout="position" className="flex items-center gap-3 w-full"
+        key={`${field.name}-${columnCount}`}
+      >
         <div className="flex items-center gap-1 border rounded-xl px-3 py-1.5 w-full">
           <If
             condition={Array.isArray(formFields[index])}
-            render={() => <GripVerticalIcon className="cursor-grab w-4 h-4" />}
+            render={() => <GripVerticalIcon className="cursor-grab w-4 h-4" onPointerDown={(e) => controls.start(e)} />}
           />
 
           <div className="flex items-center w-full">
             <div className="w-full text-sm">{field.variant}</div>
-            
+
             <Button variant="ghost" size="icon" onClick={() => openEditDialog(field)}>
               <LucidePencil />
             </Button>
@@ -195,7 +210,7 @@ export const FieldItem = memo(({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon" className="min-w-9 w-9 h-9 rounded-full">
-                  <PlusIcon/>
+                  <PlusIcon />
                 </Button>
               </DropdownMenuTrigger>
 

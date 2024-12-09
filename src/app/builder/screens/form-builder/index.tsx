@@ -12,10 +12,11 @@ import { FormFieldList } from '../form-field-list'
 import { FormPreview } from '../form-preview'
 import { defaultFieldConfig } from '@/constants'
 import { FileBox } from 'lucide-react'
+import TitlePage from '@/components/custom/page-heading'
 
 export type FormFieldOrGroup = FormFieldType | FormFieldType[]
 
-const FormBuilder = memo(() => {
+const FormBuilder = () => {
   const isDesktop = useMediaQuery('(min-width: 768px)')
 
   const [formFields, setFormFields] = useState<FormFieldOrGroup[]>([])
@@ -99,26 +100,14 @@ const FormBuilder = memo(() => {
     </div>
   )
 
-  const RenderFormFieldList = memo(() => (
-    <FormFieldList
-      formFields={formFields}
-      setFormFields={setFormFields}
-      updateFormField={updateFormField}
-      openEditDialog={openEditDialog}
-    />
-  ), [formFields] as any);
-
-
   const renderFormFields = useCallback(() => (
     <div className="grid grid-cols-1 md:grid-cols-3 items-start gap-8 h-full">
       <div className="w-full col-span-2 h-full flex flex-col md:flex-row space-x-3">
         <FieldSelectorWithSeparator addFormField={addFormField} />
         <div className="flex-1">
-          {/* <RenderFormFieldList /> */}
           <FormFieldList
             formFields={formFields}
             setFormFields={setFormFields}
-            updateFormField={updateFormField}
             openEditDialog={openEditDialog}
           />
         </div>
@@ -127,7 +116,7 @@ const FormBuilder = memo(() => {
         <FormPreview formFields={formFields} />
       </div>
     </div>
-  ),[formFields]);
+  ), [formFields]);
 
   const renderEmptyState = () => (
     <div className="flex flex-col md:flex-row items-center gap-3 md:px-5">
@@ -141,11 +130,8 @@ const FormBuilder = memo(() => {
   );
 
   return (
-    <section className="md:max-h-screen space-y-4 my-4">
-      <div>
-        <h1 className='text-lg font-semibold'>Form Builder</h1>
-        <p className='text-sm'>Click on component from the list to add</p>
-      </div>
+    <section className="md:max-h-screen space-y-4">
+      <TitlePage title="Form Builder" description="Click on component from the list to add" />
 
       <If condition={formFields.length > 0} render={renderFormFields} otherwise={renderEmptyState} />
 
@@ -157,6 +143,6 @@ const FormBuilder = memo(() => {
       />
     </section>
   )
-})
+}
 
 export default FormBuilder;

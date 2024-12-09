@@ -24,8 +24,8 @@ interface Props {
   field: FormFieldType
   formFields: FormFieldOrGroup[]
   setFormFields: React.Dispatch<React.SetStateAction<FormFieldOrGroup[]>>
-  updateFormField: (path: number[], updates: Partial<FormFieldType>) => void
   openEditDialog: (field: FormFieldType) => void
+  onRemoveField: (index:number, subIndex:number | null) => void
 }
 
 export const FieldItem = memo(({
@@ -34,13 +34,14 @@ export const FieldItem = memo(({
   field,
   formFields,
   setFormFields,
-  updateFormField,
   openEditDialog,
+  onRemoveField,
 }: Props) => {
 
-  const showColumnButton = subIndex === undefined || subIndex === (formFields[index] as FormFieldType[]).length - 1
-
-  const path = subIndex !== undefined ? [index, subIndex] : [index]
+  const controls = useDragControls();
+  const showColumnButton = 
+    subIndex === undefined || 
+    subIndex === (formFields[index] as FormFieldType[]).length - 1
 
   const [columnCount, setColumnCount] = useState(() =>
     Array.isArray(formFields[index]) ? formFields[index].length : 1,
@@ -54,7 +55,7 @@ export const FieldItem = memo(({
       ? (formFields[index] as FormFieldType[]).map((field) => field.name)
       : [formFields[index]?.name]
 
-    // Check if the new field name already exists in the existing fields
+    // Check if the new field name already exists
     if (existingFields.includes(newFieldName)) return
 
     const { label, description, placeholder } = defaultFieldConfig[variant] || {}
@@ -77,11 +78,9 @@ export const FieldItem = memo(({
     }
 
     setFormFields((prevFields) => {
-      // const newFields = [...prevFields]
-      const newFields = JSON.parse(JSON.stringify(formFields))
+      const newFields = JSON.parse(JSON.stringify(prevFields));
 
       if (Array.isArray(newFields[index])) {
-        // If it's already an array, check for duplicates before adding
         const currentFieldNames = (newFields[index] as FormFieldType[]).map(
           (field) => field.name,
         )
@@ -89,60 +88,12 @@ export const FieldItem = memo(({
           (newFields[index] as FormFieldType[]).push(newField)
         }
       } else if (newFields[index]) {
-        // If it's a single field, convert it to an array with the existing field and the new one
         newFields[index] = [newFields[index] as FormFieldType, newField]
       } else {
-        // If the index doesn't exist, just add the new field
         newFields[index] = newField
       }
       return newFields
     });
-
-    console.log('added from + dropdown')
-  }
-
-  const removeColumn = () => {
-    const rowIndex = path[0]
-    const subIndex = path.length > 1 ? path[1] : null
-
-    console.log('rowIndex:subIndex', rowIndex + ' : ' + subIndex);
-
-    setFormFields((prevFields) => {
-      const newFields = [...prevFields]
-      
-      if (Array.isArray(newFields[rowIndex])) {
-        const row = [...(newFields[rowIndex] as FormFieldType[])];
-
-        if (subIndex !== null && subIndex >= 0 && subIndex < row.length) {
-          row.splice(subIndex, 1);
-
-          if (row.length > 0) {
-            newFields[rowIndex] = row
-            setColumnCount(row.length)
-          } else {
-            newFields.splice(rowIndex, 1)
-            setColumnCount(1)
-          }
-
-          // if (row.length === 1) {
-          //   // Convert array with one item to an object
-          //   newFields[rowIndex] = row[0];
-          // } else if (row.length === 0) {
-          //   // Remove empty rows
-          //   newFields.splice(rowIndex, 1);
-          // } else {
-          //   // Update the row with the remaining columns
-          //   newFields[rowIndex] = row;
-          // }
-        }
-      } else {
-        newFields.splice(rowIndex, 1);
-        setColumnCount(1);
-      }
-
-      // Clean up empty rows after column removal
-      return newFields.filter((field) => (Array.isArray(field) ? field.length > 0 : field !== null));
-    })
   }
 
   useEffect(() => {
@@ -151,9 +102,6 @@ export const FieldItem = memo(({
       : 1
     setColumnCount(newColumnCount)
   }, [formFields, index]);
-
-
-  const controls = useDragControls()
 
   return (
     <Reorder.Item
@@ -168,7 +116,7 @@ export const FieldItem = memo(({
         transition: { duration: 0.15 },
       }}
       exit={{ opacity: 0, y: 20, transition: { duration: 0.5 } }}
-      whileDrag={{ backgroundColor: '#9ca3af', borderRadius: '12px' }}
+      whileDrag={{ backgroundColor: '#dcfce7', borderRadius: '8px' }}
       className={cn('w-full', {
         'col-span-12': columnCount === 1,
         'col-span-6': columnCount === 2,
@@ -180,23 +128,26 @@ export const FieldItem = memo(({
     >
 
 
-      <motion.div layout="position" className="flex items-center gap-3 w-full"
-        key={`${field.name}-${columnCount}`}
-      >
-        <div className="flex items-center gap-1 border rounded-xl px-3 py-1.5 w-full">
-          <If
+      <motion.div layout="position" className="max-h-10 flex items-center gap-2 w-full" key={`${field.name}-${columnCount}`}>
+        <div className="flex items-center gap-1 border rounded-md px-2 py-1 w-full">
+          <If 
             condition={Array.isArray(formFields[index])}
-            render={() => <GripVerticalIcon className="cursor-grab w-4 h-4" onPointerDown={(e) => controls.start(e)} />}
+            render={() => (
+              <Button variant="outline" size="icon" onPointerDown={(e) => controls.start(e)}
+                className="size-7 hover:text-blue-400">
+                <GripVerticalIcon className="cursor-grab w-4 h-4"  />
+              </Button>
+            )}
           />
 
           <div className="flex items-center w-full">
             <div className="w-full text-sm">{field.variant}</div>
 
-            <Button variant="ghost" size="icon" onClick={() => openEditDialog(field)}>
+            <Button variant="ghost" size="icon" className='hover:text-green-500' onClick={() => openEditDialog(field)}>
               <LucidePencil />
             </Button>
 
-            <Button variant="ghost" size="icon" onClick={removeColumn}>
+            <Button variant="ghost" size="icon" className='hover:text-red-500' onClick={()=> onRemoveField(index, subIndex ?? null)}>
               <LucideTrash2 />
             </Button>
           </div>
@@ -209,12 +160,12 @@ export const FieldItem = memo(({
           render={() => (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" className="min-w-9 w-9 h-9 rounded-full">
+                <Button variant="outline" size="icon" className="min-w-9 w-9 h-9 rounded-full hover:text-blue-400">
                   <PlusIcon />
                 </Button>
               </DropdownMenuTrigger>
 
-              <DropdownMenuContent className='max-h-64 overflow-y-auto'>
+              <DropdownMenuContent className='max-h-64 overflow-y-auto' align='end'>
                 <DropdownMenuLabel>Select Component</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {fieldTypes.map((fieldType) => (

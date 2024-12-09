@@ -19,12 +19,12 @@ export default function WelcomePage() {
 
   return (
     mounted && data &&
-    <div>
+    <>
       <div className="hidden">
         <p>Welcome, {data?.user?.name ?? data?.user?.email}</p>
         <p>Your Unique Id: {data?.user?.id ?? ""}</p>
       </div>
       <FormBuilder/>
-    </div>
+    </>
   );
 }

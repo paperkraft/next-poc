@@ -155,89 +155,86 @@ export default function SortableItem({
         >
 
             {Array.isArray(field) ? (
-                <>
-                    <DndContext onDragEnd={handleDragEnd}>
-                        <SortableContext
-                            items={field.map((f) => f.name)}
-                            strategy={horizontalListSortingStrategy}
-                        >
+                <DndContext onDragEnd={handleDragEnd} key={`${field.name}-${columnCount}`}>
+                    <SortableContext
+                        items={field.map((f) => f.name)}
+                        strategy={horizontalListSortingStrategy}
+                    >
 
-                            <div className="flex items-center w-full">
-                                <div className="w-full text-sm">{field.variant}</div>
+                        <div className="flex items-center w-full">
+                            <div className="w-full text-sm">{field.variant}</div>
 
-                                <Button variant="ghost" size="icon" className='hover:text-green-500' onClick={() => openEditDialog(field)}>
-                                    <LucidePencil />
-                                </Button>
+                            <Button variant="ghost" size="icon" className='hover:text-green-500' onClick={() => openEditDialog(field)}>
+                                <LucidePencil />
+                            </Button>
 
-                                <Button variant="ghost" size="icon" className='hover:text-red-500' onClick={() => onRemoveField(index, subIndex ?? null)}>
-                                    <LucideTrash2 />
-                                </Button>
-                            </div>
-
-                        </SortableContext>
-                    </DndContext>
-                </>
-            ) : (
-                <>
-                    <div className="max-h-10 flex items-center gap-2 w-full " key={`${field.name}-${columnCount}`}>
-
-                        <div className="flex items-center gap-1 border rounded-md px-2 py-1 w-full">
-                            <If
-                                condition={Array.isArray(formFields[index])}
-                                render={() => (
-                                    <Button variant="outline" size="icon"
-                                        className="size-7 hover:text-blue-400">
-                                        <GripVerticalIcon className="cursor-grab w-4 h-4" />
-                                    </Button>
-                                )}
-                            />
-
-                            <div className="flex items-center w-full">
-                                <div className="w-full text-sm">{field.variant}</div>
-
-                                <Button variant="ghost" size="icon" className='hover:text-green-500' onClick={() => openEditDialog(field)}>
-                                    <LucidePencil />
-                                </Button>
-
-                                <Button variant="ghost" size="icon" className='hover:text-red-500' onClick={() => onRemoveField(index, subIndex ?? null)}>
-                                    <LucideTrash2 />
-                                </Button>
-                            </div>
+                            <Button variant="ghost" size="icon" className='hover:text-red-500' onClick={() => onRemoveField(index, subIndex ?? null)}>
+                                <LucideTrash2 />
+                            </Button>
                         </div>
 
-                        {/* Add button */}
+                    </SortableContext>
+                </DndContext>
+            ) : (
+                <div className="max-h-10 flex items-center gap-2 w-full " >
 
+                    <div className="flex items-center gap-1 border rounded-md px-2 py-1 w-full">
                         <If
-                            condition={showColumnButton && columnCount < 3}
+                            condition={Array.isArray(formFields[index])}
                             render={() => (
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="outline" size="icon" className="min-w-9 w-9 h-9 rounded-full hover:text-blue-400">
-                                            <PlusIcon />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-
-                                    <DropdownMenuContent className='max-h-64 overflow-y-auto' align='end'>
-                                        <DropdownMenuLabel>Select Component</DropdownMenuLabel>
-                                        <DropdownMenuSeparator />
-                                        {fieldTypes.map((fieldType) => (
-                                            <DropdownMenuItem
-                                                key={fieldType.name}
-                                                onClick={() => {
-                                                    addNewColumn(fieldType.name, index)
-                                                    setColumnCount((prev) => prev + 1)
-                                                }}
-                                            >
-                                                {fieldType.name}
-                                            </DropdownMenuItem>
-                                        ))}
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                                <Button variant="outline" size="icon"
+                                    className="size-7 hover:text-blue-400">
+                                    <GripVerticalIcon className="cursor-grab w-4 h-4" />
+                                </Button>
                             )}
                         />
 
+                        <div className="flex items-center w-full">
+                            <div className="w-full text-sm">{field.variant}</div>
+
+                            <Button variant="ghost" size="icon" className='hover:text-green-500' onClick={() => openEditDialog(field)}>
+                                <LucidePencil />
+                            </Button>
+
+                            {/* <Button variant="ghost" size="icon" className='hover:text-red-500' onClick={() => onRemoveField(index, subIndex ?? null)}> */}
+                            <Button variant="ghost" size="icon" className='hover:text-red-500' onClick={() => alert(index)}>
+                                <LucideTrash2 />
+                            </Button>
+                        </div>
                     </div>
-                </>
+
+                    {/* Add button */}
+
+                    <If
+                        condition={showColumnButton && columnCount < 3}
+                        render={() => (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="icon" className="min-w-9 w-9 h-9 rounded-full hover:text-blue-400">
+                                        <PlusIcon />
+                                    </Button>
+                                </DropdownMenuTrigger>
+
+                                <DropdownMenuContent className='max-h-64 overflow-y-auto' align='end'>
+                                    <DropdownMenuLabel>Select Component</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    {fieldTypes.map((fieldType) => (
+                                        <DropdownMenuItem
+                                            key={fieldType.name}
+                                            onClick={() => {
+                                                addNewColumn(fieldType.name, index)
+                                                setColumnCount((prev) => prev + 1)
+                                            }}
+                                        >
+                                            {fieldType.name}
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
+                    />
+
+                </div>
             )}
 
 

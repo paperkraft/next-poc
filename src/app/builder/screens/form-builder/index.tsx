@@ -13,6 +13,7 @@ import { FormPreview } from '../form-preview'
 import { defaultFieldConfig } from '@/constants'
 import { FileBox } from 'lucide-react'
 import TitlePage from '@/components/custom/page-heading'
+import SortableList from '../form-field-list/sortableList'
 
 export type FormFieldOrGroup = FormFieldType | FormFieldType[]
 
@@ -100,12 +101,18 @@ const FormBuilder = () => {
     </div>
   )
 
-  const renderFormFields = useCallback(() => (
+  const renderFormFields = () => (
     <div className="grid grid-cols-1 md:grid-cols-3 items-start gap-8 h-full">
       <div className="w-full col-span-2 h-full flex flex-col md:flex-row space-x-3">
         <FieldSelectorWithSeparator addFormField={addFormField} />
         <div className="flex-1">
-          <FormFieldList
+          {/* <FormFieldList
+            formFields={formFields}
+            setFormFields={setFormFields}
+            openEditDialog={openEditDialog}
+          /> */}
+
+          <SortableList
             formFields={formFields}
             setFormFields={setFormFields}
             openEditDialog={openEditDialog}
@@ -116,7 +123,7 @@ const FormBuilder = () => {
         <FormPreview formFields={formFields} />
       </div>
     </div>
-  ), [formFields]);
+  );
 
   const renderEmptyState = () => (
     <div className="flex flex-col md:flex-row items-center gap-3 md:px-5">

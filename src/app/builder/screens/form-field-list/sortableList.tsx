@@ -1,12 +1,8 @@
-import React, { forwardRef, useCallback, useState } from 'react';
-import { closestCenter, DndContext, DragEndEvent, DragOverlay, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { arrayMove, horizontalListSortingStrategy, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { closestCenter, DndContext, DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { FormFieldType } from '@/types';
-import { Button } from '@/components/ui/button';
-import { GripHorizontalIcon } from 'lucide-react';
-import { Handle } from '../field-item/Handle';
-import { cn } from '@/lib/utils';
 import { SortableItem } from '../field-item/sortableItem';
+import { restrictToVerticalAxis, restrictToWindowEdges } from '@dnd-kit/modifiers'
 
 export type FormFieldOrGroup = FormFieldType | FormFieldType[]
 
@@ -16,14 +12,11 @@ type FormFieldListProps = {
     openEditDialog: (field: FormFieldType) => void
 }
 
-export default function SortableList({ formFields, setFormFields }: FormFieldListProps) {
+function getFieldId(field: FormFieldOrGroup, index: number): string {
+    return Array.isArray(field) ? `row-${index}` : (field as FormFieldType).name;
+}
 
-    const sensors = useSensors(
-        useSensor(PointerSensor),
-        useSensor(KeyboardSensor, {
-            coordinateGetter: sortableKeyboardCoordinates,
-        })
-    );
+export default function SortableList({ formFields, setFormFields }: FormFieldListProps) {
 
     function handleDragEnd(event: DragEndEvent) {
         const { active, over } = event;
@@ -40,35 +33,31 @@ export default function SortableList({ formFields, setFormFields }: FormFieldLis
         }
     }
 
-    const handleRemove = (id:string|number) => {
-        alert(id)
-    };
-
     return (
         <DndContext
-            sensors={sensors}
             collisionDetection={closestCenter}
             onDragEnd={handleDragEnd}
+            modifiers={[restrictToVerticalAxis, restrictToWindowEdges]}
+            
         >
             <SortableContext
-                items={formFields.map((field, index) => Array.isArray(field) ? `row-${index}` : field.name)}
+                items={formFields.map((field, index) => getFieldId(field, index))}
                 strategy={verticalListSortingStrategy}
+                
 
             >
                 {formFields.map((field, index) => (
                     <div className="flex items-center gap-1 p-2"
-                        key={Array.isArray(field) ? `row-${index}` : field.name}
-                        id={Array.isArray(field) ? `row-${index}` : field.name}
+                        key={getFieldId(field, index)}
+                        id={getFieldId(field, index)}
                     >
                         <SortableItem
-                            key={Array.isArray(field) ? `row-${index}` : field.name}
+                            key={getFieldId(field, index)}
                             field={field as any}
                             index={index}
                             formFields={formFields}
                             setFormFields={setFormFields}
-                            onRemove={handleRemove}
                         />
-                        
                     </div>
                 ))}
             </SortableContext>

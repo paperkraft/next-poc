@@ -76,6 +76,8 @@ const FormBuilder = () => {
       ...updates,
     }
 
+    console.log('up',updatedFields);
+    
     setFormFields(updatedFields)
   }
 
@@ -106,11 +108,11 @@ const FormBuilder = () => {
       <div className="w-full col-span-2 h-full flex flex-col md:flex-row space-x-3">
         <FieldSelectorWithSeparator addFormField={addFormField} />
         <div className="flex-1">
-          {/* <FormFieldList
+          <FormFieldList
             formFields={formFields}
             setFormFields={setFormFields}
             openEditDialog={openEditDialog}
-          /> */}
+          />
 
           <SortableList
             formFields={formFields}

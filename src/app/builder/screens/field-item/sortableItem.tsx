@@ -23,7 +23,7 @@ import { defaultFieldConfig, fieldTypes } from '@/constants';
 interface Props {
     index: number;
     subIndex?: number;
-    field: FormFieldType;
+    field: FormFieldType | FormFieldOrGroup;
     formFields: FormFieldOrGroup[];
     setFormFields: React.Dispatch<React.SetStateAction<FormFieldOrGroup[]>>;
 }

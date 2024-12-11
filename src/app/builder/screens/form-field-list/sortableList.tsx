@@ -43,8 +43,6 @@ export default function SortableList({ formFields, setFormFields }: FormFieldLis
             <SortableContext
                 items={formFields.map((field, index) => getFieldId(field, index))}
                 strategy={verticalListSortingStrategy}
-                
-
             >
                 {formFields.map((field, index) => (
                     <div className="flex items-center gap-1 p-2"
@@ -53,7 +51,7 @@ export default function SortableList({ formFields, setFormFields }: FormFieldLis
                     >
                         <SortableItem
                             key={getFieldId(field, index)}
-                            field={field as any}
+                            field={field}
                             index={index}
                             formFields={formFields}
                             setFormFields={setFormFields}

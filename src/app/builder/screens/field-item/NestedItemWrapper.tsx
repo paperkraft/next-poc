@@ -20,11 +20,11 @@ export const NestedItemWrapper = ({ formFields, field, index, subIndex, setFormF
         <div
             ref={setNodeRef}
             style={style}
-            className={cn("max-h-9 flex items-center w-full border bg-background", 
+            className={cn("max-h-9 flex items-center w-full border bg-background rounded-sm", 
                 { 'bg-blue-50 border-blue-200': isDragging }
             )}
         >
-            <DragHandle field={field} index={index} subIndex={subIndex} />
+            <DragHandle field={field} subIndex={subIndex} />
             
             <Item
                 field={field}

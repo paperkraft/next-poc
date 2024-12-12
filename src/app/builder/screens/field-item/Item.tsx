@@ -2,9 +2,9 @@ import { Button } from "@/components/ui/button"
 import { ItemProps } from "./sortableItem"
 import { LucidePencil, LucideTrash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useCallback } from "react"
+import { memo, useCallback } from "react"
 
-export const Item = ({ field, index, subIndex, setFormFields, openEditDialog }: ItemProps) => {
+export const Item = memo(({ field, index, subIndex, setFormFields, openEditDialog }: ItemProps) => {
 
     const handleRemoveField = useCallback((index: number, fieldIndex: number | null) => {
         setFormFields((prevFields) => {
@@ -32,7 +32,7 @@ export const Item = ({ field, index, subIndex, setFormFields, openEditDialog }: 
 
     return (
         <div className={cn("flex items-center w-full p-1 px-2", 
-            {'border bg-background': !subIndex && subIndex !== 0 }
+            {'border bg-background rounded-sm': !subIndex && subIndex !== 0 }
         )}>
             <div className="w-full text-sm">{field.variant}</div>
             <div>
@@ -59,4 +59,6 @@ export const Item = ({ field, index, subIndex, setFormFields, openEditDialog }: 
             </div>
         </div>
     )
-}
+});
+
+Item.displayName = "Item"

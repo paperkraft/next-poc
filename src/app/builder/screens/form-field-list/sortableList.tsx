@@ -1,3 +1,4 @@
+'use client'
 import { closestCenter, DndContext, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { FormFieldType } from '@/types';
@@ -6,17 +7,17 @@ import { restrictToVerticalAxis, restrictToWindowEdges } from '@dnd-kit/modifier
 
 export type FormFieldOrGroup = FormFieldType | FormFieldType[]
 
-type FormFieldListProps = {
-    formFields: FormFieldOrGroup[]
-    setFormFields: React.Dispatch<React.SetStateAction<FormFieldOrGroup[]>>
-    openEditDialog: (field: FormFieldType) => void
+interface FormFieldListProps {
+    formFields: FormFieldOrGroup[];
+    setFormFields: React.Dispatch<React.SetStateAction<FormFieldOrGroup[]>>;
+    openEditDialog: (field: FormFieldType) => void;
 }
 
-function getFieldId(field: FormFieldOrGroup, index: number): string {
-    return Array.isArray(field) ? `row-${index}` : (field as FormFieldType).name;
+export function getFieldId(field: FormFieldOrGroup): string {
+    return Array.isArray(field) ? `row-${field[0]?.name}` : field.name
 }
 
-export default function SortableList({ formFields, setFormFields }: FormFieldListProps) {
+export default function SortableList({ formFields, setFormFields, openEditDialog }: FormFieldListProps) {
 
     function handleDragEnd(event: DragEndEvent) {
         const { active, over } = event;
@@ -24,11 +25,11 @@ export default function SortableList({ formFields, setFormFields }: FormFieldLis
         const overId = over ? String(over.id) : "";
 
         if (over && activeId !== overId) {
-            const oldIndex = formFields.findIndex(field => (Array.isArray(field) ? `row-${formFields.indexOf(field)}` === activeId : field.name === activeId));
-            const newIndex = formFields.findIndex(field => (Array.isArray(field) ? `row-${formFields.indexOf(field)}` === overId : field.name === overId));
+            const oldIndex = formFields.findIndex(field => getFieldId(field) === activeId);
+            const newIndex = formFields.findIndex(field => getFieldId(field) === overId);
 
             if (oldIndex !== -1 && newIndex !== -1) {
-                setFormFields((prev) => arrayMove(prev, oldIndex, newIndex));
+                setFormFields(arrayMove(formFields, oldIndex, newIndex));
             }
         }
     }
@@ -38,27 +39,30 @@ export default function SortableList({ formFields, setFormFields }: FormFieldLis
             collisionDetection={closestCenter}
             onDragEnd={handleDragEnd}
             modifiers={[restrictToVerticalAxis, restrictToWindowEdges]}
-            
         >
             <SortableContext
-                items={formFields.map((field, index) => getFieldId(field, index))}
+                items={formFields.map((field) => getFieldId(field))}
                 strategy={verticalListSortingStrategy}
             >
-                {formFields.map((field, index) => (
-                    <div className="flex items-center gap-1 p-2"
-                        key={getFieldId(field, index)}
-                        id={getFieldId(field, index)}
-                    >
-                        <SortableItem
-                            key={getFieldId(field, index)}
-                            field={field}
-                            index={index}
-                            formFields={formFields}
-                            setFormFields={setFormFields}
-                        />
-                    </div>
-                ))}
+                <div className='flex flex-col gap-3'>
+                    {formFields.map((field, index) => (
+                        <div className="max-h-[50px] p-1 w-full"
+                            key={getFieldId(field)}
+                            id={getFieldId(field)}
+                        >
+                            <SortableItem
+                                field={field as FormFieldType}
+                                index={index}
+                                subIndex={null}
+                                formFields={formFields}
+                                setFormFields={setFormFields}
+                                openEditDialog={openEditDialog}
+                            />
+                        </div>
+                    ))}
+                </div>
             </SortableContext>
         </DndContext>
     );
 }
+

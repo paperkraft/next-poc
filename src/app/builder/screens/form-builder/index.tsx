@@ -117,7 +117,7 @@ const FormBuilder = () => {
           <SortableList
             formFields={formFields}
             setFormFields={setFormFields}
-            openEditDialog={openEditDialog}
+            openEditDialog={openEditDialog} 
           />
         </div>
       </div>

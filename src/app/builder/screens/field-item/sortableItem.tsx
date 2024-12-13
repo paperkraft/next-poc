@@ -1,10 +1,10 @@
 'use client'
 import React, { useEffect, useState } from 'react';
-import { arrayMove, horizontalListSortingStrategy, SortableContext, useSortable } from '@dnd-kit/sortable';
+import { arrayMove, horizontalListSortingStrategy, SortableContext, sortableKeyboardCoordinates, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { FormFieldType } from '@/types';
 import { cn } from '@/lib/utils';
-import { closestCenter, DndContext, DragEndEvent } from '@dnd-kit/core';
+import { closestCenter, DndContext, DragEndEvent, KeyboardSensor, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { restrictToHorizontalAxis, restrictToParentElement } from '@dnd-kit/modifiers'
 import If from '@/components/ui/if';
 import { DragHandle } from './DragHandle';
@@ -25,6 +25,14 @@ export interface ItemProps {
 }
 
 export function SortableItem({ index, field, formFields, setFormFields, openEditDialog }: ItemProps) {
+
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(TouchSensor),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
 
     const { setNodeRef, transform, transition, isDragging } = useSortable({
         id: getFieldId(field)
@@ -71,12 +79,12 @@ export function SortableItem({ index, field, formFields, setFormFields, openEdit
                 'bg-green-50 ring-green-200': isDragging
             })}
         >
-            <div className={cn("max-h-12 flex items-center w-full p-2")} >
-                <DragHandle field={field} subIndex={null} />
+            <div className={cn("max-h-12 flex items-center w-full p-2 pl-1.5")} >
 
-                <div className={cn("max-h-10 flex items-center gap-2 p-2 w-full")}>
+                <div className={cn("max-h-10 flex items-center gap-2 p-2 pl-0 w-full")}>
                     {Array.isArray(field) ? (
                         <DndContext
+                            sensors={sensors}
                             collisionDetection={closestCenter}
                             onDragEnd={(e) => handleDragEndNested(e, index)}
                             modifiers={[restrictToHorizontalAxis, restrictToParentElement]}
@@ -118,6 +126,9 @@ export function SortableItem({ index, field, formFields, setFormFields, openEdit
                         />
                     )}
                 />
+
+                <DragHandle field={field} subIndex={null} />
+                
             </div>
         </div>
     );

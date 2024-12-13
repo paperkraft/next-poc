@@ -28,14 +28,6 @@ export const RenderDropdownList = memo(({ formFields, setFormFields, setColumnCo
     const addNewColumn = (variant: string, index: number) => {
         const newFieldName = `name_${Math.random().toString().slice(-10)}`
 
-        // Check for duplicates
-        const existingFields = Array.isArray(formFields[index])
-            ? (formFields[index] as FormFieldType[]).map((field) => field.name)
-            : [formFields[index]?.name]
-
-        // Check if the new field name already exists
-        if (existingFields.includes(newFieldName)) return
-
         const { label, description, placeholder } = defaultFieldConfig[variant] || {}
 
         const newField: FormFieldType = {
@@ -84,7 +76,7 @@ export const RenderDropdownList = memo(({ formFields, setFormFields, setColumnCo
                 </div>
             </DropdownMenuTrigger>
 
-            <DropdownMenuContent className='max-h-64 overflow-y-auto' align='end'>
+            <DropdownMenuContent className='max-h-64 overflow-y-auto' align='start'>
                 <DropdownMenuLabel>Select Component</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {fieldTypes.map((fieldType) => (

@@ -1,6 +1,6 @@
 'use client'
-import { closestCenter, DndContext, DragEndEvent } from '@dnd-kit/core';
-import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { closestCenter, DndContext, DragEndEvent, KeyboardSensor, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { FormFieldType } from '@/types';
 import { SortableItem } from '../field-item/sortableItem';
 import { restrictToVerticalAxis, restrictToWindowEdges } from '@dnd-kit/modifiers'
@@ -19,8 +19,17 @@ export function getFieldId(field: FormFieldOrGroup): string {
 
 export default function SortableList({ formFields, setFormFields, openEditDialog }: FormFieldListProps) {
 
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(TouchSensor),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
+
     function handleDragEnd(event: DragEndEvent) {
         const { active, over } = event;
+
         const activeId = String(active.id);
         const overId = over ? String(over.id) : "";
 
@@ -36,6 +45,7 @@ export default function SortableList({ formFields, setFormFields, openEditDialog
 
     return (
         <DndContext
+            sensors={sensors}
             collisionDetection={closestCenter}
             onDragEnd={handleDragEnd}
             modifiers={[restrictToVerticalAxis, restrictToWindowEdges]}
@@ -65,4 +75,3 @@ export default function SortableList({ formFields, setFormFields, openEditDialog
         </DndContext>
     );
 }
-

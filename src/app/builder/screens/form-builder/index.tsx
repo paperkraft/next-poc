@@ -1,14 +1,12 @@
 'use client'
 
-import React, { memo, useCallback, useState } from 'react'
-
+import React, { useState } from 'react'
 import { Separator } from '@/components/ui/separator'
 import If from '@/components/ui/if'
 import { useMediaQuery } from '@/hooks/use-media-query'
 import { FormFieldType } from '@/types'
 import { EditFieldDialog } from '../edit-field-dialog'
 import { FieldSelector } from '../field-selector'
-import { FormFieldList } from '../form-field-list'
 import { FormPreview } from '../form-preview'
 import { defaultFieldConfig } from '@/constants'
 import { FileBox } from 'lucide-react'
@@ -76,8 +74,8 @@ const FormBuilder = () => {
       ...updates,
     }
 
-    console.log('up',updatedFields);
-    
+    console.log('up', updatedFields);
+
     setFormFields(updatedFields)
   }
 
@@ -108,16 +106,10 @@ const FormBuilder = () => {
       <div className="w-full col-span-2 h-full flex flex-col md:flex-row space-x-3">
         <FieldSelectorWithSeparator addFormField={addFormField} />
         <div className="flex-1">
-          {/* <FormFieldList
-            formFields={formFields}
-            setFormFields={setFormFields}
-            openEditDialog={openEditDialog}
-          /> */}
-
           <SortableList
             formFields={formFields}
             setFormFields={setFormFields}
-            openEditDialog={openEditDialog} 
+            openEditDialog={openEditDialog}
           />
         </div>
       </div>

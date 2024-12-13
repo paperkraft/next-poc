@@ -9,17 +9,10 @@ interface IIf {
 
 const displayName = 'If'
 
-const isEmptyChildren = (children: ReactNode) =>
-    React.Children.count(children) === 0
+const isEmptyChildren = (children: ReactNode) => React.Children.count(children) === 0
 
-const If = ({
-    children,
-    condition,
-    otherwise = () => undefined,
-    render,
-}: IIf) => {
-    const evaluatedCondition =
-        typeof condition === 'function' ? condition() : condition
+const If = ({ children, condition, otherwise = () => undefined, render }: IIf) => {
+    const evaluatedCondition = typeof condition === 'function' ? condition() : condition
 
     if (evaluatedCondition) {
         if (render) {

@@ -131,6 +131,10 @@ export const data = [
             {
                 title: "Access",
                 url: "/settings/rbac",
+            },
+            {
+                title: "Form Builder",
+                url: "/settings/form-builder",
             }
         ]
     }

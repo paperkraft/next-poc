@@ -11,7 +11,7 @@ import { DragHandle } from './DragHandle';
 import { Item } from './Item';
 import { NestedItemWrapper } from './NestedItemWrapper';
 import { RenderDropdownList } from './RenderDropdownList';
-import { getFieldId } from '../form-field-list/sortableList';
+import { getFieldId } from '../sortable-list';
 
 export type FormFieldOrGroup = FormFieldType | FormFieldType[]
 

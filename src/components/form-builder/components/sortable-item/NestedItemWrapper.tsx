@@ -1,5 +1,5 @@
 import { useSortable } from "@dnd-kit/sortable";
-import { ItemProps } from "./sortableItem";
+import { ItemProps } from ".";
 import { CSS } from '@dnd-kit/utilities';
 import { cn } from "@/lib/utils";
 import { DragHandle } from "./DragHandle";

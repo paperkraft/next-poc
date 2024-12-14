@@ -46,6 +46,7 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    SidebarMenuSkeleton,
     SidebarMenuSub,
     SidebarProvider,
     useSidebar,
@@ -249,9 +250,9 @@ const SkeletonMenuGroup = () => {
                 </SidebarGroupLabel>
                 <SidebarMenu>
                     {
-                        Array.from([80, 100, 90].sort(() => Math.random() - 0.5)).map((el, idx) => (
+                        Array.from({ length: 3 }).map((_, idx) => (
                             <SidebarMenuItem key={idx}>
-                                <Skeleton className={cn("w-24 h-5 ml-2 my-1")} style={{ width: `${el}px` }} />
+                                <SidebarMenuSkeleton />
                             </SidebarMenuItem>
                         ))
                     }

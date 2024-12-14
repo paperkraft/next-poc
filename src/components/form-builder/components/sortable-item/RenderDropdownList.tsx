@@ -4,7 +4,7 @@ import { memo } from 'react';
 import { PlusIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { FormFieldType } from '@/types';
-import { FormFieldOrGroup } from './sortableItem';
+import { FormFieldOrGroup } from '.';
 import { defaultFieldConfig, fieldTypes } from '@/constants';
 import {
     DropdownMenu,

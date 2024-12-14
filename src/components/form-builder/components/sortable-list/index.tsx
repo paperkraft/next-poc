@@ -2,7 +2,7 @@
 import { closestCenter, DndContext, DragEndEvent, KeyboardSensor, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { FormFieldType } from '@/types';
-import { SortableItem } from '../field-item/sortableItem';
+import { SortableItem } from '../sortable-item';
 import { restrictToVerticalAxis, restrictToWindowEdges } from '@dnd-kit/modifiers'
 
 export type FormFieldOrGroup = FormFieldType | FormFieldType[]

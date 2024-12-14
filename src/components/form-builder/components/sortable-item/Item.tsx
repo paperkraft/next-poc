@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button"
-import { ItemProps } from "./sortableItem"
+import { ItemProps } from "."
 import { LucidePencil, LucideTrash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { memo, useCallback } from "react"

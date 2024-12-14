@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { GripHorizontalIcon, GripVerticalIcon } from "lucide-react";
 import { useSortable } from "@dnd-kit/sortable";
 import { FormFieldOrGroup } from ".";
-import { getFieldId } from "../form-field-list/sortableList";
+import { getFieldId } from "../sortable-list";
 
 export function DragHandle({ field, subIndex }: { field: FormFieldOrGroup, subIndex: number | null }) {
     const { attributes, listeners, isDragging } = useSortable({

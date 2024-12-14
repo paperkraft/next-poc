@@ -4,7 +4,7 @@ import React from 'react'
 import { hasPermission } from '@/lib/rbac';
 import TitlePage from '@/components/custom/page-heading';
 import TestPage from './Test';
-import MyForm from '@/app/builder/form-test/page';
+import MyForm from '@/components/form-builder/form-test/page';
 
 export default async function Page() {
   // const session = await auth();

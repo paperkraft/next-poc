@@ -5,13 +5,13 @@ import { Separator } from '@/components/ui/separator'
 import If from '@/components/ui/if'
 import { useMediaQuery } from '@/hooks/use-media-query'
 import { FormFieldType } from '@/types'
-import { EditFieldDialog } from '../edit-field-dialog'
-import { FieldSelector } from '../field-selector'
-import { FormPreview } from '../form-preview'
+import { EditFieldDialog } from './components/edit-dialog'
+import { FieldSelector } from './components/sidebar-list'
+import { FormPreview } from './components/preview-json-code'
 import { defaultFieldConfig } from '@/constants'
 import { FileBox } from 'lucide-react'
 import TitlePage from '@/components/custom/page-heading'
-import SortableList from '../form-field-list/sortableList'
+import SortableList from './components/sortable-list'
 
 export type FormFieldOrGroup = FormFieldType | FormFieldType[]
 

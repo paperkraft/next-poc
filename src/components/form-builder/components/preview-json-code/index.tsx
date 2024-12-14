@@ -33,28 +33,21 @@ const renderFormFields = (fields: FormFieldOrGroup[], form: any) => {
           case 3:
             return 4 // Three columns
           default:
-            return 12 // Single column or fallback
+            return 12 // Single column
         }
       }
 
       return (
         <div key={index} className="grid grid-cols-12 gap-4">
-          {fieldOrGroup.map((field, subIndex) => (
+          {fieldOrGroup.map((field) => (
             <FormField
               key={field.name}
               control={form.control}
               name={field.name}
               render={({ field: formField }) => (
-                <FormItem
-                  className={`col-span-${getColSpan(fieldOrGroup.length)}`}
-                >
+                <FormItem className={`col-span-${getColSpan(fieldOrGroup.length)}`}>
                   <FormControl>
-                    {React.cloneElement(
-                      renderFormField(field, form) as React.ReactElement,
-                      {
-                        ...formField,
-                      },
-                    )}
+                    {React.cloneElement(renderFormField(field, form) as React.ReactElement, { ...formField })}
                   </FormControl>
                 </FormItem>
               )}
@@ -71,12 +64,7 @@ const renderFormFields = (fields: FormFieldOrGroup[], form: any) => {
           render={({ field: formField }) => (
             <FormItem className="col-span-12">
               <FormControl>
-                {React.cloneElement(
-                  renderFormField(fieldOrGroup, form) as React.ReactElement,
-                  {
-                    ...formField,
-                  },
-                )}
+                {React.cloneElement(renderFormField(fieldOrGroup, form) as React.ReactElement, { ...formField })}
               </FormControl>
             </FormItem>
           )}
@@ -115,26 +103,21 @@ export const FormPreview: React.FC<FormPreviewProps> = ({ formFields }) => {
   return (
     <div className="w-full h-full col-span-1 rounded-xl flex justify-center">
       <Tabs defaultValue="preview" className="w-full">
+
         <TabsList className="flex justify-center w-fit mx-auto">
           <TabsTrigger value="preview">Preview</TabsTrigger>
           <TabsTrigger value="json">JSON</TabsTrigger>
           <TabsTrigger value="code">Code</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="preview"
-          className="space-y-4 h-full md:max-h-[70vh] overflow-auto"
-        >
-          <If
-            condition={formFields.length > 0}
+        <TabsContent value="preview" className="space-y-4 h-full md:max-h-[70vh] overflow-auto">
+          <If condition={formFields.length > 0}
             render={() => (
               <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  className="space-y-4 py-5 max-w-lg mx-auto px-2"
-                >
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-5 max-w-lg mx-auto px-2">
                   {renderFormFields(formFields, form)}
                   <div>
-                   <Button type="submit">Submit</Button>
+                    <Button type="submit">Submit</Button>
                   </div>
                 </form>
               </Form>
@@ -148,8 +131,7 @@ export const FormPreview: React.FC<FormPreviewProps> = ({ formFields }) => {
         </TabsContent>
 
         <TabsContent value="json">
-          <If
-            condition={formFields.length > 0}
+          <If condition={formFields.length > 0}
             render={() => (
               <pre className="p-4 text-sm bg-secondary rounded-lg h-full md:max-h-[70vh] overflow-auto">
                 {JSON.stringify(formFields, null, 2)}
@@ -168,10 +150,7 @@ export const FormPreview: React.FC<FormPreviewProps> = ({ formFields }) => {
             condition={formFields.length > 0}
             render={() => (
               <div className="relative">
-                <Button
-                  className="absolute right-2 top-2"
-                  variant="secondary"
-                  size="icon"
+                <Button className="absolute right-2 top-2" variant="secondary" size="icon"
                   onClick={() => {
                     navigator.clipboard.writeText(formattedCode)
                     toast.success('Code copied to clipboard!')
@@ -180,23 +159,9 @@ export const FormPreview: React.FC<FormPreviewProps> = ({ formFields }) => {
                   <Files />
                 </Button>
 
-                <Highlight
-                  code={formattedCode}
-                  language="tsx"
-                  theme={themes.oneDark}
-                >
-                  {({
-                    className,
-                    style,
-                    tokens,
-                    getLineProps,
-                    getTokenProps,
-                  }: any) => (
-                    <pre
-                      className={`${className} p-4 text-sm bg-gray-100 rounded-lg 
-                      h-full md:max-h-[70vh] overflow-auto`}
-                      style={style}
-                    >
+                <Highlight code={formattedCode} language="tsx" theme={themes.oneDark}>
+                  {({ className, style, tokens, getLineProps, getTokenProps }: any) => (
+                    <pre className={`${className} p-4 text-sm bg-gray-100 rounded-lg h-full md:max-h-[70vh] overflow-auto`} style={style}>
                       {tokens.map((line: any, i: number) => (
                         <div {...getLineProps({ line, key: i })} key={i}>
                           {line.map((token: any, key: any) => (

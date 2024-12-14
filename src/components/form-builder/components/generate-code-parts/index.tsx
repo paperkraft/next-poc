@@ -338,63 +338,19 @@ export const generateDefaultValues = (
 
     // Handle field variants
     switch (field.variant) {
-      case 'Multi Select':
-        defaultValues[field.name] = ['React']
-        break
       case 'Tags Input':
         defaultValues[field.name] = []
         break
       case 'Datetime Picker':
-      case 'Smart Datetime Input':
       case 'Date Picker':
-        defaultValues[field.name] = new Date()
+        defaultValues[field.name] = null
         break
+      default:
+        defaultValues[field.name] = ""
     }
   })
 
   return defaultValues
-}
-
-export const generateDefaultValuesString = (
-  fields: FormFieldOrGroup[],
-): string => {
-  const defaultValues: Record<string, any> = {}
-  const dateFields: string[] = []
-
-  fields.flat().forEach((field) => {
-    if (field.variant === 'Multi Select') {
-      defaultValues[field.name] = ['React']
-    } else if (field.variant === 'Tags Input') {
-      defaultValues[field.name] = ['test']
-    } else if (
-      field.variant === 'Datetime Picker' ||
-      field.variant === 'Smart Datetime Input' ||
-      field.variant === 'Date Picker'
-    ) {
-      dateFields.push(field.name)
-      delete defaultValues[field.name]
-    }
-  })
-
-  if (Object.keys(defaultValues).length === 0 && dateFields.length === 0) {
-    return ''
-  }
-
-  // Convert defaultValues to string, handling both regular values and date fields
-  const regularValuesString =
-    Object.keys(defaultValues).length > 0
-      ? JSON.stringify(defaultValues).slice(1, -1) // Remove the outer {}
-      : ''
-
-  const dateFieldsString = dateFields
-    .map((fieldName) => `"${fieldName}": new Date()`)
-    .join(',')
-
-  const combinedString = [regularValuesString, dateFieldsString]
-    .filter(Boolean)
-    .join(',')
-
-  return `defaultValues: {${combinedString}},`
 }
 
 export const generateFormCode = (formFields: FormFieldOrGroup[]): string => {
@@ -427,7 +383,6 @@ export const generateFormCode = (formFields: FormFieldOrGroup[]): string => {
       .join('\n        ')
   }
 
-  const defaultValuesString = generateDefaultValuesString(formFields)
   const defaultValues = generateDefaultValues(formFields)
 
   const component = `

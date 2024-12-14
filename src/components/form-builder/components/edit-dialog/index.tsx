@@ -60,13 +60,7 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
         <div className="py-4 space-y-4">
           <div>
             <Label htmlFor="label">Label</Label>
-            <Input
-              id="label"
-              value={editedField.label}
-              onChange={(e) =>
-                setEditedField({ ...editedField, label: e.target.value })
-              }
-            />
+            <Input id="label" value={editedField.label} onChange={(e) =>setEditedField({ ...editedField, label: e.target.value })}/>
           </div>
           <div>
             <Label htmlFor="label">Description</Label>

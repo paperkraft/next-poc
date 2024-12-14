@@ -31,35 +31,37 @@ import {
   Input
 } from "@/components/ui/input"
 import {
-  CloudUpload,
-  Paperclip
-} from "lucide-react"
-import {
-  FileInput,
-  FileUploader,
-  FileUploaderContent,
-  FileUploaderItem
-} from "@/components/ui/file-upload"
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select"
 
 const formSchema = z.object({
-  name_2944601312: z.string(),
-  name_1319913818: z.string().optional(),
-  name_9752101153: z.string(),
-  name_2845908833: z.string()
+  name_9759298634: z.string(),
+  name_1109364942: z.string(),
+  name_5329608056: z.string()
 });
 
 export default function MyForm() {
-
-  const [files, setFiles] = useState < File[] | null > (null);
-
-  const dropZoneConfig = {
-    maxFiles: 5,
-    maxSize: 1024 * 1024 * 4,
-    multiple: true,
-  };
+  const options = [{
+      label: "Option A",
+      value: "A"
+    },
+    {
+      label: "Option B",
+      value: "B"
+    },
+  ] as
+  const;
   const form = useForm < z.infer < typeof formSchema >> ({
     resolver: zodResolver(formSchema),
-    defaultValues: {}
+    defaultValues: {
+      "name_9759298634": "",
+      "name_1109364942": "",
+      "name_5329608056": ""
+    }
 
   })
 
@@ -83,11 +85,11 @@ export default function MyForm() {
         
         <div className="grid grid-cols-12 gap-4">
           
-          <div className="col-span-4">
+          <div className="col-span-6">
             
         <FormField
           control={form.control}
-          name="name_2944601312"
+          name="name_9759298634"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Label</FormLabel>
@@ -98,40 +100,18 @@ export default function MyForm() {
                 type=""
                 {...field} />
               </FormControl>
-              
+              <FormDescription>This is sample description.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
           </div>
           
-          <div className="col-span-4">
+          <div className="col-span-6">
             
         <FormField
           control={form.control}
-          name="name_1319913818"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>AAA</FormLabel>
-              <FormControl>
-                <Input 
-                placeholder="Placeholder"
-                
-                type=""
-                {...field} />
-              </FormControl>
-              
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-          </div>
-          
-          <div className="col-span-4">
-            
-        <FormField
-          control={form.control}
-          name="name_9752101153"
+          name="name_1109364942"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Label</FormLabel>
@@ -142,7 +122,7 @@ export default function MyForm() {
                 type=""
                 {...field} />
               </FormControl>
-              
+              <FormDescription>This is sample description.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -151,51 +131,29 @@ export default function MyForm() {
           
         </div>
         
-            <FormField
-              control={form.control}
-              name="name_2845908833"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Select File</FormLabel>
-                  <FormControl>
-                    <FileUploader
-                      value={files}
-                      onValueChange={setFiles}
-                      dropzoneOptions={dropZoneConfig}
-                      className="relative bg-background rounded-lg p-2"
-                    >
-                      <FileInput
-                        id="fileInput"
-                        className="outline-dashed outline-1 outline-slate-500"
-                      >
-                        <div className="flex items-center justify-center flex-col p-8 w-full ">
-                          <CloudUpload className='text-gray-500 w-10 h-10' />
-                          <p className="mb-1 text-sm text-gray-500 dark:text-gray-400">
-                            <span className="font-semibold">Click to upload</span>
-                            &nbsp; or drag and drop
-                          </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">
-                            SVG, PNG, JPG or GIF
-                          </p>
-                        </div>
-                      </FileInput>
-                      <FileUploaderContent>
-                        {files &&
-                          files.length > 0 &&
-                          files.map((file, i) => (
-                            <FileUploaderItem key={i} index={i}>
-                              <Paperclip className="h-4 w-4 stroke-current" />
-                              <span>{file.name}</span>
-                            </FileUploaderItem>
-                          ))}
-                      </FileUploaderContent>
-                    </FileUploader>
-                  </FormControl>
-                  <FormDescription>Select a file to upload.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <FormField
+          control={form.control}
+          name="name_5329608056"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Select</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select" />
+                  </SelectTrigger>
+                </FormControl>
+                  <SelectContent>
+                    {options.map((item)=>(
+                      <SelectItem value={item.value} key={item.value}>{item.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+              </Select>
+              <FormDescription>This is sample description.</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <Button type="submit">Submit</Button>
       </form>
     </Form>

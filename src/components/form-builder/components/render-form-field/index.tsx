@@ -1,13 +1,9 @@
 'use client'
-
 import { ChangeEvent, useRef, useState } from 'react'
-
 import { cn } from '@/lib/utils'
-
 import {
   FormControl,
   FormDescription,
-  FormField,
   FormItem,
   FormLabel,
   FormMessage,
@@ -46,7 +42,6 @@ import {
 import { Button } from '@/components/ui/button'
 import { format } from 'date-fns'
 import { PasswordInput } from '@/components/ui/password-input'
-// import { PhoneInput } from '@/components/ui/phone-input'
 import {
   FileUploader,
   FileUploaderContent,
@@ -56,21 +51,11 @@ import {
 import { Slider } from '@/components/ui/slider'
 import { CalendarIcon, Check, ChevronsUpDown, CloudUpload, Paperclip } from 'lucide-react'
 import { TagsInput } from '@/components/ui/tags-input'
-// import {
-//   MultiSelector,
-//   MultiSelectorContent,
-//   MultiSelectorInput,
-//   MultiSelectorItem,
-//   MultiSelectorList,
-//   MultiSelectorTrigger,
-// } from '@/components/ui/multi-select'
-// import { DatetimePicker } from '@/components/ui/datetime-picker'
-// import { SmartDatetimeInput } from '@/components/ui/smart-datetime-input'
 import LocationSelector from '@/components/ui/location-input'
 import SignatureInput from '@/components/ui/signature-input'
 import { FormFieldType } from '@/types'
-import Divider from '@/components/ui/divider'
 import { PhoneInput } from '@/components/ui/phone-input'
+import Divider from '@/components/ui/divider'
 
 const languages = [
   { label: 'English', value: 'en' },
@@ -135,13 +120,8 @@ export const renderFormField = (field: FormFieldType, form: any) => {
           <Popover>
             <PopoverTrigger asChild>
               <FormControl>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  className={cn(
-                    'w-full justify-between',
-                    !value && 'text-muted-foreground',
-                  )}
+                <Button variant="outline" role="combobox"
+                  className={cn('w-full justify-between', !value && 'text-muted-foreground')}
                 >
                   {value
                     ? languages.find((language) => language.value === value)
@@ -151,7 +131,7 @@ export const renderFormField = (field: FormFieldType, form: any) => {
                 </Button>
               </FormControl>
             </PopoverTrigger>
-            <PopoverContent className="p-0">
+            <PopoverContent className="w-[200px] p-0" align='start'>
               <Command>
                 <CommandInput placeholder="Search language..." />
                 <CommandList>

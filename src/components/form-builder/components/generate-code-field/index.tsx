@@ -33,13 +33,8 @@ export const generateCodeSnippet = (field: FormFieldType) => {
               <Popover>
                 <PopoverTrigger asChild>
                   <FormControl>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      className={cn(
-                        "w-[200px] justify-between",
-                        !field.value && "text-muted-foreground"
-                      )}
+                    <Button variant="outline" role="combobox"
+                      className={cn("w-[200px] justify-between", !field.value && "text-muted-foreground")}
                       ${field.disabled ? 'disabled' : ''}
                     >
                       {field.value
@@ -51,7 +46,7 @@ export const generateCodeSnippet = (field: FormFieldType) => {
                     </Button>
                   </FormControl>
                 </PopoverTrigger>
-                <PopoverContent className="w-[200px] p-0">
+                <PopoverContent className="w-[200px] p-0" align="start">
                   <Command>
                     <CommandInput placeholder="Search language..." />
                     <CommandList>
@@ -230,7 +225,7 @@ export const generateCodeSnippet = (field: FormFieldType) => {
           name="${field.name}"
           render={({ field: { value, onChange } }) => (
           <FormItem>
-            <FormLabel>Price - {value}</FormLabel>
+            <FormLabel>Price - {value ?? 0}</FormLabel>
             <FormControl>
               <Slider
                 min=${field.min ? field.min : '{0}'}
@@ -419,8 +414,7 @@ export const generateCodeSnippet = (field: FormFieldType) => {
         />`
     case 'Divider':
       return `<Divider />`
-
-      default:
+    default: 
       return null
   }
 }

@@ -19,11 +19,12 @@ export const fieldTypes: FieldType[] = [
   { name: 'Signature Input', isNew: true },
 ]
 
-export const defaultFieldConfig: Record<string, { label: string; description: string; placeholder?: any }> = {
+export const defaultFieldConfig: Record<string, { label: string; description: string; placeholder?: any, defaultValue?:any }> = {
   Input: {
     label: 'Label',
     description: 'This is sample description.',
     placeholder: 'Placeholder',
+    defaultValue:"",
   },
   Select: {
     label: 'Select',

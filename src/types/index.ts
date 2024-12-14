@@ -9,6 +9,7 @@ export type FormFieldType = {
     description?: string
     disabled: boolean
     value: string | boolean | Date | number | string[]
+    defaultValue: string | string[] | number | number[] | boolean | Date 
     setValue: (value: string | boolean) => void
     checked: boolean
     onChange: (

@@ -25,17 +25,19 @@ const FormBuilder = () => {
   const addFormField = (variant: string, index: number = 0) => {
     const newFieldName = `name_${Math.random().toString().slice(-10)}`
 
-    const { label, description, placeholder } = defaultFieldConfig[variant] || {}
+    const { label, description, placeholder, defaultValue } = defaultFieldConfig[variant] || {}
 
     const newField: FormFieldType = {
-      checked: true,
-      description: description || '',
-      disabled: false,
       label: label || newFieldName,
+      description: description || '',
+      placeholder: placeholder || 'Placeholder',
+      defaultValue: defaultValue || '',
+
+      checked: true,
+      disabled: false,
       name: newFieldName,
       onChange: () => { },
       onSelect: () => { },
-      placeholder: placeholder || 'Placeholder',
       required: true,
       rowIndex: index,
       setValue: () => { },

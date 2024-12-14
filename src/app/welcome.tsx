@@ -1,4 +1,5 @@
 "use client";
+import MyForm from "@/components/form-builder/form-test/page";
 import { useMounted } from "@/hooks/use-mounted";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -23,6 +24,7 @@ export default function WelcomePage() {
         <p>Welcome, {data?.user?.name ?? data?.user?.email}</p>
         <p>Your Unique Id: {data?.user?.id ?? ""}</p>
       </div>
+      <MyForm/>
     </>
   );
 }

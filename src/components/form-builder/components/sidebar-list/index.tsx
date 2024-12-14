@@ -13,7 +13,7 @@ type FieldSelectorProps = {
 export const FieldSelector: React.FC<FieldSelectorProps> = ({ addFormField }) => {
 
   return (
-    <ScrollArea className="h-[70vh]">
+    <ScrollArea className="md:h-[70vh] md:min-w-max">
       <div className="flex md:flex-col items-start flex-wrap md:flex-nowrap gap-3 border p-4 rounded-md">
         {fieldTypes.map((variant) => (
           <div className="flex items-center gap-1" key={variant.name}>

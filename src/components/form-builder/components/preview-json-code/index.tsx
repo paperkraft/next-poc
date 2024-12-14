@@ -1,7 +1,7 @@
 import React, { useRef } from 'react'
 import { Highlight, themes } from 'prism-react-renderer'
 import { z } from 'zod'
-import { useForm } from 'react-hook-form'
+import { useForm, UseFormReturn } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
 
@@ -22,7 +22,7 @@ export type FormPreviewProps = {
   formFields: FormFieldOrGroup[]
 }
 
-const renderFormFields = (fields: FormFieldOrGroup[], form: any) => {
+const renderFormFields = (fields: FormFieldOrGroup[], form: UseFormReturn) => {
   return fields.map((fieldOrGroup, index) => {
     if (Array.isArray(fieldOrGroup)) {
       // Calculate column span based on number of fields in the group
@@ -76,7 +76,6 @@ const renderFormFields = (fields: FormFieldOrGroup[], form: any) => {
 
 export const FormPreview: React.FC<FormPreviewProps> = ({ formFields }) => {
   const formSchema = generateZodSchema(formFields)
-
   const defaultVals = generateDefaultValues(formFields)
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -84,8 +83,9 @@ export const FormPreview: React.FC<FormPreviewProps> = ({ formFields }) => {
     defaultValues: defaultVals,
   })
 
-  function onSubmit(data: any) {
+  function onSubmit(data: z.infer<typeof formSchema>) {
     try {
+      console.log('Form-data : ',JSON.stringify(data, null, 2));
       toast(
         <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
           <code className="text-white">{JSON.stringify(data, null, 2)}</code>
@@ -116,7 +116,8 @@ export const FormPreview: React.FC<FormPreviewProps> = ({ formFields }) => {
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-5 max-w-lg mx-auto px-2">
                   {renderFormFields(formFields, form)}
-                  <div>
+                  <div className='flex gap-2'>
+                    <Button type='button' variant={'outline'} onClick={()=>form.reset()}>Cancel</Button>
                     <Button type="submit">Submit</Button>
                   </div>
                 </form>
@@ -146,8 +147,7 @@ export const FormPreview: React.FC<FormPreviewProps> = ({ formFields }) => {
         </TabsContent>
 
         <TabsContent value="code">
-          <If
-            condition={formFields.length > 0}
+          <If condition={formFields.length > 0}
             render={() => (
               <div className="relative">
                 <Button className="absolute right-2 top-2" variant="secondary" size="icon"

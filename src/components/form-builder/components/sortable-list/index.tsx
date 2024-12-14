@@ -54,7 +54,7 @@ export default function SortableList({ formFields, setFormFields, openEditDialog
                 items={formFields.map((field) => getFieldId(field))}
                 strategy={verticalListSortingStrategy}
             >
-                <div className='flex flex-col gap-3'>
+                <div className='flex flex-col gap-3 w-full'>
                     {formFields.map((field, index) => (
                         <div className="max-h-[50px] p-1 w-full"
                             key={getFieldId(field)}

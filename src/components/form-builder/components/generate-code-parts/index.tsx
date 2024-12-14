@@ -314,7 +314,7 @@ export const generateConstants = (
         `)
     } else if (field.variant === 'Signature Input') {
       constantSet.add(`const canvasRef = useRef<HTMLCanvasElement>(null)`)
-    } else if (field.variant === 'Select'){
+    } else if (field.variant === 'Select') {
       constantSet.add(`const options = [
         { label: "Option A", value: "A" },
         { label: "Option B", value: "B" },
@@ -333,20 +333,18 @@ export const generateDefaultValues = (
   const defaultValues: Record<string, any> = { ...existingDefaultValues }
 
   fields.flat().forEach((field) => {
-    // Skip if field already has a default value
-    if (defaultValues[field.name]) return
-
-    // Handle field variants
-    switch (field.variant) {
-      case 'Tags Input':
-        defaultValues[field.name] = []
-        break
-      case 'Datetime Picker':
-      case 'Date Picker':
-        defaultValues[field.name] = null
-        break
-      default:
-        defaultValues[field.name] = ""
+    if (field.name && defaultValues[field.name] === undefined) {
+      switch (field.variant) {
+        case 'Tags Input':
+          defaultValues[field.name] = []
+          break
+        case 'Datetime Picker':
+        case 'Date Picker':
+          defaultValues[field.name] = null
+          break
+        default:
+          defaultValues[field.name] = ""
+      }
     }
   })
 
@@ -354,33 +352,26 @@ export const generateDefaultValues = (
 }
 
 export const generateFormCode = (formFields: FormFieldOrGroup[]): string => {
-  
+
   const imports = Array.from(generateImports(formFields)).join('\n')
   const constants = Array.from(generateConstants(formFields)).join('\n')
   const schema = getZodSchemaString(formFields)
 
   const renderFields = (fields: FormFieldOrGroup[]) => {
-    return fields
-      .map((fieldOrGroup, index) => {
-        if (Array.isArray(fieldOrGroup)) {
-          const colSpan = fieldOrGroup.length === 2 ? 6 : 4
-          return `
-        <div className="grid grid-cols-12 gap-4">
-          ${fieldOrGroup
-            .map(
-              (field) => `
-          <div className="col-span-${colSpan}">
-            ${generateCodeSnippet(field)}
-          </div>
-          `,
-            )
-            .join('')}
-        </div>`
-        } else {
-          return generateCodeSnippet(fieldOrGroup)
-        }
-      })
-      .join('\n        ')
+    return fields.map((fieldOrGroup) => {
+      if (Array.isArray(fieldOrGroup)) {
+        const colSpan = fieldOrGroup.length === 2 ? 6 : 4
+        return `
+          <div className="grid grid-cols-12 gap-4">
+            ${fieldOrGroup.map((field) => `
+              <div className="col-span-${colSpan}">
+                ${generateCodeSnippet(field)}
+              </div>`).join('')}
+          </div>`
+      } else {
+        return generateCodeSnippet(fieldOrGroup)
+      }
+    }).join('\n')
   }
 
   const defaultValues = generateDefaultValues(formFields)

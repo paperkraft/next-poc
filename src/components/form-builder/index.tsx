@@ -104,18 +104,16 @@ const FormBuilder = () => {
   )
 
   const renderFormFields = () => (
-    <div className="grid grid-cols-1 md:grid-cols-3 items-start gap-8 h-full">
-      <div className="w-full col-span-2 h-full flex flex-col md:flex-row space-x-3">
-        <FieldSelectorWithSeparator addFormField={addFormField} />
-        <div className="flex-1">
-          <SortableList
-            formFields={formFields}
-            setFormFields={setFormFields}
-            openEditDialog={openEditDialog}
-          />
-        </div>
+    <div className="grid grid-cols-1 md:grid-cols-3 items-start gap-8">
+      <div className="w-full col-span-2 flex flex-col md:flex-row gap-3">
+        <FieldSelector addFormField={addFormField} />
+        <SortableList
+          formFields={formFields}
+          setFormFields={setFormFields}
+          openEditDialog={openEditDialog}
+        />
       </div>
-      <div className="w-full h-full space-y-3">
+      <div className="w-full">
         <FormPreview formFields={formFields} />
       </div>
     </div>
@@ -133,7 +131,7 @@ const FormBuilder = () => {
   );
 
   return (
-    <section className="md:max-h-screen space-y-4">
+    <>
       <TitlePage title="Form Builder" description="Click on component from the list to add" />
 
       <If condition={formFields.length > 0} render={renderFormFields} otherwise={renderEmptyState} />
@@ -144,7 +142,7 @@ const FormBuilder = () => {
         field={selectedField}
         onSave={handleSaveField}
       />
-    </section>
+    </>
   )
 }
 

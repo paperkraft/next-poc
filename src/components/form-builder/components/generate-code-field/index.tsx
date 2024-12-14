@@ -131,11 +131,11 @@ export const generateCodeSnippet = (field: FormFieldType) => {
             <FormItem>
               <FormLabel>${field.label}</FormLabel>
               <FormControl>
-                <Input 
-                placeholder="${field.placeholder}"
-                ${field.disabled ? 'disabled' : ''}
-                type="${field?.type}"
-                {...field} />
+                <Input {...field} 
+                  placeholder="${field.placeholder}"
+                  type="${field?.type}"
+                  ${field.disabled ? 'disabled' : ''}
+                />
               </FormControl>
               ${field.description && `<FormDescription>${field.description}</FormDescription>`}
               <FormMessage />

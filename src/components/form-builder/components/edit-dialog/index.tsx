@@ -57,6 +57,7 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
         <DialogHeader>
           <DialogTitle>Edit {editedField.variant} Field</DialogTitle>
         </DialogHeader>
+
         <div className="py-4 space-y-4">
           <div>
             <Label htmlFor="label">Label</Label>
@@ -82,7 +83,7 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
               }
             />
           </div>
-          <div>
+          <div className='hidden'>
             <Label htmlFor="className">className</Label>
             <Input
               id="className"
@@ -109,7 +110,6 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
               <div>
                 <Label htmlFor="type">Type</Label>
                 <Select
-                  // id="type"
                   value={editedField.type}
                   onValueChange={(value) => {
                     setFieldType(value)
@@ -213,50 +213,6 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
               </div>
             )}
           />
-          <If
-            condition={field?.variant === 'Smart Datetime Input'}
-            render={() => (
-              <div className="grid grid-cols-2 gap-3">
-                <div className="col-span-1 flex flex-col gap-1 ">
-                  <Label htmlFor="locale">Locale</Label>
-                  <Select
-                    // id="locale"
-                    value={editedField.locale ?? ''}
-                    onValueChange={(value) => {
-                      setEditedField({
-                        ...editedField,
-                        locale: value as keyof typeof Locales,
-                      })
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select locale" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.keys(Locales).map((locale) => (
-                        <SelectItem key={locale} value={locale}>
-                          {locale}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="col-span-1 flex items-end gap-1 p-3 rounded">
-                  <Checkbox
-                    // id="hour12"
-                    checked={editedField.hour12}
-                    onCheckedChange={(checked) =>
-                      setEditedField({
-                        ...editedField,
-                        hour12: checked as boolean,
-                      })
-                    }
-                  />
-                  <Label htmlFor="hour12">12 Hour Clock</Label>
-                </div>
-              </div>
-            )}
-          />
 
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1 border p-3 rounded">
@@ -283,6 +239,19 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
                 }
               />
               <Label>Disabled</Label>
+            </div>
+
+            <div className="flex items-center gap-1 border p-3 rounded">
+              <Checkbox
+                checked={editedField.readOnly}
+                onCheckedChange={(checked) =>
+                  setEditedField({
+                    ...editedField,
+                    readOnly: checked as boolean,
+                  })
+                }
+              />
+              <Label>readOnly</Label>
             </div>
           </div>
         </div>

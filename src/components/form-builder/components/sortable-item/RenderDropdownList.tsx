@@ -31,20 +31,23 @@ export const RenderDropdownList = memo(({ formFields, setFormFields, setColumnCo
         const { label, description, placeholder } = defaultFieldConfig[variant] || {}
 
         const newField: FormFieldType = {
-            checked: true,
-            description: description || '',
-            disabled: false,
             label: label || newFieldName,
-            name: newFieldName,
-            onChange: () => { },
-            onSelect: () => { },
+            description: description || '',
             placeholder: placeholder || 'Placeholder',
+            defaultValue: '',
+
+            checked: false,
+            disabled: false,
+            name: newFieldName,
             required: true,
-            rowIndex: index,
-            setValue: () => { },
+
             type: '',
             value: '',
             variant,
+
+            setValue: () => {},
+            onChange: () => {},
+            onSelect: () => {},
         }
 
         setFormFields((prevFields) => {

@@ -32,17 +32,18 @@ const FormBuilder = () => {
       placeholder: placeholder || 'Placeholder',
       defaultValue: defaultValue || '',
 
-      checked: true,
+      checked: false,
       disabled: false,
       name: newFieldName,
-      onChange: () => { },
-      onSelect: () => { },
       required: true,
-      rowIndex: index,
-      setValue: () => { },
+
       type: '',
       value: '',
       variant,
+
+      setValue: () => { },
+      onChange: () => { },
+      onSelect: () => { },
     }
 
     setFormFields([...formFields, newField]);

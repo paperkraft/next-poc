@@ -70,7 +70,7 @@ const options = [
 ] as const
 
 export const renderFormField = (field: FormFieldType, form: any) => {
-  const [checked, setChecked] = useState<boolean>(field.checked)
+  const [checked, setChecked] = useState<boolean>(field.checked ?? false)
   const [value, setValue] = useState<any>(field.value)
   const [tagsValue, setTagsValue] = useState<string[]>([])
   const [files, setFiles] = useState<File[] | null>(null)
@@ -87,6 +87,24 @@ export const renderFormField = (field: FormFieldType, form: any) => {
   }
 
   switch (field.variant) {
+    case 'Input':
+      return (
+        <FormItem>
+          <FormLabel>{field.label}</FormLabel> {field.required && '*'}
+          <FormControl>
+            <Input
+              placeholder={field.placeholder}
+              disabled={field?.disabled}
+              readOnly={field.readOnly}
+              type={field?.type}
+              minLength={field?.min}
+              maxLength={field?.max}
+            />
+          </FormControl>
+          {field.description && <FormDescription>{field.description}</FormDescription>}
+          <FormMessage />
+        </FormItem>
+      )
     case 'Checkbox':
       return (
         <FormItem
@@ -206,21 +224,7 @@ export const renderFormField = (field: FormFieldType, form: any) => {
           <FormMessage />
         </FormItem>
       )
-    case 'Input':
-      return (
-        <FormItem>
-          <FormLabel>{field.label}</FormLabel> {field.required && '*'}
-          <FormControl>
-            <Input
-              placeholder={field.placeholder}
-              disabled={field.disabled}
-              type={field?.type}
-            />
-          </FormControl>
-          {field.description && <FormDescription>{field.description}</FormDescription>}
-          <FormMessage />
-        </FormItem>
-      )
+
     case 'Input OTP':
       return (
         <FormItem>

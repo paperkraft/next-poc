@@ -1,25 +1,31 @@
 import * as Locales from 'date-fns/locale'
 
 export type FormFieldType = {
+    label: string
+    description?: string
+    placeholder?: string
+    defaultValue?: string | string[] | number | number[] | boolean | Date 
+    
+    checked?: boolean
+    disabled?: boolean
+    readOnly?: boolean
+    name: string
+    required?: boolean
+
+
     type: string
     variant: string
-    name: string
-    label: string
-    placeholder?: string
-    description?: string
-    disabled: boolean
     value: string | boolean | Date | number | string[]
-    defaultValue: string | string[] | number | number[] | boolean | Date 
+
     setValue: (value: string | boolean) => void
-    checked: boolean
     onChange: (
         value: string | string[] | boolean | Date | number | number[],
     ) => void
     onSelect: (
         value: string | string[] | boolean | Date | number | number[],
     ) => void
-    rowIndex: number
-    required?: boolean
+    // rowIndex?: number
+
     min?: number
     max?: number
     step?: number

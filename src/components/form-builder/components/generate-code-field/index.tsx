@@ -3,7 +3,8 @@ import { FormFieldType } from "@/types"
 export const generateCodeSnippet = (field: FormFieldType) => {
   switch (field.variant) {
     case 'Checkbox':
-      return `<FormField
+      return `
+        <FormField
           control={form.control}
           name="${field.name}"
           render={({ field }) => (
@@ -24,7 +25,8 @@ export const generateCodeSnippet = (field: FormFieldType) => {
           )}
         />`
     case 'Combobox':
-      return `<FormField
+      return `
+        <FormField
           control={form.control}
           name="${field.name}"
           render={({ field }) => (

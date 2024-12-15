@@ -1,6 +1,7 @@
 import { z, ZodTypeAny } from 'zod'
 import { FormFieldType } from '@/types'
 import { generateCodeSnippet } from '../generate-code-field'
+import { formatJSXCode } from '@/lib/utils'
 
 type FormFieldOrGroup = FormFieldType | FormFieldType[]
 
@@ -358,16 +359,17 @@ export const generateFormCode = (formFields: FormFieldOrGroup[]): string => {
   const schema = getZodSchemaString(formFields)
 
   const renderFields = (fields: FormFieldOrGroup[]) => {
+
+    const indent = (code: string, level: number = 1) => code.split('\n').map(line => '  '.repeat(level) + line).join('\n');
+
     return fields.map((fieldOrGroup) => {
       if (Array.isArray(fieldOrGroup)) {
         const colSpan = fieldOrGroup.length === 2 ? 6 : 4
         return `
-          <div className="grid grid-cols-12 gap-4">
-            ${fieldOrGroup.map((field) => `
-              <div className="col-span-${colSpan}">
-                ${generateCodeSnippet(field)}
-              </div>`).join('')}
-          </div>`
+        <div className="grid grid-cols-12 gap-4">${fieldOrGroup.map((field) =>`
+          <div className="col-span-${colSpan}"> ${indent(generateCodeSnippet(field) as string, 2)}
+          </div>`).join('')}
+        </div>`
       } else {
         return generateCodeSnippet(fieldOrGroup)
       }

@@ -1,5 +1,4 @@
 'use client'
-
 import React, { useState } from 'react'
 import { Separator } from '@/components/ui/separator'
 import If from '@/components/ui/if'
@@ -75,9 +74,6 @@ const FormBuilder = () => {
       ...current[path[path.length - 1]],
       ...updates,
     }
-
-    console.log('up', updatedFields);
-
     setFormFields(updatedFields)
   }
 

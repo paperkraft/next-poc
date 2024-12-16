@@ -56,6 +56,7 @@ import SignatureInput from '@/components/ui/signature-input'
 import { FormFieldType } from '@/types'
 import { PhoneInput } from '@/components/ui/phone-input'
 import Divider from '@/components/ui/divider'
+import { Separator } from '@/components/ui/separator'
 
 const languages = [
   { label: 'English', value: 'en' },
@@ -70,7 +71,7 @@ const options = [
 ] as const
 
 export const renderFormField = (field: FormFieldType, form: any) => {
-  const [checked, setChecked] = useState<boolean>(field.checked ?? false)
+  const [checked, setChecked] = useState<boolean>(field.defaultValue as boolean ?? false)
   const [value, setValue] = useState<any>(field.value)
   const [tagsValue, setTagsValue] = useState<string[]>([])
   const [files, setFiles] = useState<File[] | null>(null)
@@ -105,6 +106,28 @@ export const renderFormField = (field: FormFieldType, form: any) => {
           <FormMessage />
         </FormItem>
       )
+
+    case 'Switch':
+      return (
+        <FormItem className="flex items-center justify-between rounded-lg border p-4">
+          <div className="space-y-0.5">
+            <FormLabel className="text-base space-y-1 leading-none">{field.label} </FormLabel> {field.required && '*'}
+            {field.description && <FormDescription>{field.description}</FormDescription>}
+            <FormMessage />
+          </div>
+          <FormControl>
+            <Switch
+              checked={checked}
+              onCheckedChange={() => {
+                setChecked(!checked)
+              }}
+              disabled={field.disabled}
+              aria-readonly={field.readOnly}
+            />
+          </FormControl>
+        </FormItem>
+      )
+
     case 'Checkbox':
       return (
         <FormItem
@@ -129,6 +152,7 @@ export const renderFormField = (field: FormFieldType, form: any) => {
           <FormMessage />
         </FormItem>
       )
+
     case 'Combobox':
       return (
         <FormItem className="flex flex-col">
@@ -268,24 +292,7 @@ export const renderFormField = (field: FormFieldType, form: any) => {
           <FormMessage />
         </FormItem>
       )
-    case 'Switch':
-      return (
-        <FormItem className="flex items-center justify-between rounded-lg border p-4">
-          <div className="space-y-0.5">
-            <FormLabel className="text-base space-y-1 leading-none">{field.label} </FormLabel> {field.required && '*'}
-            {field.description && <FormDescription>{field.description}</FormDescription>}
-            <FormMessage />
-          </div>
-          <FormControl>
-            <Switch className='m-0'
-              checked={checked}
-              onCheckedChange={() => {
-                setChecked(!checked)
-              }}
-            />
-          </FormControl>
-        </FormItem>
-      )
+    
     case 'Slider':
       const min = field.min || 0
       const max = field.max || 100
@@ -469,8 +476,10 @@ export const renderFormField = (field: FormFieldType, form: any) => {
           <FormMessage />
         </FormItem>
       )
+    case 'Separator':
+      return (<Separator className={cn('my-4', field.className)} />)
     case 'Divider':
-      return (<Divider />)
+      return (<Divider text={field.label} />)
     default:
       return null
   }

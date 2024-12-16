@@ -12,10 +12,9 @@ export type FormFieldType = {
     name: string
     required?: boolean
 
-
-    type: string
     variant: string
-    value: string | boolean | Date | number | string[]
+    type?: string
+    value?: string | boolean | Date | number | string[]
 
     setValue: (value: string | boolean) => void
     onChange: (

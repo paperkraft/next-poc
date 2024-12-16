@@ -213,8 +213,6 @@ export const generateCodeSnippet = (field: FormFieldType) => {
                 <Switch
                   checked={field.value}
                   onCheckedChange={field.onChange}
-                  disabled
-                  aria-readonly
                 />
               </FormControl>
             </FormItem>
@@ -414,8 +412,12 @@ export const generateCodeSnippet = (field: FormFieldType) => {
             </FormItem>
           )}
         />`
+    case 'Separator':
+      return `
+        <Separator className="my-4" />`
     case 'Divider':
-      return `<Divider />`
+      return `
+        <Divider text={${field.label}}/>`
     default: 
       return null
   }

@@ -6,7 +6,8 @@ export const fieldTypes: FieldType[] = [
   { name: 'Phone', isNew: false },
   { name: 'Password', isNew: false },
   { name: 'Date Picker', isNew: false },
-  { name: 'Divider', isNew: false },
+  { name: 'Separator', isNew: false },
+  { name: 'Divider', isNew: true },
   { name: 'Slider', isNew: false },
   { name: 'Switch', isNew: false },
   { name: 'Checkbox', isNew: false },
@@ -24,7 +25,6 @@ export const defaultFieldConfig: Record<string, { label: string; description: st
     label: 'Label',
     description: 'This is sample description.',
     placeholder: 'Placeholder',
-    defaultValue:"",
   },
   Select: {
     label: 'Select',
@@ -58,6 +58,14 @@ export const defaultFieldConfig: Record<string, { label: string; description: st
   Slider: {
     label: 'Slider',
     description: 'Adjust the value by sliding.',
+  },
+  Separator: {
+    label: 'Separator',
+    description: 'Separator.',
+  },
+  Divider: {
+    label: 'Divider',
+    description: 'Divider with text.',
   },
   'Tags Input': {
     label: 'Tags',

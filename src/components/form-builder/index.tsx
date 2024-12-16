@@ -26,20 +26,20 @@ const FormBuilder = () => {
 
     const { label, description, placeholder, defaultValue } = defaultFieldConfig[variant] || {}
 
+    const checked = (variant === "Switch" || variant === "Checkbox") ? false : undefined
+
     const newField: FormFieldType = {
+      variant,
+
       label: label || newFieldName,
       description: description || '',
       placeholder: placeholder || 'Placeholder',
-      defaultValue: defaultValue || '',
+      defaultValue: checked ?? defaultValue ?? '',
 
-      checked: false,
-      disabled: false,
+      checked,
       name: newFieldName,
       required: true,
 
-      type: '',
-      value: '',
-      variant,
 
       setValue: () => { },
       onChange: () => { },

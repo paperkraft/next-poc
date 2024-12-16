@@ -12,15 +12,13 @@ export const generateZodSchema = (
 
   const processField = (field: FormFieldType): void => {
     if (field.variant === 'Label') return
+    if (field.variant === 'Divider' || field.variant === 'Separator') return
 
     let fieldSchema: z.ZodTypeAny
 
     switch (field.variant) {
-      case 'Divider':
-        fieldSchema = z.undefined()
-        break
       case 'Checkbox':
-        fieldSchema = z.boolean().default(true)
+        fieldSchema = z.boolean()
         break
       case 'Date Picker':
         fieldSchema = z.coerce.date()
@@ -189,7 +187,7 @@ export const generateImports = (formFields: FormFieldOrGroup[]): Set<string> => 
     'import * as z from "zod"',
     'import { cn } from "@/lib/utils"',
     'import { Button } from "@/components/ui/button"',
-    'import {\n  Form,\n  FormControl,\n  FormDescription,\n  FormField,\n  FormItem,\n  FormLabel,\n  FormMessage,\n} from "@/components/ui/form"',
+    'import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"',
   ])
 
   const processField = (field: FormFieldType) => {
@@ -273,6 +271,11 @@ export const generateImports = (formFields: FormFieldOrGroup[]): Set<string> => 
           'import Divider from "@/components/ui/divider";',
         )
         break
+      case 'Separator':
+        importSet.add(
+          'import { Separator } from "@/components/ui/separator";',
+        )
+        break
       default:
         importSet.add(
           `import { ${field.variant} } from "@/components/ui/${field.variant.toLowerCase()}"`,
@@ -334,14 +337,19 @@ export const generateDefaultValues = (
   const defaultValues: Record<string, any> = { ...existingDefaultValues }
 
   fields.flat().forEach((field) => {
+    if (field.variant === 'Divider' || field.variant === 'Separator') return
+
     if (field.name && defaultValues[field.name] === undefined) {
       switch (field.variant) {
         case 'Tags Input':
           defaultValues[field.name] = []
           break
-        case 'Datetime Picker':
         case 'Date Picker':
           defaultValues[field.name] = null
+          break
+        case 'Switch':
+        case 'Checkbox':
+          defaultValues[field.name] = false
           break
         default:
           defaultValues[field.name] = ""

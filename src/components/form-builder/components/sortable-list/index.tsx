@@ -1,5 +1,5 @@
 'use client'
-import { closestCenter, DndContext, DragEndEvent, KeyboardSensor, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { closestCenter, DndContext, DragEndEvent, KeyboardSensor, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { FormFieldType } from '@/types';
 import { SortableItem } from '../sortable-item';
@@ -20,8 +20,13 @@ export function getFieldId(field: FormFieldOrGroup): string {
 export default function SortableList({ formFields, setFormFields, openEditDialog }: FormFieldListProps) {
 
     const sensors = useSensors(
-        useSensor(PointerSensor),
-        useSensor(TouchSensor),
+        useSensor(MouseSensor),
+        useSensor(TouchSensor,{
+            activationConstraint: {
+                delay: 250,
+                tolerance: 5,
+            },
+        }),
         useSensor(KeyboardSensor, {
             coordinateGetter: sortableKeyboardCoordinates,
         })

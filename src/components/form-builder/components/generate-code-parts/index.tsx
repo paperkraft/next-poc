@@ -411,11 +411,7 @@ export default function MyForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-3xl mx-auto py-10">
-${renderFields(formFields)
-      .split('\n')
-      .filter((line) => line.trim() !== '')
-      .join('\n')
-    }
+${renderFields(formFields).split('\n').filter((line) => line.trim() !== '').join('\n')}
         <Button type="submit">Submit</Button>
       </form>
     </Form>

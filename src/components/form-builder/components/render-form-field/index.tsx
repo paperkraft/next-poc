@@ -298,11 +298,11 @@ export const renderFormField = (field: FormFieldType, form: UseFormReturn) => {
       const min = field.min || 0
       const max = field.max || 100
       const step = field.step || 1
-      const defaultValue = 10
+      const defaultValue = 0
 
       return (
         <FormItem>
-          <FormLabel>{field.label}</FormLabel> {field.required && '*'}
+          <FormLabel>{field.label} - {value || defaultValue}</FormLabel> {field.required && '*'}
           <FormControl>
             <Slider
               min={min}
@@ -311,6 +311,7 @@ export const renderFormField = (field: FormFieldType, form: UseFormReturn) => {
               defaultValue={[defaultValue]}
               onValueChange={(value) => {
                 setValue(value[0])
+                form.setValue(field.name, value[0])
               }}
             />
           </FormControl>

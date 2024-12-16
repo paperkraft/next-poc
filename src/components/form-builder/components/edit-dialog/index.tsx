@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback, memo } from 'react'
 import * as Locales from 'date-fns/locale'
 
 import {
@@ -21,6 +21,11 @@ import {
   SelectItem,
 } from '@/components/ui/select'
 import { FormFieldType } from '@/types'
+import { Form } from '@/components/ui/form'
+import { useForm } from 'react-hook-form'
+import { InputController } from '@/components/custom/form.control/InputController'
+import { SelectController } from '@/components/custom/form.control/SelectController'
+import { SwitchButton } from '@/components/custom/form.control/SwitchButton'
 
 type EditFieldDialogProps = {
   isOpen: boolean
@@ -29,236 +34,114 @@ type EditFieldDialogProps = {
   onSave: (updatedField: FormFieldType) => void
 }
 
-export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
-  isOpen,
-  onClose,
-  field,
-  onSave,
-}) => {
-  const [editedField, setEditedField] = useState<FormFieldType | null>(null)
-  const [fieldType, setFieldType] = useState<string>()
+const options = [
+  {label:"Text", value:"text"},
+  {label:"Email", value:"email"},
+  {label:"Number", value:"number"},
+]
+
+export const EditFieldDialog = memo(({isOpen, onClose, field, onSave }: EditFieldDialogProps) => {
+  
+  const form = useForm({
+    defaultValues: {
+      label: "",
+      description: "",
+      placeholder: "",
+      name: "",
+
+      type: "",
+      min: "",
+      max: "",
+      step: "",
+
+      required: true,
+      disabled: false,
+      readOnly: false,
+    }
+  });
 
   useEffect(() => {
-    if (field) setEditedField(field);
-  }, [field])
-
-  const handleSave = () => {
-    if (editedField) {
-      onSave(editedField)
-      onClose()
+    if(field){
+      console.log(JSON.stringify(field, null, 2))
+      Object.entries(field).map(([key, val]:any)=>{
+        return form.setValue(key, val)
+      })
     }
+  }, [field]);
+
+  const onSubmit = (data:any) => {
+
+    const final = {
+      ...data,
+      type: data.type ? data.type : undefined,
+      min: data.min ? +data.min : undefined,
+      max: data.max ? +data.max : undefined,
+      step: data.step ? +data.step : undefined,
+    }
+
+    console.log(JSON.stringify(final, null, 2));
+
+    onSave(final);
+    form.reset();
+    onClose()
   }
 
-  if (!editedField) return null
+ 
+  if (!field) return null
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-xl">
         <DialogHeader>
-          <DialogTitle>Edit {editedField.variant} Field</DialogTitle>
+          <DialogTitle>Edit {field.variant} Field</DialogTitle>
         </DialogHeader>
 
-        <div className="py-4 space-y-4">
-          <div>
-            <Label htmlFor="label">Label</Label>
-            <Input id="label" value={editedField.label} onChange={(e) =>setEditedField({ ...editedField, label: e.target.value })}/>
-          </div>
-          <div>
-            <Label htmlFor="label">Description</Label>
-            <Input
-              id="description"
-              value={editedField.description}
-              onChange={(e) =>
-                setEditedField({ ...editedField, description: e.target.value })
-              }
-            />
-          </div>
-          <div>
-            <Label htmlFor="placeholder">Placeholder</Label>
-            <Input
-              id="placeholder"
-              value={editedField.placeholder}
-              onChange={(e) =>
-                setEditedField({ ...editedField, placeholder: e.target.value })
-              }
-            />
-          </div>
-          <div className='hidden'>
-            <Label htmlFor="className">className</Label>
-            <Input
-              id="className"
-              value={editedField.className}
-              onChange={(e) =>
-                setEditedField({ ...editedField, className: e.target.value })
-              }
-            />
-          </div>
-          <div>
-            <Label htmlFor="label">Name</Label>
-            <Input
-              id="name"
-              type={field?.type}
-              value={editedField.name}
-              onChange={(e) =>
-                setEditedField({ ...editedField, name: e.target.value })
-              }
-            />
-          </div>
-          <If
-            condition={field?.variant === 'Input'}
-            render={() => (
-              <div>
-                <Label htmlFor="type">Type</Label>
-                <Select
-                  value={editedField.type}
-                  onValueChange={(value) => {
-                    setFieldType(value)
-                    setEditedField({ ...editedField, type: value })
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="text">Text</SelectItem>
-                    <SelectItem value="email">Email</SelectItem>
-                    <SelectItem value="file">File</SelectItem>
-                    <SelectItem value="number">Number</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-          />
-          <If
-            condition={fieldType === 'number' || fieldType === 'text'}
-            render={() => (
-              <div className="grid grid-cols-2 gap-3">
-                <div className="col-span-1 flex flex-col gap-1 ">
-                  <Label>Min Value</Label>
-                  <Input
-                    id="min"
-                    type="number"
-                    value={editedField.min}
-                    onChange={(e) =>
-                      setEditedField({
-                        ...editedField,
-                        min: Number(e.target.value),
-                      })
-                    }
-                  />
-                </div>
-                <div className="col-span-1 flex flex-col gap-1 ">
-                  <Label>Max Value</Label>
-                  <Input
-                    id="max"
-                    type="number"
-                    value={editedField.max}
-                    onChange={(e) =>
-                      setEditedField({
-                        ...editedField,
-                        max: Number(e.target.value),
-                      })
-                    }
-                  />
-                </div>
-              </div>
-            )}
-          />
-          <If
-            condition={field?.variant === 'Slider'}
-            render={() => (
-              <div className="grid grid-cols-3 gap-3">
-                <div className="col-span-1 flex flex-col gap-1 ">
-                  <Label>Min Value</Label>
-                  <Input
-                    id="min"
-                    type="number"
-                    value={editedField.min}
-                    onChange={(e) =>
-                      setEditedField({
-                        ...editedField,
-                        min: Number(e.target.value),
-                      })
-                    }
-                  />
-                </div>
-                <div className="col-span-1 flex flex-col gap-1 ">
-                  <Label>Max Value</Label>
-                  <Input
-                    id="max"
-                    type="number"
-                    value={editedField.max}
-                    onChange={(e) =>
-                      setEditedField({
-                        ...editedField,
-                        max: Number(e.target.value),
-                      })
-                    }
-                  />
-                </div>
-                <div className="col-span-1 flex flex-col gap-1 ">
-                  <Label>Step</Label>
-                  <Input
-                    id="step"
-                    type="number"
-                    value={editedField.step}
-                    onChange={(e) =>
-                      setEditedField({
-                        ...editedField,
-                        step: Number(e.target.value),
-                      })
-                    }
-                  />
-                </div>
-              </div>
-            )}
-          />
-
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1 border p-3 rounded">
-              <Checkbox
-                checked={editedField.required}
-                onCheckedChange={(checked) =>
-                  setEditedField({
-                    ...editedField,
-                    required: checked as boolean,
-                  })
-                }
-              />
-              <Label>Required</Label>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <div>
+              <InputController name='label' label='Label'/>
+              <InputController name='description' label='Description'/>
+              <InputController name='placeholder' label='Placeholder'/>
+              <InputController name='name' label='Name'/>
+              {field?.variant === 'Input' && (
+                <SelectController name='type' label='Type' options={options}/>
+              )}
             </div>
 
-            <div className="flex items-center gap-1 border p-3 rounded">
-              <Checkbox
-                checked={editedField.disabled}
-                onCheckedChange={(checked) =>
-                  setEditedField({
-                    ...editedField,
-                    disabled: checked as boolean,
-                  })
-                }
-              />
-              <Label>Disabled</Label>
+            <If condition={form.watch('type') === 'number' || form.watch('type') === 'text'}
+              render={()=>(
+                <div className='grid grid-cols-2 gap-4 mt-4'>
+                  <InputController name='min' label='Min' type='number'/>
+                  <InputController name='max' label='Max' type='number'/>
+                </div>
+              )}
+            />
+
+            <If condition={field?.variant === 'Slider'}
+              render={()=>(
+                <div className='grid grid-cols-3 gap-4 mt-4'>
+                  <InputController name='min' label='Min' type='number'/>
+                  <InputController name='max' label='Max' type='number'/>
+                  <InputController name='step' label='Step' type='number'/>
+                </div>
+              )}
+            />
+
+            <div className="grid grid-cols-3 gap-4 mt-4">
+              <SwitchButton name='required' label='Required'/>
+              <SwitchButton name='disabled' label='Disabled'/>
+              <SwitchButton name='readOnly' label='Read only'/>
             </div>
 
-            <div className="flex items-center gap-1 border p-3 rounded">
-              <Checkbox
-                checked={editedField.readOnly}
-                onCheckedChange={(checked) =>
-                  setEditedField({
-                    ...editedField,
-                    readOnly: checked as boolean,
-                  })
-                }
-              />
-              <Label>readOnly</Label>
+            <div className='flex justify-end'>
+              <Button type='submit'>Save Changes</Button>
             </div>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button onClick={handleSave}>Save changes</Button>
-        </DialogFooter>
+
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   )
-}
+})
+
+EditFieldDialog.displayName = "EditFieldDialog";

@@ -4,7 +4,7 @@ import { generateCodeSnippet } from '../generate-code-field'
 
 type FormFieldOrGroup = FormFieldType | FormFieldType[]
 
-export const generateZodSchema = (formFields: FormFieldOrGroup[] ): z.ZodObject<any> => {
+export const generateZodSchema = (formFields: FormFieldOrGroup[]): z.ZodObject<any> => {
   const schemaObject: Record<string, z.ZodTypeAny> = {}
 
   const processField = (field: FormFieldType): void => {
@@ -42,7 +42,7 @@ export const generateZodSchema = (formFields: FormFieldOrGroup[] ): z.ZodObject<
         ])
         break
       case 'Slider':
-        fieldSchema = z.coerce.number()
+        fieldSchema = z.coerce.number().default(0)
         break
       case 'Signature Input':
         fieldSchema = z.string({
@@ -347,6 +347,9 @@ export const generateDefaultValues = (
         case 'Checkbox':
           defaultValues[field.name] = false
           break
+        case 'Slider':
+          defaultValues[field.name] = 0
+          break
         default:
           defaultValues[field.name] = ""
       }
@@ -370,7 +373,7 @@ export const generateFormCode = (formFields: FormFieldOrGroup[]): string => {
       if (Array.isArray(fieldOrGroup)) {
         const colSpan = fieldOrGroup.length === 2 ? 6 : 4
         return `
-        <div className="grid grid-cols-12 gap-4">${fieldOrGroup.map((field) =>`
+        <div className="grid grid-cols-12 gap-4">${fieldOrGroup.map((field) => `
           <div className="col-span-${colSpan}"> ${indent(generateCodeSnippet(field) as string, 2)}
           </div>`).join('')}
         </div>`
@@ -408,7 +411,11 @@ export default function MyForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-3xl mx-auto py-10">
-        ${renderFields(formFields)}
+${renderFields(formFields)
+      .split('\n')
+      .filter((line) => line.trim() !== '')
+      .join('\n')
+    }
         <Button type="submit">Submit</Button>
       </form>
     </Form>

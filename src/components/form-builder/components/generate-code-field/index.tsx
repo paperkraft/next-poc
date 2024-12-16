@@ -135,8 +135,10 @@ export const generateCodeSnippet = (field: FormFieldType) => {
               <FormControl>
                 <Input {...field} 
                   placeholder="${field.placeholder}"
-                  type="${field?.type}"
+                  ${field.type ? `type="${field.type}"` : ''}
                   ${field.disabled ? 'disabled' : ''}
+                  ${field.min ? `minLength: ${field.min}` : ''} 
+                  ${field.max ? `maxLength: ${field.max}` : ''}
                 />
               </FormControl>
               ${field.description && `<FormDescription>${field.description}</FormDescription>`}
@@ -225,15 +227,15 @@ export const generateCodeSnippet = (field: FormFieldType) => {
           name="${field.name}"
           render={({ field: { value, onChange } }) => (
           <FormItem>
-            <FormLabel>Price - {value ?? 0}</FormLabel>
+            <FormLabel>${field.label} - {value ?? 0}</FormLabel>
             <FormControl>
               <Slider
-                min=${field.min ? field.min : '{0}'}
-                max=${field.max ? field.max : '{100}'}
-                step=${field.step ? field.step : '{10}'}
-                defaultValue={[10]}
-                onValueChange={(value) => {
-                  onChange(value[0]);
+                min=${field.min ? `{${field.min}}` : '{0}'}
+                max=${field.max ? `{${field.max}}` : '{100}'}
+                step=${field.step ? `{${field.step}}` : '{1}'}
+                defaultValue={[value]}
+                onValueChange={(val) => {
+                  onChange(val[0]);
                 }}
               />
             </FormControl>
@@ -418,7 +420,7 @@ export const generateCodeSnippet = (field: FormFieldType) => {
     case 'Divider':
       return `
         <Divider text={${field.label}}/>`
-    default: 
+    default:
       return null
   }
 }

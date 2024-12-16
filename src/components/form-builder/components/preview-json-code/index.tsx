@@ -33,7 +33,7 @@ const renderFormFields = (fields: FormFieldOrGroup[], form: UseFormReturn) => {
               control={form.control}
               name={field.name}
               render={({ field: formField }) => (
-                <FormItem className={cn({"col-span-6": fieldOrGroup.length === 2, "col-span-4": fieldOrGroup.length === 3 })}>
+                <FormItem className={cn({ "col-span-6": fieldOrGroup.length === 2, "col-span-4": fieldOrGroup.length === 3 })}>
                   <FormControl>
                     {React.cloneElement(renderFormField(field, form) as React.ReactElement, { ...formField })}
                   </FormControl>
@@ -71,9 +71,9 @@ export const FormPreview: React.FC<FormPreviewProps> = ({ formFields }) => {
     defaultValues: defaultVals,
   })
 
-  function onSubmit (data: z.infer<typeof formSchema>) {
+  function onSubmit(data: z.infer<typeof formSchema>) {
     try {
-      console.log('Form-data : ',JSON.stringify(data, null, 2));
+      console.log('Form-data : ', JSON.stringify(data, null, 2));
 
       const parse = formSchema.parse(data);
       console.log('parse', parse);
@@ -109,7 +109,7 @@ export const FormPreview: React.FC<FormPreviewProps> = ({ formFields }) => {
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-5 max-w-lg mx-auto px-2">
                   {renderFormFields(formFields, form)}
                   <div className='flex gap-2'>
-                    <Button type='button' variant={'outline'} onClick={()=>form.reset()}>Cancel</Button>
+                    <Button type='button' variant={'outline'} onClick={() => form.reset()}>Cancel</Button>
                     <Button type="submit">Submit</Button>
                   </div>
                 </form>
@@ -148,16 +148,16 @@ export const FormPreview: React.FC<FormPreviewProps> = ({ formFields }) => {
                     toast.success('Code copied to clipboard!')
                   }}
                 >
-                  <ClipboardIcon/>
+                  <ClipboardIcon />
                 </Button>
 
                 <Highlight code={formattedCode} language="tsx" theme={themes.oneDark}>
-                  {({ className, style, tokens, getLineProps, getTokenProps }: any) => (
+                  {({ className, style, tokens, getLineProps, getTokenProps }) => (
                     <pre className={`${className} p-4 text-sm bg-gray-100 rounded-lg h-full md:max-h-[70vh] overflow-auto`} style={style}>
-                      {tokens.map((line: any, i: number) => (
-                        <div {...getLineProps({ line, key: i })} key={i}>
-                          {line.map((token: any, key: any) => (
-                            <span {...getTokenProps({ token, key })} key={key} />
+                      {tokens.map((line, i) => (
+                        <div key={i} {...getLineProps({ line })}>
+                          {line.map((token, key) => (
+                            <span key={key} {...getTokenProps({ token })} />
                           ))}
                         </div>
                       ))}

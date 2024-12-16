@@ -10,7 +10,7 @@ import { Form, FormField, FormItem, FormControl } from '@/components/ui/form'
 import { Button } from '@/components/ui/button'
 import If from '@/components/ui/if'
 
-import { Files } from 'lucide-react'
+import { ClipboardIcon } from 'lucide-react'
 import { cn, formatJSXCode } from '@/lib/utils'
 import { FormFieldType } from '@/types'
 import { renderFormField } from '../render-form-field'
@@ -148,7 +148,7 @@ export const FormPreview: React.FC<FormPreviewProps> = ({ formFields }) => {
                     toast.success('Code copied to clipboard!')
                   }}
                 >
-                  <Files />
+                  <ClipboardIcon/>
                 </Button>
 
                 <Highlight code={formattedCode} language="tsx" theme={themes.oneDark}>

@@ -101,7 +101,7 @@ const FormBuilder = () => {
   )
 
   const renderFormFields = () => (
-    <div className="grid grid-cols-1 md:grid-cols-3 items-start gap-8">
+    <div className="grid grid-cols-1 md:grid-cols-3 items-start md:gap-8">
       <div className="w-full col-span-2 flex flex-col md:flex-row gap-3">
         <FieldSelector addFormField={addFormField} />
         <SortableList
@@ -110,7 +110,7 @@ const FormBuilder = () => {
           openEditDialog={openEditDialog}
         />
       </div>
-      <div className="w-full">
+      <div className="w-full mt-8 md:mt-0">
         <FormPreview formFields={formFields} />
       </div>
     </div>

@@ -15,7 +15,7 @@ export const fieldTypes: FieldType[] = [
   { name: 'Combobox', isNew: false },
   { name: 'Input OTP', isNew: false },
   { name: 'File Input', isNew: false },
-  { name: 'Tags Input', isNew: false },
+  { name: 'Tags Input', isNew: true },
   { name: 'Location Input', isNew: true },
   { name: 'Signature Input', isNew: true },
 ]

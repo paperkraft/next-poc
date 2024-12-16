@@ -25,7 +25,7 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
+  FormMessage
 } from "@/components/ui/form"
 import {
   Input
@@ -37,11 +37,16 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select"
+import {
+  PhoneInput
+} from "@/components/ui/phone-input";
 
 const formSchema = z.object({
-  name_9759298634: z.string(),
-  name_1109364942: z.string(),
-  name_5329608056: z.string()
+  firstName: z.string(),
+  middleName: z.string().optional(),
+  lastName: z.string(),
+  gender: z.string(),
+  phone: z.string()
 });
 
 export default function MyForm() {
@@ -58,9 +63,11 @@ export default function MyForm() {
   const form = useForm < z.infer < typeof formSchema >> ({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      "name_9759298634": "",
-      "name_1109364942": "",
-      "name_5329608056": ""
+      "firstName": "",
+      "middleName": "",
+      "lastName": "",
+      "gender": "",
+      "phone": ""
     }
 
   })
@@ -84,63 +91,78 @@ export default function MyForm() {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-3xl mx-auto py-10">
         
         <div className="grid grid-cols-12 gap-4">
-          
-          <div className="col-span-6">
-            
-        <FormField
-          control={form.control}
-          name="name_9759298634"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Label</FormLabel>
-              <FormControl>
-                <Input 
-                placeholder="Placeholder"
-                
-                type=""
-                {...field} />
-              </FormControl>
-              <FormDescription>This is sample description.</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+          <div className="col-span-4">     
+            <FormField
+              control={form.control}
+              name="firstName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>First Name</FormLabel>
+                  <FormControl>
+                    <Input {...field} 
+                      placeholder="First Name"
+                      type="undefined"
+                      
+                    />
+                  </FormControl>
+                  
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
-          
-          <div className="col-span-6">
-            
-        <FormField
-          control={form.control}
-          name="name_1109364942"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Label</FormLabel>
-              <FormControl>
-                <Input 
-                placeholder="Placeholder"
-                
-                type=""
-                {...field} />
-              </FormControl>
-              <FormDescription>This is sample description.</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+          <div className="col-span-4">     
+            <FormField
+              control={form.control}
+              name="middleName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Middle Name</FormLabel>
+                  <FormControl>
+                    <Input {...field} 
+                      placeholder="Middle Name"
+                      type="undefined"
+                      
+                    />
+                  </FormControl>
+                  
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
-          
+          <div className="col-span-4">     
+            <FormField
+              control={form.control}
+              name="lastName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Last Name</FormLabel>
+                  <FormControl>
+                    <Input {...field} 
+                      placeholder="Last Name"
+                      type="undefined"
+                      
+                    />
+                  </FormControl>
+                  
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
         </div>
-        
+
         <FormField
           control={form.control}
-          name="name_5329608056"
+          name="gender"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Select</FormLabel>
+              <FormLabel>Gender</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select" />
+                    <SelectValue placeholder="Gender" />
                   </SelectTrigger>
                 </FormControl>
                   <SelectContent>
@@ -149,7 +171,26 @@ export default function MyForm() {
                     ))}
                   </SelectContent>
               </Select>
-              <FormDescription>This is sample description.</FormDescription>
+              
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="phone"
+          render={({ field }) => (
+            <FormItem className="flex flex-col items-start">
+              <FormLabel>Phone number</FormLabel>
+                <FormControl className="w-full">
+                  <PhoneInput
+                    defaultCountry="IN"
+                    placeholder="Placeholder"
+                    {...field}
+                  />
+                </FormControl>
+                <FormDescription>Enter your phone number.</FormDescription>
               <FormMessage />
             </FormItem>
           )}

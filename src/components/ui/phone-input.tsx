@@ -48,6 +48,7 @@ const PhoneInput: React.ForwardRefExoticComponent<PhoneInputProps> =
            */
           onChange={(value) => onChange?.(value || ("" as RPNInput.Value))}
           {...props}
+          
         />
       );
     },
@@ -59,8 +60,10 @@ const InputComponent = React.forwardRef<HTMLInputElement,React.ComponentProps<"i
     className={cn("rounded-s-none", className)}
     {...props}
     ref={ref}
+    maxLength={11}
   />
 ));
+
 InputComponent.displayName = "InputComponent";
 
 type CountryEntry = { label: string; value: RPNInput.Country | undefined };
@@ -100,7 +103,7 @@ const CountrySelect = ({
           /> */}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[300px] p-0">
+      <PopoverContent className="w-[280px] p-0">
         <Command>
           <CommandInput placeholder="Search country..." />
           <CommandList>

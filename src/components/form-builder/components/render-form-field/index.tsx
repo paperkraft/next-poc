@@ -57,6 +57,7 @@ import { FormFieldType } from '@/types'
 import { PhoneInput } from '@/components/ui/phone-input'
 import Divider from '@/components/ui/divider'
 import { Separator } from '@/components/ui/separator'
+import { UseFormReturn } from 'react-hook-form'
 
 const languages = [
   { label: 'English', value: 'en' },
@@ -70,7 +71,7 @@ const options = [
   { label: 'Option B', value: 'B' },
 ] as const
 
-export const renderFormField = (field: FormFieldType, form: any) => {
+export const renderFormField = (field: FormFieldType, form: UseFormReturn) => {
   const [checked, setChecked] = useState<boolean>(field.defaultValue as boolean ?? false)
   const [value, setValue] = useState<any>(field.value)
   const [tagsValue, setTagsValue] = useState<string[]>([])

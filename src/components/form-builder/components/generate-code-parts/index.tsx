@@ -1,17 +1,13 @@
 import { z, ZodTypeAny } from 'zod'
 import { FormFieldType } from '@/types'
 import { generateCodeSnippet } from '../generate-code-field'
-import { formatJSXCode } from '@/lib/utils'
 
 type FormFieldOrGroup = FormFieldType | FormFieldType[]
 
-export const generateZodSchema = (
-  formFields: FormFieldOrGroup[],
-): z.ZodObject<any> => {
+export const generateZodSchema = (formFields: FormFieldOrGroup[] ): z.ZodObject<any> => {
   const schemaObject: Record<string, z.ZodTypeAny> = {}
 
   const processField = (field: FormFieldType): void => {
-    if (field.variant === 'Label') return
     if (field.variant === 'Divider' || field.variant === 'Separator') return
 
     let fieldSchema: z.ZodTypeAny

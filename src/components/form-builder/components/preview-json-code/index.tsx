@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React from 'react'
 import { Highlight, themes } from 'prism-react-renderer'
 import { z } from 'zod'
 import { useForm, UseFormReturn } from 'react-hook-form'
@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import If from '@/components/ui/if'
 
 import { Files } from 'lucide-react'
-import { formatJSXCode } from '@/lib/utils'
+import { cn, formatJSXCode } from '@/lib/utils'
 import { FormFieldType } from '@/types'
 import { renderFormField } from '../render-form-field'
 import { generateDefaultValues, generateFormCode, generateZodSchema } from '../generate-code-parts'
@@ -25,18 +25,6 @@ export type FormPreviewProps = {
 const renderFormFields = (fields: FormFieldOrGroup[], form: UseFormReturn) => {
   return fields.map((fieldOrGroup, index) => {
     if (Array.isArray(fieldOrGroup)) {
-      // Calculate column span based on number of fields in the group
-      const getColSpan = (totalFields: number) => {
-        switch (totalFields) {
-          case 2:
-            return 6 // Two columns
-          case 3:
-            return 4 // Three columns
-          default:
-            return 12 // Single column
-        }
-      }
-
       return (
         <div key={index} className="grid grid-cols-12 gap-4">
           {fieldOrGroup.map((field) => (
@@ -45,7 +33,7 @@ const renderFormFields = (fields: FormFieldOrGroup[], form: UseFormReturn) => {
               control={form.control}
               name={field.name}
               render={({ field: formField }) => (
-                <FormItem className={`col-span-${getColSpan(fieldOrGroup.length)}`}>
+                <FormItem className={cn({"col-span-6": fieldOrGroup.length === 2, "col-span-4": fieldOrGroup.length === 3 })}>
                   <FormControl>
                     {React.cloneElement(renderFormField(field, form) as React.ReactElement, { ...formField })}
                   </FormControl>
@@ -62,7 +50,7 @@ const renderFormFields = (fields: FormFieldOrGroup[], form: UseFormReturn) => {
           control={form.control}
           name={fieldOrGroup.name}
           render={({ field: formField }) => (
-            <FormItem className="col-span-12">
+            <FormItem className="w-full">
               <FormControl>
                 {React.cloneElement(renderFormField(fieldOrGroup, form) as React.ReactElement, { ...formField })}
               </FormControl>
@@ -83,9 +71,13 @@ export const FormPreview: React.FC<FormPreviewProps> = ({ formFields }) => {
     defaultValues: defaultVals,
   })
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
+  function onSubmit (data: z.infer<typeof formSchema>) {
     try {
       console.log('Form-data : ',JSON.stringify(data, null, 2));
+
+      const parse = formSchema.parse(data);
+      console.log('parse', parse);
+
       toast(
         <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
           <code className="text-white">{JSON.stringify(data, null, 2)}</code>

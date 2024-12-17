@@ -50,7 +50,6 @@ export const EditFieldDialog = memo(({ isOpen, onClose, field, onSave }: EditFie
 
   useEffect(() => {
     if (field) {
-      console.log(JSON.stringify(field, null, 2))
       Object.entries(field).map(([key, val]: any) => {
         return form.setValue(key, val)
       })
@@ -65,9 +64,9 @@ export const EditFieldDialog = memo(({ isOpen, onClose, field, onSave }: EditFie
       min: data.min ? +data.min : undefined,
       max: data.max ? +data.max : undefined,
       step: data.step ? +data.step : undefined,
+      disabled: data.disabled ? data.disabled : undefined,
+      readOnly: data.readOnly ? data.readOnly : undefined,
     }
-
-    console.log(JSON.stringify(final, null, 2));
 
     onSave(final);
     form.reset();

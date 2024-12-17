@@ -97,7 +97,6 @@ export const generateZodSchema = (formFields: FormFieldOrGroup[]): z.ZodObject<a
 }
 
 export const zodSchemaToString = (schema: z.ZodTypeAny): string => {
-  console.log('schema', schema._def)
   if (schema instanceof z.ZodDefault) {
     return `${zodSchemaToString(schema._def.innerType)}.default(${JSON.stringify(schema._def.defaultValue())})`
   }
@@ -124,11 +123,11 @@ export const zodSchemaToString = (schema: z.ZodTypeAny): string => {
     let result = 'z.string()'
     if ('checks' in schema._def) {
       schema._def.checks.forEach((check: any) => {
-        if (check.kind === 'min') { 
+        if (check.kind === 'min') {
           result += `.min(${check.value})`
         } else if (check.kind === 'max') {
           result += `.max(${check.value})`
-        } else if(check.kind === 'email') {
+        } else if (check.kind === 'email') {
           result += `.email()`
         }
       })
@@ -328,43 +327,37 @@ export const generateConstants = (
   return constantSet
 }
 
-export const generateDefaultValues = (
-  fields: FormFieldOrGroup[],
-  existingDefaultValues: Record<string, any> = {},
-): Record<string, any> => {
+export const generateDefaultValues = (fields: FormFieldOrGroup[], existingDefaultValues: Record<string, any> = {} ): Record<string, any> => {
   const defaultValues: Record<string, any> = { ...existingDefaultValues }
 
   fields.flat().forEach((field) => {
     if (field.variant === 'Divider' || field.variant === 'Separator') return
-
-    if (defaultValues[field.name]) return
-
-    switch (field.variant) {
-      case 'Tags Input':
-        defaultValues[field.name] = []
-        break
-      case 'Date Picker':
-        defaultValues[field.name] = null
-        break
-      case 'Switch':
-      case 'Checkbox':
-        defaultValues[field.name] = false
-        break
-      case 'Slider':
-        defaultValues[field.name] = 0
-      case 'Input':
-        if (field.type === 'number') {
-          defaultValues[field.name] = 0
+    // if (defaultValues[field.name]) return
+    if (field.name && defaultValues[field.name] === undefined) {
+      switch (field.variant) {
+        case 'Tags Input':
+          defaultValues[field.name] = []
           break
-        }
-        defaultValues[field.name] = ""
-        break
-      default:
-        defaultValues[field.name] = ""
+        case 'Date Picker':
+          defaultValues[field.name] = null
+          break
+        case 'Switch':
+        case 'Checkbox':
+          defaultValues[field.name] = false
+          break
+        case 'Slider':
+          defaultValues[field.name] = 0
+        case 'Input':
+          if (field.type === 'number') {
+            defaultValues[field.name] = 0
+            break
+          }
+          defaultValues[field.name] = ""
+          break
+        default:
+          defaultValues[field.name] = ""
+      }
     }
-
-    // if (field.name && defaultValues[field.name] === undefined) {
-    // }
   })
 
   return defaultValues
@@ -395,7 +388,7 @@ export const generateFormCode = (formFields: FormFieldOrGroup[]): string => {
   }
 
   const defaultValues = generateDefaultValues(formFields)
-  
+
 
   const component = `
 export default function MyForm() {

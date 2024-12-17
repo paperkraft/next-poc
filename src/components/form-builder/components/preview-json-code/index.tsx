@@ -65,11 +65,11 @@ const renderFormFields = (fields: FormFieldOrGroup[], form: UseFormReturn) => {
 
 export const FormPreview: React.FC<FormPreviewProps> = ({ formFields }) => {
   const formSchema = generateZodSchema(formFields)
-  const defaultVals = generateDefaultValues(formFields)
+  const defaultValues = generateDefaultValues(formFields)
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: defaultVals,
+    // defaultValues: defaultValues,
   })
 
   function onSubmit(data: z.infer<typeof formSchema>) {

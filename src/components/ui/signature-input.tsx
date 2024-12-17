@@ -27,10 +27,7 @@ const disableTouchScroll = (canvas: HTMLCanvasElement) => {
 
 const SCALE = 10
 
-export default function SignatureInput({
-  canvasRef,
-  onSignatureChange,
-}: SignatureInputProps) {
+export default function SignatureInput({ canvasRef, onSignatureChange }: SignatureInputProps) {
   const [isDrawing, setIsDrawing] = useState(false)
   const [lastPosition, setLastPosition] = useState<{ x: number; y: number } | null>(null)
 
@@ -73,9 +70,11 @@ export default function SignatureInput({
     setLastPosition(null)
     const canvas = canvasRef.current
     const ctx = canvas?.getContext('2d')
+    
     if (canvas && ctx) {
       ctx.beginPath()
-      const dataUrl = canvas.toDataURL()
+      // const dataUrl = canvas.toDataURL()
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
       onSignatureChange(dataUrl) // Pass data URL to the form's onChange
     }
   }
@@ -95,6 +94,7 @@ export default function SignatureInput({
       ctx.stroke()
       ctx.beginPath()
       ctx.moveTo(x, y)
+      ctx.imageSmoothingEnabled = true;
     }
   }
 
@@ -121,6 +121,9 @@ export default function SignatureInput({
         onTouchStart={startDrawing}
         onTouchEnd={stopDrawing}
         onTouchMove={draw}
+        style={{
+          touchAction: 'none'
+        }}
       />
       <Button
         type="button"

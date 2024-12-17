@@ -209,6 +209,7 @@ export const renderFormField = (field: FormFieldType, form: UseFormReturn) => {
           <FormMessage />
         </FormItem>
       )
+
     case 'Date Picker':
       return (
         <FormItem className="flex flex-col">
@@ -273,6 +274,7 @@ export const renderFormField = (field: FormFieldType, form: UseFormReturn) => {
           <FormMessage />
         </FormItem>
       )
+
     case 'Select':
       return (
         <FormItem>
@@ -323,6 +325,7 @@ export const renderFormField = (field: FormFieldType, form: UseFormReturn) => {
           <FormMessage />
         </FormItem>
       )
+
     case 'Tags Input':
       const currentTags = Array.isArray(form.watch(field.name))
         ? form.watch(field.name)
@@ -348,6 +351,7 @@ export const renderFormField = (field: FormFieldType, form: UseFormReturn) => {
           <FormMessage />
         </FormItem>
       )
+
     case 'Textarea':
       return (
         <FormItem>
@@ -362,6 +366,7 @@ export const renderFormField = (field: FormFieldType, form: UseFormReturn) => {
           <FormMessage />
         </FormItem>
       )
+
     case 'Password':
       return (
         <FormItem>
@@ -383,6 +388,7 @@ export const renderFormField = (field: FormFieldType, form: UseFormReturn) => {
           <FormMessage />
         </FormItem>
       )
+
     case 'Phone':
       return (
         <FormItem>
@@ -402,6 +408,7 @@ export const renderFormField = (field: FormFieldType, form: UseFormReturn) => {
           <FormMessage />
         </FormItem>
       )
+
     case 'Location Input':
       return (
         <FormItem className="flex flex-col">
@@ -422,6 +429,7 @@ export const renderFormField = (field: FormFieldType, form: UseFormReturn) => {
           <FormMessage />
         </FormItem>
       )
+
     case 'Signature Input':
       return (
         <FormItem>
@@ -438,6 +446,7 @@ export const renderFormField = (field: FormFieldType, form: UseFormReturn) => {
           <FormMessage />
         </FormItem>
       )
+
     case 'File Input':
       return (
         <FormItem>
@@ -478,10 +487,13 @@ export const renderFormField = (field: FormFieldType, form: UseFormReturn) => {
           <FormMessage />
         </FormItem>
       )
+
     case 'Separator':
       return (<Separator className={cn('my-4', field.className)} />)
+
     case 'Divider':
       return (<Divider text={field.label} />)
+      
     default:
       return null
   }

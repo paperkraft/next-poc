@@ -97,20 +97,21 @@ export const EditFieldDialog = memo(({isOpen, onClose, field, onSave }: EditFiel
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
-            <div>
-              <InputController name='label' label='Label'/>
-              <InputController name='description' label='Description'/>
-              <InputController name='placeholder' label='Placeholder'/>
-              <InputController name='name' label='Name'/>
-              {field?.variant === 'Input' && (
-                <SelectController name='type' label='Type' options={options}/>
-              )}
+          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
+            <div className='grid grid-cols-2 gap-4'>
+              <InputController name='label' label='Label' type='text'/>
+              <InputController name='description' label='Description' type='text'/>
+              <InputController name='placeholder' label='Placeholder' type='text'/>
+              <InputController name='name' label='Name' type='text'/>
             </div>
+
+            {field?.variant === 'Input' && (
+              <SelectController name='type' label='Type' options={options}/>
+            )}
 
             <If condition={form.watch('type') === 'number' || form.watch('type') === 'text'}
               render={()=>(
-                <div className='grid grid-cols-2 gap-4 mt-4'>
+                <div className='grid grid-cols-2 gap-4'>
                   <InputController name='min' label='Min' type='number'/>
                   <InputController name='max' label='Max' type='number'/>
                 </div>
@@ -119,7 +120,7 @@ export const EditFieldDialog = memo(({isOpen, onClose, field, onSave }: EditFiel
 
             <If condition={field?.variant === 'Slider'}
               render={()=>(
-                <div className='grid grid-cols-3 gap-4 mt-4'>
+                <div className='grid grid-cols-3 gap-4'>
                   <InputController name='min' label='Min' type='number'/>
                   <InputController name='max' label='Max' type='number'/>
                   <InputController name='step' label='Step' type='number'/>
@@ -127,7 +128,7 @@ export const EditFieldDialog = memo(({isOpen, onClose, field, onSave }: EditFiel
               )}
             />
 
-            <div className="grid grid-cols-3 gap-4 mt-4">
+            <div className="grid grid-cols-3 gap-4">
               <SwitchButton name='required' label='Required'/>
               <SwitchButton name='disabled' label='Disabled'/>
               <SwitchButton name='readOnly' label='Read only'/>

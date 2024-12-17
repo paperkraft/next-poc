@@ -137,8 +137,9 @@ export const generateCodeSnippet = (field: FormFieldType) => {
                   placeholder="${field.placeholder}"
                   ${field.type ? `type="${field.type}"` : ''}
                   ${field.disabled ? 'disabled' : ''}
-                  ${field.min ? `minLength: ${field.min}` : ''} 
-                  ${field.max ? `maxLength: ${field.max}` : ''}
+                  ${field.min ? `minLength={${field.min}}` : ''} 
+                  ${field.max ? `maxLength={${field.max}}` : ''}
+                  ${field.readOnly ? 'readOnly' : ''}
                 />
               </FormControl>
               ${field.description && `<FormDescription>${field.description}</FormDescription>`}

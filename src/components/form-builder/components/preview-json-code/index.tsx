@@ -1,3 +1,4 @@
+'use client'
 import React from 'react'
 import { Highlight, themes } from 'prism-react-renderer'
 import { z } from 'zod'
@@ -74,10 +75,6 @@ export const FormPreview: React.FC<FormPreviewProps> = ({ formFields }) => {
   function onSubmit(data: z.infer<typeof formSchema>) {
     try {
       console.log('Form-data : ', JSON.stringify(data, null, 2));
-
-      const parse = formSchema.parse(data);
-      console.log('parse', parse);
-
       toast(
         <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
           <code className="text-white">{JSON.stringify(data, null, 2)}</code>

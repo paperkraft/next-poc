@@ -16,12 +16,11 @@ export const generateZodSchema = (formFields: FormFieldOrGroup[]): z.ZodObject<a
       case 'Checkbox':
         fieldSchema = z.boolean()
         break
+
       case 'Date Picker':
         fieldSchema = z.coerce.date()
         break
-      case 'Datetime Picker':
-        fieldSchema = z.coerce.date()
-        break
+
       case 'Input':
         if (field.type === 'email') {
           fieldSchema = z.string().email()
@@ -33,41 +32,42 @@ export const generateZodSchema = (formFields: FormFieldOrGroup[]): z.ZodObject<a
           fieldSchema = z.string()
           break
         }
+
       case 'Location Input':
         fieldSchema = z.tuple([
           z.string({
             required_error: 'Country is required',
           }),
-          z.string().optional(), // State name, optional
+          z.string().optional(),
         ])
         break
+
       case 'Slider':
-        fieldSchema = z.coerce.number().default(0)
+        fieldSchema = z.coerce.number()
         break
+
       case 'Signature Input':
         fieldSchema = z.string({
           required_error: 'Signature is required',
         })
         break
-      case 'Smart Datetime Input':
-        fieldSchema = z.date()
-        break
-      case 'Number':
-        fieldSchema = z.coerce.number()
-        break
+
       case 'Switch':
         fieldSchema = z.boolean()
         break
+
       case 'Tags Input':
         fieldSchema = z
           .array(z.string())
           .nonempty('Please enter at least one item')
         break
+
       case 'Multi Select':
         fieldSchema = z
           .array(z.string())
           .nonempty('Please select at least one item')
         break
+
       default:
         fieldSchema = z.string()
     }
@@ -75,20 +75,20 @@ export const generateZodSchema = (formFields: FormFieldOrGroup[]): z.ZodObject<a
     if (field.min !== undefined && 'min' in fieldSchema) {
       fieldSchema = (fieldSchema as any).min(
         field.min,
-        `Must be at least ${field.min}`,
+        // `Must be at least ${field.min}`,
       )
     }
     if (field.max !== undefined && 'max' in fieldSchema) {
       fieldSchema = (fieldSchema as any).max(
         field.max,
-        `Must be at most ${field.max}`,
+        // `Must be at most ${field.max}`,
       )
     }
 
     if (field.required !== true) {
       fieldSchema = fieldSchema.optional()
     }
-    schemaObject[field.name] = fieldSchema as ZodTypeAny // Ensure fieldSchema is of type ZodTypeAny
+    schemaObject[field.name] = fieldSchema as ZodTypeAny
   }
 
   formFields.flat().forEach(processField)
@@ -97,6 +97,7 @@ export const generateZodSchema = (formFields: FormFieldOrGroup[]): z.ZodObject<a
 }
 
 export const zodSchemaToString = (schema: z.ZodTypeAny): string => {
+  console.log('schema', schema._def)
   if (schema instanceof z.ZodDefault) {
     return `${zodSchemaToString(schema._def.innerType)}.default(${JSON.stringify(schema._def.defaultValue())})`
   }
@@ -106,7 +107,7 @@ export const zodSchemaToString = (schema: z.ZodTypeAny): string => {
   }
 
   if (schema instanceof z.ZodNumber) {
-    let result = 'z.number()'
+    let result = 'z.coerce.number()'
     if ('checks' in schema._def) {
       schema._def.checks.forEach((check: any) => {
         if (check.kind === 'min') {
@@ -123,10 +124,12 @@ export const zodSchemaToString = (schema: z.ZodTypeAny): string => {
     let result = 'z.string()'
     if ('checks' in schema._def) {
       schema._def.checks.forEach((check: any) => {
-        if (check.kind === 'min') {
+        if (check.kind === 'min') { 
           result += `.min(${check.value})`
         } else if (check.kind === 'max') {
           result += `.max(${check.value})`
+        } else if(check.kind === 'email') {
+          result += `.email()`
         }
       })
     }
@@ -163,7 +166,7 @@ export const zodSchemaToString = (schema: z.ZodTypeAny): string => {
 }
 
 export const getZodSchemaString = (formFields: FormFieldOrGroup[]): string => {
-  const schema = generateZodSchema(formFields)
+  const schema = generateZodSchema(formFields);
   const schemaEntries = Object.entries(schema.shape)
     .map(([key, value]) => {
       return `  ${key}: ${zodSchemaToString(value as ZodTypeAny)}`
@@ -325,7 +328,6 @@ export const generateConstants = (
   return constantSet
 }
 
-// New function to generate defaultValues
 export const generateDefaultValues = (
   fields: FormFieldOrGroup[],
   existingDefaultValues: Record<string, any> = {},
@@ -335,25 +337,34 @@ export const generateDefaultValues = (
   fields.flat().forEach((field) => {
     if (field.variant === 'Divider' || field.variant === 'Separator') return
 
-    if (field.name && defaultValues[field.name] === undefined) {
-      switch (field.variant) {
-        case 'Tags Input':
-          defaultValues[field.name] = []
-          break
-        case 'Date Picker':
-          defaultValues[field.name] = null
-          break
-        case 'Switch':
-        case 'Checkbox':
-          defaultValues[field.name] = false
-          break
-        case 'Slider':
+    if (defaultValues[field.name]) return
+
+    switch (field.variant) {
+      case 'Tags Input':
+        defaultValues[field.name] = []
+        break
+      case 'Date Picker':
+        defaultValues[field.name] = null
+        break
+      case 'Switch':
+      case 'Checkbox':
+        defaultValues[field.name] = false
+        break
+      case 'Slider':
+        defaultValues[field.name] = 0
+      case 'Input':
+        if (field.type === 'number') {
           defaultValues[field.name] = 0
           break
-        default:
-          defaultValues[field.name] = ""
-      }
+        }
+        defaultValues[field.name] = ""
+        break
+      default:
+        defaultValues[field.name] = ""
     }
+
+    // if (field.name && defaultValues[field.name] === undefined) {
+    // }
   })
 
   return defaultValues
@@ -384,6 +395,7 @@ export const generateFormCode = (formFields: FormFieldOrGroup[]): string => {
   }
 
   const defaultValues = generateDefaultValues(formFields)
+  
 
   const component = `
 export default function MyForm() {

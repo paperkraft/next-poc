@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { Separator } from '@/components/ui/separator'
 import If from '@/components/ui/if'
 import { useMediaQuery } from '@/hooks/use-media-query'
@@ -100,6 +100,10 @@ const FormBuilder = () => {
     </div>
   )
 
+  const Preview = useCallback(({formFields}:{formFields:FormFieldOrGroup[]}) => {
+    return(<FormPreview formFields={formFields} />)
+  },[formFields])
+
   const renderFormFields = () => (
     <div className="grid grid-cols-1 md:grid-cols-3 items-start md:gap-8">
       <div className="w-full col-span-2 flex flex-col md:flex-row gap-3">
@@ -111,7 +115,8 @@ const FormBuilder = () => {
         />
       </div>
       <div className="w-full mt-8 md:mt-0">
-        <FormPreview formFields={formFields} />
+        {/* <FormPreview formFields={formFields} /> */}
+        <Preview formFields={formFields} />
       </div>
     </div>
   );

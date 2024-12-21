@@ -1,16 +1,15 @@
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { HTMLAttributes } from "react"
-import { Control, FieldValues, Path, PathValue, useFormContext } from "react-hook-form"
+import { FieldValues, Path, PathValue, useFormContext } from "react-hook-form"
 
 interface Options{
     label: string;
     value: string | number | boolean 
 }
 
-interface IInputControllerProps<T extends FieldValues>
+interface ISelectControllerProps<T extends FieldValues>
 extends HTMLAttributes<HTMLInputElement> {
-    control?: Control<T>;
     name: Path<T>;
     label: string;
     options: Array<Options>
@@ -21,21 +20,17 @@ extends HTMLAttributes<HTMLInputElement> {
     readOnly?: boolean;
 }
 
-export const SelectController = <T extends FieldValues>({ options, name, label, ...rest}:IInputControllerProps<T>) => {
+export const SelectController = <T extends FieldValues>({ options, name, label, ...rest}:ISelectControllerProps<T>) => {
     const form = useFormContext();
     return (
         <FormField
             control={form.control}
             name={name}
             render={({field})=>(
-                <FormItem className="w-full">
+                <FormItem className="w-full relative">
                     <FormLabel>{label}</FormLabel>
                     <FormControl>
-                        <Select 
-                            onValueChange={field.onChange} 
-                            defaultValue={field.value} 
-                            disabled={rest?.disabled}
-                        >
+                        <Select onValueChange={field.onChange} defaultValue={field.value} disabled={rest?.disabled}>
                             <FormControl>
                                 <SelectTrigger>
                                     <SelectValue placeholder={rest?.placeholder ?? "Select" }/>
@@ -43,14 +38,14 @@ export const SelectController = <T extends FieldValues>({ options, name, label, 
                             </FormControl>
                                 <SelectContent>
                                     {
-                                        options && options.map((item, i)=>(
-                                            <SelectItem value={item?.value as string} key={i}>{item?.label}</SelectItem>
+                                        options?.map((item, i)=>(
+                                            <SelectItem value={item?.value as string} key={`${i}.${item?.value}`}>{item?.label}</SelectItem>
                                         ))
                                     }
                                 </SelectContent>
                         </Select>
                     </FormControl>
-                    <FormDescription>{rest?.description}</FormDescription>
+                    {rest?.description && <FormDescription>{rest?.description}</FormDescription>}
                     <FormMessage/>
                 </FormItem>
             )}

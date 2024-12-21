@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import ThemeProvider from "@/components/custom/theme-provider";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "@/components/ui/sonner";
 import { NextAuthProvider } from "@/components/custom/auth-provider";
 import { cn } from "@/lib/utils";
-import AppLayout from "@/components/custom/layout/AppLayout";
-import { ChildProps } from "@/types/types";
+import AppLayout from "@/components/layout/AppLayout";
+import { ChildProps } from "@/types";
 
 const inter = Inter({subsets: ["latin"]});
 
@@ -27,9 +27,9 @@ export default function RootLayout({children}:ChildProps) {
             <AppLayout>
               {children}
             </AppLayout>
+            <Toaster richColors/>
           </ThemeProvider>
         </NextAuthProvider>
-        <Toaster />
       </body>
     </html>
   );

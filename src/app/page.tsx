@@ -1,11 +1,12 @@
 'use client'
 import LandingPage from "./landing";
-import Loading from "./loading";
 import WelcomePage from "./welcome";
+import Loading from "./loading";
 import { useSession } from "next-auth/react";
 
 export default function Home() {
   const { status } = useSession();
+ 
   switch (status) {
     case "loading":
       return <Loading/>;
@@ -17,6 +18,6 @@ export default function Home() {
       return <LandingPage />;
 
     default:
-      return <Loading/>;
+      return null;
   }
 }

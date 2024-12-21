@@ -3,7 +3,9 @@ import { User as NextAuthUser } from "next-auth";
 
 declare module "next-auth" {
     interface User extends NextAuthUser {
-        role?: string;
+        roleId?: string;
+        permissions?: number;
+        modules?: any;
     }
     
     interface Session {
@@ -12,12 +14,16 @@ declare module "next-auth" {
             email: string;
             name?: string;
             image?: string;
-            role?: string;
-        };
+            roleId?: string;
+            permissions?: number;
+            modules?: any;
+        } & DefaultSession["user"];
     }
 
     interface Token {
         id: string;
-        role?: string;
+        roleId?: string;
+        permissions?: number;
+        modules?: any;
     }
 }

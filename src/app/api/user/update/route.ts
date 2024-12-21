@@ -17,7 +17,6 @@ export async function POST(request: Request) {
                 email,
                 firstName,
                 lastName,
-                name: `${firstName} ${lastName}`
             }
         });
 

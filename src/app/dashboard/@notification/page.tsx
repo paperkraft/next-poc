@@ -2,9 +2,9 @@
 import CustomCard from "@/components/custom/card-component";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 
-export default function NotificationPage() {
+const NotificationPage = memo(() => {
   const [loading, setLoading] = useState(true);
   
   useEffect(()=>{
@@ -39,4 +39,7 @@ export default function NotificationPage() {
       }
     </CustomCard>
   )
-} 
+}) 
+
+NotificationPage.displayName = "NotificationPage";
+export default NotificationPage;

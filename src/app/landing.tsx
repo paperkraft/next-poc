@@ -5,6 +5,20 @@ import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
+
+const appList = [
+    {
+        url:'/signin',
+        title:"ERP",
+        desc:"Automate your administrative operations to ensure paperless and hassle-free"
+    },
+    {
+        url:'/signin',
+        title:"HR Payroll",
+        desc:"Automate your administrative operations to ensure paperless and hassle-free"
+    }
+]
+
 export default function LandingPage() {
 
     return (
@@ -28,7 +42,7 @@ export default function LandingPage() {
                 </div>
             </header>
             <main>
-                <section className="bg-slate-50 py-20">
+                <section className="py-20 bg-slate-50 dark:bg-sidebar-accent">
                     <div className="flex flex-wrap md:flex-nowrap mx-auto w-[90%] max-w-screen-md md:max-w-screen-xl">
                         <div className="py-8 md:pr-20 w-full md:w-[calc(100vw-390px)]">
                             <div className="space-y-8 text-center md:text-left text-balance">
@@ -41,20 +55,24 @@ export default function LandingPage() {
                             </div>
                         </div>
 
-                        <div className="p-8 bg-background border rounded-lg w-full md:max-w-[390px] mb-8">
-                            <h1 className="py-4">App List</h1>
+                        <div className="p-8 bg-background border rounded-lg w-full md:max-w-[390px] mb-8 shadow-xl">
+                            <h1 className="pb-4">App List</h1>
+                            <div className="grid gap-3">
+                                {
+                                    appList.map((item)=>(
+                                        <Link href={'/signin'} className="group" key={item.title}>
+                                            <div className="flex gap-1 items-center justify-between rounded-lg p-4 border group-hover:border">
+                                                <div className="space-y-0.5">
+                                                    <h1 className="font-medium text-lg">{item.title}</h1>
+                                                    <p className="text-sm text-balance">{item.desc}</p>
+                                                </div>
+                                                <span><ChevronRightIcon /></span>
+                                            </div>
+                                        </Link>
+                                    ))
+                                }
+                            </div>
 
-                            <Link href={'/signin'}>
-                                <div className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
-                                    <div className="space-y-0.5">
-                                        <h1 className="font-medium text-lg">ERP</h1>
-                                        <p className="text-xs">
-                                            Automate your administrative operations to ensure paperless and hassle-free.
-                                        </p>
-                                    </div>
-                                    <ChevronRightIcon className="size-4" />
-                                </div>
-                            </Link>
                         </div>
                     </div>
                 </section>

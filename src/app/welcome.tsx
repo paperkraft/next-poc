@@ -1,4 +1,5 @@
 "use client";
+import MyForm from "@/components/form-builder/form-test/page";
 import { useMounted } from "@/hooks/use-mounted";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -7,8 +8,8 @@ import React, { useEffect } from "react";
 export default function WelcomePage() {
   const mounted = useMounted();
   const route = useRouter();
-  const { data: session, status } = useSession();
-  const user = session?.user;
+  const { data, status } = useSession();
+  
 
   useEffect(() => {
     if (mounted && status !== "authenticated") {
@@ -17,10 +18,13 @@ export default function WelcomePage() {
   }, [mounted, status, route]);
 
   return (
-    mounted && user &&
-    <div>
-      <p>Welcome, {user?.name ?? user?.email}</p>
-      <p>Your Unique Id: {user?.id ?? ""}</p>
-    </div>
+    mounted && data &&
+    <>
+      <div>
+        <p>Welcome, {data?.user?.name ?? data?.user?.email}</p>
+        <p>Your Unique Id: {data?.user?.id ?? ""}</p>
+      </div>
+      <MyForm/>
+    </>
   );
 }

@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
 import prisma from '@/lib/prisma';
+import { makePassword } from '@/utils/password';
 
 export async function POST(request: Request) {
-    const { username, email, password } = await request.json();
+    const { email, password, ...rest } = await request.json();
 
     try {
         // Check if the user already exists
@@ -11,7 +11,6 @@ export async function POST(request: Request) {
             where: {
                 OR:[
                     { email: email },
-                    { username: username }
                 ]
              }
         });
@@ -19,16 +18,21 @@ export async function POST(request: Request) {
         if (existingUser) {
             return NextResponse.json({ message: 'User already exists' }, { status: 409 });
         }
-    
-        // Hash the password
-        const hashedPassword = await bcrypt.hash(password, 10);
-    
-        // Insert the new user
+
+        const roleId = await prisma.role.findFirst({
+            where:{ name: "guest" },
+            select:{ id: true }
+        })
+
+        const hashedPassword = await makePassword(password)
+        
         await prisma.user.create({
-            data: {
-                username,
-                email,
-                password: hashedPassword
+            data: { 
+                ...rest, 
+                email, 
+                password: hashedPassword, 
+                name: `${rest.firstName} ${rest.lastName}`, 
+                roleId: roleId?.id,
             }
         });
     

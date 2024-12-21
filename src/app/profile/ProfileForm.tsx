@@ -1,14 +1,13 @@
 'use client'
 import { InputController } from "@/components/custom/form.control/InputController";
-import TitlePage from "@/components/custom/page-heading";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { toast } from "@/hooks/use-toast";
 import { useSession } from "next-auth/react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod"
+import { toast } from "sonner";
 
 const formSchema = z.object({
     name: z.string(),
@@ -69,15 +68,9 @@ export default function Profile() {
         const result = await res.json();
 
         if(result.message === "Success"){
-            toast({
-                title: "Success",
-                description: "Profile updated",
-            });
+            toast.success("Profile updated");
         } else {
-            toast({
-                title: "Error",
-                description: "Failed to update profile",
-            });
+            toast.error("Failed to update profile");
         }
     }
 
@@ -91,6 +84,7 @@ export default function Profile() {
                             label="First Name"
                             placeholder="First Name"
                             maxLength={10}
+                            
                         />
 
                         <InputController
@@ -107,7 +101,6 @@ export default function Profile() {
                             placeholder="Username"
                             maxLength={8}
                             minLength={6}
-                            disabled
                         />
 
                         <InputController        

@@ -8,6 +8,9 @@ const nextConfig = {
             },
         ],
     },
+    // middleware: {
+    //     '/': ['src/app/middleware/rbac'],
+    // },
 };
 
 export default nextConfig;

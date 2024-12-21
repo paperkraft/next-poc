@@ -2,9 +2,9 @@
 import CustomCard from "@/components/custom/card-component";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 
-export default function ArchivedNotifications() {
+ const ArchivedNotifications = memo(() => {
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
@@ -41,4 +41,7 @@ export default function ArchivedNotifications() {
       </CustomCard>
     </>
   )
-} 
+}) 
+
+ArchivedNotifications.displayName = "ArchivedNotifications";
+export default ArchivedNotifications;

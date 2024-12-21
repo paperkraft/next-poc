@@ -4,7 +4,7 @@ import Image from "next/image";
 import TitlePage from "@/components/custom/page-heading";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { ImgProps } from "@/types/types";
+import { ImgProps } from "@/types";
 
 export default function Photos({ params: { id } }: { params: { id: string } }) {
   const [photo, setPhoto] = useState<ImgProps>();

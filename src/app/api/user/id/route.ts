@@ -9,7 +9,6 @@ export async function POST(request: Request) {
             where: { id },
             select:{
                 id:true,
-                name:true,
                 email:true,
                 lastName:true,
                 firstName:true,

@@ -98,13 +98,10 @@ export const DateField: React.FC<DateFieldProps> = ({ value, onChange, ...rest }
       <PopoverContent className="w-auto p-0" align="end">
         <Calendar
           mode="single"
-          captionLayout="dropdown"
-          defaultMonth={value || undefined}
           selected={value || undefined}
+          defaultMonth={value || undefined}
           onSelect={handleDateChange}
-          fromYear={rest.fromYear ?? new Date().getFullYear() - 50}
-          toYear={rest.toYear ?? new Date().getFullYear() + 5}
-          disabled={{ after: new Date() }}
+          disabled={{after: new Date()}}
         />
       </PopoverContent>
     </Popover>

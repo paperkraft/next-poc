@@ -60,26 +60,26 @@ export default function AddModule({ modules, groups }: { modules: IModule[], gro
       ? { name: data.name, parentId: data?.parent?.value }
       : { name: data.name, parentId: null, groupId: data?.group?.value }
 
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/master/module`, {
-          method: "POST",
-          body: JSON.stringify(final),
-        }).then((d) => d.json()).catch((err) => console.error(err));
-    
-        if (res.success) {
-          toast.success('Module Created')
-          router.push('.');
-        } else {
-          toast.error('Failed to create module')
-        }
-      } catch (error) {
-        console.error(error)        
-        toast.error("Failed to create module. Please try again later.");
-      } finally {
-        router.refresh();
-        setLoading(false);
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/master/module`, {
+        method: "POST",
+        body: JSON.stringify(final),
+      }).then((d) => d.json()).catch((err) => console.error(err));
+
+      if (res.success) {
+        toast.success('Module Created')
+        router.push('.');
+      } else {
+        toast.error('Failed to create module')
       }
+    } catch (error) {
+      console.error(error)
+      toast.error("Failed to create module. Please try again later.");
+    } finally {
+      router.refresh();
+      setLoading(false);
+    }
   };
 
   return (
@@ -106,11 +106,11 @@ export default function AddModule({ modules, groups }: { modules: IModule[], gro
         }
 
         <div className="flex justify-end my-4 gap-2">
-          <Button variant={"outline"} onClick={(e) => { e.preventDefault(); form.reset(); }} >
+          <Button type="button" variant={"outline"} onClick={() => form.reset()} >
             Reset
           </Button>
           <Button type="submit" disabled={loading}>
-              <ButtonContent status={loading} text={"Create"}/>
+            <ButtonContent status={loading} text={"Create"} />
           </Button>
         </div>
       </form>

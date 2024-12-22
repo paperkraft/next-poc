@@ -97,13 +97,7 @@ export default function RoleForm() {
           </div>
         </div>
         <div className="flex justify-end my-4 gap-2">
-          <Button
-            variant={"outline"}
-            onClick={(e) => {
-              e.preventDefault();
-              form.reset();
-            }}
-          >
+          <Button type="button" variant={"outline"} onClick={() => form.reset()} >
             Reset
           </Button>
           <Button type="submit">Submit</Button>

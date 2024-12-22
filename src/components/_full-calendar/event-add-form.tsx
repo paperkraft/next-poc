@@ -20,6 +20,7 @@ import {
   Sheet,
   SheetContent,
   SheetDescription,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -29,6 +30,7 @@ import { DateTimePicker } from "./date-picker";
 import { toast } from "sonner";
 import { InputController } from "../custom/form.control/InputController";
 import { TextareaController } from "../custom/form.control/TextareaController";
+import { SwitchButton } from "../custom/form.control/SwitchButton";
 
 const eventAddFormSchema = z.object({
   title: z
@@ -37,6 +39,7 @@ const eventAddFormSchema = z.object({
   description: z
     .string({ required_error: "Please enter a description." })
     .min(1, { message: "Must provide a description for this event." }),
+  allDay: z.boolean({required_error:"Please select event type"}),
   start: z.date({
     required_error: "Please select a start time",
     invalid_type_error: "That's not a date!"
@@ -69,6 +72,7 @@ export function EventAddForm({ start, end }: EventAddFormProps) {
     form.reset({
       title: "",
       description: "",
+      allDay: false,
       start: start,
       end: end,
       color: "#76c7ef"
@@ -80,9 +84,10 @@ export function EventAddForm({ start, end }: EventAddFormProps) {
       id: String(events.length + 1),
       title: data.title,
       description: data.description,
+      allDay: data.allDay,
       start: data.start,
       end: data.end,
-      color: data.color
+      color: data.color,
     };
     addEvent(newEvent);
     setEventAddOpen(false);
@@ -91,7 +96,7 @@ export function EventAddForm({ start, end }: EventAddFormProps) {
 
   return (
     <>
-      <Sheet open={eventAddOpen}>
+      <Sheet open={eventAddOpen} onOpenChange={setEventAddOpen}>
         <SheetTrigger asChild>
           <Button onClick={() => setEventAddOpen(true)} className="w-full">
             <PlusIcon className="md:h-5 md:w-5 h-3 w-3" />
@@ -111,13 +116,14 @@ export function EventAddForm({ start, end }: EventAddFormProps) {
               <InputController name="title" label="Title" placeholder="Title" />
               <TextareaController name="description" label="Description" placeholder="Description" />
 
+              <SwitchButton name="allDay" label="All Day"/>
 
               <FormField
                 control={form.control}
                 name="start"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel htmlFor="datetime">Start</FormLabel>
+                    <FormLabel htmlFor="datetime">Start Date</FormLabel>
                     <FormControl>
                       <DateTimePicker
                         value={field.value}
@@ -130,12 +136,13 @@ export function EventAddForm({ start, end }: EventAddFormProps) {
                   </FormItem>
                 )}
               />
+
               <FormField
                 control={form.control}
                 name="end"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel htmlFor="datetime">End</FormLabel>
+                    <FormLabel htmlFor="datetime">End Date</FormLabel>
                     <FormControl>
                       <DateTimePicker
                         value={field.value}
@@ -156,9 +163,8 @@ export function EventAddForm({ start, end }: EventAddFormProps) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Color</FormLabel>
-                    <FormControl>
+                    <FormControl className="w-full flex flex-col gap-1">
                       <RgbaStringColorPicker
-                        className="flex"
                         color={field.value}
                         onChange={field.onChange}
                       />
@@ -168,10 +174,12 @@ export function EventAddForm({ start, end }: EventAddFormProps) {
                 )}
               />
 
-              <div className="flex gap-2 mt-10">
-                <Button onClick={(e) => { e.preventDefault(); setEventAddOpen(false) }}>Cancel</Button>
-                <Button type="submit">Add Event</Button>
-              </div>
+              <SheetFooter>
+                <div className="flex gap-2 mt-10">
+                  <Button onClick={(e) => { e.preventDefault(); setEventAddOpen(false) }}>Cancel</Button>
+                  <Button type="submit">Add Event</Button>
+                </div>
+              </SheetFooter>
             </form>
           </Form>
         </SheetContent>

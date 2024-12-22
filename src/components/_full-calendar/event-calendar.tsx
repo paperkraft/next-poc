@@ -233,7 +233,7 @@ export default function EventCalendar() {
             initialView="dayGridMonth"
             headerToolbar={false}
             slotMinTime={"09:00"} // 09:00
-            slotMaxTime={"21:00"} // 21:00
+            slotMaxTime={"22:00"} // 22:00
             allDaySlot={false}
             firstDay={1}
             height={"32vh"}

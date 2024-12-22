@@ -135,6 +135,10 @@ export const data = [
             {
                 title: "Form Builder",
                 url: "/settings/form-builder",
+            },
+            {
+                title: "Full Calendar",
+                url: "/settings/full-calendar",
             }
         ]
     }

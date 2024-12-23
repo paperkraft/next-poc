@@ -67,7 +67,7 @@
   }
   
   .fc-daygrid-event-harness {
-    @apply pr-2 hover:bg-none hover:scale-[1.02] transition-all hover:cursor-pointer  !important;
+    @apply hover:bg-none hover:scale-[1.02] transition-all hover:cursor-pointer  !important;
   }
   
   .fc-timegrid-event-harness {

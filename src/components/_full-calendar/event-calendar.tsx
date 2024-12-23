@@ -275,7 +275,7 @@ export default function EventCalendar() {
             // datesSet={(dates) => setViewedDate(dates.start)}
             // dateClick={() => setEventAddOpen(true)}
             // nowIndicator
-            // editable
+            editable
             // selectable
           />
         </div>

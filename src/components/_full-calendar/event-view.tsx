@@ -10,7 +10,7 @@ import {
 import { CalendarEvent } from "@/utils/calendar-data";
 import { EventDeleteForm } from "./event-delete-form";
 import { useEvents } from "@/context/calendar-context";
-import { CalendarIcon, ClockIcon, EditIcon, InfoIcon, TimerIcon } from "lucide-react";
+import { CalendarIcon, ClockIcon, EditIcon, InfoIcon } from "lucide-react";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 import { Separator } from "../ui/separator";
 import { Button } from "../ui/button";
@@ -54,8 +54,8 @@ export function EventView({ event }: EventViewProps) {
               <div className="flex gap-2">
                 <div><ClockIcon className="size-[18px] mt-0.5" /></div>
                 <div>
-                  {`${event?.start.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })} - 
-                    ${event?.end.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}`}
+                  {`${event?.start && event?.start.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })} - 
+                    ${event?.end && event?.end.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}`}
                 </div>
               </div>
 

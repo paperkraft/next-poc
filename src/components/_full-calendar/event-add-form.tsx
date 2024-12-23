@@ -5,19 +5,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import {
-  Form} from "@/components/ui/form";
+import { Form } from "@/components/ui/form";
 import { PlusIcon } from "lucide-react";
-
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet"
 import { useEvents } from "@/context/calendar-context";
 import { toast } from "sonner";
 import { InputController } from "../custom/form.control/InputController";
@@ -26,6 +15,8 @@ import { SwitchButton } from "../custom/form.control/SwitchButton";
 import { ColorPicker } from "../custom/form.control/color-picker";
 import { Separator } from "../ui/separator";
 import { DatetimePicker } from "../custom/form.control/date-time";
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../ui/alert-dialog";
+import { SelectController } from "../custom/form.control/SelectController";
 
 const eventAddFormSchema = z.object({
   title: z
@@ -34,7 +25,7 @@ const eventAddFormSchema = z.object({
   description: z
     .string({ required_error: "Please enter a description." })
     .min(1, { message: "Must provide a description for this event." }),
-  allDay: z.boolean({required_error:"Please select event type"}),
+  allDay: z.boolean({ required_error: "Please select event type" }),
   start: z.date({
     required_error: "Please select a start time",
     invalid_type_error: "That's not a date!"
@@ -45,7 +36,10 @@ const eventAddFormSchema = z.object({
   }),
   color: z
     .string({ required_error: "Please select an event color." })
-    .min(1, { message: "Must provide a title for this event." })
+    .min(1, { message: "Must provide a title for this event." }),
+  groupId: z
+    .string({ required_error: "Please select an event category." })
+    .min(1, { message: "Must provide a category for this event." })
 });
 
 type EventAddFormValues = z.infer<typeof eventAddFormSchema>;
@@ -54,6 +48,13 @@ interface EventAddFormProps {
   start: Date;
   end: Date;
 }
+
+const options = [
+  {label:"Meeting", value: "Meeting"},
+  {label:"Holiday", value: "Holiday"},
+  {label:"Birthday", value: "Birthday"},
+  {label:"Conference", value: "Conference"},
+]
 
 export function EventAddForm({ start, end }: EventAddFormProps) {
   const { events, addEvent } = useEvents();
@@ -67,6 +68,7 @@ export function EventAddForm({ start, end }: EventAddFormProps) {
     form.reset({
       title: "",
       description: "",
+      groupId:"",
       allDay: false,
       start: start,
       end: end,
@@ -83,57 +85,56 @@ export function EventAddForm({ start, end }: EventAddFormProps) {
       start: data.start,
       end: data.end,
       color: data.color,
+      groupId: data.groupId,
     };
     addEvent(newEvent);
     setEventAddOpen(false);
     toast.success("Event added");
+    form.reset();
   }
 
   return (
     <>
-      <Sheet open={eventAddOpen} onOpenChange={setEventAddOpen}>
-        <SheetTrigger asChild>
+      <AlertDialog open={eventAddOpen}>
+        <AlertDialogTrigger asChild>
           <Button onClick={() => setEventAddOpen(true)} className="w-full">
             <PlusIcon className="md:h-5 md:w-5 h-3 w-3" />
             <p>Add Event</p>
           </Button>
-        </SheetTrigger>
+        </AlertDialogTrigger>
 
-        <SheetContent className="[&>button]:hidden">
-          <SheetHeader>
-            <SheetTitle>Add Event</SheetTitle>
-            <SheetDescription>Below event will get add</SheetDescription>
-          </SheetHeader>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Add Event</AlertDialogTitle>
+          </AlertDialogHeader>
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-
               <InputController name="title" label="Title" placeholder="Title" />
-              
               <TextareaController name="description" label="Description" placeholder="Description" />
+              <Separator />
 
-              <Separator/>
+              <SwitchButton name="allDay" label="All Day" />
+              <div className="grid grid-cols-2 gap-2">
+                <DatetimePicker name="start" label="Start Date" />
+                <DatetimePicker name="end" label="End Date" />
+              </div>
 
-              <SwitchButton name="allDay" label="All Day"/>
+              <div className="grid grid-cols-2 gap-2">
+                <SelectController name="groupId" label="Category" options={options}/>
+                <ColorPicker name="color" label="Color" />
+              </div>
 
-              {/* if not all day set time for event */}
 
-              <DatetimePicker name="start" label="Start Date"/>
-
-              <DatetimePicker name="end" label="End Date"/>
-
-              <ColorPicker name="color" label="Color"/>
-              
-              <SheetFooter>
-                <div className="flex gap-2">
-                  <Button onClick={(e) => { e.preventDefault(); setEventAddOpen(false) }}>Cancel</Button>
-                  <Button type="submit">Add Event</Button>
-                </div>
-              </SheetFooter>
+              <div className="flex gap-2">
+                <Button onClick={(e) => { e.preventDefault(); setEventAddOpen(false) }}>Cancel</Button>
+                <Button type="submit">Add Event</Button>
+              </div>
             </form>
           </Form>
-        </SheetContent>
-      </Sheet>
+
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

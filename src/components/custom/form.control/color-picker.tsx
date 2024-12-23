@@ -22,13 +22,13 @@ export const ColorPicker =  ({ name, label, ...rest}:ColorPickerProps) => {
             control={form.control}
             name={name}
             render={({ field }) => (
-                <FormItem className="w-full flex flex-col">
+                <FormItem className="w-full flex flex-col justify-between">
                 <FormLabel>{label}</FormLabel>
                 <FormControl>
                     <Popover>
                         <PopoverTrigger asChild disabled={rest.disabled}>
                             <Button size='icon'variant='outline'>
-                                <div style={{ backgroundColor: field.value }} className='size-8 rounded p-1'/>
+                                <div style={{ backgroundColor: field.value }} className='size-7 rounded p-1'/>
                             </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-full" align="start">

@@ -156,7 +156,7 @@ export default function CalendarNav({ calendarRef, start, end, children }: Calen
           </div>
 
           <div className="p-2 space-y-3">
-            <h1>Events</h1>
+            <h1>Categories</h1>
           </div>
         </div>
 

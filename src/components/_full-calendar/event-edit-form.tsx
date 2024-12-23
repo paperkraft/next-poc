@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -32,6 +32,7 @@ import { ToastAction } from "../ui/toast";
 import { CalendarEvent } from "@/utils/calendar-data";
 import { Button } from "../ui/button";
 import { DateTimePicker } from "./date-picker";
+import { EditIcon } from "lucide-react";
 
 const eventEditFormSchema = z.object({
   id: z.string(),
@@ -134,11 +135,11 @@ export function EventEditForm({
       {displayButton && (
         <AlertDialogTrigger asChild>
           <Button
-            className="w-full sm:w-24 text-xs md:text-sm mb-1"
-            variant="default"
+            variant="ghost"
+            size={'icon'}
             onClick={() => setEventEditOpen(true)}
           >
-            Edit Event
+            <EditIcon className="size-4"/>
           </Button>
         </AlertDialogTrigger>
       )}

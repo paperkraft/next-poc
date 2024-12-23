@@ -271,12 +271,12 @@ export default function EventCalendar() {
             dayHeaderContent={(headerInfo) => <RenderHeaderContent info={headerInfo} />}
             eventClick={(eventInfo) => handleEventClick(eventInfo)}
             eventChange={(eventInfo) => handleEventChange(eventInfo)}
-            select={handleDateSelect}
+            // select={handleDateSelect}
             // datesSet={(dates) => setViewedDate(dates.start)}
-            dateClick={() => setEventAddOpen(true)}
-            nowIndicator
-            editable
-            selectable
+            // dateClick={() => setEventAddOpen(true)}
+            // nowIndicator
+            // editable
+            // selectable
           />
         </div>
       </CalendarNav>

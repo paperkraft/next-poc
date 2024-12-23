@@ -6,15 +6,8 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage
-} from "@/components/ui/form";
+  Form} from "@/components/ui/form";
 import { PlusIcon } from "lucide-react";
-import { RgbaStringColorPicker } from "react-colorful";
 
 import {
   Sheet,
@@ -26,11 +19,13 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { useEvents } from "@/context/calendar-context";
-import { DateTimePicker } from "./date-picker";
 import { toast } from "sonner";
 import { InputController } from "../custom/form.control/InputController";
 import { TextareaController } from "../custom/form.control/TextareaController";
 import { SwitchButton } from "../custom/form.control/SwitchButton";
+import { ColorPicker } from "../custom/form.control/color-picker";
+import { Separator } from "../ui/separator";
+import { DatetimePicker } from "../custom/form.control/date-time";
 
 const eventAddFormSchema = z.object({
   title: z
@@ -114,68 +109,23 @@ export function EventAddForm({ start, end }: EventAddFormProps) {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 
               <InputController name="title" label="Title" placeholder="Title" />
+              
               <TextareaController name="description" label="Description" placeholder="Description" />
+
+              <Separator/>
 
               <SwitchButton name="allDay" label="All Day"/>
 
-              <FormField
-                control={form.control}
-                name="start"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel htmlFor="datetime">Start Date</FormLabel>
-                    <FormControl>
-                      <DateTimePicker
-                        value={field.value}
-                        onChange={field.onChange}
-                        hourCycle={12}
-                        granularity="minute"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* if not all day set time for event */}
 
-              <FormField
-                control={form.control}
-                name="end"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel htmlFor="datetime">End Date</FormLabel>
-                    <FormControl>
-                      <DateTimePicker
-                        value={field.value}
-                        onChange={field.onChange}
-                        hourCycle={12}
-                        granularity="minute"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <DatetimePicker name="start" label="Start Date"/>
 
+              <DatetimePicker name="end" label="End Date"/>
 
-              <FormField
-                control={form.control}
-                name="color"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Color</FormLabel>
-                    <FormControl className="w-full flex flex-col gap-1">
-                      <RgbaStringColorPicker
-                        color={field.value}
-                        onChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
+              <ColorPicker name="color" label="Color"/>
+              
               <SheetFooter>
-                <div className="flex gap-2 mt-10">
+                <div className="flex gap-2">
                   <Button onClick={(e) => { e.preventDefault(); setEventAddOpen(false) }}>Cancel</Button>
                   <Button type="submit">Add Event</Button>
                 </div>

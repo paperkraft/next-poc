@@ -23,6 +23,7 @@ import { CalendarEvent, earliestTime, latestTime } from "@/utils/calendar-data";
 import { cn } from "@/lib/utils";
 import { EventEditForm } from "./event-edit-form";
 import { EventView } from "./event-view";
+import { ScrollArea } from "../ui/scroll-area";
 
 type EventContentProps = {
   info: EventContentArg;
@@ -37,7 +38,7 @@ type DayCellContentProps = {
 };
 
 export default function EventCalendar() {
-  const { events, setEventAddOpen, setEventEditOpen, setEventViewOpen } = useEvents();
+  const { events, visibleCategories, setEventAddOpen, setEventEditOpen, setEventViewOpen } = useEvents();
   const calendarRef = useRef<FullCalendar | null>(null);
   const [selectedStart, setSelectedStart] = useState(new Date());
   const [selectedEnd, setSelectedEnd] = useState(new Date());
@@ -174,7 +175,7 @@ export default function EventCalendar() {
     return (
       <div className="flex">
         {info.view.type == "dayGridMonth" && info.isToday ? (
-          <div className="flex h-7 w-7 rounded-full items-center justify-center text-sm border border-green-600 text-green-600">
+          <div className="flex h-7 w-7 rounded-full items-center justify-center text-sm border border-blue-600 text-blue-600">
             {info.dayNumberText}
           </div>
         ) : (
@@ -211,84 +212,84 @@ export default function EventCalendar() {
   // const calendarEarliestTime = `${earliestHour}:${earliestMin}`;
   // const calendarLatestTime = `${latestHour}:${latestMin}`;
 
-  return (
-    <div className="rounded-lg shadow-xl border">
-      <CalendarNav
-        calendarRef={calendarRef}
-        start={selectedStart}
-        end={selectedEnd}
-        viewedDate={new Date()}
-      >
-        <div className="border border-l-0">
-          <FullCalendar
-            ref={calendarRef}
-            timeZone="local"
-            plugins={[
-              dayGridPlugin,
-              timeGridPlugin,
-              multiMonthPlugin,
-              interactionPlugin,
-              listPlugin,
-            ]}
-            initialView="dayGridMonth"
-            headerToolbar={false}
-            slotMinTime={"09:00"} // 09:00
-            slotMaxTime={"22:00"} // 22:00
-            allDaySlot={false}
-            firstDay={1}
-            height={"32vh"}
-            displayEventEnd={true}
-            windowResizeDelay={0}
-            events={events}
-            eventDisplay="list-item"
-            dayMaxEventRows={true}
-            views = {{
-              dayGrid: {
-                dayMaxEventRows: 2
-              },
-              week:{
-                dayMaxEventRows: 2
-              },
-              day:{
-                dayMaxEventRows: 2
-              }
-            }}
-            slotLabelFormat={{
-              hour: "numeric",
-              minute: "2-digit",
-              hour12: true,
-            }}
-            eventTimeFormat={{
-              hour: "numeric",
-              minute: "2-digit",
-              hour12: true,
-            }}
-            eventBorderColor={"black"}
-            contentHeight={"auto"}
-            expandRows={false}
-            eventContent={(eventInfo) => <RenderEventContent info={eventInfo} />}
-            dayCellContent={(dayInfo) => <RenderCellContent info={dayInfo} />}
-            dayHeaderContent={(headerInfo) => <RenderHeaderContent info={headerInfo} />}
-            eventClick={(eventInfo) => handleEventClick(eventInfo)}
-            eventChange={(eventInfo) => handleEventChange(eventInfo)}
-            // select={handleDateSelect}
-            // datesSet={(dates) => setViewedDate(dates.start)}
-            // dateClick={() => setEventAddOpen(true)}
-            // nowIndicator
-            editable
-            // selectable
-          />
-        </div>
-      </CalendarNav>
+  const filteredEvents = events.filter((event)=> visibleCategories.includes(event.category as string));
 
-      
+  return (
+    <>
+      <div className="rounded-lg shadow-xl border">
+        <CalendarNav
+          calendarRef={calendarRef}
+          start={selectedStart}
+          end={selectedEnd}
+          viewedDate={new Date()}
+        >
+          <div className="border border-l-0">
+            <ScrollArea className="h-[calc(100vh-175px)]">
+              <FullCalendar
+                ref={calendarRef}
+                timeZone="local"
+                plugins={[
+                  dayGridPlugin,
+                  timeGridPlugin, 
+                  multiMonthPlugin,
+                  interactionPlugin,
+                  listPlugin,
+                ]}
+                initialView="dayGridMonth"
+                headerToolbar={false}
+                slotMinTime={"09:00"} // 09:00
+                slotMaxTime={"22:00"} // 22:00
+                allDaySlot={false}
+                firstDay={1}
+                height={"32vh"}
+                displayEventEnd={true}
+                windowResizeDelay={0}
+
+                events={filteredEvents}
+
+                eventDisplay="list-item"
+                dayMaxEventRows={2}
+
+                slotLabelFormat={{
+                  hour: "numeric",
+                  minute: "2-digit",
+                  hour12: true,
+                }}
+
+                eventTimeFormat={{
+                  hour: "numeric",
+                  minute: "2-digit",
+                  hour12: true,
+                }}
+
+                eventBorderColor={"black"}
+                contentHeight={"auto"}
+                expandRows={false}
+                eventContent={(eventInfo) => <RenderEventContent info={eventInfo} />}
+                dayCellContent={(dayInfo) => <RenderCellContent info={dayInfo} />}
+                dayHeaderContent={(headerInfo) => <RenderHeaderContent info={headerInfo} />}
+                eventClick={(eventInfo) => handleEventClick(eventInfo)}
+                eventChange={(eventInfo) => handleEventChange(eventInfo)}
+                // datesSet={(dates) => setViewedDate(dates.start)}
+                select={handleDateSelect}
+                dateClick={() => setEventAddOpen(true)}
+                nowIndicator
+                editable
+                selectable
+              />
+            </ScrollArea>
+          </div>
+        </CalendarNav>
+      </div>
+
       <EventEditForm
         oldEvent={selectedOldEvent}
         event={selectedEvent}
         isDrag={isDrag}
         displayButton={false}
       />
+
       <EventView event={selectedEvent} />
-    </div>
+    </>
   );
 }

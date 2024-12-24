@@ -5,6 +5,7 @@ import {
   SheetContent,
   SheetFooter,
   SheetHeader,
+  SheetOverlay,
   SheetTitle,
 } from "@/components/ui/sheet";
 import { CalendarEvent } from "@/utils/calendar-data";
@@ -21,7 +22,6 @@ interface EventViewProps {
 
 export function EventView({ event }: EventViewProps) {
   const { eventViewOpen, setEventViewOpen, setEventEditOpen } = useEvents();
-
   return (
     <>
       <Sheet open={eventViewOpen} onOpenChange={setEventViewOpen}>

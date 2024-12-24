@@ -15,29 +15,29 @@ interface ColorPickerProps {
     readOnly?: boolean;
 }
 
-export const ColorPicker =  ({ name, label, ...rest}:ColorPickerProps) => {
+export const ColorPicker = ({ name, label, ...rest }: ColorPickerProps) => {
     const form = useFormContext();
     return (
         <FormField
             control={form.control}
             name={name}
             render={({ field }) => (
-                <FormItem className="w-full flex flex-col justify-between">
-                <FormLabel>{label}</FormLabel>
-                <FormControl>
-                    <Popover>
-                        <PopoverTrigger asChild disabled={rest.disabled}>
-                            <Button size='icon'variant='outline'>
-                                <div style={{ backgroundColor: field.value }} className='size-7 rounded p-1'/>
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-full" align="start">
-                            <RgbaStringColorPicker color={field.value} onChange={field.onChange}/>
-                        </PopoverContent>
-                    </Popover>
-                </FormControl>
-                {rest?.description && <FormDescription>{rest?.description}</FormDescription>}
-                <FormMessage />
+                <FormItem className="">
+                    <FormLabel>{label}</FormLabel>
+                    <FormControl>
+                        <Popover>
+                            <PopoverTrigger asChild disabled={rest.disabled} className='w-full'>
+                                <Button variant='outline'>
+                                    <div style={{ backgroundColor: field.value }} className='w-full h-full' />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-full" align="start">
+                                <RgbaStringColorPicker color={field.value} onChange={field.onChange} />
+                            </PopoverContent>
+                        </Popover>
+                    </FormControl>
+                    {rest?.description && <FormDescription>{rest?.description}</FormDescription>}
+                    <FormMessage />
                 </FormItem>
             )}
         />

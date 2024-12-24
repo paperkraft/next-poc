@@ -68,8 +68,12 @@ export interface CalendarEvent {
   title: string;
   start: Date;
   end: Date;
-  backgroundColor?: string;
   description: string;
+  backgroundColor?: string;
+  category?: string;
+  extendedProps?:{
+    category?: string;
+  }
 }
 
 export const initialEvents: CalendarEvent[] = [
@@ -91,6 +95,7 @@ export const initialEvents: CalendarEvent[] = [
       0
     ),
     backgroundColor: "#AEC6E4",
+    category:"Meeting",
     description: "This is a daily meeting to go over today's tasks.",
   },
   {
@@ -112,6 +117,7 @@ export const initialEvents: CalendarEvent[] = [
     ),
     backgroundColor: "#FFD1DC",
     description: "Lunch at Cracker Barrel with integration clients.",
+    category:"Birthday"
   },
   {
     id: "3",
@@ -132,6 +138,7 @@ export const initialEvents: CalendarEvent[] = [
     ),
     backgroundColor: "#B2E0B2",
     description: "Conversation with counselor about progression.",
+    category:"Meeting"
   },
   {
     id: "4",
@@ -152,6 +159,7 @@ export const initialEvents: CalendarEvent[] = [
     ),
     backgroundColor: "#FFB3BA",
     description: "Team bonding and strategic planning.",
+    category:"Conference"
   },
   {
     id: "5",
@@ -171,8 +179,8 @@ export const initialEvents: CalendarEvent[] = [
       30
     ),
     backgroundColor: "#FFDFBA",
-    description:
-      "Improve your productivity with effective time management techniques.",
+    description: "Improve your productivity with effective time management techniques.",
+    category:"Conference"
   },
   {
     id: "6",
@@ -193,6 +201,7 @@ export const initialEvents: CalendarEvent[] = [
     ),
     backgroundColor: "#B9FBC0",
     description: "Explore health resources and wellness activities.",
+    category:"Conference"
   },
   {
     id: "7",
@@ -213,6 +222,7 @@ export const initialEvents: CalendarEvent[] = [
     ),
     backgroundColor: "#C3B1E1",
     description: "Discussing this month's book selection with the club.",
+    category:"Birthday"
   },
   {
     id: "8",
@@ -233,6 +243,7 @@ export const initialEvents: CalendarEvent[] = [
     ),
     backgroundColor: "#B2E7E0",
     description: "Join us for a weekend of creative writing exercises.",
+    category:"Birthday"
   },
   {
     id: "9",
@@ -253,5 +264,8 @@ export const initialEvents: CalendarEvent[] = [
     ),
     backgroundColor: "#F6C9D8",
     description: "An evening of fun to raise funds for a good cause.",
+    category:"Conference"
   },
 ];
+
+export const categories = [ "Meeting", "Holiday", "Birthday", "Conference" ];

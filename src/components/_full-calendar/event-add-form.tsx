@@ -11,12 +11,11 @@ import { useEvents } from "@/context/calendar-context";
 import { toast } from "sonner";
 import { InputController } from "../custom/form.control/InputController";
 import { TextareaController } from "../custom/form.control/TextareaController";
-import { SwitchButton } from "../custom/form.control/SwitchButton";
-import { ColorPicker } from "../custom/form.control/color-picker";
-import { Separator } from "../ui/separator";
 import { DatetimePicker } from "../custom/form.control/date-time";
-import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../ui/alert-dialog";
+import { AlertDialog, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../ui/alert-dialog";
 import { SelectController } from "../custom/form.control/SelectController";
+import { GradientPicker } from "../custom/form.control/gradient-picker";
+import { AlertDialogAction, AlertDialogCancel } from "@radix-ui/react-alert-dialog";
 
 const eventAddFormSchema = z.object({
   title: z
@@ -25,7 +24,6 @@ const eventAddFormSchema = z.object({
   description: z
     .string({ required_error: "Please enter a description." })
     .min(1, { message: "Must provide a description for this event." }),
-  allDay: z.boolean({ required_error: "Please select event type" }),
   start: z.date({
     required_error: "Please select a start time",
     invalid_type_error: "That's not a date!"
@@ -37,9 +35,9 @@ const eventAddFormSchema = z.object({
   color: z
     .string({ required_error: "Please select an event color." })
     .min(1, { message: "Must provide a title for this event." }),
-  groupId: z
+  category: z
     .string({ required_error: "Please select an event category." })
-    .min(1, { message: "Must provide a category for this event." })
+    .min(1, { message: "Must provide a category for this event." }).optional(),
 });
 
 type EventAddFormValues = z.infer<typeof eventAddFormSchema>;
@@ -49,11 +47,13 @@ interface EventAddFormProps {
   end: Date;
 }
 
+
+
 const options = [
-  {label:"Meeting", value: "Meeting"},
-  {label:"Holiday", value: "Holiday"},
-  {label:"Birthday", value: "Birthday"},
-  {label:"Conference", value: "Conference"},
+  { label: "Meeting", value: "Meeting" },
+  { label: "Holiday", value: "Holiday" },
+  { label: "Birthday", value: "Birthday" },
+  { label: "Conference", value: "Conference" },
 ]
 
 export function EventAddForm({ start, end }: EventAddFormProps) {
@@ -68,11 +68,10 @@ export function EventAddForm({ start, end }: EventAddFormProps) {
     form.reset({
       title: "",
       description: "",
-      groupId:"",
-      allDay: false,
+      category: "",
       start: start,
       end: end,
-      color: "#76c7ef"
+      color: "#B9FBC0"
     });
   }, [form, start, end]);
 
@@ -81,11 +80,10 @@ export function EventAddForm({ start, end }: EventAddFormProps) {
       id: String(events.length + 1),
       title: data.title,
       description: data.description,
-      allDay: data.allDay,
       start: data.start,
       end: data.end,
       color: data.color,
-      groupId: data.groupId,
+      category: data.category,
     };
     addEvent(newEvent);
     setEventAddOpen(false);
@@ -112,24 +110,23 @@ export function EventAddForm({ start, end }: EventAddFormProps) {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <InputController name="title" label="Title" placeholder="Title" />
               <TextareaController name="description" label="Description" placeholder="Description" />
-              <Separator />
 
-              <SwitchButton name="allDay" label="All Day" />
               <div className="grid grid-cols-2 gap-2">
                 <DatetimePicker name="start" label="Start Date" />
                 <DatetimePicker name="end" label="End Date" />
               </div>
 
               <div className="grid grid-cols-2 gap-2">
-                <SelectController name="groupId" label="Category" options={options}/>
-                <ColorPicker name="color" label="Color" />
+                <SelectController name="category" label="Category" options={options} />
+                <GradientPicker name="color" label="Color" />
               </div>
 
-
-              <div className="flex gap-2">
-                <Button onClick={(e) => { e.preventDefault(); setEventAddOpen(false) }}>Cancel</Button>
-                <Button type="submit">Add Event</Button>
-              </div>
+              <AlertDialogFooter className="pt-2">
+                <div className="flex gap-2">
+                  <Button type="button" variant={'outline'} onClick={() => { form.reset(); setEventAddOpen(false) }}>Cancel</Button>
+                  <Button type="submit">Add Event</Button>
+                </div>
+              </AlertDialogFooter>
             </form>
           </Form>
 

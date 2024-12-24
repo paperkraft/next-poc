@@ -1,5 +1,5 @@
 "use client";
-import { CalendarEvent, initialEvents } from "@/utils/calendar-data";
+import { CalendarEvent, categories, initialEvents } from "@/utils/calendar-data";
 import React, { createContext, ReactNode, useContext, useState } from "react";
 
 interface Event {
@@ -9,12 +9,15 @@ interface Event {
   start: Date;
   end: Date;
   color: string;
+  category?: string;
+
 }
 
 interface EventsContextType {
   events: CalendarEvent[];
   addEvent: (event: Event) => void;
   deleteEvent: (id: string) => void;
+  filterEvent: (category: string, visible: boolean) => void;
   eventViewOpen: boolean;
   setEventViewOpen: (value: boolean) => void;
   eventAddOpen: boolean;
@@ -25,6 +28,7 @@ interface EventsContextType {
   setEventDeleteOpen: (value: boolean) => void;
   availabilityCheckerEventAddOpen: boolean;
   setAvailabilityCheckerEventAddOpen: (value: boolean) => void;
+  visibleCategories: string[];
 }
 
 const EventsContext = createContext<EventsContextType | undefined>(undefined);
@@ -37,21 +41,15 @@ export const useEvents = () => {
   return context;
 };
 
-export const EventsProvider: React.FC<{ children: ReactNode }> = ({
-  children,
-}) => {
-  const [events, setEvents] = useState<CalendarEvent[]>(
-    initialEvents.map((event) => ({
-      ...event,
-      id: String(event.id),
-      color: event.backgroundColor,
-    }))
-  );
+export const EventsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [events, setEvents] = useState<CalendarEvent[]>(initialEvents.map((event) => ({ ...event, id: String(event.id), color: event.backgroundColor })));
   const [eventViewOpen, setEventViewOpen] = useState(false);
   const [eventAddOpen, setEventAddOpen] = useState(false);
   const [eventEditOpen, setEventEditOpen] = useState(false);
   const [eventDeleteOpen, setEventDeleteOpen] = useState(false);
   const [availabilityCheckerEventAddOpen, setAvailabilityCheckerEventAddOpen] = useState(false);
+
+  const [visibleCategories, setVisibleCategories] = useState<string[]>(categories);
 
   const addEvent = (event: CalendarEvent) => {
     setEvents((prevEvents) => [...prevEvents, event]);
@@ -63,12 +61,29 @@ export const EventsProvider: React.FC<{ children: ReactNode }> = ({
     );
   };
 
+  const filterEventOld = (category:string) => {
+    if (visibleCategories.includes(category)) {
+      setVisibleCategories(visibleCategories.filter((cat) => cat !== category));
+    } else {
+      setVisibleCategories([...visibleCategories, category]);
+    }
+  }
+
+  const filterEvent = (category: string, visible: boolean) => {
+    if (visible) {
+      setVisibleCategories((prevCategories) => [...prevCategories, category]);
+    } else {
+      setVisibleCategories((prevCategories) => prevCategories.filter((cat) => cat !== category));
+    }
+  };
+
   return (
     <EventsContext.Provider
       value={{
         events,
         addEvent,
         deleteEvent,
+        filterEvent,
         eventViewOpen,
         setEventViewOpen,
         eventAddOpen,
@@ -79,6 +94,7 @@ export const EventsProvider: React.FC<{ children: ReactNode }> = ({
         setEventDeleteOpen,
         availabilityCheckerEventAddOpen,
         setAvailabilityCheckerEventAddOpen,
+        visibleCategories,
       }}
     >
       {children}

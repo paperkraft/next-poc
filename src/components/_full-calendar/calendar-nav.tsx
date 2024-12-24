@@ -33,8 +33,9 @@ export default function CalendarNav({ calendarRef, start, end, children }: Calen
   const [title, setTitle] = useState<string>("");
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [allCategoriesVisible, setAllCategoriesVisible] = useState(true);
+  const [clickedDate, setClickedDate] = useState<Date>(new Date());
 
-  const { filterEvent, visibleCategories } = useEvents();
+  const { filterEvent, visibleCategories, setEventAddOpen } = useEvents();
 
   const getTitle = () => {
     if (calendarRef.current) {
@@ -137,7 +138,7 @@ export default function CalendarNav({ calendarRef, start, end, children }: Calen
       <div className="flex">
         <div className="hidden md:flex flex-col">
           <div className="p-4 max-h-20">
-            <EventAddForm start={start} end={end} />
+            <EventAddForm start={clickedDate} end={clickedDate} />
           </div>
 
           <div className={cn("border-y")}>
@@ -164,7 +165,7 @@ export default function CalendarNav({ calendarRef, start, end, children }: Calen
                 handleGoToDate(month as Date)
               }}
 
-            // onSelect={(date)=> handleGoToDate(date as Date)}
+              onSelect={(date)=> {setEventAddOpen(true); setClickedDate(date as Date)}}
             />
           </div>
 

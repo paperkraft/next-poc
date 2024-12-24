@@ -271,8 +271,8 @@ export default function EventCalendar() {
                 eventClick={(eventInfo) => handleEventClick(eventInfo)}
                 eventChange={(eventInfo) => handleEventChange(eventInfo)}
                 // datesSet={(dates) => setViewedDate(dates.start)}
-                select={handleDateSelect}
-                dateClick={() => setEventAddOpen(true)}
+                // select={handleDateSelect}
+                // dateClick={() => setEventAddOpen(true)}
                 nowIndicator
                 editable
                 selectable

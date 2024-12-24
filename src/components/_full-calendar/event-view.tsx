@@ -1,27 +1,21 @@
 'use client';
 
-import {
-  Sheet,
-  SheetContent,
-  SheetFooter,
-  SheetHeader,
-  SheetOverlay,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { CalendarEvent } from "@/utils/calendar-data";
-import { EventDeleteForm } from "./event-delete-form";
 import { useEvents } from "@/context/calendar-context";
 import { CalendarIcon, ClockIcon, EditIcon, InfoIcon } from "lucide-react";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 import { Separator } from "../ui/separator";
 import { Button } from "../ui/button";
+import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "../ui/alert-dialog";
+import { toast } from "sonner";
 
 interface EventViewProps {
   event?: CalendarEvent;
 }
 
 export function EventView({ event }: EventViewProps) {
-  const { eventViewOpen, setEventViewOpen, setEventEditOpen } = useEvents();
+  const { eventViewOpen, setEventViewOpen, setEventEditOpen, deleteEvent, setEventDeleteOpen, eventDeleteOpen } = useEvents();
   return (
     <>
       <Sheet open={eventViewOpen} onOpenChange={setEventViewOpen}>
@@ -33,15 +27,15 @@ export function EventView({ event }: EventViewProps) {
                 <p className="text-balance font-medium text-base">{event?.title}</p>
               </div>
               <div>
-                <Button size={'icon'} variant={'ghost'} onClick={()=> {setEventViewOpen(false); setEventEditOpen(true)}}>
+                <Button size={'icon'} variant={'ghost'} onClick={() => { setEventViewOpen(false); setEventEditOpen(true) }}>
                   <EditIcon className="size-4" />
                 </Button>
               </div>
             </SheetTitle>
           </SheetHeader>
-          
-          <Separator className="my-4"/>
-          
+
+          <Separator className="my-4" />
+
           <ScrollArea className="h-[calc(100vh-160px)]">
             <div className="space-y-4">
               <div className="flex gap-2">
@@ -68,10 +62,35 @@ export function EventView({ event }: EventViewProps) {
           </ScrollArea>
 
           <SheetFooter className="mt-auto">
-            <EventDeleteForm id={event?.id} title={event?.title} />
+            <Button variant={'destructive'} onClick={() => { setEventViewOpen(false); setEventDeleteOpen(true) }}>Delete</Button>
           </SheetFooter>
         </SheetContent>
       </Sheet>
+
+      {/* Delete Event Dialog */}
+
+      <AlertDialog open={eventDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex flex-row justify-between items-center">
+              <h1>Delete {event?.title}</h1>
+            </AlertDialogTitle>
+            Are you sure you want to delete this event?
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => { setEventDeleteOpen(false); }}>
+              Cancel
+            </AlertDialogCancel>
+            <Button variant="destructive" onClick={() => {
+              deleteEvent(event?.id!);
+              setEventDeleteOpen(false);
+              toast.success("Event deleted!");
+            }}>
+              Delete
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

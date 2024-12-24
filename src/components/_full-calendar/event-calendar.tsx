@@ -235,20 +235,19 @@ export default function EventCalendar() {
                   interactionPlugin,
                   listPlugin,
                 ]}
+                firstDay={1} // Monday
                 initialView="dayGridMonth"
+                events={filteredEvents}
+                dayMaxEventRows={2}
+
                 headerToolbar={false}
                 slotMinTime={"09:00"} // 09:00
                 slotMaxTime={"22:00"} // 22:00
                 allDaySlot={false}
-                firstDay={1}
                 height={"32vh"}
                 displayEventEnd={true}
                 windowResizeDelay={0}
-
-                events={filteredEvents}
-
-                eventDisplay="list-item"
-                dayMaxEventRows={2}
+                // eventDisplay="list-item"
 
                 slotLabelFormat={{
                   hour: "numeric",
@@ -262,15 +261,14 @@ export default function EventCalendar() {
                   hour12: true,
                 }}
 
-                eventBorderColor={"black"}
+                // eventBorderColor={"black"}
                 contentHeight={"auto"}
-                expandRows={false}
+                // expandRows={false}
                 eventContent={(eventInfo) => <RenderEventContent info={eventInfo} />}
                 dayCellContent={(dayInfo) => <RenderCellContent info={dayInfo} />}
                 dayHeaderContent={(headerInfo) => <RenderHeaderContent info={headerInfo} />}
                 eventClick={(eventInfo) => handleEventClick(eventInfo)}
                 eventChange={(eventInfo) => handleEventChange(eventInfo)}
-                // datesSet={(dates) => setViewedDate(dates.start)}
                 // select={handleDateSelect}
                 // dateClick={() => setEventAddOpen(true)}
                 nowIndicator

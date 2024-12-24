@@ -91,7 +91,7 @@ export function EventEditForm({
         start: oldEvent.start,
         end: oldEvent.end,
         color: oldEvent.backgroundColor!,
-        category: oldEvent.category,
+        category: events.find((e) => e.id === oldEvent.id)?.category,
       };
 
       deleteEvent(oldEvent.id);

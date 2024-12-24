@@ -172,7 +172,7 @@ export default function CalendarNav({ calendarRef, start, end, children }: Calen
           <div className="p-4 space-y-3">
             <div className="flex justify-between items-center">
               <p>Categories</p>
-              <p className="text-sm cursor-pointer select-none" onClick={toggleCategoriesVisibility}>
+              <p className="text-xs cursor-pointer select-none" onClick={toggleCategoriesVisibility}>
                 {allCategoriesVisible ? 'Hide All' : 'Show All'}
               </p>
             </div>

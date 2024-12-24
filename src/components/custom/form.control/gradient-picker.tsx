@@ -42,7 +42,7 @@ export function GradientPicker({ name, label, ...rest }: GradientPickerProps) {
                             <PopoverTrigger asChild disabled={rest.disabled} className='w-full'>
                                 <Button variant={'outline'} className={cn('justify-start text-left font-normal', !field.value && 'text-muted-foreground')}>
                                     <div className="flex gap-2">
-                                        <div style={{ backgroundColor: field.value }} className='size-5 rounded' />
+                                        <div style={{ backgroundColor: field.value, background: field.value }} className='size-5 rounded' />
                                         {field.value ? field.value : 'Pick a color'}
                                     </div>
                                 </Button>

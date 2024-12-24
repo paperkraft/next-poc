@@ -190,13 +190,13 @@ export default function CalendarNav({ calendarRef, start, end, children }: Calen
         <div className="w-full border-l">
           <div className="w-full flex justify-between p-2 md:p-4 max-h-20">
             <div className="flex items-center">
-              <Button variant="ghost" className="w-8" onClick={() => { goPrev(calendarRef); getTitle() }}>
+              <Button variant="ghost" size={'icon'} onClick={() => { goPrev(calendarRef); getTitle() }}>
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <p className="select-none text-sm md:text-base">{title}</p>
-              <Button variant="ghost" className="w-8" onClick={() => { goNext(calendarRef); getTitle() }}>
+              <Button variant="ghost" size={'icon'} onClick={() => { goNext(calendarRef); getTitle() }}>
                 <ChevronRight className="h-4 w-4" />
               </Button>
+              <p className="select-none text-sm md:text-base ml-2">{title}</p>
             </div>
 
             <div className="hidden md:block select-none">

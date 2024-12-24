@@ -47,6 +47,7 @@ export default function EventCalendar() {
   const [isDrag, setIsDrag] = useState(false);
 
   const handleEventClick = (info: EventClickArg) => {
+
     const event: CalendarEvent = {
       id: info.event.id,
       title: info.event.title,

@@ -92,7 +92,7 @@
   }
 
   .fc-theme-standard .fc-popover {
-    @apply bg-background rounded-md !important
+    @apply bg-background rounded-md z-40 !important
   }
 
   .fc-more-popover-misc {

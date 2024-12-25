@@ -29,6 +29,10 @@ interface EventsContextType {
   availabilityCheckerEventAddOpen: boolean;
   setAvailabilityCheckerEventAddOpen: (value: boolean) => void;
   visibleCategories: string[];
+  setOpen: (value: boolean) => void;
+  open: boolean;
+  setIsNew: (value: boolean) => void;
+  isNew: boolean;
 }
 
 const EventsContext = createContext<EventsContextType | undefined>(undefined);
@@ -43,6 +47,8 @@ export const useEvents = () => {
 
 export const EventsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [events, setEvents] = useState<CalendarEvent[]>(initialEvents.map((event) => ({ ...event, id: String(event.id), color: event.backgroundColor })));
+  const [open, setOpen] = useState(false);
+  const [isNew, setIsNew] = useState(true);
   const [eventViewOpen, setEventViewOpen] = useState(false);
   const [eventAddOpen, setEventAddOpen] = useState(false);
   const [eventEditOpen, setEventEditOpen] = useState(false);
@@ -53,21 +59,17 @@ export const EventsProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
   const addEvent = (event: CalendarEvent) => {
     setEvents((prevEvents) => [...prevEvents, event]);
+    setOpen(false);
+    setIsNew(true);
   };
 
   const deleteEvent = (id: string) => {
     setEvents((prevEvents) =>
       prevEvents.filter((event) => Number(event.id) !== Number(id))
     );
+    setEventDeleteOpen(false);
+    setIsNew(true);
   };
-
-  const filterEventOld = (category:string) => {
-    if (visibleCategories.includes(category)) {
-      setVisibleCategories(visibleCategories.filter((cat) => cat !== category));
-    } else {
-      setVisibleCategories([...visibleCategories, category]);
-    }
-  }
 
   const filterEvent = (category: string, visible: boolean) => {
     if (visible) {
@@ -95,6 +97,10 @@ export const EventsProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         availabilityCheckerEventAddOpen,
         setAvailabilityCheckerEventAddOpen,
         visibleCategories,
+        setOpen,
+        open,
+        isNew,
+        setIsNew
       }}
     >
       {children}

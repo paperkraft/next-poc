@@ -76,12 +76,17 @@ export function EventAddForm({ start, end, onClick }: EventAddFormProps) {
   async function onSubmit(data: EventAddFormValues) {
 
     const { type, freq, start, end, ...rest } = data;
-    const isAllDay = isMidnight(start) && isMidnight(end!);
-    const checkSameTime = start.getTime() === end?.getTime()!;
+    const isAllDay = isMidnight(start) && isMidnight(end);
+    const checkSameTime = start.getTime() === end.getTime();
 
     if (checkSameTime) {
       form.setError('end', { message: "Time cannot be same" });
       return
+    }
+
+    if (end <= start) {
+      form.setError('end', { message: "End date must be after start date" });
+      return;
     }
 
     if (type === 'recurring') {

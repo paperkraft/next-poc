@@ -18,7 +18,7 @@ export const eventFormSchema = z.object({
   end: z.date({
     required_error: "Please select an end time",
     invalid_type_error: "That's not a date!"
-  }).optional(),
+  }),
   color: z
     .string({ required_error: "Please select an event color." })
     .min(1, { message: "Must provide a title for this event." }),

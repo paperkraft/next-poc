@@ -66,14 +66,12 @@ const currentDate = new Date();
 export interface CalendarEvent {
   id: string;
   title: string;
-  start: Date;
-  end: Date;
-  description: string;
+  start: Date | undefined;
+  end: Date | undefined;
   backgroundColor?: string;
+  description: string;
   category?: string;
-  extendedProps?:{
-    category?: string;
-  }
+  allDay?: boolean;
 }
 
 export const initialEvents: CalendarEvent[] = [

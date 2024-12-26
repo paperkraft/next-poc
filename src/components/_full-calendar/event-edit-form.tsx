@@ -55,6 +55,7 @@ export function EventEditForm({ oldEvent, event, isDrag, displayButton }: EventE
         end: oldEvent.end,
         color: oldEvent.backgroundColor!,
         category: oldEvent.category,
+        allDay: oldEvent.allDay,
       };
 
       deleteEvent(oldEvent.id);
@@ -73,6 +74,7 @@ export function EventEditForm({ oldEvent, event, isDrag, displayButton }: EventE
       end: event?.end as Date,
       color: event?.backgroundColor,
       category: event?.category,
+      allDay: event?.allDay,
     });
   }, [form, event]);
 
@@ -85,6 +87,7 @@ export function EventEditForm({ oldEvent, event, isDrag, displayButton }: EventE
       end: data.end,
       color: data.color,
       category: data.category,
+      allDay: data.allDay,
     };
     deleteEvent(data.id);
     addEvent(newEvent);
@@ -113,12 +116,12 @@ export function EventEditForm({ oldEvent, event, isDrag, displayButton }: EventE
             <InputController name="title" label="Title" placeholder="Title" />
             <TextareaController name="description" label="Description" placeholder="Description" />
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-4">
               <SelectController name="category" label="Category" options={options} />
               <GradientPicker name="color" label="Color" />
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-4">
               <DatetimePicker name="start" label="Start Date" />
               <DatetimePicker name="end" label="End Date" />
             </div>

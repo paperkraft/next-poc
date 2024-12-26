@@ -6,8 +6,8 @@ interface Event {
   id: string;
   title: string;
   description: string;
-  start: Date;
-  end: Date;
+  start: Date | undefined;
+  end: Date | undefined;
   color: string;
   category?: string;
 }

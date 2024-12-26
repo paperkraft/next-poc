@@ -16,12 +16,12 @@ import listPlugin from "@fullcalendar/list";
 import multiMonthPlugin from "@fullcalendar/multimonth";
 import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
+import rrulePlugin from '@fullcalendar/rrule';
 
 import { useRef, useState } from "react";
 import CalendarNav from "./calendar-nav";
-import { CalendarEvent, earliestTime, latestTime } from "@/utils/calendar-data";
+import { CalendarEvent } from "@/utils/calendar-data";
 import { cn } from "@/lib/utils";
-import { EventEditForm } from "./event-edit-form";
 import { EventView } from "./event-view";
 import { ScrollArea } from "../ui/scroll-area";
 
@@ -54,6 +54,7 @@ export default function EventCalendar() {
       backgroundColor: info.event.backgroundColor,
       start: info.event.start!,
       end: info.event.end!,
+      allDay: info.event.allDay,
     };
 
     setIsDrag(false);
@@ -71,6 +72,7 @@ export default function EventCalendar() {
       backgroundColor: info.event.backgroundColor,
       start: info.event.start!,
       end: info.event.end!,
+      allDay: info.event.allDay,
     };
 
     const oldEvent: CalendarEvent = {
@@ -81,6 +83,7 @@ export default function EventCalendar() {
       backgroundColor: info.oldEvent.backgroundColor,
       start: info.oldEvent.start!,
       end: info.oldEvent.end!,
+      allDay: info.oldEvent.allDay,
     };
 
     setIsDrag(true);
@@ -216,6 +219,7 @@ export default function EventCalendar() {
                   multiMonthPlugin,
                   interactionPlugin,
                   listPlugin,
+                  rrulePlugin,
                 ]}
                 firstDay={1} // Monday
                 initialView="dayGridMonth"
@@ -225,7 +229,7 @@ export default function EventCalendar() {
                 headerToolbar={false}
                 slotMinTime={"09:00"} // 09:00
                 slotMaxTime={"22:00"} // 22:00
-                allDaySlot={false}
+                // allDaySlot={false}
                 height={"32vh"}
                 displayEventEnd={true}
                 windowResizeDelay={0}

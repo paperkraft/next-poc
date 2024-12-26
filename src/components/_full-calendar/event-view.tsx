@@ -1,6 +1,6 @@
 'use client';
 
-import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { CalendarEvent } from "@/utils/calendar-data";
 import { useEvents } from "@/context/calendar-context";
 import { CalendarIcon, ClockIcon, EditIcon, InfoIcon, Trash } from "lucide-react";
@@ -19,6 +19,11 @@ interface EventViewProps {
 export function EventView({ event }: EventViewProps) {
   const { eventViewOpen, setEventViewOpen, deleteEvent, setEventDeleteOpen, eventDeleteOpen, setEventEditOpen } = useEvents();
   const { selectedOldEvent, selectedEvent, isDrag } = useEvents();
+
+  const isSameDate = event?.start.getDate() === (event?.end && event?.end.getDate());
+
+  // console.log('event', event);
+
   return (
     <>
       <Sheet open={eventViewOpen} onOpenChange={setEventViewOpen}>
@@ -49,7 +54,19 @@ export function EventView({ event }: EventViewProps) {
               <div className="flex gap-2">
                 <div><CalendarIcon className="size-[18px] mt-0.5" /></div>
                 <div>
-                  {event?.start.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                  <p>
+                    {event?.start.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                  </p>
+
+                  {!isSameDate
+                    ? event?.end
+                      ? <p>to {event?.end.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                      : null
+                    : null
+                  }
+
+                  {/* {event?.end ? <p>{event?.end.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p> : null} */}
+
                 </div>
               </div>
 
@@ -77,14 +94,12 @@ export function EventView({ event }: EventViewProps) {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex flex-row justify-between items-center">
-              <h1>Delete {event?.title}</h1>
+              <>Delete {event?.title}</>
             </AlertDialogTitle>
             Are you sure you want to delete this event?
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => { setEventDeleteOpen(false); }}>
-              Cancel
-            </AlertDialogCancel>
+            <AlertDialogCancel onClick={() => { setEventDeleteOpen(false); }}>Cancel</AlertDialogCancel>
             <Button variant="destructive" onClick={() => {
               deleteEvent(event?.id!);
               setEventDeleteOpen(false);

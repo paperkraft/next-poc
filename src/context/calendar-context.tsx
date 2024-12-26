@@ -10,7 +10,6 @@ interface Event {
   end: Date;
   color: string;
   category?: string;
-
 }
 
 interface EventsContextType {
@@ -29,10 +28,14 @@ interface EventsContextType {
   availabilityCheckerEventAddOpen: boolean;
   setAvailabilityCheckerEventAddOpen: (value: boolean) => void;
   visibleCategories: string[];
-  setOpen: (value: boolean) => void;
-  open: boolean;
-  setIsNew: (value: boolean) => void;
-  isNew: boolean;
+
+  selectedOldEvent: CalendarEvent | undefined;
+  setSelectedOldEvent: (event:CalendarEvent | undefined) => void;
+  selectedEvent: CalendarEvent | undefined;
+  setSelectedEvent: (event:CalendarEvent | undefined) => void;
+
+  setIsDrag: (value: boolean) => void;
+  isDrag: boolean;
 }
 
 const EventsContext = createContext<EventsContextType | undefined>(undefined);
@@ -47,20 +50,20 @@ export const useEvents = () => {
 
 export const EventsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [events, setEvents] = useState<CalendarEvent[]>(initialEvents.map((event) => ({ ...event, id: String(event.id), color: event.backgroundColor })));
-  const [open, setOpen] = useState(false);
-  const [isNew, setIsNew] = useState(true);
   const [eventViewOpen, setEventViewOpen] = useState(false);
   const [eventAddOpen, setEventAddOpen] = useState(false);
   const [eventEditOpen, setEventEditOpen] = useState(false);
   const [eventDeleteOpen, setEventDeleteOpen] = useState(false);
   const [availabilityCheckerEventAddOpen, setAvailabilityCheckerEventAddOpen] = useState(false);
 
+  const [selectedOldEvent, setSelectedOldEvent] = useState<CalendarEvent | undefined>();
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | undefined>();
+  const [isDrag, setIsDrag] = useState(false);
+
   const [visibleCategories, setVisibleCategories] = useState<string[]>(categories);
 
   const addEvent = (event: CalendarEvent) => {
     setEvents((prevEvents) => [...prevEvents, event]);
-    setOpen(false);
-    setIsNew(true);
   };
 
   const deleteEvent = (id: string) => {
@@ -68,7 +71,6 @@ export const EventsProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       prevEvents.filter((event) => Number(event.id) !== Number(id))
     );
     setEventDeleteOpen(false);
-    setIsNew(true);
   };
 
   const filterEvent = (category: string, visible: boolean) => {
@@ -97,10 +99,13 @@ export const EventsProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         availabilityCheckerEventAddOpen,
         setAvailabilityCheckerEventAddOpen,
         visibleCategories,
-        setOpen,
-        open,
-        isNew,
-        setIsNew
+
+        selectedOldEvent,
+        setSelectedOldEvent,
+        selectedEvent,
+        setSelectedEvent,
+        setIsDrag,
+        isDrag,
       }}
     >
       {children}

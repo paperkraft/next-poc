@@ -38,20 +38,19 @@ type DayCellContentProps = {
 };
 
 export default function EventCalendar() {
-  const { events, visibleCategories, setEventAddOpen, setEventEditOpen, setEventViewOpen } = useEvents();
+  const { events, visibleCategories, setEventEditOpen, setEventViewOpen } = useEvents();
+  const { selectedEvent, setSelectedOldEvent, setSelectedEvent, setIsDrag  } = useEvents();
   const calendarRef = useRef<FullCalendar | null>(null);
   const [selectedStart, setSelectedStart] = useState(new Date());
   const [selectedEnd, setSelectedEnd] = useState(new Date());
-  const [selectedOldEvent, setSelectedOldEvent] = useState<CalendarEvent | undefined>();
-  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | undefined>();
-  const [isDrag, setIsDrag] = useState(false);
-
+   
   const handleEventClick = (info: EventClickArg) => {
 
     const event: CalendarEvent = {
       id: info.event.id,
       title: info.event.title,
       description: info.event.extendedProps.description,
+      category: info.event.extendedProps.category,
       backgroundColor: info.event.backgroundColor,
       start: info.event.start!,
       end: info.event.end!,
@@ -68,6 +67,7 @@ export default function EventCalendar() {
       id: info.event.id,
       title: info.event.title,
       description: info.event.extendedProps.description,
+      category: info.event.extendedProps.category,
       backgroundColor: info.event.backgroundColor,
       start: info.event.start!,
       end: info.event.end!,
@@ -77,6 +77,7 @@ export default function EventCalendar() {
       id: info.oldEvent.id,
       title: info.oldEvent.title,
       description: info.oldEvent.extendedProps.description,
+      category: info.oldEvent.extendedProps.category,
       backgroundColor: info.oldEvent.backgroundColor,
       start: info.oldEvent.start!,
       end: info.oldEvent.end!,
@@ -193,26 +194,6 @@ export default function EventCalendar() {
     setSelectedEnd(info.end);
   };
 
-  // const earliestHour = getDateFromMinutes(earliestTime)
-  //   .getHours()
-  //   .toString()
-  //   .padStart(2, "0");
-  // const earliestMin = getDateFromMinutes(earliestTime)
-  //   .getMinutes()
-  //   .toString()
-  //   .padStart(2, "0");
-  // const latestHour = getDateFromMinutes(latestTime)
-  //   .getHours()
-  //   .toString()
-  //   .padStart(2, "0");
-  // const latestMin = getDateFromMinutes(latestTime)
-  //   .getMinutes()
-  //   .toString()
-  //   .padStart(2, "0");
-
-  // const calendarEarliestTime = `${earliestHour}:${earliestMin}`;
-  // const calendarLatestTime = `${latestHour}:${latestMin}`;
-
   const filteredEvents = events.filter((event)=> visibleCategories.includes(event.category as string));
 
   return (
@@ -280,13 +261,6 @@ export default function EventCalendar() {
           </div>
         </CalendarNav>
       </div>
-
-      <EventEditForm
-        oldEvent={selectedOldEvent}
-        event={selectedEvent}
-        isDrag={isDrag}
-        displayButton={false}
-      />
 
       <EventView event={selectedEvent} />
     </>

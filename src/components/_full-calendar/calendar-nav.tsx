@@ -138,7 +138,7 @@ export default function CalendarNav({ calendarRef, start, end, children }: Calen
       <div className="flex">
         <div className="hidden md:flex flex-col">
           <div className="p-4 max-h-20">
-            <EventAddForm start={clickedDate} end={clickedDate} />
+            <EventAddForm start={clickedDate} end={clickedDate} onClick={()=>setClickedDate(new Date())}/>
           </div>
 
           <div className={cn("border-y")}>

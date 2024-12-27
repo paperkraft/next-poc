@@ -23,16 +23,15 @@ import { cn } from "@/lib/utils";
 type EventAddFormValues = z.infer<typeof eventFormSchema>;
 
 interface EventAddFormProps {
-  start: Date;
-  end: Date;
+  start: Date | undefined;
+  end: Date | undefined;
   onClick?: () => void;
 }
 
-const options = categories.flatMap((category) => { return { label: category, value: category } });
-
 const freq = ['daily', 'weekly', 'monthly'];
 
-const freqOptions = freq.map((item) => { return { label: item, value: item } });
+const options = categories.flatMap((category) => { return { label: category, value: category } });
+const freqOptions = freq.flatMap((item) => { return { label: item, value: item } });
 
 const weekOptions = [
   { label: "Monday", value: "mo" },
@@ -47,8 +46,8 @@ const weekOptions = [
 export function EventAddForm({ start, end, onClick }: EventAddFormProps) {
   const { events, addEvent, eventAddOpen, setEventAddOpen } = useEvents();
 
-  let endDate = new Date(end);
-  const Today = new Date().getDate() === start.getDate();
+  let endDate = new Date(end!);
+  const Today = new Date().getDate() === start?.getDate();
 
   const form = useForm<z.infer<typeof eventFormSchema>>({
     resolver: zodResolver(eventFormSchema)
@@ -57,15 +56,16 @@ export function EventAddForm({ start, end, onClick }: EventAddFormProps) {
   useEffect(() => {
     form.reset({
       id: "",
-      type: "default",
-      freq: "",
       title: "",
       description: "",
       category: "",
       start: start,
       end: Today ? end : new Date(endDate.setDate(endDate.getDate() + 1)),
       color: "#B9FBC0",
-      allDay: false
+      allDay: false,
+
+      type: "default",
+      freq: "",
     });
   }, [form, start, end]);
 
@@ -75,8 +75,10 @@ export function EventAddForm({ start, end, onClick }: EventAddFormProps) {
 
   async function onSubmit(data: EventAddFormValues) {
 
-    const { type, freq, start, end, ...rest } = data;
+    const { type, freq, start, end, week, allDay, ...rest } = data;
+
     const isAllDay = isMidnight(start) && isMidnight(end);
+
     const checkSameTime = start.getTime() === end.getTime();
 
     if (checkSameTime) {
@@ -91,10 +93,10 @@ export function EventAddForm({ start, end, onClick }: EventAddFormProps) {
 
     if (type === 'recurring') {
       const rrule = {
-        freq: freq,
+        freq: freq as string,
         interval: 1,
-        byweekday: freq === 'weekly' ? [rest.week] : undefined,
-        bymonthday: freq === 'monthly' ? [start.getDate()] : undefined,
+        byweekday: freq === 'weekly' ? week : undefined,
+        bymonthday: freq === 'monthly' ? start.getDate() : undefined,
         dtstart: start,
         until: end,
       }
@@ -102,9 +104,9 @@ export function EventAddForm({ start, end, onClick }: EventAddFormProps) {
       const recurringEvent = {
         ...rest,
         id: String(events.length + 1),
+        start: start,
+        end: end,
         rrule: { ...rrule },
-        start: undefined,
-        end: undefined,
       };
 
       addEvent(recurringEvent);
@@ -112,7 +114,13 @@ export function EventAddForm({ start, end, onClick }: EventAddFormProps) {
       toast.success("Recurring Event created");
       form.reset();
     } else {
-      const newEvent = { ...rest, id: String(events.length + 1), start, end, allDay: isAllDay };
+      const newEvent = {
+        ...rest,
+        id: String(events.length + 1),
+        start,
+        end,
+        allDay: isAllDay
+      } 
       addEvent(newEvent);
       setEventAddOpen(false);
       toast.success("Event created");

@@ -20,9 +20,7 @@ export function EventView({ event }: EventViewProps) {
   const { eventViewOpen, setEventViewOpen, deleteEvent, setEventDeleteOpen, eventDeleteOpen, setEventEditOpen } = useEvents();
   const { selectedOldEvent, selectedEvent, isDrag } = useEvents();
 
-  const isSameDate = event?.start.getDate() === (event?.end && event?.end.getDate());
-
-  // console.log('event', event);
+  const isSameDate = event?.start!.getDate() === (event?.end && event?.end.getDate());
 
   return (
     <>
@@ -55,7 +53,7 @@ export function EventView({ event }: EventViewProps) {
                 <div><CalendarIcon className="size-[18px] mt-0.5" /></div>
                 <div>
                   <p>
-                    {event?.start.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                    {event?.start && event?.start.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                   </p>
 
                   {!isSameDate
@@ -64,9 +62,6 @@ export function EventView({ event }: EventViewProps) {
                       : null
                     : null
                   }
-
-                  {/* {event?.end ? <p>{event?.end.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p> : null} */}
-
                 </div>
               </div>
 

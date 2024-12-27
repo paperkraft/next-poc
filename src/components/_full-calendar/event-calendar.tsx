@@ -3,7 +3,6 @@
 import { useEvents } from "@/context/calendar-context";
 import "@/styles/calendar.css";
 import {
-  DateSelectArg,
   DayCellContentArg,
   DayHeaderContentArg,
   EventChangeArg,
@@ -12,18 +11,20 @@ import {
 } from "@fullcalendar/core/index.js";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import listPlugin from "@fullcalendar/list";
+import listPlugin, { NoEventsContentArg } from "@fullcalendar/list";
 import multiMonthPlugin from "@fullcalendar/multimonth";
 import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import rrulePlugin from '@fullcalendar/rrule';
 
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import CalendarNav from "./calendar-nav";
 import { CalendarEvent } from "@/utils/calendar-data";
 import { cn } from "@/lib/utils";
 import { EventView } from "./event-view";
-import { ScrollArea } from "../ui/scroll-area";
+import { ScrollArea, ScrollBar } from "../ui/scroll-area";
+import { FileX2Icon } from "lucide-react";
+import { EventAddForm } from "./event-add-form";
 
 type EventContentProps = {
   info: EventContentArg;
@@ -37,14 +38,31 @@ type DayCellContentProps = {
   info: DayCellContentArg;
 };
 
+type NoEventsContentProps = {
+  info: NoEventsContentArg;
+};
+
 export default function EventCalendar() {
   const { events, visibleCategories, setEventEditOpen, setEventViewOpen } = useEvents();
-  const { selectedEvent, setSelectedOldEvent, setSelectedEvent, setIsDrag  } = useEvents();
+  const { selectedEvent, setSelectedOldEvent, setSelectedEvent, setIsDrag } = useEvents();
   const calendarRef = useRef<FullCalendar | null>(null);
-  const [selectedStart, setSelectedStart] = useState(new Date());
-  const [selectedEnd, setSelectedEnd] = useState(new Date());
-   
+
+  const freq = ['monthly', 'weekly', 'daily'];
+  const weekday = ['mo', 'tu', 'we', 'th', 'fr', 'sa', 'su'];
+
   const handleEventClick = (info: EventClickArg) => {
+
+    let rrule;
+    const ruleInfo = info.event?._def?.recurringDef?.typeData?.rruleSet?._rrule[0]?.origOptions;
+
+    if (ruleInfo) {
+      const { wkst, ...rest } = ruleInfo;
+      rrule = {
+        ...rest,
+        freq: freq[rest.freq - 1],
+        byweekday: weekday[rest?.byweekday?.weekday]
+      }
+    }
 
     const event: CalendarEvent = {
       id: info.event.id,
@@ -55,6 +73,7 @@ export default function EventCalendar() {
       start: info.event.start!,
       end: info.event.end!,
       allDay: info.event.allDay,
+      rrule: rrule,
     };
 
     setIsDrag(false);
@@ -64,6 +83,18 @@ export default function EventCalendar() {
   };
 
   const handleEventChange = (info: EventChangeArg) => {
+    let rrule;
+    const ruleInfo = info.event?._def?.recurringDef?.typeData?.rruleSet?._rrule[0]?.origOptions;
+
+    if (ruleInfo) {
+      const { wkst, ...rest } = ruleInfo;
+      rrule = {
+        ...rest,
+        freq: freq[rest.freq - 1],
+        byweekday: weekday[rest?.byweekday?.weekday]
+      }
+    }
+
     const event: CalendarEvent = {
       id: info.event.id,
       title: info.event.title,
@@ -73,6 +104,7 @@ export default function EventCalendar() {
       start: info.event.start!,
       end: info.event.end!,
       allDay: info.event.allDay,
+      rrule: rrule,
     };
 
     const oldEvent: CalendarEvent = {
@@ -84,6 +116,7 @@ export default function EventCalendar() {
       start: info.oldEvent.start!,
       end: info.oldEvent.end!,
       allDay: info.oldEvent.allDay,
+      rrule: rrule,
     };
 
     setIsDrag(true);
@@ -93,85 +126,98 @@ export default function EventCalendar() {
   };
 
   const RenderEventContent = ({ info }: EventContentProps) => {
-    const { event } = info;
-    const [left, right] = info.timeText.split(" - ");
+    const { event, view, timeText } = info;
+    const [left, right] = timeText.includes(" - ") ? timeText.split(" - ") : ["", ""];
+
+    const isMonthView = view.type === "dayGridMonth";
+    const isListWeekView = view.type === "listWeek";
 
     return (
       <>
         {
-          info.view.type == "dayGridMonth" &&
-          <div className="overflow-hidden w-full">
-            <div style={{ backgroundColor: info.backgroundColor }}
-              className={`flex flex-col rounded-md w-full px-2 py-1 line-clamp-1 text-[0.5rem] sm:text-[0.6rem] md:text-xs`}
-            >
-              <p className="font-semibold text-gray-950 line-clamp-1 w-11/12">{event.title}</p>
-              <p className="text-gray-800">{left}</p>
-              <p className="text-gray-800">{right}</p>
-            </div>
+          // Day Grid Month View
+          isMonthView &&
+          <div style={{ backgroundColor: info.backgroundColor }}
+            className={"w-full overflow-hidden rounded-md px-2 py-1 text-[0.5rem] sm:text-[0.6rem] md:text-xs"}
+          >
+            <p className="w-full font-semibold text-gray-950 line-clamp-1">{event.title}</p>
+            <p className="text-gray-800">{left}</p>
+            <p className="text-gray-800">{right}</p>
           </div>
         }
 
         {
-          info.view.type !== "dayGridMonth" &&
-          <div className={cn("w-full",{
-            "flex flex-col space-y-0 text-xs overflow-hidden " : info.view.type !== "listWeek",
+          !isMonthView &&
+          <div className={cn("w-full", {
+            "space-y-0 text-xs overflow-hidden ": !isListWeekView,
           })}>
-            <p className={cn("w-full text-gray-950 line-clamp-1",{
-              "font-semibold": info.view.type !== "listWeek"
+            <p className={cn("w-full text-gray-950 line-clamp-1", {
+              "font-semibold": !isListWeekView
             })}>
               {event.title}
             </p>
+
             {
-              info.view.type !== "listWeek" &&
-              <p className="text-gray-800 line-clamp-1">{`${info.timeText}`}</p>
+              // Time text for non-listWeek views
+              !isListWeekView &&
+              <p className="text-gray-800 line-clamp-1">{`${timeText}`}</p>
             }
             {
-              info.view.type == "listWeek" &&
+              // Description for listWeek view
+              isListWeekView &&
               <p className="text-gray-500 text-sm line-clamp-1">{`${event.extendedProps.description}`}</p>
             }
           </div>
         }
       </>
-       
+
     );
   };
 
   const RenderHeaderContent = ({ info }: HeaderContentProps) => {
     const [weekday] = info.text.split(" ");
+    const formattedDate = info.date.toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
 
     return (
       <>
-        {
-          info.view.type == "timeGridDay" && 
-          <p className="font-normal">{info.date.toLocaleDateString("en-IN", {
-            day: "numeric",
-            month: "long",
-            year: "numeric",
-          })}</p>
-        }
-        {
-          info.view.type == "timeGridWeek" &&
-          <div>
-            {info.isToday ? ( 
-              <p className="font-semibold text-blue-500">{weekday} - {info.date.getDate()}</p>
+        {/* Day Grid Month & Year */}
+        {(info.view.type === "dayGridMonth" || info.view.type === 'multiMonthYear') && (
+          <div className="p-1">
+            <p>{weekday}</p>
+          </div>
+        )}
+
+        {/* Time Grid Week View */}
+        {info.view.type === "timeGridWeek" && (
+          <div className="p-1">
+            {info.isToday ? (
+              <p className="font-semibold text-blue-500">
+                {weekday} - {info.date.getDate()}
+              </p>
             ) : (
               <p className="font-light">{weekday} - {info.date.getDate()}</p>
             )}
           </div>
-        }
-        {
-          info.view.type !== "timeGridDay" && info.view.type !== "timeGridWeek" &&
-          <div className="flex justify-between font-normal">
-            <p>{weekday}</p>
-            <p className={cn({"hidden": info.view.type === "dayGridMonth"})}>
-              {info.date.toLocaleDateString("en-IN", {
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-              })}
-            </p>
+        )}
+
+        {/* Time Grid Day View */}
+        {info.view.type === "timeGridDay" && (
+          <div className="p-1">
+            <p className="font-normal">{formattedDate}</p>
           </div>
-        }
+        )}
+
+        {/* List week View */}
+        {info.view.type === "listWeek" && (
+          <div className="flex justify-between font-normal">
+            <p>{formattedDate}</p>
+            <p>{weekday}</p>
+          </div>
+        )}
       </>
     );
   };
@@ -192,22 +238,22 @@ export default function EventCalendar() {
     );
   };
 
-  const handleDateSelect = (info: DateSelectArg) => {
-    setSelectedStart(info.start);
-    setSelectedEnd(info.end);
-  };
+  const EmptyListContent = ({ info }: NoEventsContentProps) => {
+    return (
+      <div className="flex flex-col items-center space-y-2">
+        <FileX2Icon className="size-10" />
+        <p>{info.text}</p>
+        <EventAddForm start={new Date()} end={new Date()} />
+      </div>
+    )
+  }
 
-  const filteredEvents = events.filter((event)=> visibleCategories.includes(event.category as string));
+  const filteredEvents = events.filter((event) => visibleCategories.includes(event.category as string));
 
   return (
     <>
       <div className="rounded-lg shadow-xl border">
-        <CalendarNav
-          calendarRef={calendarRef}
-          start={selectedStart}
-          end={selectedEnd}
-          viewedDate={new Date()}
-        >
+        <CalendarNav calendarRef={calendarRef}>
           <div className="border border-l-0">
             <ScrollArea className="h-[calc(100vh-175px)]">
               <FullCalendar
@@ -215,7 +261,7 @@ export default function EventCalendar() {
                 timeZone="local"
                 plugins={[
                   dayGridPlugin,
-                  timeGridPlugin, 
+                  timeGridPlugin,
                   multiMonthPlugin,
                   interactionPlugin,
                   listPlugin,
@@ -247,20 +293,22 @@ export default function EventCalendar() {
                   hour12: true,
                 }}
 
-                // eventBorderColor={"black"}
+                showNonCurrentDates={false}
+                fixedWeekCount={false}
                 contentHeight={"auto"}
-                // expandRows={false}
+
+                noEventsContent={(eventInfo) => <EmptyListContent info={eventInfo} />}
                 eventContent={(eventInfo) => <RenderEventContent info={eventInfo} />}
                 dayCellContent={(dayInfo) => <RenderCellContent info={dayInfo} />}
                 dayHeaderContent={(headerInfo) => <RenderHeaderContent info={headerInfo} />}
                 eventClick={(eventInfo) => handleEventClick(eventInfo)}
                 eventChange={(eventInfo) => handleEventChange(eventInfo)}
-                // select={handleDateSelect}
-                // dateClick={() => setEventAddOpen(true)}
+
                 nowIndicator
                 editable
                 selectable
               />
+              <ScrollBar orientation="vertical" className="z-50" />
             </ScrollArea>
           </div>
         </CalendarNav>

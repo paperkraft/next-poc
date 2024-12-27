@@ -5,7 +5,7 @@ import { FieldValues, Path, PathValue, useFormContext } from "react-hook-form"
 
 interface Options{
     label: string;
-    value: string | number | boolean 
+    value: string | number | boolean;
 }
 
 interface ISelectControllerProps<T extends FieldValues>
@@ -38,8 +38,8 @@ export const SelectController = <T extends FieldValues>({ options, name, label, 
                             </FormControl>
                                 <SelectContent>
                                     {
-                                        options?.map((item, i)=>(
-                                            <SelectItem value={item?.value as string} key={`${i}.${item?.value}`}>{item?.label}</SelectItem>
+                                        options?.map((item, i) => (
+                                            <SelectItem value={item?.value as any} key={`${i}.${item?.value}`}>{item?.label}</SelectItem>
                                         ))
                                     }
                                 </SelectContent>

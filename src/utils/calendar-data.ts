@@ -63,6 +63,15 @@ const getRandomDays = (min: number, max: number) =>
 
 const currentDate = new Date();
 
+export interface RRule {
+  freq: string,
+  interval: number,
+  byweekday: string | string[] | undefined,
+  bymonthday: number | number[] | undefined,
+  dtstart: Date | undefined,
+  until: Date | undefined,
+}
+
 export interface CalendarEvent {
   id: string;
   title: string;
@@ -72,6 +81,7 @@ export interface CalendarEvent {
   description: string;
   category?: string;
   allDay?: boolean;
+  rrule?: RRule | undefined;
 }
 
 export const initialEvents: CalendarEvent[] = [

@@ -14,9 +14,6 @@ import { Checkbox } from "../ui/checkbox";
 
 interface CalendarNavProps {
   calendarRef: calendarRef;
-  start: Date;
-  end: Date;
-  viewedDate: Date;
   children: ReactNode;
 }
 
@@ -25,15 +22,16 @@ const TABS = [
   { value: "timeGridWeek", label: "Week" },
   { value: "timeGridDay", label: "Day" },
   { value: "listWeek", label: "List" },
+  { value: "multiMonthYear", label: "Year" },
 ];
 
-export default function CalendarNav({ calendarRef, start, end, children }: CalendarNavProps) {
+export default function CalendarNav({ calendarRef, children }: CalendarNavProps) {
 
   const [currentView, setCurrentView] = useState("dayGridMonth");
   const [title, setTitle] = useState<string>("");
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [allCategoriesVisible, setAllCategoriesVisible] = useState(true);
-  const [clickedDate, setClickedDate] = useState<Date>(new Date());
+  const [clickedDate, setClickedDate] = useState<Date | undefined>();
 
   const { filterEvent, visibleCategories, setEventAddOpen } = useEvents();
 
@@ -138,7 +136,7 @@ export default function CalendarNav({ calendarRef, start, end, children }: Calen
       <div className="flex">
         <div className="hidden md:flex flex-col">
           <div className="p-4 max-h-20">
-            <EventAddForm start={clickedDate} end={clickedDate} onClick={()=>setClickedDate(new Date())}/>
+            <EventAddForm start={clickedDate} end={clickedDate} onClick={() => setClickedDate(new Date())} />
           </div>
 
           <div className={cn("border-y")}>
@@ -150,12 +148,13 @@ export default function CalendarNav({ calendarRef, start, end, children }: Calen
               }}
 
               month={currentDate}
-              selected={start}
+              selected={clickedDate}
 
               onNextClick={() => {
                 goNext(calendarRef);
                 getTitle();
               }}
+
               onPrevClick={() => {
                 goPrev(calendarRef);
                 getTitle();
@@ -165,7 +164,7 @@ export default function CalendarNav({ calendarRef, start, end, children }: Calen
                 handleGoToDate(month as Date)
               }}
 
-              onSelect={(date)=> {setEventAddOpen(true); setClickedDate(date as Date)}}
+              onDayClick={(date) => { setEventAddOpen(true); setClickedDate(date as Date) }}
             />
           </div>
 
@@ -188,7 +187,7 @@ export default function CalendarNav({ calendarRef, start, end, children }: Calen
         </div>
 
         <div className="w-full border-l">
-          <div className="w-full flex justify-between p-2 md:p-4 max-h-20">
+          <div className="w-full flex flex-col md:flex-row justify-between p-2 md:p-4 md:max-h-20">
             <div className="flex items-center">
               <Button variant="ghost" size={'icon'} onClick={() => { goPrev(calendarRef); getTitle() }}>
                 <ChevronLeft className="h-4 w-4" />

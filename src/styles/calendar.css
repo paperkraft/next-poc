@@ -7,21 +7,10 @@
   }
   
   /* Removing borders */
+
   
   .fc-scrollgrid {
     @apply border-none !important;
-  }
-  
-  .fc tbody tr:last-child td:first-child {
-    @apply border-l-0 !important;
-  }
-  
-  .fc tbody tr:last-child td:last-child {
-    @apply border-r-0 border-b-0 !important;
-  }
-  
-  .fc-theme-standard th {
-    @apply border-r-0 !important;
   }
   
   /* Setting header size */
@@ -68,7 +57,8 @@
   
   .fc-daygrid-event-harness {
     /* @apply hover:bg-none hover:scale-[1.02] transition-all hover:cursor-pointer  !important; */
-    @apply hover:scale-[1.02] hover:cursor-pointer  !important;
+    /* @apply hover:scale-[1.02] hover:cursor-pointer  !important; */
+    @apply hover:cursor-pointer  !important;
   }
   
   .fc-timegrid-event-harness {

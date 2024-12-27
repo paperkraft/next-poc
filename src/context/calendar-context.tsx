@@ -1,5 +1,5 @@
 "use client";
-import { CalendarEvent, categories, initialEvents } from "@/utils/calendar-data";
+import { CalendarEvent, categories, initialEvents, RRule } from "@/utils/calendar-data";
 import React, { createContext, ReactNode, useContext, useState } from "react";
 
 interface Event {
@@ -10,6 +10,7 @@ interface Event {
   end: Date | undefined;
   color: string;
   category?: string;
+  rrule?: RRule | undefined;
 }
 
 interface EventsContextType {

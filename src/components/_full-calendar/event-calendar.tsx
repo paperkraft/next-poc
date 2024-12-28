@@ -10,14 +10,14 @@ import {
   EventContentArg,
 } from "@fullcalendar/core/index.js";
 import dayGridPlugin from "@fullcalendar/daygrid";
-import interactionPlugin from "@fullcalendar/interaction";
+import interactionPlugin, { DateClickArg } from "@fullcalendar/interaction";
 import listPlugin, { NoEventsContentArg } from "@fullcalendar/list";
 import multiMonthPlugin from "@fullcalendar/multimonth";
 import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import rrulePlugin from '@fullcalendar/rrule';
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import CalendarNav from "./calendar-nav";
 import { CalendarEvent } from "@/utils/calendar-data";
 import { cn } from "@/lib/utils";
@@ -42,13 +42,26 @@ type NoEventsContentProps = {
   info: NoEventsContentArg;
 };
 
+
 export default function EventCalendar() {
-  const { events, visibleCategories, setEventEditOpen, setEventViewOpen } = useEvents();
+  const { events, visibleCategories, setEventEditOpen, setEventViewOpen,  } = useEvents();
   const { selectedEvent, setSelectedOldEvent, setSelectedEvent, setIsDrag } = useEvents();
   const calendarRef = useRef<FullCalendar | null>(null);
+  
+  const { setEventAddOpen } = useEvents();
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
 
   const freq = ['monthly', 'weekly', 'daily'];
   const weekday = ['mo', 'tu', 'we', 'th', 'fr', 'sa', 'su'];
+
+  const handleDayClick = (info: DateClickArg) => {
+    if(info.view.type !== 'dayGridMonth'){
+      // setEventAddOpen(true);
+      setSelectedDate(info.date);
+      console.log('selectedDate', info.date);
+      
+    }
+  }
 
   const handleEventClick = (info: EventClickArg) => {
 
@@ -303,6 +316,7 @@ export default function EventCalendar() {
                 dayHeaderContent={(headerInfo) => <RenderHeaderContent info={headerInfo} />}
                 eventClick={(eventInfo) => handleEventClick(eventInfo)}
                 eventChange={(eventInfo) => handleEventChange(eventInfo)}
+                dateClick={(dayInfo) => handleDayClick(dayInfo)}
 
                 nowIndicator
                 editable

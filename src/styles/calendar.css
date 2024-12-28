@@ -40,7 +40,7 @@
   }
   
   .fc-day-today {
-    @apply bg-inherit !important;
+    @apply bg-background !important;
   }
   
   .fc-day-other {
@@ -83,6 +83,11 @@
 
   .fc-theme-standard .fc-popover {
     @apply bg-background rounded-md z-40 !important
+  }
+  
+  .fc-theme-standard .fc-list-day-cushion {
+    @apply bg-gray-50
+    
   }
 
   .fc-more-popover-misc {

@@ -18,7 +18,6 @@ import { GradientPicker } from "../custom/form.control/gradient-picker";
 import { eventFormSchema } from "./event-schema";
 import { categories } from "@/utils/calendar-data";
 import { RadioButton } from "../custom/form.control/radio-button";
-import { cn } from "@/lib/utils";
 
 type EventAddFormValues = z.infer<typeof eventFormSchema>;
 
@@ -26,6 +25,7 @@ interface EventAddFormProps {
   start: Date | undefined;
   end: Date | undefined;
   onClick?: () => void;
+  displayButton: boolean;
 }
 
 const freq = ['daily', 'weekly', 'monthly'];
@@ -43,7 +43,7 @@ const weekOptions = [
   { label: "Sunday", value: "su" },
 ]
 
-export function EventAddForm({ start, end, onClick }: EventAddFormProps) {
+export function EventAddForm({ start, end, displayButton, onClick }: EventAddFormProps) {
   const { events, addEvent, eventAddOpen, setEventAddOpen } = useEvents();
 
   let endDate = new Date(end!);
@@ -131,12 +131,15 @@ export function EventAddForm({ start, end, onClick }: EventAddFormProps) {
   return (
     <>
       <AlertDialog open={eventAddOpen}>
-        <AlertDialogTrigger asChild>
-          <Button onClick={() => { setEventAddOpen(true); onClick && onClick() }} className="w-full">
-            <PlusIcon className="md:h-5 md:w-5 h-3 w-3" />
-            <p>Add Event</p>
-          </Button>
-        </AlertDialogTrigger>
+        {
+          displayButton &&
+          <AlertDialogTrigger asChild>
+            <Button onClick={() => { setEventAddOpen(true); onClick && onClick() }} className="w-full">
+              <PlusIcon className="md:h-5 md:w-5 h-3 w-3" />
+              <p>Add Event</p>
+            </Button>
+          </AlertDialogTrigger>
+        }
 
         <AlertDialogContent>
           <AlertDialogHeader>

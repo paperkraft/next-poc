@@ -26,6 +26,7 @@ const TABS = [
 ];
 
 export default function CalendarNav({ calendarRef, children }: CalendarNavProps) {
+  const { filterEvent, visibleCategories, setEventAddOpen } = useEvents();
 
   const [currentView, setCurrentView] = useState("dayGridMonth");
   const [title, setTitle] = useState<string>("");
@@ -33,7 +34,6 @@ export default function CalendarNav({ calendarRef, children }: CalendarNavProps)
   const [allCategoriesVisible, setAllCategoriesVisible] = useState(true);
   const [clickedDate, setClickedDate] = useState<Date | undefined>();
 
-  const { filterEvent, visibleCategories, setEventAddOpen } = useEvents();
 
   const getTitle = () => {
     if (calendarRef.current) {
@@ -131,12 +131,14 @@ export default function CalendarNav({ calendarRef, children }: CalendarNavProps)
     }
   };
 
+  // https://fullcalendar-shadcn-example.vercel.app/
+  
   return (
     <>
       <div className="flex">
         <div className="hidden md:flex flex-col">
           <div className="p-4 max-h-20">
-            <EventAddForm start={clickedDate} end={clickedDate} onClick={() => setClickedDate(new Date())} />
+            <EventAddForm start={clickedDate} end={clickedDate} displayButton onClick={() => setClickedDate(new Date())} />
           </div>
 
           <div className={cn("border-y")}>

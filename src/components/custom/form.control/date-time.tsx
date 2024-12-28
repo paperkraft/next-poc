@@ -10,6 +10,7 @@ import { CalendarIcon } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { TimePicker } from './time-picker';
 
 interface DateTimePickerProps {
     name: string;
@@ -52,7 +53,7 @@ export function DatetimePicker({ name, label, ...rest }: DateTimePickerProps) {
                             <div className="flex flex-col">
                                 <Calendar mode="single" selected={field.value} onSelect={field.onChange} />
 
-                                <div className="flex items-center space-x-2 p-4">
+                                <div className="hidden items-center space-x-2 p-4">
                                     {/* Hour Input */}
                                     <Input
                                         type="number"
@@ -121,6 +122,10 @@ export function DatetimePicker({ name, label, ...rest }: DateTimePickerProps) {
                                             <SelectItem value="PM">PM</SelectItem>
                                         </SelectContent>
                                     </Select>
+                                </div>
+
+                                <div className="p-3 border-t border-border">
+                                    <TimePicker setDate={field.onChange} date={field.value} />
                                 </div>
 
                             </div>

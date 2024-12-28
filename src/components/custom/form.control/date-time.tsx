@@ -41,7 +41,7 @@ export function DatetimePicker({ name, label, ...rest }: DateTimePickerProps) {
                                     )}
                                 >
                                     {field.value ? (
-                                        `${format(field.value, "dd/MM/yyyy hh:mm aa")}`
+                                        `${format(field.value, "dd/MM/yyyy hh:mm aa")}` 
                                     ) : (
                                         <span>Pick a date</span>
                                     )}

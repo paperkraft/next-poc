@@ -37,6 +37,11 @@ interface EventsContextType {
 
   setIsDrag: (value: boolean) => void;
   isDrag: boolean;
+
+  start: Date | undefined;
+  setStartDate:(value: Date | undefined) => void;
+  end: Date | undefined;
+  setEndDate:(value: Date | undefined) => void;
 }
 
 const EventsContext = createContext<EventsContextType | undefined>(undefined);
@@ -60,6 +65,9 @@ export const EventsProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const [selectedOldEvent, setSelectedOldEvent] = useState<CalendarEvent | undefined>();
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | undefined>();
   const [isDrag, setIsDrag] = useState(false);
+
+  const [ start, setStartDate] = useState<Date | undefined>();
+  const [ end, setEndDate] = useState<Date | undefined>();
 
   const [visibleCategories, setVisibleCategories] = useState<string[]>(categories);
 
@@ -107,6 +115,11 @@ export const EventsProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         setSelectedEvent,
         setIsDrag,
         isDrag,
+
+        start,
+        setStartDate,
+        end,
+        setEndDate
       }}
     >
       {children}

@@ -22,8 +22,8 @@ import { RadioButton } from "../custom/form.control/radio-button";
 type EventAddFormValues = z.infer<typeof eventFormSchema>;
 
 interface EventAddFormProps {
-  start: Date | undefined;
-  end: Date | undefined;
+  // start: Date | undefined;
+  // end: Date | undefined;
   onClick?: () => void;
   displayButton: boolean;
 }
@@ -43,8 +43,8 @@ const weekOptions = [
   { label: "Sunday", value: "su" },
 ]
 
-export function EventAddForm({ start, end, displayButton, onClick }: EventAddFormProps) {
-  const { events, addEvent, eventAddOpen, setEventAddOpen } = useEvents();
+export function EventAddForm({ displayButton, onClick }: EventAddFormProps) {
+  const { events, addEvent, eventAddOpen, setEventAddOpen,  start, end } = useEvents();
 
   let endDate = new Date(end!);
   const Today = new Date().getDate() === start?.getDate();

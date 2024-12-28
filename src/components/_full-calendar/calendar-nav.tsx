@@ -27,6 +27,7 @@ const TABS = [
 
 export default function CalendarNav({ calendarRef, children }: CalendarNavProps) {
   const { filterEvent, visibleCategories, setEventAddOpen } = useEvents();
+  const { setStartDate, setEndDate } = useEvents();
 
   const [currentView, setCurrentView] = useState("dayGridMonth");
   const [title, setTitle] = useState<string>("");
@@ -138,7 +139,7 @@ export default function CalendarNav({ calendarRef, children }: CalendarNavProps)
       <div className="flex">
         <div className="hidden md:flex flex-col">
           <div className="p-4 max-h-20">
-            <EventAddForm start={clickedDate} end={clickedDate} displayButton onClick={() => setClickedDate(new Date())} />
+            <EventAddForm  displayButton onClick={() => {setStartDate(new Date()); setEndDate(new Date())}} />
           </div>
 
           <div className={cn("border-y")}>
@@ -166,7 +167,12 @@ export default function CalendarNav({ calendarRef, children }: CalendarNavProps)
                 handleGoToDate(month as Date)
               }}
 
-              onDayClick={(date) => { setEventAddOpen(true); setClickedDate(date as Date) }}
+              onDayClick={(date) => { 
+                setEventAddOpen(true); 
+                setClickedDate(date as Date);
+                setStartDate(date)
+                setEndDate(date)
+              }}
             />
           </div>
 

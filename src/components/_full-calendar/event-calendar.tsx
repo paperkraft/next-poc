@@ -47,19 +47,18 @@ export default function EventCalendar() {
   const { events, visibleCategories, setEventEditOpen, setEventViewOpen,  } = useEvents();
   const { selectedEvent, setSelectedOldEvent, setSelectedEvent, setIsDrag } = useEvents();
   const calendarRef = useRef<FullCalendar | null>(null);
+
+  const { setEventAddOpen, setStartDate, setEndDate } = useEvents();
   
-  const { setEventAddOpen } = useEvents();
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
 
   const freq = ['monthly', 'weekly', 'daily'];
   const weekday = ['mo', 'tu', 'we', 'th', 'fr', 'sa', 'su'];
 
   const handleDayClick = (info: DateClickArg) => {
     if(info.view.type !== 'dayGridMonth'){
-      // setEventAddOpen(true);
-      setSelectedDate(info.date);
-      console.log('selectedDate', info.date);
-      
+      setStartDate(info.date);
+      setEndDate(info.date);
+      setEventAddOpen(true);
     }
   }
 
@@ -256,7 +255,7 @@ export default function EventCalendar() {
       <div className="flex flex-col items-center space-y-2">
         <FileX2Icon className="size-10" />
         <p>{info.text}</p>
-        <EventAddForm start={new Date()} end={new Date()} />
+        <EventAddForm displayButton/>
       </div>
     )
   }

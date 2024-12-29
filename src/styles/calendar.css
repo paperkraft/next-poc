@@ -97,6 +97,9 @@
   .fc-list {
     @apply border-0 !important
   }
+  .fc-list-empty{
+    @apply h-screen !important
+  }
   .fc-list-day-text {
     @apply font-normal
   }

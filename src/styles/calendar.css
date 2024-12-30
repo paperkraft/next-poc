@@ -43,10 +43,11 @@ td.fc-daygrid-day.fc-day {
 .fc-daygrid-day-top {
   @apply flex flex-row h-8 w-full items-center !important;
 }
-
-/* .fc-daygrid-dot-event {
-  @apply hover:bg-blue-50 !important;
-} */
+.fc-daygrid-block-event,
+.fc-h-event,
+.fc-daygrid-dot-event {
+  @apply p-0 my-0.5 hover:ring-1 rounded !important;
+}
 
 .fc-daygrid-event-harness,
 .fc-timegrid-event-harness {

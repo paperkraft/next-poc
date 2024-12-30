@@ -11,6 +11,7 @@ import { Calendar } from "../ui/calendar";
 import { cn } from "@/lib/utils";
 import { useEvents } from "@/context/calendar-context";
 import { Checkbox } from "../ui/checkbox";
+import { Matcher } from "react-day-picker";
 
 interface CalendarNavProps {
   calendarRef: calendarRef;
@@ -47,7 +48,7 @@ export default function CalendarNav({ calendarRef, children }: CalendarNavProps)
   }
 
   useEffect(() => {
-    getTitle()
+    getTitle();
   }, []);
 
   const handleTabClick = (value: string) => {
@@ -137,31 +138,29 @@ export default function CalendarNav({ calendarRef, children }: CalendarNavProps)
       <div className="flex">
         <div className="hidden md:flex flex-col">
           <div className="p-4 max-h-20">
-            <EventAddForm  displayButton onClick={() => {setStartDate(new Date()); setEndDate(new Date())}} />
+            <EventAddForm displayButton onClick={() => { setStartDate(new Date()); setEndDate(new Date()) }} />
           </div>
 
           <div className={cn("border-y")}>
             <Calendar
-              // weekStartsOn={1} // Monday
               showOutsideDays={false}
               mode="single"
               classNames={{
                 today: "bg-green-500 text-white",
-                disabled:"opacity-100 hover:text-blue-400"
+                weekday: "first:text-red-400 text-muted-foreground w-8 font-normal text-[0.8rem]",
               }}
 
               modifiers={{
-                sunday:  { dayOfWeek: [0] }
+                sunday: { dayOfWeek: [0] }
               }}
 
               modifiersClassNames={{
-                sunday: "text-red-400"
+                sunday: "text-red-400 !opacity-100 [&_button]:!opacity-100",
               }}
 
               disabled={{
-                dayOfWeek:[0]
+                dayOfWeek: [0],
               }}
-              
 
               month={currentDate}
               selected={clickedDate}
@@ -180,8 +179,8 @@ export default function CalendarNav({ calendarRef, children }: CalendarNavProps)
                 handleGoToDate(month as Date)
               }}
 
-              onDayClick={(date) => { 
-                setEventAddOpen(true); 
+              onDayClick={(date) => {
+                setEventAddOpen(true);
                 setClickedDate(date as Date);
                 setStartDate(date)
                 setEndDate(date)

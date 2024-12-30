@@ -141,7 +141,7 @@ export default function EventCalendar() {
           // Day Grid Month View
           isMonthView &&
           <div style={{ backgroundColor: info.backgroundColor }}
-            className={"w-full overflow-hidden rounded-md px-2 py-1 text-[0.5rem] sm:text-[0.6rem] md:text-xs"}
+            className={"w-full overflow-hidden rounded p-2 text-[0.5rem] sm:text-[0.6rem] md:text-xs"}
           >
             <p className="w-full font-semibold text-gray-950 line-clamp-1">{event.title}</p>
             <p className="text-gray-800">{left}</p>

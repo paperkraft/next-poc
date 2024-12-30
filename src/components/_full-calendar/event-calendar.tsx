@@ -24,7 +24,7 @@ import { CalendarEvent } from "@/utils/calendar-data";
 import { cn } from "@/lib/utils";
 import { EventView } from "./event-view";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
-import { FileX2Icon } from "lucide-react";
+import { CalendarX } from "lucide-react";
 import { EventAddForm } from "./event-add-form";
 
 type EventContentProps = {
@@ -44,7 +44,7 @@ type NoEventsContentProps = {
 };
 
 export default function EventCalendar() {
-  const { events, visibleCategories, setEventEditOpen, setEventViewOpen,  } = useEvents();
+  const { events, visibleCategories, setEventEditOpen, setEventViewOpen, } = useEvents();
   const { selectedEvent, setSelectedOldEvent, setSelectedEvent, setIsDrag } = useEvents();
   const calendarRef = useRef<FullCalendar | null>(null);
 
@@ -244,15 +244,15 @@ export default function EventCalendar() {
   const EmptyListContent = ({ info }: NoEventsContentProps) => {
     return (
       <div className="flex flex-col items-center space-y-2">
-        <FileX2Icon className="size-10" />
+        <CalendarX className="size-10" />
         <p>{info.text}</p>
-        <EventAddForm displayButton onClick={() => {setStartDate(new Date()); setEndDate(new Date())}}/>
+        <EventAddForm displayButton onClick={() => { setStartDate(new Date()); setEndDate(new Date()) }} />
       </div>
     )
   }
 
   const handleDateSelect = (info: DateSelectArg) => {
-    if(info.view.type !== 'dayGridMonth'){
+    if (info.view.type !== 'dayGridMonth') {
       setStartDate(info.start);
       setEndDate(info.end);
       setEventAddOpen(true);
@@ -278,19 +278,20 @@ export default function EventCalendar() {
                   listPlugin,
                   rrulePlugin,
                 ]}
-                firstDay={1} // Monday
+
+                // firstDay={1} // Monday
+                headerToolbar={false}
+                
                 initialView="dayGridMonth"
                 events={filteredEvents}
-                dayMaxEventRows={2}
-
-                headerToolbar={false}
+                dayMaxEvents={2}
+                
                 slotMinTime={"09:00"} // 09:00
                 slotMaxTime={"22:00"} // 22:00
-                // allDaySlot={false}
+
                 height={"32vh"}
-                displayEventEnd={true}
+                
                 windowResizeDelay={0}
-                // eventDisplay="list-item"
 
                 slotLabelFormat={{
                   hour: "numeric",
@@ -306,7 +307,7 @@ export default function EventCalendar() {
 
                 showNonCurrentDates={false}
                 fixedWeekCount={false}
-                contentHeight={"auto"}
+                contentHeight={'auto'}
 
                 noEventsContent={(eventInfo) => <EmptyListContent info={eventInfo} />}
                 eventContent={(eventInfo) => <RenderEventContent info={eventInfo} />}
@@ -314,10 +315,10 @@ export default function EventCalendar() {
                 dayHeaderContent={(headerInfo) => <RenderHeaderContent info={headerInfo} />}
                 eventClick={(eventInfo) => handleEventClick(eventInfo)}
                 eventChange={(eventInfo) => handleEventChange(eventInfo)}
-                // dateClick={(dayInfo) => handleDayClick(dayInfo)}
-
                 select={handleDateSelect}
 
+                stickyHeaderDates
+                displayEventEnd
                 nowIndicator
                 editable
                 selectable

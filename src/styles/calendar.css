@@ -1,117 +1,91 @@
 :root {
-    --fc-border-color: lightgray;
-    --fc-page-bg-color: none;
-  }
-  .dark {
-    --fc-border-color: gray;
-  }
-  
-  /* Removing borders */
+  --fc-border-color: lightgray;
+  --fc-page-bg-color: none;
+}
 
-  
-  .fc-scrollgrid {
-    @apply border-none !important;
-  }
-  
-  /* Setting header size */
-  
-  .fc-col-header-cell-cushion {
-    @apply flex h-14 items-center;
-  }
-  
-  /* Setting left time size */
-  
-  .fc-timegrid-slot {
-    @apply h-6 !important;
-  }
-  
-  .fc-timegrid-slot-label-cushion {
-    @apply text-xs font-light !important;
-  }
-  
-  /* Setting cell colors */
-  
-  td.fc-daygrid-day.fc-day {
-    @apply hover:bg-secondary !important;
-  }
-  
-  td.fc-daygrid-day.fc-day.fc-day-today {
-    @apply bg-secondary-foreground;
-  }
-  
-  .fc-day-today {
-    @apply bg-background !important;
-  }
-  
-  .fc-day-other {
-    @apply bg-gray-200 dark:bg-secondary !important;
-  }
-  
-  .fc-daygrid-day-top {
-    @apply flex flex-row h-8 w-full items-center  !important;
-  }
-  
-  .fc-daygrid-dot-event {
-    @apply hover:bg-blue-50 !important;
-  }
-  
-  .fc-daygrid-event-harness {
-    /* @apply hover:bg-none hover:scale-[1.02] transition-all hover:cursor-pointer  !important; */
-    /* @apply hover:scale-[1.02] hover:cursor-pointer  !important; */
-    @apply hover:cursor-pointer  !important;
-  }
-  
-  .fc-timegrid-event-harness {
-    @apply hover:bg-none hover:cursor-pointer !important;
-  }
-  
-  .fc-event-main {
-    @apply flex w-full h-full !important;
-  }
-  
-  .fc-list-event-time {
-    @apply text-sm !important
-  }
+.dark {
+  --fc-border-color: gray;
+}
 
-  .fc-daygrid-event {
-    @apply mx-1 !important;
-  }
-  
-  .fc-timegrid-event {
-    @apply px-1 !important;
-  }
+.fc-scrollgrid {
+  @apply border-none !important;
+}
 
-  .fc-theme-standard .fc-popover {
-    @apply bg-background rounded-md z-40 !important
-  }
-  
-  .fc-theme-standard .fc-list-day-cushion {
-    @apply bg-gray-50
-    
-  }
+/* Setting header size */
 
-  .fc-more-popover-misc {
-    @apply hidden !important
-  }
+.fc-timegrid-axis,
+.fc-col-header-cell {
+  @apply bg-background
+}
 
-  .fc-list {
-    @apply border-0 !important
-  }
-  .fc-list-empty{
-    @apply h-[calc(100vh-175px)] !important
-  }
-  .fc-list-day-text {
-    @apply font-normal
-  }
-  
-  .fc-list-day-side-text {
-    @apply font-normal
-  }
-  
-  .fc-col-header-cell-cushion {
-    @apply font-normal h-auto
-  }
+.fc-col-header-cell-cushion {
+  @apply flex items-center font-normal;
+}
 
-  .fc-day-other {
-    @apply bg-muted select-none !important
-  }
+.fc .fc-daygrid-day-frame {
+  @apply h-auto
+}
+
+.fc-timegrid-slot-label-cushion {
+  @apply text-xs font-light !important;
+}
+
+/* Setting cell colors */
+
+td.fc-daygrid-day.fc-day {
+  @apply hover:bg-secondary !important;
+}
+
+.fc-day-today {
+  @apply bg-green-50 !important;
+}
+
+.fc-daygrid-day-top {
+  @apply flex flex-row h-8 w-full items-center !important;
+}
+
+/* .fc-daygrid-dot-event {
+  @apply hover:bg-blue-50 !important;
+} */
+
+.fc-daygrid-event-harness,
+.fc-timegrid-event-harness {
+  @apply hover:cursor-pointer !important;
+}
+
+.fc-list-event-time {
+  @apply text-sm !important
+}
+
+.fc-daygrid-event {
+  @apply mx-1 !important;
+}
+
+.fc-timegrid-event {
+  @apply px-1 !important;
+}
+
+.fc-theme-standard .fc-popover {
+  @apply bg-background rounded-md z-40 !important
+}
+
+.fc-theme-standard .fc-list-day-cushion {
+  @apply bg-gray-50
+}
+
+.fc-more-popover-misc {
+  @apply hidden !important
+}
+
+.fc-list {
+  @apply border-0 !important
+}
+
+.fc-list-empty {
+  @apply h-[calc(100vh-175px)] !important
+}
+
+.fc-list-day-text,
+.fc-list-day-side-text {
+  @apply font-normal
+}

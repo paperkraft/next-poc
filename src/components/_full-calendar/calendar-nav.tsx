@@ -142,11 +142,26 @@ export default function CalendarNav({ calendarRef, children }: CalendarNavProps)
 
           <div className={cn("border-y")}>
             <Calendar
+              // weekStartsOn={1} // Monday
+              showOutsideDays={false}
               mode="single"
-              weekStartsOn={1}
               classNames={{
                 today: "bg-green-500 text-white",
+                disabled:"opacity-100 hover:text-blue-400"
               }}
+
+              modifiers={{
+                sunday:  { dayOfWeek: [0] }
+              }}
+
+              modifiersClassNames={{
+                sunday: "text-red-400"
+              }}
+
+              disabled={{
+                dayOfWeek:[0]
+              }}
+              
 
               month={currentDate}
               selected={clickedDate}

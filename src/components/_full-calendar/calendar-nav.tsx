@@ -132,8 +132,6 @@ export default function CalendarNav({ calendarRef, children }: CalendarNavProps)
     }
   };
 
-  // https://fullcalendar-shadcn-example.vercel.app/
-  
   return (
     <>
       <div className="flex">

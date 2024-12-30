@@ -3,6 +3,7 @@
 import { useEvents } from "@/context/calendar-context";
 import "@/styles/calendar.css";
 import {
+  DateSelectArg,
   DayCellContentArg,
   DayHeaderContentArg,
   EventChangeArg,
@@ -10,14 +11,14 @@ import {
   EventContentArg,
 } from "@fullcalendar/core/index.js";
 import dayGridPlugin from "@fullcalendar/daygrid";
-import interactionPlugin, { DateClickArg } from "@fullcalendar/interaction";
+import interactionPlugin from "@fullcalendar/interaction";
 import listPlugin, { NoEventsContentArg } from "@fullcalendar/list";
 import multiMonthPlugin from "@fullcalendar/multimonth";
 import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import rrulePlugin from '@fullcalendar/rrule';
 
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import CalendarNav from "./calendar-nav";
 import { CalendarEvent } from "@/utils/calendar-data";
 import { cn } from "@/lib/utils";
@@ -42,25 +43,15 @@ type NoEventsContentProps = {
   info: NoEventsContentArg;
 };
 
-
 export default function EventCalendar() {
   const { events, visibleCategories, setEventEditOpen, setEventViewOpen,  } = useEvents();
   const { selectedEvent, setSelectedOldEvent, setSelectedEvent, setIsDrag } = useEvents();
   const calendarRef = useRef<FullCalendar | null>(null);
 
   const { setEventAddOpen, setStartDate, setEndDate } = useEvents();
-  
 
   const freq = ['monthly', 'weekly', 'daily'];
   const weekday = ['mo', 'tu', 'we', 'th', 'fr', 'sa', 'su'];
-
-  const handleDayClick = (info: DateClickArg) => {
-    if(info.view.type !== 'dayGridMonth'){
-      setStartDate(info.date);
-      setEndDate(info.date);
-      setEventAddOpen(true);
-    }
-  }
 
   const handleEventClick = (info: EventClickArg) => {
 
@@ -255,10 +246,18 @@ export default function EventCalendar() {
       <div className="flex flex-col items-center space-y-2">
         <FileX2Icon className="size-10" />
         <p>{info.text}</p>
-        <EventAddForm displayButton/>
+        <EventAddForm displayButton onClick={() => {setStartDate(new Date()); setEndDate(new Date())}}/>
       </div>
     )
   }
+
+  const handleDateSelect = (info: DateSelectArg) => {
+    if(info.view.type !== 'dayGridMonth'){
+      setStartDate(info.start);
+      setEndDate(info.end);
+      setEventAddOpen(true);
+    }
+  };
 
   const filteredEvents = events.filter((event) => visibleCategories.includes(event.category as string));
 
@@ -315,7 +314,9 @@ export default function EventCalendar() {
                 dayHeaderContent={(headerInfo) => <RenderHeaderContent info={headerInfo} />}
                 eventClick={(eventInfo) => handleEventClick(eventInfo)}
                 eventChange={(eventInfo) => handleEventChange(eventInfo)}
-                dateClick={(dayInfo) => handleDayClick(dayInfo)}
+                // dateClick={(dayInfo) => handleDayClick(dayInfo)}
+
+                select={handleDateSelect}
 
                 nowIndicator
                 editable

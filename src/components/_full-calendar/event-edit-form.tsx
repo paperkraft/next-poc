@@ -21,12 +21,13 @@ import { Button } from "../ui/button";
 import { EditIcon } from "lucide-react";
 import { InputController } from "../custom/form.control/InputController";
 import { TextareaController } from "../custom/form.control/TextareaController";
-import { DatetimePicker } from "../custom/form.control/date-time";
+import { DatetimePicker } from "../custom/form.control/date-time/date-time";
 import { SelectController } from "../custom/form.control/SelectController";
 import { toast } from "sonner";
 import { GradientPicker } from "../custom/form.control/gradient-picker";
 import { eventFormSchema } from "./event-schema";
 import { RadioButton } from "../custom/form.control/radio-button";
+import { addHour, addNextDay } from "@/utils/calendar-utils";
 
 type EventEditFormValues = z.infer<typeof eventFormSchema>;
 
@@ -52,7 +53,8 @@ const weekOptions = [
 ]
 
 export function EventEditForm({ oldEvent, event, isDrag, displayButton }: EventEditFormProps) {
-  const { addEvent, deleteEvent, eventEditOpen, setEventEditOpen, setEventViewOpen } = useEvents();
+  const { addEvent, deleteEvent, eventEditOpen, setEventEditOpen } = useEvents();
+  let endDate: Date | undefined;
 
   const form = useForm<z.infer<typeof eventFormSchema>>({
     resolver: zodResolver(eventFormSchema),
@@ -79,13 +81,21 @@ export function EventEditForm({ oldEvent, event, isDrag, displayButton }: EventE
     form.reset();
   };
 
+  if(isDrag) {
+    if(event?.allDay){
+      endDate = event?.start && addNextDay(event?.start as Date);
+    } else {
+      endDate = event?.start && addHour(event?.start as Date);
+    }
+  }
+
   useEffect(() => {
     form.reset({
       id: event?.id,
       title: event?.title,
       description: event?.description,
       start: event?.start as Date,
-      end: event?.rrule ? event?.rrule.until : event?.end as Date,
+      end: event?.rrule ? event?.rrule.until : event?.end ?? endDate as Date,
       color: event?.backgroundColor,
       category: event?.category,
       allDay: event?.allDay,

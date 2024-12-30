@@ -11,19 +11,18 @@ import { useEvents } from "@/context/calendar-context";
 import { toast } from "sonner";
 import { InputController } from "../custom/form.control/InputController";
 import { TextareaController } from "../custom/form.control/TextareaController";
-import { DatetimePicker } from "../custom/form.control/date-time";
+import { DatetimePicker } from "../custom/form.control/date-time/date-time";
 import { AlertDialog, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../ui/alert-dialog";
 import { SelectController } from "../custom/form.control/SelectController";
 import { GradientPicker } from "../custom/form.control/gradient-picker";
 import { eventFormSchema } from "./event-schema";
 import { categories } from "@/utils/calendar-data";
 import { RadioButton } from "../custom/form.control/radio-button";
+import { addNextDay, isMidnight } from "@/utils/calendar-utils";
 
 type EventAddFormValues = z.infer<typeof eventFormSchema>;
 
 interface EventAddFormProps {
-  // start: Date | undefined;
-  // end: Date | undefined;
   onClick?: () => void;
   displayButton: boolean;
 }
@@ -46,8 +45,8 @@ const weekOptions = [
 export function EventAddForm({ displayButton, onClick }: EventAddFormProps) {
   const { events, addEvent, eventAddOpen, setEventAddOpen,  start, end } = useEvents();
 
-  let endDate = new Date(end!);
-  const Today = new Date().getDate() === start?.getDate();
+  const isDateHasMidnight = start && isMidnight(start as Date) &&  end && isMidnight(end as Date);
+  const sameDay = new Date(start!)?.getDate() === new Date(end!)?.getDate();
 
   const form = useForm<z.infer<typeof eventFormSchema>>({
     resolver: zodResolver(eventFormSchema)
@@ -60,7 +59,7 @@ export function EventAddForm({ displayButton, onClick }: EventAddFormProps) {
       description: "",
       category: "",
       start: start,
-      end: Today ? end : new Date(endDate.setDate(endDate.getDate() + 1)),
+      end: isDateHasMidnight && sameDay ? addNextDay(end) : end,
       color: "#B9FBC0",
       allDay: false,
 
@@ -69,15 +68,12 @@ export function EventAddForm({ displayButton, onClick }: EventAddFormProps) {
     });
   }, [form, start, end]);
 
-  function isMidnight(date: Date) {
-    return date.getHours() === 0 && date.getMinutes() === 0 && date.getSeconds() === 0 && date.getMilliseconds() === 0;
-  }
-
+  
   async function onSubmit(data: EventAddFormValues) {
 
     const { type, freq, start, end, week, allDay, ...rest } = data;
 
-    const isAllDay = isMidnight(start) && isMidnight(end);
+    const isAllDay = isMidnight(data.start) && isMidnight(data.end);
 
     const checkSameTime = start.getTime() === end.getTime();
 

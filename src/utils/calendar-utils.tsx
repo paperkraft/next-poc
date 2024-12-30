@@ -67,3 +67,20 @@ export function setView(calendarRef: calendarRef, viewName: string, setCurrentVi
   setCurrentView(viewName);
   calendarApi.changeView(viewName);
 }
+
+export function isMidnight(date: Date) {
+  return date.getHours() === 0 && date.getMinutes() === 0 && date.getSeconds() === 0 && date.getMilliseconds() === 0;
+}
+
+export function addHour(date: Date): Date {
+  const updatedDate = new Date(date);
+  updatedDate.setHours(updatedDate.getHours() + 1);
+  return updatedDate;
+}
+
+export function addNextDay(date: Date): Date {
+  const nextDay = new Date(date);
+  nextDay.setDate(nextDay.getDate() + 1);
+  nextDay.setHours(0, 0, 0, 0);
+  return nextDay;
+}

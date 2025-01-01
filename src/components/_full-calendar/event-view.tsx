@@ -3,7 +3,7 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { CalendarEvent } from "@/utils/calendar-data";
 import { useEvents } from "@/context/calendar-context";
-import { CalendarIcon, ClockIcon, EditIcon, InfoIcon, Trash } from "lucide-react";
+import { CalendarIcon, ClockIcon, EditIcon, InfoIcon, Trash2 } from "lucide-react";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 import { Separator } from "../ui/separator";
 import { Button } from "../ui/button";
@@ -16,11 +16,25 @@ interface EventViewProps {
   event?: CalendarEvent;
 }
 
+const formatDate = (date: Date | undefined) =>
+  date?.toLocaleDateString("en-IN", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+
+const formatTime = (date: Date | undefined) =>
+  date?.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true });
+
 export function EventView({ event }: EventViewProps) {
   const { eventViewOpen, setEventViewOpen, deleteEvent, setEventDeleteOpen, eventDeleteOpen, setEventEditOpen } = useEvents();
   const { selectedOldEvent, selectedEvent, isDrag } = useEvents();
 
   const isSameDate = event?.start!.getDate() === (event?.end && event?.end.getDate());
+
+  const handleDelete = () => {
+    if (event?.id) {
+      deleteEvent(event.id);
+      setEventDeleteOpen(false);
+      toast.success("Event deleted!");
+    }
+  };
 
   return (
     <>
@@ -31,7 +45,7 @@ export function EventView({ event }: EventViewProps) {
               <p className="text-balance font-medium text-base">{event?.title}</p>
               <div>
                 <Button size={'icon'} variant={'ghost'} onClick={() => { setEventViewOpen(false); setEventDeleteOpen(true) }}>
-                  <Trash className="size-4" />
+                  <Trash2 className="size-4 text-red-500" />
                 </Button>
 
                 <Button size={'icon'} variant={'ghost'} onClick={() => { setEventViewOpen(false); setEventEditOpen(true) }}>
@@ -47,36 +61,22 @@ export function EventView({ event }: EventViewProps) {
             <div className="space-y-4">
               <div>
                 <Badge className="shadow-none text-black" style={{ background: event?.backgroundColor }}>{event?.category}</Badge>
+                {
+                  event?.allDay &&
+                  <Badge variant={'outline'} className="shadow-none text-black ml-1">All day</Badge>
+                }
               </div>
 
-              <div className="flex gap-2">
-                <div><CalendarIcon className="size-[18px] mt-0.5" /></div>
-                <div>
-                  <p>
-                    {event?.start && event?.start.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                  </p>
+              <EventDetail icon={<CalendarIcon className="size-[18px]" />} content={formatDate(event?.start)} />
+                {!isSameDate && event?.end && !event?.allDay && (
+                  <EventDetail content={`to ${formatDate(event?.end)}`} />
+                )}
 
-                  {!isSameDate
-                    ? event?.end
-                      ? <p>to {event?.end.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                      : null
-                    : null
-                  }
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <div><ClockIcon className="size-[18px] mt-0.5" /></div>
-                <div>
-                  {event?.start ? event?.start.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }) : null}
-                  {event?.end ? ` - ${event?.end.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}` : null}
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <div><InfoIcon className="size-[18px] mt-0.5" /></div>
-                <div>{event?.description}</div>
-              </div>
+              <EventDetail
+                icon={<ClockIcon className="size-[18px]" />}
+                content={`${formatTime(event?.start)}${event?.end ? ` - ${formatTime(event?.end)}` : ""}`}
+              />
+              <EventDetail icon={<InfoIcon className="size-[18px]" />} content={event?.description} />
             </div>
             <ScrollBar orientation="vertical" />
           </ScrollArea>
@@ -95,11 +95,7 @@ export function EventView({ event }: EventViewProps) {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => { setEventDeleteOpen(false); }}>Cancel</AlertDialogCancel>
-            <Button variant="destructive" onClick={() => {
-              deleteEvent(event?.id!);
-              setEventDeleteOpen(false);
-              toast.success("Event deleted!");
-            }}>
+            <Button variant="destructive" onClick={handleDelete}>
               Delete
             </Button>
           </AlertDialogFooter>
@@ -107,13 +103,23 @@ export function EventView({ event }: EventViewProps) {
       </AlertDialog>
 
       {/* Edit Event Dialog */}
-
-      <EventEditForm
-        oldEvent={selectedOldEvent}
-        event={selectedEvent}
-        isDrag={isDrag}
-        displayButton={false}
-      />
+      <EventEditForm oldEvent={selectedOldEvent} event={selectedEvent} isDrag={isDrag} displayButton={false} />
     </>
+  );
+}
+
+
+interface EventDetailProps {
+  icon?: React.ReactNode;
+  content: string | undefined;
+}
+
+function EventDetail({ icon, content }: EventDetailProps) {
+  if (!content) return null;
+  return (
+    <div className="flex gap-2 leading-tight">
+      {icon && <span>{icon}</span>}
+      <p>{content}</p>
+    </div>
   );
 }

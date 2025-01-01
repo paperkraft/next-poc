@@ -156,7 +156,7 @@ const CalendarNav = memo(({ calendarRef, children }: CalendarNavProps) => {
                   onCheckedChange={(checked) => filterEvent(category, !!checked)}
                   className={"data-[state=checked]:bg-sky-500 data-[state=checked]:text-primary-foreground data-[state=checked]:border-0 border-gray-400 shadow-none"}
                 />
-                <label htmlFor={category} className="font-medium cursor-pointer select-none leading-tight">
+                <label htmlFor={category} className="cursor-pointer select-none leading-tight">
                   {category}
                 </label>
               </div>

@@ -39,6 +39,8 @@ model User {
   city         String?
   roleId       String  @db.ObjectId
   role         Role    @relation(fields: [roleId], references: [id])
+
+  AuditLog AuditLog[]
 }
 
 // Define a module, which can have submodules (hierarchical)
@@ -77,4 +79,15 @@ model Group {
   name String @unique
 
   modules Module[] // One-to-many relation with modules
+}
+
+model AuditLog {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  action    String // Describe the action (e.g., "ROLE_UPDATED", "PERMISSION_ASSIGNED")
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  details   Json // Store action details
+  ip        String?  // IP address of the client
+  device    Json?    // Device details (browser, OS, etc.)
+  timestamp DateTime @default(now())
 }

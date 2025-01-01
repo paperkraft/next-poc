@@ -4,7 +4,7 @@ import Credentials from "next-auth/providers/credentials";
 import GitHub from "next-auth/providers/github";
 import bcrypt from 'bcryptjs';
 import { AUTH_SECRET, GITHUB_ID, GITHUB_SECRET } from "@/utils/constants";
-import { userConfig } from "@/hooks/use-config";
+import { logAuditAction } from "./audit-log";
 
 
 
@@ -18,10 +18,6 @@ const authConfig: NextAuthConfig = {
                 email: { label: "Email", type: "text" },
                 password: { label: "Password", type: "password" },
             },
-
-            
-
-
             async authorize(credentials): Promise<User | null> {
 
                 const data = {
@@ -62,6 +58,10 @@ const authConfig: NextAuthConfig = {
 
                 if (!user || !(await bcrypt.compare(data.password, user.password as string))) {
                     return null
+                }
+
+                if(user){
+                    await logAuditAction('SIGNIN', user.id, {  roleId: user.roleId });
                 }
 
                 return {

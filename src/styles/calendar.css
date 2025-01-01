@@ -16,7 +16,7 @@
 }
 .fc-day-sun > div:first-child > a,
 .fc-day-sun > div:first-child > div:first-child {
-  @apply text-red-400
+  @apply text-red-500
 }
 
 /* Setting header size */

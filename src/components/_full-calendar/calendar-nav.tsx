@@ -2,7 +2,6 @@
 
 import { calendarRef, categories } from "@/utils/calendar-data";
 import { Button } from "@/components/ui/button";
-import { goNext, goPrev, goToday, setView } from "@/utils/calendar-utils";
 import { memo, ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,7 +10,6 @@ import { Calendar } from "../ui/calendar";
 import { cn } from "@/lib/utils";
 import { useEvents } from "@/context/calendar-context";
 import { Checkbox } from "../ui/checkbox";
-import { enIN } from "date-fns/locale";
 
 interface CalendarNavProps {
   calendarRef: calendarRef;
@@ -41,7 +39,7 @@ const CalendarNav = memo(({ calendarRef, children }: CalendarNavProps) => {
       setCurrentDate(new Date(calendarApi.currentData.currentDate));
     }
   }, [calendarRef]);
-  
+
   useEffect(() => {
     if (!isUpdatingRef.current) updateTitleAndDate();
     isUpdatingRef.current = false;
@@ -101,7 +99,7 @@ const CalendarNav = memo(({ calendarRef, children }: CalendarNavProps) => {
 
   const handleGoToday = useCallback(() => {
     if (calendarRef.current) {
-      goToday(calendarRef);
+      calendarRef.current!.getApi().today()
       updateTitleAndDate();
     }
   }, [calendarRef, updateTitleAndDate]);
@@ -109,7 +107,7 @@ const CalendarNav = memo(({ calendarRef, children }: CalendarNavProps) => {
   return (
     <>
       <div className="flex">
-        <div className="hidden md:flex flex-col">
+        <div className="hidden md:block">
           <div className="p-4 max-h-20">
             <EventAddForm displayButton onClick={() => { setStartDate(new Date()); setEndDate(new Date()) }} />
           </div>
@@ -119,18 +117,18 @@ const CalendarNav = memo(({ calendarRef, children }: CalendarNavProps) => {
               mode="single"
               classNames={{
                 today: "bg-green-500 text-white",
-                weekday: "first:text-red-400 text-muted-foreground w-8 font-normal text-[0.8rem]",
+                weekday: "first:text-red-500 text-muted-foreground w-8 font-normal text-[0.8rem]",
                 selected: "bg-accent hover:!bg-accent has-[button]:hover:aria-selected:!bg-accent"
               }}
               modifiers={{ sunday: { dayOfWeek: [0] } }}
               modifiersClassNames={{
-                sunday: "text-red-400 !opacity-100 [&_button]:!opacity-100 hover:!text-red-400"
+                sunday: "text-red-500 !opacity-100 [&_button]:!opacity-100 hover:!text-red-500"
               }}
               disabled={{ dayOfWeek: [0] }}
               month={currentDate}
               selected={selectedDate}
               showOutsideDays={false}
-              onMonthChange={(date)=>{
+              onMonthChange={(date) => {
                 calendarRef.current?.getApi().gotoDate(date);
                 updateTitleAndDate();
               }}
@@ -150,12 +148,13 @@ const CalendarNav = memo(({ calendarRef, children }: CalendarNavProps) => {
                 {allCategoriesVisible ? 'Hide All' : 'Show All'}
               </p>
             </div>
-            {categories.map(category => (
+            {categories.map((category, idx) => (
               <div key={category} className="flex items-center space-x-2 p-0.5">
-                <Checkbox 
-                  id={category} 
-                  checked={visibleCategories.includes(category)} 
+                <Checkbox
+                  id={category}
+                  checked={visibleCategories.includes(category)}
                   onCheckedChange={(checked) => filterEvent(category, !!checked)}
+                  className={"data-[state=checked]:bg-sky-500 data-[state=checked]:text-primary-foreground data-[state=checked]:border-0 border-gray-400 shadow-none"}
                 />
                 <label htmlFor={category} className="font-medium cursor-pointer select-none leading-tight">
                   {category}

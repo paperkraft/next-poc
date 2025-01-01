@@ -3,7 +3,7 @@
 import { calendarRef, categories } from "@/utils/calendar-data";
 import { Button } from "@/components/ui/button";
 import { goNext, goPrev, goToday, setView } from "@/utils/calendar-utils";
-import { ReactNode, useEffect, useState } from "react";
+import { memo, ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EventAddForm } from "./event-add-form";
@@ -11,7 +11,7 @@ import { Calendar } from "../ui/calendar";
 import { cn } from "@/lib/utils";
 import { useEvents } from "@/context/calendar-context";
 import { Checkbox } from "../ui/checkbox";
-import { Matcher } from "react-day-picker";
+import { enIN } from "date-fns/locale";
 
 interface CalendarNavProps {
   calendarRef: calendarRef;
@@ -26,112 +26,85 @@ const TABS = [
   { value: "multiMonthYear", label: "Year" },
 ];
 
-export default function CalendarNav({ calendarRef, children }: CalendarNavProps) {
-  const { filterEvent, visibleCategories, setEventAddOpen } = useEvents();
-  const { setStartDate, setEndDate } = useEvents();
-
-  const [currentView, setCurrentView] = useState("dayGridMonth");
+const CalendarNav = memo(({ calendarRef, children }: CalendarNavProps) => {
+  const { filterEvent, visibleCategories, setEventAddOpen, setStartDate, setEndDate, setCurrentView, currentView } = useEvents();
   const [title, setTitle] = useState<string>("");
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [allCategoriesVisible, setAllCategoriesVisible] = useState(true);
-  const [clickedDate, setClickedDate] = useState<Date | undefined>();
+  const isUpdatingRef = useRef(false);
 
-
-  const getTitle = () => {
+  const updateTitleAndDate = useCallback(() => {
     if (calendarRef.current) {
       const calendarApi = calendarRef.current.getApi() as any;
-      const date = calendarApi.getDate();
-      const title = calendarApi.currentData.viewTitle
-      setTitle(title);
-      setCurrentDate(date);
+      setTitle(calendarApi.currentData.viewTitle);
+      setCurrentDate(new Date(calendarApi.currentData.currentDate));
     }
-  }
-
+  }, [calendarRef]);
+  
   useEffect(() => {
-    getTitle();
-  }, []);
+    if (!isUpdatingRef.current) updateTitleAndDate();
+    isUpdatingRef.current = false;
+  }, [currentView, updateTitleAndDate]);
 
-  const handleTabClick = (value: string) => {
-    setView(calendarRef, value, setCurrentView);
-    getTitle();
+  const handleTabClick = (view: string) => {
+    setCurrentView(view)
+    calendarRef.current?.getApi().changeView(view);
+    updateTitleAndDate();
   };
 
-  const getClassName = (value: string) => `space-x-1 ${currentView === value ? "w-1/2" : "w-1/4"}`;
+  const isTodayInCurrentView = useCallback(() => {
+    if (!calendarRef.current) return false;
+    const calendarApi = calendarRef.current.getApi();
+    const today = new Date();
 
-  const getButtonLabel = (view: string) => {
-    const labels: Record<string, string> = {
-      dayGridMonth: "This Month",
-      timeGridWeek: "This Week",
-      timeGridDay: "Today",
-      listWeek: "Today",
+    const normalizeDate = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const todayNormalized = normalizeDate(today);
+    const currentDateNormalized = normalizeDate(calendarApi.getDate());
+
+    const viewRanges: Record<string, [Date, Date]> = {
+      dayGridMonth: [
+        new Date(currentDateNormalized.getFullYear(), currentDateNormalized.getMonth(), 1),
+        new Date(currentDateNormalized.getFullYear(), currentDateNormalized.getMonth() + 1, 0),
+      ],
+      timeGridWeek: [
+        new Date(currentDateNormalized.setDate(currentDateNormalized.getDate() - currentDateNormalized.getDay())),
+        new Date(currentDateNormalized.setDate(currentDateNormalized.getDate() + 6)),
+      ],
+      timeGridDay: [currentDateNormalized, currentDateNormalized],
+      multiMonthYear: [
+        new Date(currentDateNormalized.getFullYear(), 0, 1),
+        new Date(currentDateNormalized.getFullYear(), 11, 31),
+      ],
     };
-    return labels[view] || "View";
-  };
 
-  const isTodayInCurrentView = () => {
-    if (calendarRef.current) {
-      const calendarApi = calendarRef.current.getApi();
-      const currentDate = calendarApi.getDate();
-      const today = new Date();
-
-      // Define start and end of the current view
-      let startOfCurrentView, endOfCurrentView;
-
-      if (currentView === "timeGridWeek") {
-        const dayOfWeek = currentDate.getDay();
-        const diffToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-        startOfCurrentView = new Date(currentDate);
-        startOfCurrentView.setDate(currentDate.getDate() - diffToMonday);
-        endOfCurrentView = new Date(startOfCurrentView);
-        endOfCurrentView.setDate(startOfCurrentView.getDate() + 6);
-
-      } else if (currentView === "dayGridMonth") {
-        startOfCurrentView = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-        endOfCurrentView = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
-
-      } else if (currentView === "timeGridDay" || currentView === "listWeek") {
-        return currentDate.toDateString() === today.toDateString();
-      }
-
-      // Check if today is within the start and end of the current view
-      const isTodayInRange = today >= startOfCurrentView! && today <= endOfCurrentView!;
-
-      // Special check for 'timeGridWeek' view to confirm it is the current week
-      if (currentView === "timeGridWeek") {
-        const currentWeekStart = startOfCurrentView!.toDateString();
-        const currentWeekEnd = endOfCurrentView!.toDateString();
-
-        const thisWeekStart = new Date(today);
-        thisWeekStart.setDate(today.getDate() - (today.getDay() === 0 ? 6 : today.getDay() - 1));
-        const thisWeekEnd = new Date(thisWeekStart);
-        thisWeekEnd.setDate(thisWeekStart.getDate() + 6);
-
-        if (currentWeekStart === thisWeekStart.toDateString() && currentWeekEnd === thisWeekEnd.toDateString()) {
-          return true;
-        }
-      }
-
-      return isTodayInRange;
-    }
-
-    return false;
-  };
-
-  const handleGoToDate = (date: Date) => {
-    if (!date) return;
-    calendarRef.current!.getApi().gotoDate(date);
-    getTitle();
-  };
+    const [start, end] = viewRanges[currentView] || [null, null];
+    return todayNormalized >= (start || today) && todayNormalized <= (end || today);
+  }, [calendarRef, currentView]);
 
   const toggleCategoriesVisibility = () => {
-    if (allCategoriesVisible) {
-      setAllCategoriesVisible(false);
-      categories.forEach(category => filterEvent(category, false));
-    } else {
-      setAllCategoriesVisible(true);
-      categories.forEach(category => filterEvent(category, true));
-    }
+    const visibility = !allCategoriesVisible;
+    setAllCategoriesVisible(visibility);
+    categories.forEach((category) => filterEvent(category, visibility));
   };
+
+  const handleNavigation = useCallback(
+    (direction: "next" | "prev") => {
+      if (calendarRef.current) {
+        isUpdatingRef.current = true;
+        calendarRef.current.getApi()[direction]();
+        updateTitleAndDate();
+      }
+    },
+    [calendarRef, updateTitleAndDate]
+  );
+
+  const handleGoToday = useCallback(() => {
+    if (calendarRef.current) {
+      goToday(calendarRef);
+      updateTitleAndDate();
+    }
+  }, [calendarRef, updateTitleAndDate]);
 
   return (
     <>
@@ -143,47 +116,29 @@ export default function CalendarNav({ calendarRef, children }: CalendarNavProps)
 
           <div className={cn("border-y")}>
             <Calendar
-              showOutsideDays={false}
               mode="single"
               classNames={{
                 today: "bg-green-500 text-white",
                 weekday: "first:text-red-400 text-muted-foreground w-8 font-normal text-[0.8rem]",
+                selected: "bg-accent hover:!bg-accent has-[button]:hover:aria-selected:!bg-accent"
               }}
-
-              modifiers={{
-                sunday: { dayOfWeek: [0] }
-              }}
-
+              modifiers={{ sunday: { dayOfWeek: [0] } }}
               modifiersClassNames={{
-                sunday: "text-red-400 !opacity-100 [&_button]:!opacity-100",
+                sunday: "text-red-400 !opacity-100 [&_button]:!opacity-100 hover:!text-red-400"
               }}
-
-              disabled={{
-                dayOfWeek: [0],
-              }}
-
+              disabled={{ dayOfWeek: [0] }}
               month={currentDate}
-              selected={clickedDate}
-
-              onNextClick={() => {
-                goNext(calendarRef);
-                getTitle();
+              selected={selectedDate}
+              showOutsideDays={false}
+              onMonthChange={(date)=>{
+                calendarRef.current?.getApi().gotoDate(date);
+                updateTitleAndDate();
               }}
-
-              onPrevClick={() => {
-                goPrev(calendarRef);
-                getTitle();
-              }}
-
-              onMonthChange={(month) => {
-                handleGoToDate(month as Date)
-              }}
-
               onDayClick={(date) => {
+                setStartDate(new Date(date));
+                setEndDate(new Date(date));
                 setEventAddOpen(true);
-                setClickedDate(date as Date);
-                setStartDate(date)
-                setEndDate(date)
+                setSelectedDate(new Date(date));
               }}
             />
           </div>
@@ -197,7 +152,11 @@ export default function CalendarNav({ calendarRef, children }: CalendarNavProps)
             </div>
             {categories.map(category => (
               <div key={category} className="flex items-center space-x-2 p-0.5">
-                <Checkbox id={category} checked={visibleCategories.includes(category)} onCheckedChange={(e) => filterEvent(category, e as boolean)} />
+                <Checkbox 
+                  id={category} 
+                  checked={visibleCategories.includes(category)} 
+                  onCheckedChange={(checked) => filterEvent(category, !!checked)}
+                />
                 <label htmlFor={category} className="font-medium cursor-pointer select-none leading-tight">
                   {category}
                 </label>
@@ -209,32 +168,34 @@ export default function CalendarNav({ calendarRef, children }: CalendarNavProps)
         <div className="w-full border-l">
           <div className="w-full flex flex-col md:flex-row justify-between p-2 md:p-4 md:max-h-20">
             <div className="flex items-center">
-              <Button variant="ghost" size={'icon'} onClick={() => { goPrev(calendarRef); getTitle() }}>
+              <Button variant="ghost" size={'icon'} onClick={() => handleNavigation("prev")}>
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size={'icon'} onClick={() => { goNext(calendarRef); getTitle() }}>
+              <Button variant="ghost" size={'icon'} onClick={() => handleNavigation("next")}>
                 <ChevronRight className="h-4 w-4" />
               </Button>
               <p className="select-none text-sm md:text-base ml-2">{title}</p>
             </div>
 
             <div className="hidden md:block select-none">
-              <Button variant="outline" onClick={() => { goToday(calendarRef); getTitle(); }}
-                disabled={isTodayInCurrentView()}
+              <Button variant="outline" onClick={handleGoToday}
+                disabled={new Date().toDateString() === currentDate.toDateString()}
                 className={cn({ "hidden": isTodayInCurrentView() })}
+                aria-label="Go to today's date"
+                title="Go to today's date"
               >
-                {getButtonLabel(currentView)}
+                Today
               </Button>
             </div>
 
-            <Tabs defaultValue="dayGridMonth">
+            <Tabs value={currentView}>
               <TabsList className="flex text-xs md:text-sm">
                 {TABS.map((tab) => (
                   <TabsTrigger
                     key={tab.value}
                     value={tab.value}
                     onClick={() => handleTabClick(tab.value)}
-                    className={getClassName(tab.value)}
+                    className={`space-x-1 ${currentView === tab.value ? "w-1/2" : "w-1/4"}`}
                   >
                     <p>{tab.label}</p>
                   </TabsTrigger>
@@ -242,10 +203,11 @@ export default function CalendarNav({ calendarRef, children }: CalendarNavProps)
               </TabsList>
             </Tabs>
           </div>
-
           {children}
         </div>
       </div>
     </>
   );
-}
+})
+
+export default CalendarNav;

@@ -1,7 +1,7 @@
 "use client";
 
-import { useEvents } from "@/context/calendar-context";
 import "@/styles/calendar.css";
+import { useEvents } from "@/context/calendar-context";
 import {
   DateSelectArg,
   DayCellContentArg,
@@ -19,13 +19,13 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import rrulePlugin from '@fullcalendar/rrule';
 
 import { useRef } from "react";
-import CalendarNav from "./calendar-nav";
 import { CalendarEvent } from "@/utils/calendar-data";
 import { cn } from "@/lib/utils";
 import { EventView } from "./event-view";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 import { CalendarX } from "lucide-react";
 import { EventAddForm } from "./event-add-form";
+import CalendarNav from "./calendar-nav";
 
 type EventContentProps = {
   info: EventContentArg;
@@ -43,15 +43,16 @@ type NoEventsContentProps = {
   info: NoEventsContentArg;
 };
 
+const freq = ['monthly', 'weekly', 'daily'];
+const weekday = ['mo', 'tu', 'we', 'th', 'fr', 'sa', 'su'];
+
 export default function EventCalendar() {
-  const { events, visibleCategories, setEventEditOpen, setEventViewOpen, } = useEvents();
-  const { selectedEvent, setSelectedOldEvent, setSelectedEvent, setIsDrag } = useEvents();
   const calendarRef = useRef<FullCalendar | null>(null);
 
-  const { setEventAddOpen, setStartDate, setEndDate } = useEvents();
+  const { events, visibleCategories, setEventEditOpen, setEventViewOpen, } = useEvents();
+  const { selectedEvent, setSelectedEvent, setSelectedOldEvent, setIsDrag } = useEvents();
+  const { setEventAddOpen, setStartDate, setEndDate, setCurrentView } = useEvents();
 
-  const freq = ['monthly', 'weekly', 'daily'];
-  const weekday = ['mo', 'tu', 'we', 'th', 'fr', 'sa', 'su'];
 
   const handleEventClick = (info: EventClickArg) => {
 
@@ -189,28 +190,24 @@ export default function EventCalendar() {
       <>
         {/* Day Grid Month & Year */}
         {(info.view.type === "dayGridMonth" || info.view.type === 'multiMonthYear') && (
-          <div className="p-1">
+          <div className="p-1 select-none">
             <p>{weekday}</p>
           </div>
         )}
 
         {/* Time Grid Week View */}
         {info.view.type === "timeGridWeek" && (
-          <div className="p-1">
-            {info.isToday ? (
-              <p className="font-semibold text-blue-500">
-                {weekday} - {info.date.getDate()}
-              </p>
-            ) : (
-              <p className="font-light">{weekday} - {info.date.getDate()}</p>
-            )}
+          <div className="p-1 select-none">
+            <p className={cn({ "font-semibold text-blue-500": info.isToday })}>
+              {weekday} - {info.date.getDate()}
+            </p>
           </div>
         )}
 
         {/* Time Grid Day View */}
         {info.view.type === "timeGridDay" && (
           <div className="p-1">
-            <p className="font-normal">{formattedDate}</p>
+            <p>{formattedDate}</p>
           </div>
         )}
 
@@ -259,6 +256,13 @@ export default function EventCalendar() {
     }
   };
 
+  const handleNavDayClick = (date: Date) => {
+    const calendarApi = calendarRef.current!.getApi();
+    calendarApi.gotoDate(date);
+    calendarApi.changeView("timeGridDay");
+    setCurrentView("timeGridDay");
+  }
+
   const filteredEvents = events.filter((event) => visibleCategories.includes(event.category as string));
 
   return (
@@ -280,17 +284,15 @@ export default function EventCalendar() {
                 ]}
 
                 // firstDay={1} // Monday
-                headerToolbar={false}
-                
                 initialView="dayGridMonth"
+                headerToolbar={false}
                 events={filteredEvents}
                 dayMaxEvents={2}
-                
+
                 slotMinTime={"09:00"} // 09:00
                 slotMaxTime={"22:00"} // 22:00
 
                 height={"32vh"}
-                
                 windowResizeDelay={0}
 
                 slotLabelFormat={{
@@ -305,9 +307,9 @@ export default function EventCalendar() {
                   hour12: true,
                 }}
 
+                contentHeight={'auto'}
                 showNonCurrentDates={false}
                 fixedWeekCount={false}
-                contentHeight={'auto'}
 
                 noEventsContent={(eventInfo) => <EmptyListContent info={eventInfo} />}
                 eventContent={(eventInfo) => <RenderEventContent info={eventInfo} />}
@@ -315,8 +317,10 @@ export default function EventCalendar() {
                 dayHeaderContent={(headerInfo) => <RenderHeaderContent info={headerInfo} />}
                 eventClick={(eventInfo) => handleEventClick(eventInfo)}
                 eventChange={(eventInfo) => handleEventChange(eventInfo)}
+                navLinkDayClick={(date) => handleNavDayClick(date)}
                 select={handleDateSelect}
 
+                navLinks
                 stickyHeaderDates
                 displayEventEnd
                 nowIndicator

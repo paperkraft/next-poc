@@ -381,8 +381,6 @@ const RenderMenus = () => {
                 setFilter(userMenus);
                 setMenus(userMenus);
             }
-        } else {
-            console.log('No group');
         }
     }, [groups, serverMenu]);
 

@@ -42,6 +42,9 @@ interface EventsContextType {
   setStartDate:(value: Date | undefined) => void;
   end: Date | undefined;
   setEndDate:(value: Date | undefined) => void;
+
+  currentView: string;
+  setCurrentView: (view:string) => void;
 }
 
 const EventsContext = createContext<EventsContextType | undefined>(undefined);
@@ -55,6 +58,7 @@ export const useEvents = () => {
 };
 
 export const EventsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [currentView, setCurrentView] = useState("dayGridMonth");
   const [events, setEvents] = useState<CalendarEvent[]>(initialEvents.map((event) => ({ ...event, id: String(event.id), color: event.backgroundColor })));
   const [eventViewOpen, setEventViewOpen] = useState(false);
   const [eventAddOpen, setEventAddOpen] = useState(false);
@@ -119,7 +123,10 @@ export const EventsProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         start,
         setStartDate,
         end,
-        setEndDate
+        setEndDate,
+
+        currentView,
+        setCurrentView
       }}
     >
       {children}

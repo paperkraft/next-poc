@@ -11,6 +11,14 @@
   @apply border-none !important;
 }
 
+.fc a[data-navlink] {
+  @apply hover:text-blue-500 hover:no-underline
+}
+.fc-day-sun > div:first-child > a,
+.fc-day-sun > div:first-child > div:first-child {
+  @apply text-red-400
+}
+
 /* Setting header size */
 
 .fc-timegrid-axis,

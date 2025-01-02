@@ -139,6 +139,10 @@ export const data = [
             {
                 title: "Full Calendar",
                 url: "/settings/full-calendar",
+            },
+            {
+                title: "Audit Log",
+                url: "/settings/audit-log",
             }
         ]
     }

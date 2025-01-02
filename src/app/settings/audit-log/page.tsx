@@ -1,0 +1,29 @@
+import { Metadata } from "next";
+import TitlePage from "@/components/custom/page-heading";
+import { fetchAuditLogs } from "../../action/audit.action";
+import AuditLogTable from "./AuditLogTable";
+import { auth } from "@/auth";
+import { hasPermission } from "@/lib/rbac";
+import AccessDenied from "@/components/custom/access-denied";
+
+export const metadata: Metadata = {
+    title: "Audit-log",
+    description: "Audit log for recently activities",
+};
+
+export default async function Page() {
+    const data = await fetchAuditLogs().then((res) => res.json());
+    const session = await auth();
+    const rolePermissions = +session?.user?.permissions;
+    const permission = hasPermission(rolePermissions, 15);
+
+    if (!permission) {
+        return <AccessDenied />;
+    }
+    return (
+        <>
+            <TitlePage title={"Audit Log"} description={"Audit log for recent activities"} />
+            <AuditLogTable data={data.data} />
+        </>
+    )
+}

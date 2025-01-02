@@ -9,10 +9,16 @@ const prisma = new PrismaClient();
  * 
  * @param action - A short description of the action (e.g., "USER_CREATED", "ROLE_UPDATED").
  * @param userId - The ID of the user who performed the action.
+ * @param entity - Path of actual entity.
  * @param details - The response object or additional metadata to include in the log.
  */
 
-export async function logAuditAction(action: string, details: Prisma.InputJsonValue, userId?: string ) {
+export async function logAuditAction(
+    action: string,
+    entity: string,
+    details: Prisma.InputJsonValue, 
+    userId?: string
+) {
     try {
         const session = await auth();
         const info = JSON.parse(JSON.stringify(details));
@@ -26,11 +32,9 @@ export async function logAuditAction(action: string, details: Prisma.InputJsonVa
         await prisma.auditLog.create({
             data: {
                 action,
+                entity,
                 userId: userId ?? session?.user?.id,
-                details: {
-                    user: session ? session?.user?.name : undefined,
-                    ...info
-                },
+                details: info,
                 device: {
                     ...deviceDetails,
                     ip: ipAddress,

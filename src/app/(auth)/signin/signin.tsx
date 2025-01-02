@@ -8,12 +8,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { LoaderCircle } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
 import { useMounted } from "@/hooks/use-mounted";
 import { signIn } from "next-auth/react";
 import { RECAPTCHA_SITE_KEY } from "@/utils/constants";
 import { InputController } from "@/components/custom/form.control/InputController";
 import Divider from "@/components/custom/divider";
+import { toast } from "sonner";
 
 const signInSchema = z.object({
   email: z
@@ -55,21 +55,14 @@ export default function SignInPage() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...data, token }),
-    }).then((res) =>res.json())
-    
+    }).then((res) =>res.json());
+
     if(response.success){
       setLoading(false);
     }
 
-    if (
-      response.type === "CredentialsSignin" ||
-      response.code === "credentials"
-    ) {
-      toast({
-        title: "Error",
-        description: "Invalid credentials",
-        variant: "destructive",
-      });
+    if (response.type === "CredentialsSignin" || response.code === "credentials") {
+      toast.error("Invalid credentials");
       setLoading(false);
     } else {
       window.location.href = "/dashboard";

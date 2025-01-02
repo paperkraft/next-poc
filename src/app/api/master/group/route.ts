@@ -1,3 +1,4 @@
+import { logAuditAction } from "@/lib/audit-log";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
@@ -36,14 +37,18 @@ export async function POST(request: Request) {
 
         const data = await prisma.group.create({
             data: { name }
-        })
+        });
+
+        await logAuditAction('Create', 'master/groups', { data });
+
         return NextResponse.json(
             { success: true, message: 'Group created', data },
             { status: 200 }
         );
     } catch (error) {
+        await logAuditAction('Error', 'master/groups', { error: "Error creating group" });
         return NextResponse.json(
-            { success: false, message: 'Error in creating role' }, 
+            { success: false, message: 'Error in creating group' }, 
             { status: 400 }
         );
     }
@@ -64,12 +69,15 @@ export async function DELETE(request: Request) {
             where: { id },
         });
 
+        await logAuditAction('Delete', 'master/groups', { data: record });
+
         return NextResponse.json(
             { success: true, message: "Group deleted", data: record },
             { status: 200 }
         );
     } catch (error) {
         console.error(error);
+        await logAuditAction('Error', 'master/groups', { error: "Error deleting group" });
         return NextResponse.json(
             { success: false, message: "Error deleting group" },
             { status: 500 }

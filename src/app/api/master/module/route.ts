@@ -1,4 +1,5 @@
 import { fetchModules } from "@/app/action/module.action";
+import { logAuditAction } from "@/lib/audit-log";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
@@ -55,10 +56,12 @@ export async function PUT(req: Request) {
       where: { id: data.id },
       data: final
     });
+    await logAuditAction('Update', 'master/module', { data: final });
     return NextResponse.json({ success: true, message: 'Success' }, { status: 200 });
 
   } catch (error) {
     console.error(error)
+    await logAuditAction('Error', 'master/module', { error: 'Failed to update module' });
     return NextResponse.json({ success: false, message: 'Failed to update' }, { status: 500 });
   }
 }
@@ -73,6 +76,8 @@ export async function POST(req: Request) {
         groupId: parentId ? null : groupId
       }
     });
+
+    await logAuditAction('Create', 'master/module', { data });
     return NextResponse.json(
       { success: true, message: 'Module created', data },
       { status: 200 }
@@ -80,7 +85,8 @@ export async function POST(req: Request) {
 
   } catch (error) {
     console.error(error)
-    return NextResponse.json({ success: false, message: 'Failed to create' }, { status: 500 });
+    await logAuditAction('Error', 'master/module', { error: 'Failed to create module' });
+    return NextResponse.json({ success: false, message: 'Failed to create module' }, { status: 500 });
   }
 }
 
@@ -99,10 +105,12 @@ export async function DELETE(req: Request) {
       }),
     ]);
 
+    await logAuditAction('Delete', 'master/module', { data: id });
     return NextResponse.json({ success: true, message: 'Module deleted' }, { status: 200 });
 
   } catch (error) {
-    console.error(error)
+    console.error(error);
+    await logAuditAction('Error', 'master/module', { error: 'Failed to delete module' });
     return NextResponse.json({ success: false, message: 'Failed to delete module' }, { status: 500 });
   }
 }

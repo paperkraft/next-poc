@@ -56,10 +56,11 @@ const authConfig: NextAuthConfig = {
                 const formattedJson = formatToParentChild(userModulesGrouped);
 
                 if (!user || !(await bcrypt.compare(data.password, user.password as string))) {
+                    await logAuditAction('Error', 'auth/signin', { error: 'Invalid credentials' }, user?.id);
                     return null
                 }
 
-                await logAuditAction('USER_SIGIN', { user: `${user?.firstName} ${user?.lastName}` }, user.id);
+                await logAuditAction('login', 'auth/signin', { user: `${user?.firstName} ${user?.lastName}` }, user.id);
 
                 return {
                     id: user?.id,

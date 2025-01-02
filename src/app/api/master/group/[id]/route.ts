@@ -27,7 +27,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
             data: { name }
         });
 
-        await logAuditAction('GROUP_EDIT', { data });
+        await logAuditAction('Update', 'master/groups', { data });
 
         return NextResponse.json(
             { success: true, message: "Group updated", data },
@@ -35,7 +35,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         );
     } catch (error) {
         console.error(error);
-        await logAuditAction('GROUP_EDIT_FAILED', { error: "Error updating group" });
+        await logAuditAction('Error', 'master/groups', { error: "Error updating group" });
         return NextResponse.json(
             { success: false, message: "Error updating group" },
             { status: 500 }

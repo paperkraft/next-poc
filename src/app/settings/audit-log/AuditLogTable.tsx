@@ -1,14 +1,14 @@
 'use client'
 
-import { createColumns } from "@/components/data-table/column";
-import { DataTable } from "@/components/data-table/data-table";
-import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { memo } from "react";
+import { InfoIcon, Monitor, SmartphoneIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { DataTable } from "@/components/data-table/data-table";
+import { createColumns } from "@/components/data-table/column";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
-import { InfoIcon, Monitor, SmartphoneIcon } from "lucide-react";
-import { memo, useState } from "react";
 
 interface AuditLogProp {
     data: {
@@ -24,12 +24,9 @@ interface AuditLogProp {
 }
 
 const AuditLogTable = memo(({ data }: AuditLogProp) => {
-    const [open, setOpen] = useState(false);
-    const [details, setDetails] = useState<Record<string, string | undefined>>();
+    const { columns, open, details, setOpen, setDetails } = createColumns();
 
-    const columns = createColumns();
-
-    const final = data?.map((item)=>{
+    const final = data?.map((item) => {
         return {
             user: `${item.user.firstName} ${item.user.lastName}`,
             action: item.action.toLowerCase(),
@@ -67,69 +64,6 @@ const AuditLogTable = memo(({ data }: AuditLogProp) => {
 
     return (
         <>
-            <div className="space-y-8 p-2">
-                <Table>
-                    <TableHeader className="bg-gray-50 dark:bg-gray-800">
-                        <TableRow>
-                            <TableHead>#</TableHead>
-                            <TableHead>User</TableHead>
-                            <TableHead>Action</TableHead>
-                            <TableHead>Entity</TableHead>
-                            <TableHead>Details</TableHead>
-                            <TableHead>Device</TableHead>
-                            <TableHead>Date & Time</TableHead>
-                        </TableRow>
-                    </TableHeader>
-
-                    <TableBody>
-                        {data &&
-                            data.map((item, index) => (
-                                <TableRow key={index}>
-                                    <TableCell>{index + 1}</TableCell>
-                                    <TableCell>{item.user.firstName} {item.user.lastName}</TableCell>
-                                    <TableCell>
-                                        <Badge variant={'outline'} className={cn(actionStyles[item.action.toLowerCase()] || "")}>
-                                            {item.action.toLowerCase()}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell>{item.entity}</TableCell>
-                                    <TableCell>
-                                        <Button
-                                            size={'icon'}
-                                            variant={'ghost'}
-                                            onClick={() => { setOpen(true); setDetails(item.details) }}
-                                        >
-                                            <InfoIcon className="size-4" />
-                                        </Button>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Button
-                                            size={'icon'}
-                                            variant={'ghost'}
-                                            onClick={() => { setOpen(true); setDetails(item.device) }}
-                                        >
-
-                                            {
-                                                item.device.device?.toLowerCase()?.includes('windows')
-                                                    ? (<Monitor className="size-4" />)
-                                                    : (<SmartphoneIcon className="size-4" />)
-                                            }
-
-                                        </Button>
-                                    </TableCell>
-                                    <TableCell>{new Date(item.timestamp as string).toLocaleString('en-IN')}</TableCell>
-                                </TableRow>
-                            ))}
-
-                        {!data &&
-                            <TableRow>
-                                <TableCell colSpan={3}>No Data</TableCell>
-                            </TableRow>
-                        }
-                    </TableBody>
-                </Table>
-            </div>
-
             {
                 final && <DataTable columns={columns} data={final} />
             }

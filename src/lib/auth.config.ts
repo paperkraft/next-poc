@@ -5,8 +5,7 @@ import GitHub from "next-auth/providers/github";
 import bcrypt from 'bcryptjs';
 import { AUTH_SECRET, GITHUB_ID, GITHUB_SECRET } from "@/utils/constants";
 import { logAuditAction } from "./audit-log";
-
-
+import { getIpAddress } from "./utils";
 
 const authConfig: NextAuthConfig = {
     secret: AUTH_SECRET,
@@ -60,9 +59,7 @@ const authConfig: NextAuthConfig = {
                     return null
                 }
 
-                if(user){
-                    await logAuditAction('SIGNIN', user.id, {  roleId: user.roleId });
-                }
+                await logAuditAction('USER_SIGIN', { user: `${user?.firstName} ${user?.lastName}` }, user.id);
 
                 return {
                     id: user?.id,
@@ -90,7 +87,7 @@ const authConfig: NextAuthConfig = {
 
     callbacks: {
         async signIn({ user, account, profile }) {
-            
+
             console.log("signIn - user", user,); // info related user
             console.log("signIn - account", account,); // info related auth provider
             console.log("signIn - profile", profile,); // same as user
@@ -98,6 +95,15 @@ const authConfig: NextAuthConfig = {
             const existingUser = await prisma.user.findUnique({
                 where: { email: user.email as string }
             });
+
+            if (existingUser) {
+                await prisma.user.update({
+                    where: { email: user.email as string },
+                    data: {
+                        ip: await getIpAddress() ?? undefined
+                    }
+                })
+            }
 
             if (!existingUser) {
                 // add user to database
@@ -138,6 +144,7 @@ const authConfig: NextAuthConfig = {
 }
 
 export default authConfig;
+
 interface InputFormat {
     id: string;
     name: string;

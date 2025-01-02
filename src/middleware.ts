@@ -3,16 +3,12 @@
 import { auth } from '@/auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { hasPermissions } from './lib/rbac';
-import { redirect } from 'next/navigation';
 
 const ROUTE_PERMISSIONS: { [key: string]: number[] } = {
-    // '/dashboard': [1],
     '/student': [1, 2],
 };
 
 export async function middleware(req: NextRequest) {
-
-
     try {
         const session = await auth();
 

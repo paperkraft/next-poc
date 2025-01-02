@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { RECAPTCHA_SECRET_KEY } from "@/utils/constants";
 import { signIn } from "@/auth";
+import prisma from "@/lib/prisma";
+import { logAuditAction } from "@/lib/audit-log";
 
 const verifyCaptcha = async (captcha: string) => {
     const response = await fetch(`https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET_KEY}&response=${captcha}`, {
@@ -23,9 +25,9 @@ export async function POST(request: Request) {
         const verify = await verifyCaptcha(token);
         if (verify.success) {
             try {
-                await signIn('credentials', { email, password, redirect:false });
+                await signIn('credentials', { email, password, redirect: false });
                 return NextResponse.json(
-                    { success: true, message: 'Success' }, 
+                    { success: true, message: 'Success' },
                     { status: 200 }
                 );
             } catch (error: any) {
@@ -36,3 +38,6 @@ export async function POST(request: Request) {
         }
     }
 }
+
+
+

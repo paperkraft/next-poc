@@ -50,7 +50,7 @@ export function formatJSXCode(code: string): string {
     indent_empty_lines: false,
     // indent_scripts: "normal",
     // brace_style: "collapse,preserve-inline",
-     // indent_inner_html: false,
+    // indent_inner_html: false,
   });
   return formattedCode
 }
@@ -60,4 +60,14 @@ export async function getIpAddress() {
   const response = await fetch('https://api.ipify.org?format=json');
   const data = await response.json();
   return data.ip;
+}
+
+export function toSentenceCase(str: string) {
+  return str
+    .replace(/_/g, " ")
+    .replace(/([A-Z])/g, " $1")
+    .toLowerCase()
+    .replace(/^\w/, (c) => c.toUpperCase())
+    .replace(/\s+/g, " ")
+    .trim()
 }

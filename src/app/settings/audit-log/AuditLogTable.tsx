@@ -1,14 +1,9 @@
 'use client'
 
 import { memo } from "react";
-import { InfoIcon, Monitor, SmartphoneIcon } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/data-table/data-table";
-import { createColumns } from "@/components/data-table/column";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { cn } from "@/lib/utils";
+import { createColumns } from "@/app/settings/audit-log/column-data";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 interface AuditLogProp {
     data: {
@@ -24,7 +19,7 @@ interface AuditLogProp {
 }
 
 const AuditLogTable = memo(({ data }: AuditLogProp) => {
-    const { columns, open, details, setOpen, setDetails } = createColumns();
+    const { columns, open, details, setOpen } = createColumns();
 
     const final = data?.map((item) => {
         return {
@@ -54,38 +49,29 @@ const AuditLogTable = memo(({ data }: AuditLogProp) => {
         }
     }
 
-    const actionStyles: Record<string, string> = {
-        error: "bg-orange-100 border-orange-500 text-orange-500",
-        delete: "bg-red-100 border-red-500 text-red-500",
-        create: "bg-green-100 border-green-500 text-green-500",
-        update: "bg-blue-100 border-blue-500 text-blue-500",
-        login: "bg-violet-100 border-violet-500 text-violet-500",
-    };
-
     return (
         <>
             {
                 final && <DataTable columns={columns} data={final} />
             }
 
-            <AlertDialog open={open}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle className="mb-2">Details</AlertDialogTitle>
-                        {details &&
-                            Object.entries(details).map(([key, val], idx) => (
-                                <div key={idx} className="flex gap-2">
-                                    <p className="capitalize">{`${key}:`}</p>
-                                    {renderRecursive(val)}
-                                </div>
-                            ))
-                        }
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel onClick={() => { setOpen(false); }}>Cancel</AlertDialogCancel>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+            <Dialog open={open} onOpenChange={setOpen}>
+                <DialogContent aria-describedby="content" className={"overflow-y-scroll max-h-screen"}>
+                    <DialogHeader>
+                        <DialogTitle className="mb-4">Details</DialogTitle>
+                        <>
+                            {details &&
+                                Object.entries(details).map(([key, val], idx) => (
+                                    <div key={idx} className="flex gap-2">
+                                        <p className="capitalize">{`${key}:`}</p>
+                                        {renderRecursive(val)}
+                                    </div>
+                                ))
+                            }
+                        </>
+                    </DialogHeader>
+                </DialogContent>
+            </Dialog>
         </>
     );
 })

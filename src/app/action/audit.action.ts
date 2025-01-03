@@ -11,7 +11,10 @@ export async function fetchAuditLogs() {
                     firstName:true,
                     lastName: true,
                 }
-            } }
+            } },
+            orderBy:{
+                timestamp: 'desc'
+            }
         });
 
         return NextResponse.json(

@@ -1,10 +1,11 @@
 "use client";
 import { ColumnDef } from "@tanstack/react-table";
 import { InfoIcon, MonitorIcon, SmartphoneIcon } from "lucide-react";
-import { Button } from "../ui/button";
-import { HTMLProps, useEffect, useRef, useState } from "react";
-import { Badge } from "../ui/badge";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export const createColumns = () => {
     const [open, setOpen] = useState(false);
@@ -15,6 +16,7 @@ export const createColumns = () => {
         delete: "bg-red-50 border-red-300 text-red-600",
         create: "bg-green-50 border-green-300 text-green-600",
         update: "bg-blue-50 border-blue-300 text-blue-600",
+        upsert: "bg-pink-50 border-pink-300 text-pink-600",
         login: "bg-violet-50 border-violet-300 text-violet-600",
     };
 
@@ -22,25 +24,25 @@ export const createColumns = () => {
         {
             id: "select",
             header: ({ table }) => (
-                <div className="px-1">
-                    <IndeterminateCheckbox
-                        {...{
-                            checked: table.getIsAllRowsSelected(),
-                            indeterminate: table.getIsSomeRowsSelected(),
-                            onChange: table.getToggleAllRowsSelectedHandler(),
-                        }}
+                <div className="px-1 ml-1">
+                    <Checkbox
+                        checked={
+                            table.getIsAllPageRowsSelected() ||
+                            (table.getIsSomePageRowsSelected() && "indeterminate")
+                        }
+                        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+                        aria-label="Select all"
+                        className={"translate-y-0.5 data-[state=checked]:bg-sky-500 data-[state=checked]:text-primary-foreground data-[state=checked]:border-0 border-gray-400 shadow-none"}
                     />
                 </div>
             ),
             cell: ({ row }) => (
-                <div className="px-1">
-                    <IndeterminateCheckbox
-                        {...{
-                            checked: row.getIsSelected(),
-                            disabled: !row.getCanSelect(),
-                            indeterminate: row.getIsSomeSelected(),
-                            onChange: row.getToggleSelectedHandler(),
-                        }}
+                <div className="px-1 ml-1">
+                    <Checkbox
+                        checked={row.getIsSelected()}
+                        onCheckedChange={(value) => row.toggleSelected(!!value)}
+                        aria-label="Select row"
+                        className={"translate-y-0.5 data-[state=checked]:bg-sky-500 data-[state=checked]:text-primary-foreground data-[state=checked]:border-0 border-gray-400 shadow-none"}
                     />
                 </div>
             ),
@@ -65,6 +67,7 @@ export const createColumns = () => {
         {
             accessorKey: "details",
             header: "Details",
+            enableSorting: false,
             cell: ({ row }) => {
                 const details = JSON.parse(row.original.details);
                 return (
@@ -82,6 +85,7 @@ export const createColumns = () => {
         {
             accessorKey: "device",
             header: "Device",
+            enableSorting: false,
             cell: ({ row }) => {
                 const device = JSON.parse(row.original.device);
                 return (
@@ -108,27 +112,3 @@ export const createColumns = () => {
 
     return { columns, open, details, setOpen, setDetails };
 };
-
-
-function IndeterminateCheckbox({
-    indeterminate,
-    className = '',
-    ...rest
-}: { indeterminate?: boolean } & HTMLProps<HTMLInputElement>) {
-    const ref = useRef<HTMLInputElement>(null!)
-
-    useEffect(() => {
-        if (typeof indeterminate === 'boolean') {
-            ref.current.indeterminate = !rest.checked && indeterminate
-        }
-    }, [ref, indeterminate])
-
-    return (
-        <input
-            type="checkbox"
-            ref={ref}
-            className={className + ' cursor-pointer'}
-            {...rest}
-        />
-    )
-}

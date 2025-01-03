@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import {
     ColumnDef,
     flexRender,
@@ -17,7 +17,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowDownUp, ArrowDownWideNarrow, ArrowUpNarrowWide } from "lucide-react";
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
-
+import { DensityFeature, DensityState } from "@/utils/tanstack-utils";
+import { cn } from "@/lib/utils";
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
@@ -30,19 +31,23 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
     const [globalFilter, setGlobalFilter] = useState<any>([]);
     const [rowSelection, setRowSelection] = useState({})
     const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 5 });
+    const [density, setDensity] = useState<DensityState>("md");
 
     const table = useReactTable({
         data,
         columns,
+        debugTable: true,
         state: {
             sorting,
             pagination,
             globalFilter,
             rowSelection,
+            density,
         },
 
         enableRowSelection: true,
         autoResetPageIndex: false,
+        _features: [DensityFeature],
 
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
@@ -53,11 +58,12 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
         onPaginationChange: setPagination,
         onRowSelectionChange: setRowSelection,
         onGlobalFilterChange: setGlobalFilter,
+        onDensityChange: setDensity,
     });
 
     return (
         <div className="space-y-4">
-            <DataTableToolbar table={table}/>
+            <DataTableToolbar table={table} />
 
             <div className="rounded-md border">
                 <Table>
@@ -65,7 +71,13 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => (
-                                    <TableHead key={header.id}>
+                                    <TableHead key={header.id}
+                                        className={cn( "transition-[padding] duration-[0.2s]",{
+                                            "p-1": density === "sm",
+                                            "p-2": density === "md",
+                                            "p-3": density === "lg",
+                                        })}
+                                    >
                                         {header.isPlaceholder
                                             ? null
                                             : <div className="flex items-center">
@@ -95,7 +107,13 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
                             table.getRowModel().rows.map((row) => (
                                 <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                                     {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id}>
+                                        <TableCell key={cell.id}
+                                            className={cn( "transition-[padding] duration-[0.2s]",{
+                                                "p-1": density === "sm",
+                                                "p-2": density === "md",
+                                                "p-3": density === "lg",
+                                            })}
+                                        >
                                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                         </TableCell>
                                     ))}
@@ -111,7 +129,7 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
                     </TableBody>
                 </Table>
 
-                <DataTablePagination table={table}/>
+                <DataTablePagination table={table} />
             </div>
         </div>
     );

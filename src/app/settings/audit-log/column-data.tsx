@@ -74,7 +74,7 @@ export const createColumns = () => {
                     <Button
                         size={'icon'}
                         variant={'ghost'}
-                        className="hover:text-blue-500"
+                        className="hover:text-blue-500 size-7"
                         onClick={() => { setOpen(true); setDetails(details); }}
                     >
                         <InfoIcon className="size-4" />
@@ -92,7 +92,7 @@ export const createColumns = () => {
                     <Button
                         size={'icon'}
                         variant={'ghost'}
-                        className="hover:text-blue-500"
+                        className="hover:text-blue-500 size-7"
                         onClick={() => { setOpen(true); setDetails(device); }}
                     >
                         {

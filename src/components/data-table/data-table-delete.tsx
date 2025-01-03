@@ -15,7 +15,7 @@ export default function DeleteRecordDialog<TData>({ table }: DeleteToolbarProps<
 
     const onDelete = () => {
         setOpen(false);
-        toast.success("Tasks deleted");
+        toast.success("Log deleted");
         table.toggleAllRowsSelected(false);
     }
 
@@ -23,7 +23,7 @@ export default function DeleteRecordDialog<TData>({ table }: DeleteToolbarProps<
         <>
             <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
-                    <Button variant="outline" onClick={()=> setOpen(true)}>
+                    <Button variant="outline" onClick={()=> setOpen(true)} className="border-red-400 text-red-400 hover:text-red-500 hover:bg-red-50">
                         <Trash2 className="size-4" aria-hidden="true" />
                         Delete ({table.getFilteredSelectedRowModel().rows.length})
                     </Button>

@@ -12,12 +12,12 @@ export const createColumns = () => {
     const [details, setDetails] = useState<Record<string, string | undefined>>();
 
     const actionStyles: Record<string, string> = {
+        login: "bg-violet-50 border-violet-300 text-violet-600",
         error: "bg-orange-50 border-orange-300 text-orange-600",
-        delete: "bg-red-50 border-red-300 text-red-600",
         create: "bg-green-50 border-green-300 text-green-600",
         update: "bg-blue-50 border-blue-300 text-blue-600",
         upsert: "bg-pink-50 border-pink-300 text-pink-600",
-        login: "bg-violet-50 border-violet-300 text-violet-600",
+        delete: "bg-red-50 border-red-300 text-red-600",
     };
 
     const columns: ColumnDef<any>[] = [

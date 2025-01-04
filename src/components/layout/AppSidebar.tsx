@@ -68,6 +68,7 @@ import { IGroup } from "@/app/_Interface/Group"
 import { toast } from "sonner"
 import { groupConfig, menusConfig, userConfig } from "@/hooks/use-config"
 import { ScrollArea, ScrollBar } from "../ui/scroll-area"
+import { logAuditAction } from "@/lib/audit-log"
 
 const AppSidebar = ({ children }: ChildProps) => {
     const queryClient = new QueryClient();
@@ -131,11 +132,12 @@ const FooterMenuOptions = () => {
     const user = data && data?.user;
     const initials = user && user?.name?.split(' ').map((word: any[]) => word[0]).join('').toUpperCase();
 
-    const logout = () => {
-        signOut({ redirect: true, redirectTo:'/' });
+    const logout = async () => {
+        await logAuditAction('logout', 'auth/signout', { user: `${user?.name}` }, user.id);
         localStorage.removeItem("user");
         localStorage.removeItem("groups");
         localStorage.removeItem("menus");
+        signOut({ redirect: true, redirectTo: '/' });
     }
 
     const options = [
@@ -159,8 +161,8 @@ const FooterMenuOptions = () => {
     const RenderUserInfo = () => {
         return (
             <>
-                <Avatar className="h-8 w-8 rounded-full border border-blue-500">
-                    <AvatarImage src={user?.image} alt={user?.name} />
+                <Avatar className="size-8 border p-0.5">
+                    <AvatarImage src={user?.email?.toLowerCase()?.includes('vishal') ? '/sv.svg' : user?.image} alt={user?.name} />
                     <AvatarFallback className="rounded-full">{initials ?? "UN"}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
@@ -348,7 +350,7 @@ const RenderMenus = () => {
         }
     };
 
-    const fetchMenus = async (roleId:string) => {
+    const fetchMenus = async (roleId: string) => {
         try {
             const response = await fetch(`/api/master/module/${roleId}`).then((d) => d.json());
             if (response.success) {
@@ -365,8 +367,8 @@ const RenderMenus = () => {
         }
     };
 
-    const {data:groups, isLoading} = useQuery({ queryKey: ["group"], queryFn: fetchGroups });
-    const {data:serverMenu, isLoading: isMenuLoading} = useQuery({ queryKey: ["roleMenuAPI", data?.user?.roleId], queryFn: () => data && fetchMenus(data?.user.roleId)} );
+    const { data: groups, isLoading } = useQuery({ queryKey: ["group"], queryFn: fetchGroups });
+    const { data: serverMenu, isLoading: isMenuLoading } = useQuery({ queryKey: ["roleMenuAPI", data?.user?.roleId], queryFn: () => data && fetchMenus(data?.user.roleId) });
 
     React.useEffect(() => {
         if (groups && serverMenu) {

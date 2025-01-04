@@ -17,12 +17,14 @@ export default async function Page() {
     const rolePermissions = +session?.user?.permissions;
     const permission = hasPermission(rolePermissions, 15);
 
+    // const dateWiseSessions = session && await calculateDateWiseOnlineSessions(session?.user?.id);
+
     if (!permission) {
         return <AccessDenied />;
     }
     return (
         <>
-            <TitlePage title={"Audit Log"} description={"Audit log for recent activities"} />
+            <TitlePage title={"Audit Log"} description={"Audit log for users activities"} />
             <AuditLogTable data={data.data} />
         </>
     )

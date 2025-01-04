@@ -10,7 +10,7 @@ export function exportTableToCSV<TData>(
         /**
          * The filename for the CSV file.
          * @default "table"
-         * @example "tasks"
+         * @example "audit-log"
          */
         filename?: string
         /**
@@ -18,7 +18,7 @@ export function exportTableToCSV<TData>(
          * @default []
          * @example ["select", "actions"]
          */
-        excludeColumns?: (keyof TData | "select")[]
+        excludeColumns?: (keyof TData)[]
 
         /**
          * Whether to export only the selected rows.
@@ -35,20 +35,23 @@ export function exportTableToCSV<TData>(
         .map((column) => column.id)
         .filter((id) => !excludeColumns.includes(id as any))
 
+    // Determine rows to export: selected rows if any are selected, else all rows
+    const selectedRows = table.getFilteredSelectedRowModel().rows;
+    const rows = onlySelected || selectedRows.length > 0
+        ? selectedRows
+        : table.getCoreRowModel().rows;
+
     // Build CSV content
     const csvContent = [
         headers.join(","),
-        ...(onlySelected
-            ? table.getFilteredSelectedRowModel().rows
-            : table.getRowModel().rows
-        ).map((row) =>
+        ...rows.map((row) =>
             headers
                 .map((header) => {
-                    const cellValue = row.getValue(header)
+                    const cellValue = row.getValue(header);
                     // Handle values that might contain commas or newlines
                     return typeof cellValue === "string"
                         ? `"${cellValue.replace(/"/g, '""')}"`
-                        : cellValue
+                        : cellValue;
                 })
                 .join(",")
         ),

@@ -11,7 +11,7 @@ export function exportTableToExcel<TData>(
     table: Table<TData>,
     opts: {
         filename?: string
-        excludeColumns?: (keyof TData | "select")[]
+        excludeColumns?: (keyof TData)[]
         onlySelected?: boolean
     } = {}
 ): void {
@@ -23,12 +23,15 @@ export function exportTableToExcel<TData>(
         .map((column) => column.id)
         .filter((id) => !excludeColumns.includes(id as any))
 
+    // Determine rows to export: selected rows if any are selected, else all rows
+    const selectedRows = table.getFilteredSelectedRowModel().rows;
+    const rows = onlySelected || selectedRows.length > 0
+        ? selectedRows
+        : table.getCoreRowModel().rows;
+
+
     // Build the rows (data for the Excel file)
-    const rows = (
-        onlySelected
-            ? table.getFilteredSelectedRowModel().rows
-            : table.getRowModel().rows
-    ).map((row) => {
+    const filterRows = rows.map((row) => {
         return headers.map((header) => {
             const cellValue = row.getValue(header)
             // Return the cell value, converting strings and handling commas, etc.
@@ -41,7 +44,7 @@ export function exportTableToExcel<TData>(
     // const headerTitle = headers.map((head)=> toSentenceCase(head))
 
     // Add the headers as the first row
-    const worksheetData = [headers, ...rows]
+    const worksheetData = [headers, ...filterRows]
 
     // Create a worksheet and workbook
     const worksheet = XLSX.utils.aoa_to_sheet(worksheetData)

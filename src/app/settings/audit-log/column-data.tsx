@@ -2,25 +2,28 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { InfoIcon, MonitorIcon, SmartphoneIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 
-export const createColumns = () => {
-    const [open, setOpen] = useState(false);
-    const [details, setDetails] = useState<Record<string, string | undefined>>();
+interface createColumnsProps {
+    setOpen: (value: boolean) => void;
+    setDetails: (value: Record<string, string | undefined> | null) => void;
+}
 
-    const actionStyles: Record<string, string> = {
+export const createColumns = ({ setOpen, setDetails }: createColumnsProps) => {
+
+    const actionStyles: Record<string, string> = useMemo(() => ({
         login: "bg-violet-50 border-violet-300 text-violet-600",
         error: "bg-orange-50 border-orange-300 text-orange-600",
         create: "bg-green-50 border-green-300 text-green-600",
         update: "bg-blue-50 border-blue-300 text-blue-600",
         upsert: "bg-pink-50 border-pink-300 text-pink-600",
         delete: "bg-red-50 border-red-300 text-red-600",
-    };
+    }), []);
 
-    const columns: ColumnDef<any>[] = [
+    const columns: ColumnDef<any>[] = useMemo(() => [
         {
             id: "select",
             header: ({ table }) => (
@@ -69,7 +72,13 @@ export const createColumns = () => {
             header: "Details",
             enableSorting: false,
             cell: ({ row }) => {
-                const details = JSON.parse(row.original.details);
+                const details = (() => {
+                    try {
+                        return JSON.parse(row.original.details);
+                    } catch {
+                        return {};
+                    }
+                })();
                 return (
                     <Button
                         size={'icon'}
@@ -87,7 +96,13 @@ export const createColumns = () => {
             header: "Device",
             enableSorting: false,
             cell: ({ row }) => {
-                const device = JSON.parse(row.original.device);
+                const device = (() => {
+                    try {
+                        return JSON.parse(row.original.device);
+                    } catch {
+                        return {};
+                    }
+                })();
                 return (
                     <Button
                         size={'icon'}
@@ -108,7 +123,7 @@ export const createColumns = () => {
             accessorKey: "timestamp",
             header: "Date and Time",
         },
-    ];
+    ], [actionStyles, setOpen, setDetails]);
 
-    return { columns, open, details, setOpen, setDetails };
+    return { columns };
 };

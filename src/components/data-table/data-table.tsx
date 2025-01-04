@@ -34,9 +34,9 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
     const [density, setDensity] = useState<DensityState>("md");
 
     const table = useReactTable({
+        // debugTable: true,
         data,
         columns,
-        debugTable: true,
         state: {
             sorting,
             pagination,

@@ -1,8 +1,5 @@
-"use client"
-
-import * as React from "react"
 import type { Table } from "@tanstack/react-table"
-import { Check, ChevronsUpDown, Settings2 } from "lucide-react"
+import { Check, ChevronsUpDown, Columns3Icon } from "lucide-react"
 
 import { cn, toSentenceCase } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -20,35 +17,21 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover"
 
-interface DataTableViewOptionsProps<TData> {
+interface DataTableViewColumnProps<TData> {
     table: Table<TData>
 }
 
-export function DataTableViewOptions<TData>({
-    table,
-}: DataTableViewOptionsProps<TData>) {
-    const triggerRef = React.useRef<HTMLButtonElement>(null)
-
+export function DataTableViewColumn<TData>({ table }: DataTableViewColumnProps<TData>) {
     return (
         <Popover modal>
             <PopoverTrigger asChild>
-                <Button
-                    ref={triggerRef}
-                    aria-label="Toggle columns"
-                    variant="outline"
-                    role="combobox"
-                    className="ml-auto hidden gap-2 focus:outline-none focus:ring-1 focus:ring-ring focus-visible:ring-0 lg:flex"
-                >
-                    <Settings2 className="size-4" />
-                    View
+                <Button variant="outline" aria-label="Toggle columns">
+                    <Columns3Icon className="size-4" />
+                    Columns
                     <ChevronsUpDown className="ml-auto size-4 shrink-0 opacity-50" />
                 </Button>
             </PopoverTrigger>
-            <PopoverContent
-                align="end"
-                className="w-44 p-0"
-                onCloseAutoFocus={() => triggerRef.current?.focus()}
-            >
+            <PopoverContent align="end" className="w-44 p-0">
                 <Command>
                     <CommandInput placeholder="Search columns..." />
                     <CommandList>

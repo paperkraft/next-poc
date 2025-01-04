@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { js_beautify } from 'js-beautify'
+import { UAParser } from 'ua-parser-js';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -70,4 +71,46 @@ export function toSentenceCase(str: string) {
     .replace(/^\w/, (c) => c.toUpperCase())
     .replace(/\s+/g, " ")
     .trim()
+}
+
+export function getDeviceDetails(userAgent: string | null): Record<string, string | undefined> {
+  const parser = new UAParser(userAgent || '');
+  return {
+    browser: parser.getBrowser().name,
+    os: parser.getOS().name,
+    device: getDeviceType(userAgent as string),
+  };
+}
+
+export function getDeviceType(userAgent: string): string {
+  if (!userAgent) return 'Unknown device';
+
+  // Check for mobile devices
+  if (/mobile/i.test(userAgent)) {
+    return 'Mobile device';
+  }
+  // Check for tablet devices
+  else if (/tablet/i.test(userAgent)) {
+    return 'Tablet device';
+  }
+  // Check for specific operating systems and browsers
+  else if (/windows/i.test(userAgent)) {
+    return 'Windows (Desktop)';
+  }
+  else if (/macintosh/i.test(userAgent)) {
+    return 'MacOS (Desktop)';
+  }
+  else if (/linux/i.test(userAgent)) {
+    return 'Linux (Desktop)';
+  }
+  else if (/android/i.test(userAgent)) {
+    return 'Android device';
+  }
+  else if (/iphone/i.test(userAgent) || /ipad/i.test(userAgent)) {
+    return 'iOS device';
+  }
+  // General fallback
+  else {
+    return 'Desktop device';
+  }
 }

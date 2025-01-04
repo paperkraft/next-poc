@@ -1,7 +1,9 @@
+'use server'
 import { auth } from '@/auth';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { headers } from 'next/headers';
-import { UAParser } from 'ua-parser-js';
+import { getDeviceDetails } from './utils';
+
 
 const prisma = new PrismaClient();
 /**
@@ -45,47 +47,5 @@ export async function logAuditAction(
         
     } catch (error) {
         console.error('Failed to log audit action:', error);
-    }
-}
-
-export function getDeviceDetails(userAgent: string | null): Record<string, string | undefined> {
-    const parser = new UAParser(userAgent || '');
-    return {
-        browser: parser.getBrowser().name,
-        os: parser.getOS().name,
-        device: getDeviceType(userAgent as string),
-    };
-}
-
-export function getDeviceType(userAgent: string): string {
-    if (!userAgent) return 'Unknown device';
-
-    // Check for mobile devices
-    if (/mobile/i.test(userAgent)) {
-        return 'Mobile device';
-    }
-    // Check for tablet devices
-    else if (/tablet/i.test(userAgent)) {
-        return 'Tablet device';
-    }
-    // Check for specific operating systems and browsers
-    else if (/windows/i.test(userAgent)) {
-        return 'Windows (Desktop)';
-    }
-    else if (/macintosh/i.test(userAgent)) {
-        return 'MacOS (Desktop)';
-    }
-    else if (/linux/i.test(userAgent)) {
-        return 'Linux (Desktop)';
-    }
-    else if (/android/i.test(userAgent)) {
-        return 'Android device';
-    }
-    else if (/iphone/i.test(userAgent) || /ipad/i.test(userAgent)) {
-        return 'iOS device';
-    }
-    // General fallback
-    else {
-        return 'Desktop device';
     }
 }

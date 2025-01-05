@@ -17,8 +17,6 @@ export default async function Page() {
     const rolePermissions = +session?.user?.permissions;
     const permission = hasPermission(rolePermissions, 15);
 
-    // const dateWiseSessions = session && await calculateDateWiseOnlineSessions(session?.user?.id);
-
     if (!permission) {
         return <AccessDenied />;
     }

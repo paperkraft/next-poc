@@ -12,10 +12,9 @@ export function DataTableSearch<TData>({ table }: DataTableSearchProps<TData>) {
     const globalFilter = table.getState().globalFilter ?? "";
 
     return (
-        <div className="relative">
+        <div className="relative w-full max-w-sm">
             <Input
                 placeholder="Search"
-                className="max-w-md"
                 value={globalFilter}
                 onChange={e => table.setGlobalFilter(String(e.target.value))}
             />

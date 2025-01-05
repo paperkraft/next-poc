@@ -62,7 +62,7 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
     });
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-3">
             <DataTableToolbar table={table} />
 
             <div className="rounded-md border">
@@ -72,7 +72,7 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => (
                                     <TableHead key={header.id}
-                                        className={cn( "transition-[padding] duration-[0.2s]",{
+                                        className={cn("transition-[padding] duration-[0.2s]", {
                                             "p-1": density === "sm",
                                             "p-2": density === "md",
                                             "p-3": density === "lg",
@@ -80,10 +80,14 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
                                     >
                                         {header.isPlaceholder
                                             ? null
-                                            : <div className="flex items-center">
-                                                {flexRender(header.column.columnDef.header, header.getContext())}
-                                                {header.column.getCanSort() && (
-                                                    <Button size="icon" variant="ghost" onClick={header.column.getToggleSortingHandler()}>
+                                            : (header.column.getCanSort()
+                                                ? (
+                                                    <Button
+                                                        variant="ghost"
+                                                        onClick={header.column.getToggleSortingHandler()}
+                                                        className="flex items-center gap-2 p-0 hover:bg-transparent"
+                                                    >
+                                                        {flexRender(header.column.columnDef.header, header.getContext())}
                                                         {header.column.getIsSorted() ? (
                                                             header.column.getIsSorted() === "desc" ? (
                                                                 <ArrowDownWideNarrow className="size-4" />
@@ -94,8 +98,11 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
                                                             <ArrowDownUp className="size-4" />
                                                         )}
                                                     </Button>
-                                                )}
-                                            </div>}
+                                                )
+                                                : (
+                                                    flexRender(header.column.columnDef.header, header.getContext())
+                                                )
+                                            )}
                                     </TableHead>
                                 ))}
                             </TableRow>
@@ -108,7 +115,7 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
                                 <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                                     {row.getVisibleCells().map((cell) => (
                                         <TableCell key={cell.id}
-                                            className={cn( "transition-[padding] duration-[0.2s]",{
+                                            className={cn("transition-[padding] duration-[0.2s]", {
                                                 "p-1": density === "sm",
                                                 "p-2": density === "md",
                                                 "p-3": density === "lg",
@@ -128,7 +135,6 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
                         )}
                     </TableBody>
                 </Table>
-
                 <DataTablePagination table={table} />
             </div>
         </div>

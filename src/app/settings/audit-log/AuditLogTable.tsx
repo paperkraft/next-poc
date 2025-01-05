@@ -5,7 +5,6 @@ import { createColumns } from "@/app/settings/audit-log/column-data";
 import { DateWiseOnlineSession } from "@/app/action/audit.action";
 import { DetailsDialog } from "./view-details";
 import React from "react";
-
 interface AuditLogTableProp {
     data: {
         id: String,
@@ -34,7 +33,7 @@ const AuditLogTable = ({ data }: AuditLogTableProp) => {
             entity: item.entity,
             details: JSON.stringify(item.details, null, 2),
             device: JSON.stringify(item.device, null, 2),
-            timestamp: `${new Date(item.timestamp as string).toLocaleString('en-IN')}`
+            timestamp: item.timestamp
         })), 
         [data]
     );

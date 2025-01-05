@@ -5,6 +5,7 @@ import { createColumns } from "@/app/settings/audit-log/column-data";
 import { DateWiseOnlineSession } from "@/app/action/audit.action";
 import { DetailsDialog } from "./view-details";
 import React from "react";
+import { getFormattedDateTime } from "@/utils";
 interface AuditLogTableProp {
     data: {
         id: String,
@@ -14,7 +15,7 @@ interface AuditLogTableProp {
         userId: String,
         details: Record<string, string | undefined>,
         device: Record<string, string | undefined>,
-        timestamp: String
+        timestamp: Date
     }[],
     sessionwise?: DateWiseOnlineSession[] | null
 }
@@ -33,7 +34,7 @@ const AuditLogTable = ({ data }: AuditLogTableProp) => {
             entity: item.entity,
             details: JSON.stringify(item.details, null, 2),
             device: JSON.stringify(item.device, null, 2),
-            timestamp: item.timestamp
+            timestamp: getFormattedDateTime(new Date(item.timestamp))
         })), 
         [data]
     );

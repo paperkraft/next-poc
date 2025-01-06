@@ -41,6 +41,7 @@ export type DateWiseOnlineSession = {
 
 export async function calculateDateWiseOnlineSessions(userId: string, toDate: Date = new Date()): Promise<DateWiseOnlineSession[]> {
 
+    
     if (!userId) {
         throw new Error("User ID is required.");
     }
@@ -62,6 +63,7 @@ export async function calculateDateWiseOnlineSessions(userId: string, toDate: Da
         },
     });
 
+    const sessionTimeout: number = 12 * 60 * 60 * 1000;
     const dateWiseSessions: Record<string, { startTime: string; endTime: string; duration: string }[]> = {};
     let lastLoginTime: Date | null = null;
 
@@ -77,8 +79,26 @@ export async function calculateDateWiseOnlineSessions(userId: string, toDate: Da
         if (log.action === 'login') {
             // Track the last login time
             if (lastLoginTime) {
-                console.warn(`Duplicate login detected for user: ${userId} at ${log.timestamp}`);
-                continue;
+                // console.warn(`Duplicate login detected for userId: ${userId} at ${log.timestamp}`);
+
+                // Force logout after sessionTimeout (if login happens after a long time)
+                const timeDifference = log.timestamp.getTime() - lastLoginTime.getTime();
+
+                if (timeDifference > sessionTimeout) {
+                    // Assume the previous session ended and create a session for it
+                    const durationMs = timeDifference;
+                    const duration = formatDuration(durationMs);
+
+                    if (!dateWiseSessions[logDate]) {
+                        dateWiseSessions[logDate] = [];
+                    }
+
+                    dateWiseSessions[logDate].push({
+                        startTime: `${getFormattedDateTime(lastLoginTime)} *`,
+                        endTime: `${getFormattedDateTime(log.timestamp)}`,
+                        duration,
+                    });
+                }
             }
             lastLoginTime = log.timestamp;
         } else if (log.action === 'logout' && lastLoginTime) {
@@ -91,8 +111,6 @@ export async function calculateDateWiseOnlineSessions(userId: string, toDate: Da
             }
 
             dateWiseSessions[logDate].push({
-                // startTime: lastLoginTime.toISOString(),
-                // endTime: log.timestamp.toISOString(),
                 startTime: `${getFormattedDateTime(lastLoginTime)}`,
                 endTime: `${getFormattedDateTime(log.timestamp)}`,
                 duration,
@@ -110,13 +128,17 @@ export async function calculateDateWiseOnlineSessions(userId: string, toDate: Da
         const durationMs = toDate.getTime() - lastLoginTime.getTime();
         const duration = formatDuration(durationMs);
 
+         // If the session has been active for too long, we assume it's an "inactive" session
+        //  if (durationMs > sessionTimeout) {
+        //     lastLoginTime = null;  // Force session end if it exceeds timeout
+        // }
+
         if (!dateWiseSessions[currentDate]) {
             dateWiseSessions[currentDate] = [];
         }
 
         dateWiseSessions[currentDate].push({
-            // startTime: lastLoginTime.toISOString(),
-            startTime: `${getFormattedDateTime(lastLoginTime)}`,
+            startTime: `${getFormattedDateTime(new Date(lastLoginTime))}`,
             endTime: 'active',
             duration,
         });

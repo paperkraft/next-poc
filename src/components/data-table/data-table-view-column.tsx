@@ -1,5 +1,5 @@
 import type { Table } from "@tanstack/react-table"
-import { Check, ChevronsUpDown, Columns3Icon } from "lucide-react"
+import { Check, ChevronsUpDown, Columns3Icon, EyeIcon, EyeOffIcon } from "lucide-react"
 
 import { cn, toSentenceCase } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -26,7 +26,7 @@ export function DataTableViewColumn<TData>({ table }: DataTableViewColumnProps<T
         <Popover modal>
             <PopoverTrigger asChild>
                 <Button variant="outline" aria-label="Toggle columns">
-                    <Columns3Icon className="size-4" />
+                    <EyeOffIcon className="size-4" />
                     Columns
                     <ChevronsUpDown className="ml-auto size-4 shrink-0 opacity-50" />
                 </Button>

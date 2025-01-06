@@ -20,7 +20,7 @@ export function DataTableToolbar<TData>({ table }: DataTableToolbarProps<TData>)
     const isSelected = table.getFilteredSelectedRowModel()?.rows?.length > 0;
 
     return (
-        <div className={cn("flex w-full items-center justify-between gap-2 overflow-auto p-1")}>
+        <div className={cn("flex w-full items-center justify-between gap-2 overflow-auto border-b p-3")}>
             <DataTableSearch table={table} />
             <div className="flex items-center gap-2">
                 {isSelected && <DeleteRecordDialog table={table} />}

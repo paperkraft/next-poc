@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { RECAPTCHA_SECRET_KEY } from "@/utils/constants";
 import { signIn } from "@/auth";
 import prisma from "@/lib/prisma";
-import { logAuditAction } from "@/lib/audit-log";
 
 const verifyCaptcha = async (captcha: string) => {
     const response = await fetch(`https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET_KEY}&response=${captcha}`, {
@@ -39,5 +38,22 @@ export async function POST(request: Request) {
     }
 }
 
+export async function GET(request: Request) {
+    try {
+        const users = await prisma.user.findMany({
+            select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+            }
+        });
 
-
+        if (!users) {
+            return NextResponse.json({ message: 'User doesnot exists' }, { status: 500 });
+        }
+        return NextResponse.json({ success: true, data: users }, { status: 200 });
+    } catch (error) {
+        console.log(error);
+        return NextResponse.json({ success: false, message: 'Failed to update' }, { status: 500 });
+    }
+}

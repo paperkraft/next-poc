@@ -143,6 +143,10 @@ export const data = [
             {
                 title: "Audit Log",
                 url: "/settings/audit-log",
+            },
+            {
+                title: "Login Audit",
+                url: "/settings/login-audit",
             }
         ]
     }

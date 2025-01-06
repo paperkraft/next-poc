@@ -1,11 +1,11 @@
 'use client'
 
+import React from "react";
+import { getFormattedDateTime } from "@/utils";
 import { DataTable } from "@/components/data-table/data-table";
 import { createColumns } from "@/app/settings/audit-log/column-data";
 import { DateWiseOnlineSession } from "@/app/action/audit.action";
 import { DetailsDialog } from "./view-details";
-import React from "react";
-import { getFormattedDateTime } from "@/utils";
 interface AuditLogTableProp {
     data: {
         id: String,
@@ -26,7 +26,7 @@ const AuditLogTable = ({ data }: AuditLogTableProp) => {
 
     const { columns } = createColumns({ setOpen, setDetails });
 
-    const final = React.useMemo(() => 
+    const final = React.useMemo(() =>
         data?.map((item) => ({
             id: item.id,
             user: `${item.user.firstName} ${item.user.lastName}`,
@@ -34,14 +34,14 @@ const AuditLogTable = ({ data }: AuditLogTableProp) => {
             entity: item.entity,
             details: JSON.stringify(item.details, null, 2),
             device: JSON.stringify(item.device, null, 2),
-            timestamp: getFormattedDateTime(new Date(item.timestamp))
-        })), 
+            timestamp: getFormattedDateTime(new Date(item.timestamp)),
+        })),
         [data]
     );
 
     return (
         <>
-            {final && (<DataTable columns={columns} data={final} />)}
+            {final && (<DataTable columns={columns} data={final} toolbar pageSize={10} />)}
             <DetailsDialog open={open} setOpen={setOpen} details={details} />
         </>
     );

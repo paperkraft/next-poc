@@ -25,17 +25,23 @@ import { cn } from "@/lib/utils";
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
+    toolbar?: boolean;
+    pageSize?: number;
     getRowCanExpand?: (row: Row<TData>) => boolean;
-    renderSubComponent?: (props: { row: Row<TData> }) => React.ReactElement
+    renderSubComponent?: (props: { row: Row<TData> }) => React.ReactElement;
 }
 
-export function DataTable<TData, TValue>({ columns, data, getRowCanExpand, renderSubComponent }: DataTableProps<TData, TValue>) {
+interface GlobalFilterState {
+    filter: string;
+    value: any;
+}
 
-    // const ref = useRef<HTMLInputElement | null>(null);
+export function DataTable<TData, TValue>({ columns, data, toolbar = false, pageSize, getRowCanExpand, renderSubComponent }: DataTableProps<TData, TValue>) {
+
     const [sorting, setSorting] = useState<SortingState>([]);
-    const [globalFilter, setGlobalFilter] = useState<any>([]);
+    const [globalFilter, setGlobalFilter] = useState<GlobalFilterState | undefined>();
     const [rowSelection, setRowSelection] = useState({})
-    const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 5 });
+    const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: pageSize ?? data.length });
     const [density, setDensity] = useState<DensityState>("md");
 
     const table = useReactTable({
@@ -58,7 +64,7 @@ export function DataTable<TData, TValue>({ columns, data, getRowCanExpand, rende
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
+        getPaginationRowModel: pageSize ? getPaginationRowModel() : undefined,
         getExpandedRowModel: getExpandedRowModel(),
 
         onSortingChange: setSorting,
@@ -70,7 +76,7 @@ export function DataTable<TData, TValue>({ columns, data, getRowCanExpand, rende
 
     return (
         <div className="rounded-md border">
-            <DataTableToolbar table={table} />
+            {toolbar && <DataTableToolbar table={table} />}
             <Table>
                 <TableHeader>
                     {table.getHeaderGroups().map((headerGroup) => (
@@ -131,7 +137,7 @@ export function DataTable<TData, TValue>({ columns, data, getRowCanExpand, rende
                                         </TableCell>
                                     ))}
                                 </TableRow>
-                                {row.getIsExpanded() && ( renderSubComponent && renderSubComponent({ row }))}
+                                {row.getIsExpanded() && (renderSubComponent && renderSubComponent({ row }))}
                             </React.Fragment>
                         ))
                     ) : (
@@ -145,7 +151,7 @@ export function DataTable<TData, TValue>({ columns, data, getRowCanExpand, rende
 
                 </TableBody>
             </Table>
-            <DataTablePagination table={table} />
+            {pageSize && <DataTablePagination table={table} />}
         </div>
     );
 }

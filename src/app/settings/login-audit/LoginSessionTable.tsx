@@ -103,7 +103,7 @@ export default function LoginSessionTable() {
                 </Select>
             </div>
 
-            <div className="border rounded-md">
+            <div className="border rounded-md hidden">
                 <Table className="border-b">
 
                     <TableHeader>
@@ -169,26 +169,47 @@ export default function LoginSessionTable() {
                         </TableCaption>
                     }
                 </Table>
-
-                {data && <DataTable columns={columns} data={data} getRowCanExpand={() => true} renderSubComponent={renderSubComponent}/>}
             </div>
+
+            {data && !isSessionLoading &&
+                <div>
+                    <DataTable columns={columns} data={data} getRowCanExpand={() => true} renderSubComponent={renderSubComponent} />
+                    <div className="text-muted-foreground text-sm text-left p-2 m-0" >
+                        <p>* Forgot to logout.</p>
+                        <p># beyond working hours.</p>
+                    </div>
+                </div>
+            }
+
+            {isSessionLoading &&
+                <div className="h-40 border rounded-md flex justify-center items-center">
+                    <p className="text-center">Loading...</p>
+                </div>
+            }
+            {!data && !isSessionLoading &&
+                <div className="h-40 border rounded-md flex justify-center items-center">
+                    <p className="text-center">No record</p>
+                </div>
+            }
         </>
     );
 }
 
 const renderSubComponent = ({ row }: { row: Row<any> }) => {
-
     const data = row.original
-    
     return (
         <>
-            <TableRow>
-                <TableCell colSpan={row.getVisibleCells().length}>
-                    <pre style={{ fontSize: '10px' }}>
-                        <code>{JSON.stringify(row.original, null, 2)}</code>
-                    </pre>
-                </TableCell>
-            </TableRow>
+            {
+                data.sessions.map((item: any, idx: number) => (
+                    <TableRow key={idx}>
+                        <TableCell></TableCell>
+                        <TableCell></TableCell>
+                        <TableCell>{item.startTime}</TableCell>
+                        <TableCell>{item.endTime === 'active' ? 'Active' : item.endTime}</TableCell>
+                        <TableCell className={cn({ "text-red-500": checkWorkingHours(item.duration) })}>{item.duration} {checkWorkingHours(item.duration) ? "#" : null}</TableCell>
+                    </TableRow>
+                )).reverse()
+            }
         </>
     )
-  }
+}

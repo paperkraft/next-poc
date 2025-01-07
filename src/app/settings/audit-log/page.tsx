@@ -12,14 +12,15 @@ export const metadata: Metadata = {
 };
 
 export default async function Page() {
-    const data = await fetchAuditLogs().then((res) => res.json());
     const session = await auth();
     const rolePermissions = +session?.user?.permissions;
     const permission = hasPermission(rolePermissions, 15);
+    const data = await fetchAuditLogs().then((res) => res.json());
 
     if (!permission) {
         return <AccessDenied />;
     }
+
     return (
         <>
             <TitlePage title={"Audit Log"} description={"Audit log for users activities"} />

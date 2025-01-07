@@ -233,3 +233,42 @@ export const transformMenuData = (serverData: any[], userPermissions: number): m
         })
         .filter((item) => item !== null);
 };
+
+
+const configMenu = [
+    {
+        title: "Dashboard",
+        url: "/dashboard",
+        icon: Home,
+        submenu: [],
+    },
+    {
+        title: "Settings",
+        url: "#",
+        icon: Settings2,
+        submenu: [
+            {
+                title: "General",
+                url: "/general",
+                submenu: [
+                    {
+                        title: "Introduction",
+                        url: "/settings/general/introduction",
+                    },
+                    {
+                        title: "Get Started",
+                        url: "#",
+                    },
+                ]
+            },
+            {
+                title: "Access",
+                url: "/settings/rbac",
+            },
+            {
+                title: "Form Builder",
+                url: "/settings/form-builder",
+            },
+        ]
+    }
+]

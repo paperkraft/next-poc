@@ -18,7 +18,7 @@ const verifyCaptcha = async (captcha: string) => {
 
 export async function POST(request: Request) {
     const { email, password, token } = await request.json();
-    if (token === null || token === undefined) {
+    if (!token) {
         return NextResponse.json({ message: "Invalid Captcha" })
     } else {
         const verify = await verifyCaptcha(token);

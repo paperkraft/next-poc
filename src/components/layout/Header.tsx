@@ -9,6 +9,7 @@ import React from 'react';
 import { data, menuType, submenuType } from './data';
 import { cn } from '@/lib/utils';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import UserAction from './UserAction';
 
 export function CustomTrigger() {
     const { toggleSidebar } = useSidebar();

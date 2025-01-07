@@ -42,7 +42,7 @@ export function DataTable<TData, TValue>({ columns, data, toolbar = false, pageS
     const [globalFilter, setGlobalFilter] = useState<GlobalFilterState | undefined>();
     const [rowSelection, setRowSelection] = useState({})
     const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: pageSize ?? data.length });
-    const [density, setDensity] = useState<DensityState>("md");
+    const [density, setDensity] = useState<DensityState>("sm");
 
     const table = useReactTable({
         // debugTable: true,
@@ -83,7 +83,7 @@ export function DataTable<TData, TValue>({ columns, data, toolbar = false, pageS
                         <TableRow key={headerGroup.id}>
                             {headerGroup.headers.map((header) => (
                                 <TableHead key={header.id}
-                                    className={cn("transition-[padding] duration-[0.2s]", {
+                                    className={cn("transition-[padding]", {
                                         "p-1": density === "sm",
                                         "p-2": density === "md",
                                         "p-3": density === "lg",
@@ -127,7 +127,7 @@ export function DataTable<TData, TValue>({ columns, data, toolbar = false, pageS
                                 <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                                     {row.getVisibleCells().map((cell) => (
                                         <TableCell key={cell.id}
-                                            className={cn("transition-[padding] duration-[0.2s]", {
+                                            className={cn("transition-[padding]", {
                                                 "p-1": density === "sm",
                                                 "p-2": density === "md",
                                                 "p-3": density === "lg",

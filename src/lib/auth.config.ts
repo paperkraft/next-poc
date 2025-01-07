@@ -6,7 +6,6 @@ import bcrypt from 'bcryptjs';
 import { AUTH_SECRET, GITHUB_ID, GITHUB_SECRET } from "@/utils/constants";
 import { logAuditAction } from "./audit-log";
 import { getIpAddress } from "./utils";
-import { auth } from "@/auth";
 
 const authConfig: NextAuthConfig = {
     secret: AUTH_SECRET,
@@ -49,19 +48,17 @@ const authConfig: NextAuthConfig = {
                                 select: {
                                     id: true,
                                     name: true,
+                                    path: true,
                                     parentId: true,
-                                    group:{
-                                        select: {
-                                            name: true
-                                        }
-                                    },
+                                    group: true,
                                 },
                             },
                             subModule: {
                                 select: {
                                     id: true,
                                     name: true,
-                                    parentId: true
+                                    path: true,
+                                    parentId: true,
                                 },
                             },
                             permissions: true,
@@ -69,6 +66,9 @@ const authConfig: NextAuthConfig = {
                     });
 
                     const formattedJson = formatToParentChild(userModulesGrouped);
+
+                    console.log('formattedJson', formattedJson);
+                    
 
                     return {
                         id: user?.id,
@@ -135,13 +135,7 @@ const authConfig: NextAuthConfig = {
                     }
                 })
             }
-
             return true;
-        },
-
-        authorized: async ({auth}) => {
-            console.log('auth', auth);
-            return !!auth;
         }
     },
 
@@ -153,6 +147,7 @@ export default authConfig;
 interface InputFormat {
     id: string;
     name: string;
+    path: string;
     parentId: string | null;
     permissions: number;
     group: string | undefined;
@@ -173,6 +168,7 @@ function formatToParentChild(input: any[]): InputFormat[] {
             moduleMap[module.id] = {
                 id: module.id,
                 name: module.name,
+                path: module.path,
                 parentId: module.parentId,
                 permissions: item.permissions,
                 group: module.group?.name,
@@ -186,6 +182,7 @@ function formatToParentChild(input: any[]): InputFormat[] {
                 moduleMap[subModule.id] = {
                     id: subModule.id,
                     name: subModule.name,
+                    path: subModule.path,
                     parentId: subModule.parentId,
                     permissions: item.permissions,
                     group: undefined,

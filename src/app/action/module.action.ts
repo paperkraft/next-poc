@@ -10,6 +10,7 @@ export async function fetchModules() {
         return {
             id: module.id,
             name: module.name,
+            path: module?.path,
             group: module?.group?.name,
             parentId: module?.parentId,
             permissions: module?.permissions?.reduce((acc: number, perm: any) => acc | perm.bitmask, 0),
@@ -67,6 +68,7 @@ export async function fetchUniqueModule(id: string) {
         return {
             id: module?.id,
             name: module?.name,
+            path: module?.path,
             group: module?.group?.id,
             parentId: module?.parentId,
             permissions: module?.permissions?.reduce((acc: number, perm: any) => acc | perm.bitmask, 0),
@@ -111,11 +113,13 @@ type ModulePermission = {
     module: {
         id: string;
         name: string;
+        path: string;
         parentId: string | null;
     } | null;
     subModule: {
         id: string;
         name: string;
+        path: string;
         parentId: string | null;
     } | null;
     permissions: number;
@@ -140,6 +144,7 @@ export async function fetchUniqueModuleByRole(roleId: string) {
                     moduleMap.set(module.id, {
                         id: module.id,
                         name: module.name,
+                        path: module.path,
                         parentId: module.parentId,
                         permissions: permissions,
                         subModules: [],
@@ -156,6 +161,7 @@ export async function fetchUniqueModuleByRole(roleId: string) {
                     moduleMap.set(subModule.id, {
                         id: subModule.id,
                         name: subModule.name,
+                        path: subModule.path,
                         parentId: subModule.parentId,
                         permissions: permissions,
                         subModules: [],
@@ -191,6 +197,7 @@ export async function fetchUniqueModuleByRole(roleId: string) {
                         id: true,
                         name: true,
                         parentId: true,
+                        path:true,
                     },
                 },
                 subModule: {
@@ -198,6 +205,7 @@ export async function fetchUniqueModuleByRole(roleId: string) {
                         id: true,
                         name: true,
                         parentId: true,
+                        path:true,
                     },
                 },
                 permissions: true,
@@ -225,11 +233,13 @@ type InputFormat = {
     module: {
         id: string;
         name: string;
+        path: string;
         parentId: string | null;
     };
     subModule: {
         id: string;
         name: string;
+        path: string;
         parentId: string | null;
         subModules: any[];
     } | null;
@@ -248,6 +258,7 @@ export const getModulesByRole = async (roleId: string) => {
                 moduleMap[moduleId] = {
                     id: moduleId,
                     name: module.name,
+                    path: module.path,
                     parentId: module.parentId,
                     permissions: permissions,
                     subModules: [],
@@ -260,6 +271,7 @@ export const getModulesByRole = async (roleId: string) => {
                 const subModuleData: IModule = {
                     id: subModuleId,
                     name: subModule.name,
+                    path: subModule.path,
                     parentId: subModule.parentId,
                     permissions: permissions,
                     subModules: [],
@@ -270,6 +282,7 @@ export const getModulesByRole = async (roleId: string) => {
                     subModuleData.subModules = subModule.subModules.map((childSubmodule) => ({
                         id: childSubmodule.id,
                         name: childSubmodule.name,
+                        path: childSubmodule.path,
                         parentId: childSubmodule.parentId,
                         permissions: permissions,
                         subModules: [],

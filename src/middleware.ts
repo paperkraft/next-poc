@@ -8,10 +8,6 @@ const ROUTE_PERMISSIONS: { [key: string]: number[] } = {
 
 const publicURL = ["/signin", "/signup"];
 
-export const config = {
-    matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
-}
-
 export async function middleware(req: NextRequest) {
     try {
         const session = await auth();
@@ -47,3 +43,9 @@ export async function middleware(req: NextRequest) {
         return new NextResponse('Internal Server Error', { status: 500 });
     }
 }
+
+export const config = {
+    matcher: [
+        "/((?!_next/static|_next/image|favicon.ico|api).*)",
+    ],
+};

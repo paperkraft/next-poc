@@ -67,11 +67,12 @@ export async function PUT(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const { name, parentId, groupId } = await req.json();
+  const { name, path, parentId, groupId } = await req.json();
   try {
     const data = await prisma.module.create({
       data: {
         name: name,
+        path: path ?? '#',
         parentId: parentId ? parentId : null,
         groupId: parentId ? null : groupId
       }

@@ -25,6 +25,7 @@ interface PageProps {
 const SubModuleSchema = z.object({
   id: z.string(),
   name: z.string(),
+  path: z.string(),
   parentId: z.string().nullable(),
   permissions: z.number().nullable(),
   subModules: z.array(z.lazy((): z.ZodType<any> => SubModuleSchema)),
@@ -33,7 +34,8 @@ const SubModuleSchema = z.object({
 const ModuleFormSchema = z.object({
   id: z.string(),
   name: z.string(),
-  group: z.object({ value: z.string() }),
+  path: z.string(),
+  group: z.string(),
   parentId: z.string().nullable(),
   permissions: z.number().nullable(),
   subModules: z.array(SubModuleSchema),
@@ -42,6 +44,9 @@ const ModuleFormSchema = z.object({
 type ModuleFormValues = z.infer<typeof ModuleFormSchema>;
 
 export default function EditModule({ moduleData, groupOptions }: PageProps) {
+
+  console.log('moduleData', moduleData);
+  
 
   const router = useRouter();
   const moduleId = useModuleIdByName("Module") as string;
@@ -57,7 +62,8 @@ export default function EditModule({ moduleData, groupOptions }: PageProps) {
     defaultValues: {
       id: moduleData.id,
       name: moduleData.name,
-      group: { value: moduleData.group as string },
+      path: moduleData.path,
+      group: moduleData.group as string,
       parentId: moduleData.parentId,
       permissions: moduleData.permissions,
       subModules: moduleData.subModules
@@ -74,7 +80,7 @@ export default function EditModule({ moduleData, groupOptions }: PageProps) {
     try {
       const res = await fetch(`/api/master/module`, {
         method: "PUT",
-        body: JSON.stringify({ ...data, group: data.group.value })
+        body: JSON.stringify({ ...data })
       }).then((d) => d.json()).catch((err) => err);
 
       if (res.success) {
@@ -166,9 +172,11 @@ export default function EditModule({ moduleData, groupOptions }: PageProps) {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="p-2 space-y-2">
-            <SelectController name={`group.value`} label="Group" options={groupOptions} disabled={hasSubmenu} />
+            <SelectController name={`group`} label="Group" options={groupOptions} readOnly={!show} disabled={hasSubmenu} />
 
-            <InputController name={'name'} label="Module" />
+            <InputController name={'name'} label="Module" readOnly={!show}/>
+
+            <InputController name={'path'} label="URL" type="text" readOnly={!show}/>
 
             {moduleData && (renderSubmodules(fields, "subModules"))}
 

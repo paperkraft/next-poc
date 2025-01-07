@@ -11,6 +11,7 @@ interface ISubModule {
 export interface IModule {
     id: string;
     name: string;
+    path?: string;
     group?: string | null | undefined;
     parentId: string | null;
     permissions: number | null;

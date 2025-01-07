@@ -15,7 +15,9 @@ import ButtonContent from "@/components/custom/button-content";
 
 export const ModuleFormSchema = z.object({
   name: z.string().min(1, { message: "Module is required." }),
-  group: z.object({ value: z.string() }),
+  path: z.string().min(1, { message: "URL is required." }),
+  // group: z.object({ value: z.string() }),
+  group: z.string(),
   isParent: z.boolean(),
   parent: z.object({ value: z.string() }).optional()
 }).refine((data) => {
@@ -28,13 +30,13 @@ export const ModuleFormSchema = z.object({
   path: ['parent.value']
 }
 ).refine((d) => {
-  if (!d.isParent && !d?.group?.value) {
+  if (!d.isParent && !d?.group) {
     return false;
   }
   return true;
 }, {
   message: "Group is required to categorized",
-  path: ['group.value']
+  path: ['group']
 }
 )
 
@@ -49,7 +51,8 @@ export default function AddModule({ modules, groups }: { modules: IModule[], gro
     resolver: zodResolver(ModuleFormSchema),
     defaultValues: {
       name: "",
-      group: { value: "" },
+      path: "",
+      group: "",
       parent: { value: "" },
       isParent: false
     },
@@ -57,8 +60,8 @@ export default function AddModule({ modules, groups }: { modules: IModule[], gro
 
   const onSubmit = async (data: ModuleFormValues) => {
     const final = data.isParent
-      ? { name: data.name, parentId: data?.parent?.value }
-      : { name: data.name, parentId: null, groupId: data?.group?.value }
+      ? { name: data.name, path: `/${data.path}`, parentId: data?.parent?.value }
+      : { name: data.name, path: `/${data.path}`, parentId: null, groupId: data?.group }
 
     setLoading(true);
     try {
@@ -82,6 +85,11 @@ export default function AddModule({ modules, groups }: { modules: IModule[], gro
     }
   };
 
+  const dd = form.watch('group');
+
+  console.log('group', dd);
+
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 p-2">
@@ -93,9 +101,18 @@ export default function AddModule({ modules, groups }: { modules: IModule[], gro
           reset
         />
 
-        <SelectController name={`group.value`} label="Category"
+        <SelectController name={`group`} label="Group"
           options={groups ?? []}
-          description={` ${form.watch('name')} will placed under : ${form.watch('group.value')}`} />
+          description={form.watch('name') ? `${form.watch('name')} will placed under this group` : undefined} />
+
+        <InputController
+          type="text"
+          name="path"
+          label="URL"
+          placeholder="Enter URL"
+          description={`This will be use for routing.`}
+          reset
+        />
 
         <SwitchButton name="isParent" label="Is Sub Module?" />
 
@@ -106,9 +123,7 @@ export default function AddModule({ modules, groups }: { modules: IModule[], gro
         }
 
         <div className="flex justify-end my-4 gap-2">
-          <Button type="button" variant={"outline"} onClick={() => form.reset()} >
-            Reset
-          </Button>
+          <Button type="button" variant={"outline"} onClick={() => form.reset()}>Reset</Button>
           <Button type="submit" disabled={loading}>
             <ButtonContent status={loading} text={"Create"} />
           </Button>

@@ -3,7 +3,7 @@
 import React from "react";
 import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarInput, SidebarMenu } from "../../ui/sidebar";
 import { menuType, submenuType, transformMenuData } from "../data";
-import { SearchIcon, X } from "lucide-react";
+import { DotIcon, SearchIcon, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { IGroup } from "@/app/_Interface/Group";
 import { toast } from "sonner";
@@ -12,60 +12,61 @@ import { useQuery } from "@tanstack/react-query";
 import DefaultMenu from "./sidebar-default";
 import SidebarSkeleton from "./sidebar-skeleton";
 import NestedMenu from "./sidebar-nested-menus";
+import { IconData } from "../icon-data";
 
 const RenderMenus = React.memo(() => {
 
-    const { data } = useSession();
+    const { data, status } = useSession();
     const [filter, setFilter] = React.useState<menuType[][]>();
     const [menus, setMenus] = React.useState<menuType[][]>([]);
     const [query, setQuery] = React.useState<string>('');
 
-    const fetchGroups = async () => {
-        try {
-            const response = await fetch('/api/master/group').then((d) => d.json());
-            if (response.success) {
-                const data: IGroup[] = response.data;
-                return data;
-            } else {
-                toast.error("Error in fecting groups");
-                return null
-            }
-        } catch (error) {
-            console.error("Error in fecting groups", error);
-            toast.error("Error in fecting groups");
-        }
-    };
+    // const fetchGroups = async () => {
+    //     try {
+    //         const response = await fetch('/api/master/group').then((d) => d.json());
+    //         if (response.success) {
+    //             const data: IGroup[] = response.data;
+    //             return data;
+    //         } else {
+    //             toast.error("Error in fecting groups");
+    //             return null
+    //         }
+    //     } catch (error) {
+    //         console.error("Error in fecting groups", error);
+    //         toast.error("Error in fecting groups");
+    //     }
+    // };
 
-    const { data: groups, isLoading } = useQuery({ queryKey: ["group"], queryFn: fetchGroups });
+    // const { data: groups, isLoading } = useQuery({ queryKey: ["group"], queryFn: fetchGroups });
 
     React.useEffect(() => {
-        if (groups && data) {
-            const userPermissions = data?.user.permissions;
+        if (data) {
+            // const userPermissions = data?.user.permissions;
+            
+            // const filteredMenuData = transformMenuData(userModules, userPermissions);
+            
+            // const userMenus = groups?.map((item) => filteredMenuData
+            // .filter((menu) => menu.label?.toLowerCase() === item.name?.toLowerCase()))
+            // .filter((menuGroup) => menuGroup?.length > 0);
+
+            
+            //-----New-----//
+            
             const userModules = data?.user.modules;
+            const formatedMenus = mapMenu(userModules);
+            const uniqueLabels = Array.from(new Set(formatedMenus.map((menu) => menu.label)));
+            const finalMenus = uniqueLabels.map((label) => formatedMenus.filter((menu) => menu.label === label));
 
-            const filteredMenuData = transformMenuData(userModules, userPermissions);
+            //----------//
 
-            const mm = mapMenu(userModules);
-            const uniqueLabels = Array.from(new Set(mm.map((menu) => menu.label)));
-            const fm = uniqueLabels.map((label) => mm.filter((menu) => menu.label === label));
-
-            console.log('uniqueLabels', uniqueLabels);
-            console.log('mapMenu', fm);
-            
-            const userMenus = groups?.map((item) => filteredMenuData
-            .filter((menu) => menu.label?.toLowerCase() === item.name?.toLowerCase()))
-            .filter((menuGroup) => menuGroup?.length > 0);
-            
-            
-            
-            // console.log('userMenus', userMenus);
-
-            if (userMenus) {
-                setFilter(userMenus);
-                setMenus(userMenus);
+            if (finalMenus) {
+                // setFilter(userMenus);
+                // setMenus(userMenus);
+                setFilter(finalMenus);
+                setMenus(finalMenus);
             }
         }
-    }, [groups, data]);
+    }, [data]);
 
     const searchSubmenu = React.useCallback((submenu: submenuType[], query: string): boolean => {
         return submenu?.some(item =>
@@ -117,12 +118,12 @@ const RenderMenus = React.memo(() => {
                 </SidebarGroupContent>
             </SidebarGroup>
 
-            {isLoading && <SidebarSkeleton />}
+            {status === "loading" && <SidebarSkeleton />}
 
-            {!isLoading && !filter && <DefaultMenu />}
+            {status !== "loading" && !filter && <DefaultMenu />}
 
             {
-                !isLoading && filter?.map((data, index) => (
+                status !== "loading" && filter?.map((data, index) => (
                     <SidebarGroup key={index}>
                         <SidebarGroupLabel>{data.at(0)?.label}</SidebarGroupLabel>
                         <SidebarMenu>
@@ -153,7 +154,7 @@ type inputType = {
 
 const generateSubMenu = (subModule: inputType): submenuType => ({
     title: subModule.name,
-    url: subModule.path ? subModule.path : '#',
+    url: subModule.path ?? '#',
     submenu: subModule.subModules.map(generateSubMenu)
 });
 
@@ -169,13 +170,19 @@ const mapMenu = (inputData: inputType[]): menuType[] => {
     return Object.keys(groupedData).map((groupLabel) => {
         const groupItems = groupedData[groupLabel];
 
-        return groupItems.map((item) => ({
-            label: item.group,
-            title: item.name,
-            url: item.path ? item.path : '#',
-            icon: () => <></>,
-            isActive: false,
-            submenu: item.subModules.map(generateSubMenu),
-        }));
+        return groupItems.map((item) => {
+
+            // Find the icon from IconData based on the title
+            const matchingIcon = IconData.find(icon => icon.title === item.name)?.icon;
+
+            return {
+                label: item.group,
+                title: item.name,
+                url: item.path ?? '#',
+                icon: matchingIcon || (() => <><DotIcon/></>),
+                isActive: false,
+                submenu: item.subModules.map(generateSubMenu),
+            }
+        });
     }).flat();
 };

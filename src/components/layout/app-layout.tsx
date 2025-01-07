@@ -11,7 +11,7 @@ export const publicURL = ["/signin", "/signup"];
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const route = useRouter();
   const pathname = usePathname();
-  const isPublicURL = pathname && publicURL.includes(pathname);
+  const isPublicURL = pathname?.length && publicURL.includes(pathname);
   const { status } = useSession();
   const mount = useMounted();
 
@@ -22,22 +22,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     },
   })
 
-  React.useEffect(() => {
-    if (status === "loading") return;
-    if (!isPublicURL && status === "unauthenticated") {
-      route.push("/");
-    }
-  }, [status, isPublicURL, route]);
-
   if (status === 'loading') {
     return <Loading />;
   }
 
-  if (isPublicURL || (pathname === "/" && status !== "authenticated")) {
+  if (isPublicURL || (pathname && pathname === "/" && status !== "authenticated")) {
     return <React.Fragment>{children}</React.Fragment>;
   }
 
   if (status === "authenticated") {
-    return (mount && <AppSidebar>{children}</AppSidebar>)
+    return (<AppSidebar>{children}</AppSidebar>)
   }
 }

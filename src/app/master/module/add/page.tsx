@@ -12,7 +12,7 @@ export default async function Page() {
 
   const groups = await fetchGroups().then((d) => d.json());
   const isGroups = groups && groups.success;
-  const hasGroups = isGroups && groups.data.length > 0
+  const hasGroups = isGroups && groups.data.length > 0;
 
   return (
     <div className="space-y-4 p-2">

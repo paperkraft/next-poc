@@ -9,36 +9,35 @@ export async function POST(request: Request) {
         // Check if the user already exists
         const existingUser = await prisma.user.findFirst({
             where: {
-                OR:[
+                OR: [
                     { email: email },
                 ]
-             }
+            }
         });
-    
+
         if (existingUser) {
-            return NextResponse.json({ message: 'User already exists' }, { status: 409 });
+            return NextResponse.json({ success: false, message: 'User already exists' }, { status: 409 });
         }
 
         const roleId = await prisma.role.findFirst({
-            where:{ name: "guest" },
-            select:{ id: true }
+            where: { name: "guest" },
+            select: { id: true }
         })
 
         const hashedPassword = await makePassword(password)
-        
+
         await prisma.user.create({
-            data: { 
-                ...rest, 
-                email, 
-                password: hashedPassword, 
-                name: `${rest.firstName} ${rest.lastName}`, 
+            data: {
+                ...rest,
+                email,
+                password: hashedPassword,
                 roleId: roleId?.id,
             }
         });
-    
-        return NextResponse.json({ message: 'User registered successfully' }, { status: 201 });
+
+        return NextResponse.json({ success: true, message: 'User registered successfully' }, { status: 201 });
     } catch (error) {
         console.error("Error processing request:", error);
-        return NextResponse.json(JSON.stringify({ error: "Internal Server Error" }), { status: 500 });
+        return NextResponse.json({ success: false, error: "Internal Server Error" }, { status: 500 });
     }
 }

@@ -42,7 +42,7 @@ export default function LandingPage() {
                 </div>
             </header>
             <main>
-                <section className="py-20 bg-slate-50 dark:bg-sidebar-accent">
+                <section className="h-[calc(100vh-64px)] py-20 bg-slate-50 dark:bg-sidebar-accent">
                     <div className="flex flex-wrap md:flex-nowrap mx-auto w-[90%] max-w-screen-md md:max-w-screen-xl">
                         <div className="py-8 md:pr-20 w-full md:w-[calc(100vw-390px)]">
                             <div className="space-y-8 text-center md:text-left text-balance">

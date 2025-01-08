@@ -14,6 +14,7 @@ import { RECAPTCHA_SITE_KEY } from "@/utils/constants";
 import { InputController } from "@/components/custom/form.control/InputController";
 import Divider from "@/components/custom/divider";
 import { toast } from "sonner";
+import ButtonContent from "@/components/custom/button-content";
 
 const signInSchema = z.object({
   email: z
@@ -69,17 +70,6 @@ export default function SignInPage() {
     }
   };
 
-  const renderButtonContent = () => {
-    if (loading) {
-      return (
-        <>
-          <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> Signing...
-        </>
-      );
-    }
-    return "Signin";
-  };
-
   return (
     mounted && (
       <>
@@ -115,7 +105,7 @@ export default function SignInPage() {
                 />
 
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {renderButtonContent()}
+                  <ButtonContent status={loading} text="Signin" loadingText="Signing..."/>
                 </Button>
 
                 <Divider text="Or continue with" className="my-4" />

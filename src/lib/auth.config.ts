@@ -1,6 +1,6 @@
 import { NextAuthConfig, User } from "next-auth"
 import prisma from "@/lib/prisma";
-import Credentials, { CredentialsProviderType } from "next-auth/providers/credentials";
+import Credentials from "next-auth/providers/credentials";
 import GitHub from "next-auth/providers/github";
 import bcrypt from 'bcryptjs';
 import { AUTH_SECRET, GITHUB_ID, GITHUB_SECRET } from "@/utils/constants";
@@ -135,6 +135,10 @@ const authConfig: NextAuthConfig = {
                 })
             }
             return true;
+        },
+
+        async authorized({ request , auth }) {
+            if(auth) return true
         }
     },
 

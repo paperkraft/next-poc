@@ -42,9 +42,6 @@ const SidebarFooterContent = React.memo(() => {
 
     const logout = async () => {
         // await logAuditAction('logout', 'auth/signout', { user: `${user?.name}` }, user.id);
-        localStorage.removeItem("user");
-        localStorage.removeItem("groups");
-        localStorage.removeItem("menus");
         signOut({ redirect: false });
     }
 
@@ -56,7 +53,7 @@ const SidebarFooterContent = React.memo(() => {
                 localStorage.removeItem("user");
                 localStorage.removeItem("groups");
                 localStorage.removeItem("menus");
-                signOut({ redirect: false });
+                signOut({ redirect: true, redirectTo:'/signin' });
             }
         };
 
@@ -68,7 +65,7 @@ const SidebarFooterContent = React.memo(() => {
         return (
             <>
                 <Avatar className="size-8 border p-0.5">
-                    <AvatarImage src={user?.email?.toLowerCase()?.includes('vishal') ? '/sv.svg' : user?.image} alt={user?.name} />
+                    <AvatarImage src={user?.image} alt={user?.name} />
                     <AvatarFallback className="rounded-full">{initials ?? "UN"}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">

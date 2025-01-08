@@ -2,7 +2,13 @@
 
 import { LoaderCircleIcon } from "lucide-react";
 
-export default function ButtonContent({ status, text }: { status: boolean, text: string }) {
+interface ButtonContentProps {
+    status: boolean;
+    text: string;
+    loadingText?: string
+}
+
+export default function ButtonContent({ status, text, loadingText }: ButtonContentProps) {
     const getStatusText = (baseText: string) => {
         const words = baseText.split(' ');
         const transformedWords = words.map((word, index) => {
@@ -21,7 +27,7 @@ export default function ButtonContent({ status, text }: { status: boolean, text:
 
     return (
         status
-            ? <><LoaderCircleIcon className="size-4 animate-spin" />{getStatusText(text)}</>
+            ? <><LoaderCircleIcon className="size-4 animate-spin" />{loadingText ? loadingText : getStatusText(text)}</>
             : `${text}`
     );
 }

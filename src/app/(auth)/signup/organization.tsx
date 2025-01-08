@@ -7,10 +7,11 @@ import * as z from "zod"
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { LoaderCircle } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
 import { InputController } from "@/components/custom/form.control/InputController";
 import { useMounted } from "@/hooks/use-mounted";
 import { signUp } from "./signup";
+import { toast } from "sonner";
+import ButtonContent from "@/components/custom/button-content";
 
 const OrganizationSchema = z.object({
     organization: z.string({ required_error: "Organization name is required" })
@@ -24,7 +25,7 @@ const OrganizationSchema = z.object({
 
 type orgType = z.infer<typeof OrganizationSchema>;
 
-export default function OrganizationPage(signupData:signUp) {
+export default function OrganizationPage(signupData: signUp) {
     const router = useRouter();
     const mounted = useMounted();
     const [loading, setLoading] = useState(false);
@@ -40,47 +41,26 @@ export default function OrganizationPage(signupData:signUp) {
 
     const onSubmit = async (data: orgType) => {
         setLoading(true);
-        const final = {
-            ...signupData,
-            ...data,
-        }
+        const final = { ...signupData, ...data }
+        try {
+            const res = await fetch('/api/user/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(final),
+            }).then((d) => d.json());
 
-        console.log('final', final);
-        
-        const res = await fetch('/api/user/signup', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(final),
-        });
-        
-        setLoading(false);
-
-        if (res.ok) {
-            toast({
-                title:"Success",
-                description: "Please sign in",
-            });
-            router.push('/signin');
-        } else {
-            const errorData = await res.json();
-            toast({
-                title:"Failed",
-                description: errorData?.message || "Error creating account",
-                variant:'destructive'
-            });
+            if (res.success) {
+                setLoading(false);
+                toast.success("Please sign in");
+                router.push('/signin');
+            }
+        } catch (error) {
+            console.error('sign-up', error)
+            toast.error('Error creating account');
+        } finally {
+            setLoading(false);
         }
     }
-
-    const renderButtonContent = () => {
-        if (loading) {
-            return (
-                <>
-                    <LoaderCircle className="mr-2 h-4 w-4 animate-spin"/> Creating...
-                </>
-            );
-        }
-        return "Create an account";
-    };
 
     return (
         mounted &&
@@ -113,9 +93,9 @@ export default function OrganizationPage(signupData:signUp) {
                             placeholder="City"
                             maxLength={20}
                         />
-                        
+
                         <Button type="submit" className="w-full" disabled={loading}>
-                            {renderButtonContent()}
+                            <ButtonContent status={loading} text="Create" loadingText="Creating..."/>
                         </Button>
 
                     </div>

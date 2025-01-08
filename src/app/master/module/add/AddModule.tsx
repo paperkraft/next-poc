@@ -16,7 +16,6 @@ import ButtonContent from "@/components/custom/button-content";
 export const ModuleFormSchema = z.object({
   name: z.string().min(1, { message: "Module is required." }),
   url: z.string().min(1, { message: "URL is required." }),
-  // group: z.object({ value: z.string() }),
   group: z.string(),
   isParent: z.boolean(),
   parent: z.object({ value: z.string() }).optional()
@@ -86,11 +85,6 @@ export default function AddModule({ modules, groups }: { modules: IModule[], gro
     }
   };
 
-  const dd = form.watch('group');
-
-  console.log('group', dd);
-
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 p-2">
@@ -102,9 +96,20 @@ export default function AddModule({ modules, groups }: { modules: IModule[], gro
           reset
         />
 
-        <SelectController name={`group`} label="Group"
-          options={groups ?? []}
-          description={form.watch('name') ? `${form.watch('name')} will placed under this group` : undefined} />
+        <SwitchButton name="isParent" label="Is Sub Module?" />
+
+        {
+          form.watch('isParent') && moduleOptions && (
+            <SelectController name={`parent.value`} label="Select Parent Module" options={moduleOptions}
+              description={`This will be parent module of ${form.watch('name')}`} />)
+        }
+
+        {
+          !form.watch('isParent') &&
+          <SelectController name={`group`} label="Group"
+            options={groups ?? []}
+            description={form.watch('name') ? `${form.watch('name')} will placed under this group` : undefined} />
+        }
 
         <InputController
           type="text"
@@ -114,14 +119,6 @@ export default function AddModule({ modules, groups }: { modules: IModule[], gro
           description={`This will be use for routing.`}
           reset
         />
-
-        <SwitchButton name="isParent" label="Is Sub Module?" />
-
-        {
-          form.watch('isParent') && moduleOptions && (
-            <SelectController name={`parent.value`} label="Select Parent Module" options={moduleOptions}
-              description={`This will be parent module of ${form.watch('name')}`} />)
-        }
 
         <div className="flex justify-end my-4 gap-2">
           <Button type="button" variant={"outline"} onClick={() => form.reset()}>Reset</Button>

@@ -28,7 +28,6 @@ import { WithPermission } from "@/components/custom/with-permission";
 import { SwitchButton } from "@/components/custom/form.control/SwitchButton";
 import { cn } from "@/lib/utils";
 import ButtonContent from "@/components/custom/button-content";
-// import { useSession } from "next-auth/react";
 
 interface IAccessProps {
   roles: RoleType[];
@@ -157,7 +156,6 @@ function removePermissions(modules: Module[]): any[] {
 
 export default function AccessPage({ roles, modules }: IAccessProps) {
 
-  // const { data: session, update } = useSession();
   const route = useRouter();
   const initialModules = removePermissions(modules as any);
   const initialRoles = roles
@@ -239,11 +237,7 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
       const res = await result.json();
 
       if (res.success) {
-        // if (session?.user.roleId === roleId) {
-        //   await update({...session?.user});
-        // } 
         toast.success("Modules assigned");
-         
       } else {
         toast.error("Failed to assigned module");
       }
@@ -260,9 +254,7 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
     <WithPermission permissionBit={15}>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <div>
-            <SelectController name={"userId"} label={"Role"} options={roleOptions} />
-          </div>
+          <SelectController name={"userId"} label={"Role"} options={roleOptions} className="max-w-md" />
 
           <Table>
             <TableHeader className="bg-gray-50 dark:bg-gray-800">

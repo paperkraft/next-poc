@@ -11,6 +11,7 @@ import { LoaderCircle } from "lucide-react";
 import { InputController } from "@/components/custom/form.control/InputController";
 import { useMounted } from "@/hooks/use-mounted";
 import OrganizationPage from "./organization";
+import ButtonContent from "@/components/custom/button-content";
 
 const signUpSchema = z.object({
     firstName: z.string({ required_error: "First Name is required" })
@@ -31,7 +32,6 @@ const signUpSchema = z.object({
 export type signUp = z.infer<typeof signUpSchema>;
 
 export default function SignUpPage() {
-    const router = useRouter();
     const mounted = useMounted();
     const [loading, setLoading] = useState(false);
 
@@ -54,17 +54,6 @@ export default function SignUpPage() {
             setLoading(false);
         },2000)
     }
-
-    const renderButtonContent = () => {
-        if (loading) {
-            return (
-                <>
-                    <LoaderCircle className="mr-2 h-4 w-4 animate-spin"/> Continue...
-                </>
-            );
-        }
-        return "Continue";
-    };
 
     return (
         <>
@@ -111,7 +100,7 @@ export default function SignUpPage() {
                                 />
 
                                 <Button type="submit" className="w-full" disabled={loading}>
-                                    {renderButtonContent()}
+                                    <ButtonContent status={loading} text="Continue" loadingText="Continue..."/>
                                 </Button>
 
                             </div>

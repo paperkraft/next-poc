@@ -52,7 +52,7 @@ const RenderMenus = React.memo(() => {
             
             //-----New-----//
             
-            const userModules = data?.user.modules;
+            const userModules = data?.user?.modules;
             const formatedMenus = userModules && mapMenu(userModules);
             const uniqueLabels = formatedMenus && Array.from(new Set(formatedMenus.map((menu:any) => menu.label)));
             const finalMenus = uniqueLabels && uniqueLabels.map((label:any) => formatedMenus.filter((menu:any) => menu.label === label));

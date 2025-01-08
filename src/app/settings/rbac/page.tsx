@@ -21,7 +21,7 @@ export default async function Page() {
     const hasRoles = isRoles && roles?.data?.length > 0;
 
     return (
-        <div className="space-y-8 p-2">
+        <div className="space-y-4 p-2">
             <TitlePage title="Role Based Access Control" description="Define role based module access" createPage />
             {
                 isModules && isRoles

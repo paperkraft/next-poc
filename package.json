@@ -71,7 +71,7 @@
     "jotai": "^2.10.3",
     "js-beautify": "^1.15.1",
     "lucide-react": "^0.447.0",
-    "next": "^14.2.21",
+    "next": "^14.2.23",
     "next-auth": "^5.0.0-beta.22",
     "next-nprogress-bar": "^2.3.13",
     "next-recaptcha-v3": "^1.4.1",

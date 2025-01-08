@@ -9,7 +9,6 @@ import React from 'react';
 import { data, menuType, submenuType } from './data';
 import { cn } from '@/lib/utils';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import UserAction from './UserAction';
 
 export function CustomTrigger() {
     const { toggleSidebar } = useSidebar();
@@ -51,7 +50,7 @@ function getBreadcrumbs(menus: menuType[], url: string): {label:string, title: s
 
 const Header: React.FC = React.memo(() => {
     const path = usePathname();
-    const breadcrumb = getBreadcrumbs(data, path);
+    const breadcrumb = path ? getBreadcrumbs(data, path) : [];
 
     return (
         //w-full transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12

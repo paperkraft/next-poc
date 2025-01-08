@@ -41,13 +41,13 @@ export async function fetchModules() {
         const submoduleIds = new Set(formattedModules.flatMap((module) => module.subModules.map((subModule) => subModule.id)));
         const finalModules = formattedModules.filter((module) => !submoduleIds.has(module.id));
         return NextResponse.json(
-            { success: true, message: 'Success', data: finalModules},
+            { success: true, message: 'Success', data: finalModules },
             { status: 200 }
         );
     } catch (error) {
         console.error("Error fetching modules:", error);
         return NextResponse.json(
-            { success: false, message: 'Error fetching modules' }, 
+            { success: false, message: 'Error fetching modules' },
             { status: 500 }
         );
     }
@@ -97,35 +97,46 @@ export async function fetchUniqueModule(id: string) {
 
         const finalModules = module && formatModule(module);
         return NextResponse.json(
-            { success: true, message: 'Success', data: finalModules},
+            { success: true, message: 'Success', data: finalModules },
             { status: 200 }
         );
     } catch (error) {
         console.error("Error fetching module:", error);
         return NextResponse.json(
-            { success: false, message: 'Error fetching module' }, 
+            { success: false, message: 'Error fetching module' },
             { status: 500 }
         );
     }
 }
 
-type ModulePermission = {
+type InputModuleFormat = {
     module: {
         id: string;
         name: string;
-        path: string;
+        path: string | null;
+        group: { id: string; name: string } | null;
         parentId: string | null;
     } | null;
     subModule: {
         id: string;
         name: string;
-        path: string;
+        path: string | null;
         parentId: string | null;
     } | null;
     permissions: number;
 };
 
-export async function fetchUniqueModuleByRole(roleId: string) {
+type RoleModules = {
+    id: string;
+    name: string;
+    path: string | null;
+    group: string | undefined;
+    parentId: string | null;
+    permissions: number;
+    subModules: RoleModules[];
+}
+
+export async function fetchModuleByRole(roleId: string) {
 
     if (!roleId) {
         // throw new Error('Role ID is required');
@@ -135,8 +146,8 @@ export async function fetchUniqueModuleByRole(roleId: string) {
         );
     }
 
-    function nestModules(data: ModulePermission[]): IModule[] {
-        const moduleMap = new Map<string, IModule>();
+    function nestModules(data: InputModuleFormat[]): RoleModules[] {
+        const moduleMap = new Map<string, RoleModules>();
 
         data && data.forEach(({ module, subModule, permissions }) => {
             if (module) {
@@ -145,15 +156,12 @@ export async function fetchUniqueModuleByRole(roleId: string) {
                         id: module.id,
                         name: module.name,
                         path: module.path,
+                        group: module.group?.name,
                         parentId: module.parentId,
                         permissions: permissions,
                         subModules: [],
                     });
                 }
-
-                // Aggregate permissions
-                // const moduleEntry = moduleMap.get(module.id)!;
-                // moduleEntry.permissions += permissions;
             }
 
             if (subModule) {
@@ -162,6 +170,7 @@ export async function fetchUniqueModuleByRole(roleId: string) {
                         id: subModule.id,
                         name: subModule.name,
                         path: subModule.path,
+                        group: undefined,
                         parentId: subModule.parentId,
                         permissions: permissions,
                         subModules: [],
@@ -196,125 +205,32 @@ export async function fetchUniqueModuleByRole(roleId: string) {
                     select: {
                         id: true,
                         name: true,
+                        path: true,
+                        group: true,
                         parentId: true,
-                        path:true,
                     },
                 },
                 subModule: {
                     select: {
                         id: true,
                         name: true,
+                        path: true,
                         parentId: true,
-                        path:true,
                     },
                 },
                 permissions: true,
             },
         });
-
         const structuredData = nestModules(roleModules);
         return NextResponse.json(
-            { success: true, message: 'Success', data: structuredData},
+            { success: true, message: 'Success', data: structuredData },
             { status: 200 }
         );
     } catch (error) {
         console.error("Error fetching modules:", error);
         return NextResponse.json(
-            { success: false, message: 'Error fetching module' }, 
+            { success: false, message: 'Error fetching module' },
             { status: 500 }
         );
-    }
-}
-
-type InputFormat = {
-    moduleId: string;
-    subModuleId: string | null;
-    permissions: number;
-    module: {
-        id: string;
-        name: string;
-        path: string;
-        parentId: string | null;
-    };
-    subModule: {
-        id: string;
-        name: string;
-        path: string;
-        parentId: string | null;
-        subModules: any[];
-    } | null;
-};
-
-export const getModulesByRole = async (roleId: string) => {
-
-    function formatModules(data: InputFormat[]): IModule[] {
-        const moduleMap: Record<string, IModule> = {};
-
-        data?.forEach((item) => {
-            const { moduleId, permissions, module, subModule } = item;
-
-            // Create or update the module
-            if (!moduleMap[moduleId]) {
-                moduleMap[moduleId] = {
-                    id: moduleId,
-                    name: module.name,
-                    path: module.path,
-                    parentId: module.parentId,
-                    permissions: permissions,
-                    subModules: [],
-                };
-            }
-
-            // If there is a submodule, handle it separately
-            if (subModule && subModule.id) {
-                const subModuleId = subModule.id;
-                const subModuleData: IModule = {
-                    id: subModuleId,
-                    name: subModule.name,
-                    path: subModule.path,
-                    parentId: subModule.parentId,
-                    permissions: permissions,
-                    subModules: [],
-                };
-
-                // Handle SubModules (nested submodules)
-                if (subModule.subModules && subModule.subModules.length > 0) {
-                    subModuleData.subModules = subModule.subModules.map((childSubmodule) => ({
-                        id: childSubmodule.id,
-                        name: childSubmodule.name,
-                        path: childSubmodule.path,
-                        parentId: childSubmodule.parentId,
-                        permissions: permissions,
-                        subModules: [],
-                    }));
-                }
-
-                // Push the submodule to the corresponding module
-                moduleMap[moduleId].subModules.push(subModuleData);
-            }
-        });
-        return Object.values(moduleMap);
-    }
-
-    try {
-        const roleWithModules = await prisma.role.findUnique({
-            where: { id: roleId },
-            include: {
-                modulePermissions: {
-                    include: {
-                        module: true,
-                        subModule: {
-                            include: {
-                                subModules: true
-                            }
-                        }
-                    }
-                }
-            },
-        });
-        return roleWithModules && formatModules(roleWithModules?.modulePermissions);
-    } catch (error) {
-        console.error('Error fetching modules with submodules:', error);
-        throw new Error('Failed to fetch modules with submodules');
     }
 }

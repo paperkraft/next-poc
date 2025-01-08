@@ -53,9 +53,9 @@ const RenderMenus = React.memo(() => {
             //-----New-----//
             
             const userModules = data?.user.modules;
-            const formatedMenus = mapMenu(userModules);
-            const uniqueLabels = Array.from(new Set(formatedMenus.map((menu) => menu.label)));
-            const finalMenus = uniqueLabels.map((label) => formatedMenus.filter((menu) => menu.label === label));
+            const formatedMenus = userModules && mapMenu(userModules);
+            const uniqueLabels = formatedMenus && Array.from(new Set(formatedMenus.map((menu:any) => menu.label)));
+            const finalMenus = uniqueLabels && uniqueLabels.map((label:any) => formatedMenus.filter((menu:any) => menu.label === label));
 
             //----------//
 
@@ -122,18 +122,16 @@ const RenderMenus = React.memo(() => {
 
             {status !== "loading" && !filter && <DefaultMenu />}
 
-            {
-                status !== "loading" && filter?.map((data, index) => (
-                    <SidebarGroup key={index}>
-                        <SidebarGroupLabel>{data.at(0)?.label}</SidebarGroupLabel>
-                        <SidebarMenu>
-                            {data.map((item, index) => (
-                                <NestedMenu key={index} item={item} />
-                            ))}
-                        </SidebarMenu>
-                    </SidebarGroup>
-                ))
-            }
+            {status !== "loading" && filter?.map((data, index) => (
+                <SidebarGroup key={index}>
+                    <SidebarGroupLabel>{data.at(0)?.label}</SidebarGroupLabel>
+                    <SidebarMenu>
+                        {data.map((item, index) => (
+                            <NestedMenu key={index} item={item} />
+                        ))}
+                    </SidebarMenu>
+                </SidebarGroup>
+            ))}
         </>
     )
 });
@@ -159,7 +157,7 @@ const generateSubMenu = (subModule: inputType): submenuType => ({
 });
 
 const mapMenu = (inputData: inputType[]): menuType[] => {
-    const groupedData = inputData.reduce((acc, item) => {
+    const groupedData = inputData && inputData?.reduce((acc, item) => {
         if (!acc[item.group]) {
             acc[item.group] = [];
         }

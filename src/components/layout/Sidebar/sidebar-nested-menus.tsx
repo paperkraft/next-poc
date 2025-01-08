@@ -15,14 +15,14 @@ const NestedMenu = React.memo(({ item }: { item: menuType }) => {
     const isMobile = useIsMobile();
     const path = usePathname();
     const hasSubmenu = item?.submenu?.length > 0;
-    const active = item.url === (path?.length && path)
-        || item?.submenu?.some(subItem => subItem.url === (path?.length && path))
-        || item?.submenu?.some(subItem => subItem?.submenu?.some(subSubItem => subSubItem.url === (path?.length && path)))
+    const active = item.url === path
+        || item?.submenu?.some(subItem => subItem.url === path)
+        || item?.submenu?.some(subItem => subItem?.submenu?.some(subSubItem => subSubItem.url === path))
 
     if (!hasSubmenu) {
         return (
             <SidebarMenuButton tooltip={item.title} asChild onClick={() => isMobile && toggleSidebar()} >
-                <Link href={item.url} className={cn({ "bg-sidebar-accent text-sidebar-accent-foreground": item.url === (path?.length && path) })}>
+                <Link href={item.url} className={cn({ "bg-sidebar-accent text-sidebar-accent-foreground": item.url === path })}>
                     {item.icon && <item.icon />}
                     {item.title}
                 </Link>

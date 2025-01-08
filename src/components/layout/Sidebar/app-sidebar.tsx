@@ -16,13 +16,10 @@ import Header from "../Header"
 import RenderMenus from "./sidebar-menus"
 import SidebarHeaderContent from "./sidebar-header"
 import SidebarFooterContent from "./sidebar-footer"
-import { useMounted } from "@/hooks/use-mounted";
 
 const AppSidebar = ({ children }: ChildProps) => {
     const queryClient = new QueryClient();
-    const mounted = useMounted();
     return (
-        mounted &&
         <QueryClientProvider client={queryClient}>
             <SidebarProvider>
                 <Sidebar>

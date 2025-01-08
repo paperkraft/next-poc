@@ -25,11 +25,7 @@ export function DataTableExport<TData>({ table }: DataTableExportProps<TData>) {
         {
             label: "Download as CSV",
             onClick: () => exportTableToCSV(table, { filename: "audit-log", excludeColumns }),
-        },
-        {
-            label: "Download as Excel",
-            onClick: () => exportTableToExcel(table, { filename: "audit-log", excludeColumns }),
-        },
+        }
     ];
 
     return (

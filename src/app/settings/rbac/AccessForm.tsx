@@ -14,7 +14,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { ChevronRight, LoaderCircle, LoaderCircleIcon } from "lucide-react";
+import { ChevronRight, LoaderCircleIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { SelectController } from "@/components/custom/form.control/SelectController";
@@ -28,6 +28,7 @@ import { WithPermission } from "@/components/custom/with-permission";
 import { SwitchButton } from "@/components/custom/form.control/SwitchButton";
 import { cn } from "@/lib/utils";
 import ButtonContent from "@/components/custom/button-content";
+// import { useSession } from "next-auth/react";
 
 interface IAccessProps {
   roles: RoleType[];
@@ -156,6 +157,7 @@ function removePermissions(modules: Module[]): any[] {
 
 export default function AccessPage({ roles, modules }: IAccessProps) {
 
+  // const { data: session, update } = useSession();
   const route = useRouter();
   const initialModules = removePermissions(modules as any);
   const initialRoles = roles
@@ -209,7 +211,7 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
       }
     };
 
-    if(roleId){
+    if (roleId) {
       getRoleModules(roleId);
       setLoading(true);
       setRoleModules(undefined);
@@ -237,7 +239,11 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
       const res = await result.json();
 
       if (res.success) {
+        // if (session?.user.roleId === roleId) {
+        //   await update({...session?.user});
+        // } 
         toast.success("Modules assigned");
+         
       } else {
         toast.error("Failed to assigned module");
       }
@@ -293,9 +299,9 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
           </Table>
 
           <div className="flex justify-end my-4 gap-2">
-            <Button variant={"outline"} onClick={()=> route.back()}>Cancel</Button>
+            <Button type="button" variant={"outline"} onClick={() => route.back()}>Cancel</Button>
             <Button type="submit" disabled={disabled}>
-              <ButtonContent status={disabled} text={"Submit"}/>
+              <ButtonContent status={disabled} text={"Submit"} />
             </Button>
           </div>
         </form>

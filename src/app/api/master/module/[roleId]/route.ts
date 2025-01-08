@@ -2,6 +2,7 @@ import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest, { params }: { params: { roleId: string } }) {
+
     const { roleId } = params;
 
     if (!roleId) {
@@ -22,13 +23,16 @@ export async function GET(request: NextRequest, { params }: { params: { roleId: 
                     select: {
                         id: true,
                         name: true,
+                        path: true,
                         parentId: true,
+                        group: true,
                     },
                 },
                 subModule: {
                     select: {
                         id: true,
                         name: true,
+                        path: true,
                         parentId: true,
                     },
                 },
@@ -38,7 +42,6 @@ export async function GET(request: NextRequest, { params }: { params: { roleId: 
 
         const structuredData = nestModules(userModulesGrouped);
 
-        // Respond with the grouped modules
         return NextResponse.json(
             { success: true, data: structuredData },
             { status: 200 }
@@ -57,11 +60,14 @@ type ModulePermission = {
     module: {
         id: string;
         name: string;
+        path: string | null;
+        group: { id: string; name: string } | null;
         parentId: string | null;
     } | null;
     subModule: {
         id: string;
         name: string;
+        path: string | null;
         parentId: string | null;
     } | null;
     permissions: number;
@@ -70,6 +76,8 @@ type ModulePermission = {
 type StructuredData = {
     id: string;
     name: string;
+    path: string | null;
+    group: string | undefined;
     parentId: string | null;
     permissions: number;
     subModules: StructuredData[];
@@ -84,6 +92,8 @@ function nestModules(data: ModulePermission[]): StructuredData[] {
                 moduleMap.set(module.id, {
                     id: module.id,
                     name: module.name,
+                    path: module.path,
+                    group: module.group?.name,
                     parentId: module.parentId,
                     permissions: permissions,
                     subModules: [],
@@ -100,6 +110,8 @@ function nestModules(data: ModulePermission[]): StructuredData[] {
                 moduleMap.set(subModule.id, {
                     id: subModule.id,
                     name: subModule.name,
+                    path: subModule.path,
+                    group: undefined,
                     parentId: subModule.parentId,
                     permissions: permissions,
                     subModules: [],

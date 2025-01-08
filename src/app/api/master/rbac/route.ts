@@ -1,3 +1,4 @@
+import { auth, unstable_update } from "@/auth";
 import { logAuditAction } from "@/lib/audit-log";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
@@ -18,7 +19,12 @@ interface Module {
 export async function POST(req: Request) {
     const { roleId, modulesData } = await req.json();
     try {
+        const session = await auth();
         const result = await UpsertAssignModulesToRole(roleId, modulesData);
+        
+        // session update
+        await unstable_update({...session?.user});
+
         await logAuditAction('Upsert', 'master/rbac', { data: result });
         return NextResponse.json(
             { success: true, message: 'Module Assigned', data: result },

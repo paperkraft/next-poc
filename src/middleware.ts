@@ -19,10 +19,10 @@ export async function middleware(req: NextRequest) {
         }
 
         // Handle non-authenticated access (redirect to /signin if not logged in)
-        if (!session && currentPath !== "/") {
-            const signInUrl = new URL("/signin", req?.nextUrl?.origin);
-            return NextResponse.redirect(signInUrl);
-        }
+        // if (!session && currentPath !== "/") {
+        //     const signInUrl = new URL("/signin", req?.nextUrl?.origin);
+        //     return NextResponse.redirect(signInUrl);
+        // }
 
         // Skip permission checks if there are no required permissions for the current path
         const requiredPermissions = ROUTE_PERMISSIONS[currentPath];

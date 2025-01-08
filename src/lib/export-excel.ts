@@ -1,6 +1,6 @@
 import { type Table } from "@tanstack/react-table"
 import { saveAs } from "file-saver"
-import * as XLSX from "xlsx"
+// import * as XLSX from "xlsx"
 
 /**
  * Export the table data to an Excel file.
@@ -47,21 +47,21 @@ export function exportTableToExcel<TData>(
     const worksheetData = [headers, ...filterRows]
 
     // Create a worksheet and workbook
-    const worksheet = XLSX.utils.aoa_to_sheet(worksheetData)
-    const workbook = XLSX.utils.book_new()
+    // const worksheet = XLSX.utils.aoa_to_sheet(worksheetData)
+    // const workbook = XLSX.utils.book_new()
 
     // Append the worksheet to the workbook
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1")
+    // XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1")
 
     // Generate the Excel file and trigger the download
-    const excelBuffer = XLSX.write(workbook, {
-        bookType: "xlsx",
-        type: "array",
-    })
+    // const excelBuffer = XLSX.write(workbook, {
+    //     bookType: "xlsx",
+    //     type: "array",
+    // })
 
-    const blob = new Blob([excelBuffer], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    })
+    // const blob = new Blob([excelBuffer], {
+    //     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    // })
 
-    saveAs(blob, `${filename}.xlsx`)
+    // saveAs(blob, `${filename}.xlsx`)
 }

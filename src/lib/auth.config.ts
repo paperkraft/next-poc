@@ -6,6 +6,7 @@ import bcrypt from 'bcryptjs';
 import { AUTH_SECRET, GITHUB_ID, GITHUB_SECRET } from "@/utils/constants";
 import { logAuditAction } from "./audit-log";
 import { getIpAddress } from "./utils";
+import { fetchModuleByRole } from "@/app/action/module.action";
 
 const authConfig: NextAuthConfig = {
     secret: AUTH_SECRET,
@@ -67,9 +68,6 @@ const authConfig: NextAuthConfig = {
 
                     const formattedJson = formatToParentChild(userModulesGrouped);
 
-                    console.log('formattedJson', formattedJson);
-                    
-
                     return {
                         id: user?.id,
                         name: user && `${user?.firstName} ${user?.lastName}`,
@@ -101,25 +99,26 @@ const authConfig: NextAuthConfig = {
 
     callbacks: {
 
-        async jwt({ token, user }) {
+        async session({ session, token }) {
+            session.user = token.user as User;
+            return session;
+        },
+
+        async jwt({ token, user, trigger, session }) {
             if (user) {
-                token.id = user?.id;
-                token.roleId = user?.roleId;
-                token.permissions = user?.permissions;
-                token.modules = user?.modules;
+                token.user = user;
             }
+
+            if (trigger === "update" && session) {
+                console.log('Update triggered at JWT');
+                const menu = await fetchModuleByRole(session.roleId).then((d)=>d.json());
+                const updateSession = {...session, modules:menu.data}
+                token = { ...token, user: updateSession }
+                return token;
+            };
             return token;
         },
 
-        async session({ session, token }) {
-            if (token) {
-                session.user.id = token.id;
-                session.user.roleId = token.roleId;
-                session.user.permissions = token.permissions;
-                session.user.modules = token.modules;
-            }
-            return session;
-        },
 
         async signIn({ user, account, profile }) {
 

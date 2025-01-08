@@ -1,5 +1,5 @@
 'use server'
-import { auth } from '@/auth';
+import { auth, unstable_update } from '@/auth';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { headers } from 'next/headers';
 import { getDeviceDetails } from './utils';
@@ -30,6 +30,8 @@ export async function logAuditAction(
         if (ipAddress === '::1') {
             ipAddress = 'Localhost (testing)';
         }
+
+        await unstable_update({...session?.user});
 
         await prisma.auditLog.create({
             data: {

@@ -15,7 +15,7 @@ import ButtonContent from "@/components/custom/button-content";
 
 export const ModuleFormSchema = z.object({
   name: z.string().min(1, { message: "Module is required." }),
-  path: z.string().min(1, { message: "URL is required." }),
+  url: z.string().min(1, { message: "URL is required." }),
   // group: z.object({ value: z.string() }),
   group: z.string(),
   isParent: z.boolean(),
@@ -51,7 +51,7 @@ export default function AddModule({ modules, groups }: { modules: IModule[], gro
     resolver: zodResolver(ModuleFormSchema),
     defaultValues: {
       name: "",
-      path: "",
+      url: "",
       group: "",
       parent: { value: "" },
       isParent: false
@@ -59,9 +59,10 @@ export default function AddModule({ modules, groups }: { modules: IModule[], gro
   });
 
   const onSubmit = async (data: ModuleFormValues) => {
+    const url = data.url.startsWith('/') ? data.url : `/${data.url}`
     const final = data.isParent
-      ? { name: data.name, path: `/${data.path}`, parentId: data?.parent?.value }
-      : { name: data.name, path: `/${data.path}`, parentId: null, groupId: data?.group }
+      ? { name: data.name, path: url, parentId: data?.parent?.value }
+      : { name: data.name, path: url, parentId: undefined, groupId: data?.group }
 
     setLoading(true);
     try {
@@ -107,7 +108,7 @@ export default function AddModule({ modules, groups }: { modules: IModule[], gro
 
         <InputController
           type="text"
-          name="path"
+          name="url"
           label="URL"
           placeholder="Enter URL"
           description={`This will be use for routing.`}
@@ -142,7 +143,7 @@ function formatModules(modules: IModule[], parentLabel: string = ''): IOption[] 
 
     // Recursively process submodules if any
     if (module.subModules && module.subModules.length > 0) {
-      const subModules = formatModules(module.subModules, label);
+      const subModules = formatModules(module.subModules as any, label);
       result.push(...subModules);
     }
   });

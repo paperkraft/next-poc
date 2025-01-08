@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
-    const result = await fetchModules().then((d)=> d.json());
+    const result = await fetchModules().then((d) => d.json());
     return NextResponse.json(
       { success: true, message: 'Success', data: result.data },
       { status: 200 }
@@ -25,6 +25,7 @@ export async function PUT(req: Request) {
       where: { id: subModule.id },
       data: {
         name: subModule.name,
+        path: subModule.path,
         subModules: subModule.subModules.length ? {
           update: updateSubmodules(subModule.subModules)
         } : undefined,
@@ -35,12 +36,15 @@ export async function PUT(req: Request) {
   const final = hasSubmodule
     ? {
       name: data.name,
+      path: data.path,
+      groupId: data.group,
       subModules: {
         update: updateSubmodules(data.subModules),
       }
     }
     : {
       name: data.name,
+      path: data.path,
       groupId: data.group
     }
 
@@ -73,8 +77,8 @@ export async function POST(req: Request) {
       data: {
         name: name,
         path: path ?? '#',
-        parentId: parentId ? parentId : null,
-        groupId: parentId ? null : groupId
+        parentId: parentId ? parentId : undefined,
+        groupId: parentId ? undefined : groupId
       }
     });
 

@@ -45,9 +45,6 @@ type ModuleFormValues = z.infer<typeof ModuleFormSchema>;
 
 export default function EditModule({ moduleData, groupOptions }: PageProps) {
 
-  console.log('moduleData', moduleData);
-  
-
   const router = useRouter();
   const moduleId = useModuleIdByName("Module") as string;
 
@@ -62,7 +59,7 @@ export default function EditModule({ moduleData, groupOptions }: PageProps) {
     defaultValues: {
       id: moduleData.id,
       name: moduleData.name,
-      path: moduleData.path,
+      path: moduleData.path as string,
       group: moduleData.group as string,
       parentId: moduleData.parentId,
       permissions: moduleData.permissions,
@@ -77,14 +74,15 @@ export default function EditModule({ moduleData, groupOptions }: PageProps) {
 
   const onSubmit = async (data: ModuleFormValues) => {
     setLoading(true);
+    const url = data.path.startsWith('/') ? data.path : `/${data.path}`
     try {
       const res = await fetch(`/api/master/module`, {
         method: "PUT",
-        body: JSON.stringify({ ...data })
+        body: JSON.stringify({ ...data, path: url })
       }).then((d) => d.json()).catch((err) => err);
 
       if (res.success) {
-        toast.success('Module updated')
+        toast.success('Module updated');
         router.push('.');
       } else {
         toast.error('Failed to update module');
@@ -174,19 +172,19 @@ export default function EditModule({ moduleData, groupOptions }: PageProps) {
           <form onSubmit={form.handleSubmit(onSubmit)} className="p-2 space-y-2">
             <SelectController name={`group`} label="Group" options={groupOptions} readOnly={!show} disabled={hasSubmenu} />
 
-            <InputController name={'name'} label="Module" readOnly={!show}/>
+            <InputController name={'name'} label="Module" readOnly={!show} />
 
-            <InputController name={'path'} label="URL" type="text" readOnly={!show}/>
+            <InputController name={'path'} label="URL" type="text" readOnly={!show} />
 
             {moduleData && (renderSubmodules(fields, "subModules"))}
 
             {show && (
               <div className="flex justify-end my-4 gap-2">
                 <Button type="button" variant={"outline"} onClick={() => router.back()}>
-                    Cancel
+                  Cancel
                 </Button>
                 <Button type="submit" disabled={loading}>
-                    <ButtonContent status={loading} text={"Update"}/>
+                  <ButtonContent status={loading} text={"Update"} />
                 </Button>
               </div>
             )}

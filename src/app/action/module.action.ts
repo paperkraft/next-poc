@@ -109,90 +109,13 @@ export async function fetchUniqueModule(id: string) {
     }
 }
 
-type InputModuleFormat = {
-    module: {
-        id: string;
-        name: string;
-        path: string | null;
-        group: { id: string; name: string } | null;
-        parentId: string | null;
-    } | null;
-    subModule: {
-        id: string;
-        name: string;
-        path: string | null;
-        parentId: string | null;
-    } | null;
-    permissions: number;
-};
-
-type RoleModules = {
-    id: string;
-    name: string;
-    path: string | null;
-    group: string | undefined;
-    parentId: string | null;
-    permissions: number;
-    subModules: RoleModules[];
-}
-
 export async function fetchModuleByRole(roleId: string) {
 
     if (!roleId) {
-        // throw new Error('Role ID is required');
         return NextResponse.json(
             { success: false, message: "Role ID is required" },
             { status: 400 }
         );
-    }
-
-    function nestModules(data: InputModuleFormat[]): RoleModules[] {
-        const moduleMap = new Map<string, RoleModules>();
-
-        data && data.forEach(({ module, subModule, permissions }) => {
-            if (module) {
-                if (!moduleMap.has(module.id)) {
-                    moduleMap.set(module.id, {
-                        id: module.id,
-                        name: module.name,
-                        path: module.path,
-                        group: module.group?.name,
-                        parentId: module.parentId,
-                        permissions: permissions,
-                        subModules: [],
-                    });
-                }
-            }
-
-            if (subModule) {
-                if (!moduleMap.has(subModule.id)) {
-                    moduleMap.set(subModule.id, {
-                        id: subModule.id,
-                        name: subModule.name,
-                        path: subModule.path,
-                        group: undefined,
-                        parentId: subModule.parentId,
-                        permissions: permissions,
-                        subModules: [],
-                    });
-                }
-
-                // Aggregate permissions
-                const subModuleEntry = moduleMap.get(subModule.id)!;
-                // subModuleEntry.permissions += permissions;
-
-                // Nest the subModule under its parent module
-                if (subModule.parentId && moduleMap.has(subModule.parentId)) {
-                    const parentModule = moduleMap.get(subModule.parentId)!;
-                    if (!parentModule.subModules.some(sm => sm.id === subModule.id)) {
-                        parentModule.subModules.push(subModuleEntry);
-                    }
-                }
-            }
-        });
-
-        // Return only top-level modules (no parentId)
-        return Array.from(moduleMap.values()).filter(module => !module.parentId);
     }
 
     try {
@@ -221,9 +144,11 @@ export async function fetchModuleByRole(roleId: string) {
                 permissions: true,
             },
         });
-        const structuredData = nestModules(roleModules);
+
+        const modules = RoleModules(roleModules);
+
         return NextResponse.json(
-            { success: true, message: 'Success', data: structuredData },
+            { success: true, message: 'Success', data: modules },
             { status: 200 }
         );
     } catch (error) {
@@ -233,4 +158,80 @@ export async function fetchModuleByRole(roleId: string) {
             { status: 500 }
         );
     }
+}
+
+type InputModuleFormat = {
+    module: {
+        id: string;
+        name: string;
+        path: string | null;
+        group: { id: string; name: string } | null;
+        parentId: string | null;
+    } | null;
+    subModule: {
+        id: string;
+        name: string;
+        path: string | null;
+        parentId: string | null;
+    } | null;
+    permissions: number;
+};
+
+interface ModuleEntry {
+    id: string;
+    name: string;
+    path: string | null;
+    group: string | undefined;
+    parentId: string | null;
+    permissions: number;
+}
+
+interface RoleModulesProps extends ModuleEntry {
+    subModules: RoleModulesProps[];
+}
+
+function createModuleEntry({ id, name, path, group, parentId, permissions }: ModuleEntry): RoleModulesProps {
+    return { id, name, path, group, parentId, permissions, subModules: [] };
+}
+
+function RoleModules(data: InputModuleFormat[]): RoleModulesProps[] {
+    const moduleMap = new Map<string, RoleModulesProps>();
+
+    data.forEach(({ module, subModule, permissions }) => {
+        if (module) {
+            if (!moduleMap.has(module.id)) {
+                moduleMap.set(module.id, createModuleEntry({
+                    id: module.id,
+                    name: module.name,
+                    path: module.path,
+                    group: module.group?.name,
+                    parentId: module.parentId,
+                    permissions
+                }));
+            }
+        }
+
+        if (subModule) {
+            if (!moduleMap.has(subModule.id)) {
+                moduleMap.set(subModule.id, createModuleEntry({
+                    id: subModule.id,
+                    name: subModule.name,
+                    path: subModule.path,
+                    group: undefined,
+                    parentId: subModule.parentId,
+                    permissions
+                }));
+            }
+
+            const subModuleEntry = moduleMap.get(subModule.id)!;
+            if (subModule.parentId && moduleMap.has(subModule.parentId)) {
+                const parentModule = moduleMap.get(subModule.parentId)!;
+                if (!parentModule.subModules.some(sm => sm.id === subModule.id)) {
+                    parentModule.subModules.push(subModuleEntry);
+                }
+            }
+        }
+    });
+
+    return Array.from(moduleMap.values()).filter(module => !module.parentId);
 }

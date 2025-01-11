@@ -13,7 +13,7 @@ export interface IModule {
     id: string;
     name: string;
     path: string | null;
-    group: string | undefined;
+    group?: string | undefined;
     parentId: string | null;
     permissions: number | null;
     subModules: ISubModule[];

@@ -4,16 +4,18 @@ import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  try {
-    const result = await fetchModules().then((d) => d.json());
-    return NextResponse.json(
-      { success: true, message: 'Success', data: result.data },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error(error)
-    return NextResponse.json({ success: false, message: 'Failed to fetch' }, { status: 500 });
-  }
+
+  return fetchModules();
+  // try {
+  //   const result = await fetchModules().then((d) => d.json());
+  //   return NextResponse.json(
+  //     { success: true, message: 'Success', data: result.data },
+  //     { status: 200 }
+  //   );
+  // } catch (error) {
+  //   console.error(error)
+  //   return NextResponse.json({ success: false, message: 'Failed to fetch' }, { status: 500 });
+  // }
 }
 
 export async function PUT(req: Request) {

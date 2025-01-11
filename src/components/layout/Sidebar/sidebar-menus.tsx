@@ -2,17 +2,15 @@
 
 import React from "react";
 import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarInput, SidebarMenu } from "../../ui/sidebar";
-import { menuType, submenuType, transformMenuData } from "../data";
-import { DotIcon, SearchIcon, X } from "lucide-react";
+import { SearchIcon, X } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { IGroup } from "@/app/_Interface/Group";
-import { toast } from "sonner";
-import { useQuery } from "@tanstack/react-query";
 
 import DefaultMenu from "./sidebar-default";
 import SidebarSkeleton from "./sidebar-skeleton";
 import NestedMenu from "./sidebar-nested-menus";
-import { IconData } from "../icon-data";
+import { mapMenu, menuType, submenuType } from "./helper";
+
+
 
 const RenderMenus = React.memo(() => {
 
@@ -21,47 +19,16 @@ const RenderMenus = React.memo(() => {
     const [menus, setMenus] = React.useState<menuType[][]>([]);
     const [query, setQuery] = React.useState<string>('');
 
-    // const fetchGroups = async () => {
-    //     try {
-    //         const response = await fetch('/api/master/group').then((d) => d.json());
-    //         if (response.success) {
-    //             const data: IGroup[] = response.data;
-    //             return data;
-    //         } else {
-    //             toast.error("Error in fecting groups");
-    //             return null
-    //         }
-    //     } catch (error) {
-    //         console.error("Error in fecting groups", error);
-    //         toast.error("Error in fecting groups");
-    //     }
-    // };
-
     // const { data: groups, isLoading } = useQuery({ queryKey: ["group"], queryFn: fetchGroups });
 
     React.useEffect(() => {
         if (data) {
-            // const userPermissions = data?.user.permissions;
-            
-            // const filteredMenuData = transformMenuData(userModules, userPermissions);
-            
-            // const userMenus = groups?.map((item) => filteredMenuData
-            // .filter((menu) => menu.label?.toLowerCase() === item.name?.toLowerCase()))
-            // .filter((menuGroup) => menuGroup?.length > 0);
-
-            
-            //-----New-----//
-            
             const userModules = data?.user?.modules;
             const formatedMenus = userModules && mapMenu(userModules);
-            const uniqueLabels = formatedMenus && Array.from(new Set(formatedMenus.map((menu:any) => menu.label)));
-            const finalMenus = uniqueLabels && uniqueLabels.map((label:any) => formatedMenus.filter((menu:any) => menu.label === label));
-
-            //----------//
+            const uniqueLabels = formatedMenus && Array.from(new Set(formatedMenus.map((menu: any) => menu.label)));
+            const finalMenus = uniqueLabels && uniqueLabels.map((label: any) => formatedMenus.filter((menu: any) => menu.label === label));
 
             if (finalMenus) {
-                // setFilter(userMenus);
-                // setMenus(userMenus);
                 setFilter(finalMenus);
                 setMenus(finalMenus);
             }
@@ -138,49 +105,3 @@ const RenderMenus = React.memo(() => {
 
 RenderMenus.displayName = 'RenderMenus';
 export default RenderMenus;
-
-// helper functions
-type inputType = {
-    id: string;
-    name: string;
-    parentId: string | null;
-    permissions: number;
-    group: string;
-    path: string;
-    subModules: inputType[];
-};
-
-const generateSubMenu = (subModule: inputType): submenuType => ({
-    title: subModule.name,
-    url: subModule.path ?? '#',
-    submenu: subModule.subModules.map(generateSubMenu)
-});
-
-const mapMenu = (inputData: inputType[]): menuType[] => {
-    const groupedData = inputData && inputData?.reduce((acc, item) => {
-        if (!acc[item.group]) {
-            acc[item.group] = [];
-        }
-        acc[item.group].push(item);
-        return acc;
-    }, {} as { [key: string]: inputType[] });
-
-    return Object.keys(groupedData).map((groupLabel) => {
-        const groupItems = groupedData[groupLabel];
-
-        return groupItems.map((item) => {
-
-            // Find the icon from IconData based on the title
-            const matchingIcon = IconData.find(icon => icon.title === item.name)?.icon;
-
-            return {
-                label: item.group,
-                title: item.name,
-                url: item.path ?? '#',
-                icon: matchingIcon || (() => <><DotIcon/></>),
-                isActive: false,
-                submenu: item.subModules.map(generateSubMenu),
-            }
-        });
-    }).flat();
-};

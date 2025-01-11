@@ -40,33 +40,7 @@ const authConfig: NextAuthConfig = {
 
                     // await logAuditAction('login', 'auth/signin', { user: `${user?.firstName} ${user?.lastName}` }, user?.id);
 
-                    const userModulesGrouped = await prisma.modulePermission.findMany({
-                        where: {
-                            roleId: user?.roleId,
-                        },
-                        select: {
-                            module: {
-                                select: {
-                                    id: true,
-                                    name: true,
-                                    path: true,
-                                    parentId: true,
-                                    group: true,
-                                },
-                            },
-                            subModule: {
-                                select: {
-                                    id: true,
-                                    name: true,
-                                    path: true,
-                                    parentId: true,
-                                },
-                            },
-                            permissions: true,
-                        },
-                    });
-
-                    const formattedJson = formatToParentChild(userModulesGrouped);
+                    const menu = user && await fetchModuleByRole(user.roleId).then((d) => d.json());
 
                     return {
                         id: user?.id,
@@ -74,7 +48,7 @@ const authConfig: NextAuthConfig = {
                         email: data.email,
                         roleId: user?.roleId,
                         permissions: user?.role?.permissions,
-                        modules: formattedJson
+                        modules: menu?.data
                     } as User
                 } catch (error) {
                     console.error("Error during authentication", error);
@@ -111,8 +85,8 @@ const authConfig: NextAuthConfig = {
 
             if (trigger === "update" && session) {
                 console.log('Update triggered at JWT');
-                const menu = await fetchModuleByRole(session.roleId).then((d)=>d.json());
-                const updateSession = {...session, modules:menu.data}
+                const menu = await fetchModuleByRole(session.roleId).then((d) => d.json());
+                const updateSession = { ...session, modules: menu.data }
                 token = { ...token, user: updateSession }
                 return token;
             };
@@ -137,8 +111,8 @@ const authConfig: NextAuthConfig = {
             return true;
         },
 
-        async authorized({ request , auth }) {
-            if(auth) return true
+        async authorized({ request, auth }) {
+            if (auth) return true
         }
     },
 
@@ -146,63 +120,3 @@ const authConfig: NextAuthConfig = {
 }
 
 export default authConfig;
-
-interface InputFormat {
-    id: string;
-    name: string;
-    path: string;
-    parentId: string | null;
-    permissions: number;
-    group: string | undefined;
-    subModules: InputFormat[] | null;
-}
-
-// Function to transform the input into a parent-child hierarchical format
-function formatToParentChild(input: any[]): InputFormat[] {
-    // A map to store all modules by their id
-    const moduleMap: { [key: string]: InputFormat } = {};
-
-    // Step 1: Create a module map where each module/submodule is keyed by id
-    input.forEach((item) => {
-        const module = item.module;
-        const subModule = item.subModule;
-
-        if (!moduleMap[module.id]) {
-            moduleMap[module.id] = {
-                id: module.id,
-                name: module.name,
-                path: module.path,
-                parentId: module.parentId,
-                permissions: item.permissions,
-                group: module.group?.name,
-                subModules: []
-            };
-        }
-
-        // If there is a submodule, process it similarly
-        if (subModule) {
-            if (!moduleMap[subModule.id]) {
-                moduleMap[subModule.id] = {
-                    id: subModule.id,
-                    name: subModule.name,
-                    path: subModule.path,
-                    parentId: subModule.parentId,
-                    permissions: item.permissions,
-                    group: undefined,
-                    subModules: []
-                };
-            }
-
-            // Add the submodule to the parent module's submodules
-            if (moduleMap[subModule.parentId!]) {
-                const parentModule = moduleMap[subModule.parentId!];
-                if (!parentModule.subModules!.some(s => s.id === subModule.id)) {
-                    parentModule.subModules!.push(moduleMap[subModule.id]);
-                }
-            }
-        }
-    });
-
-    // Step 2: Extract only the top-level modules (those with no parentId)
-    return Object.values(moduleMap).filter(module => module.parentId === null);
-}

@@ -3,10 +3,10 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useSidebar } from '@/components/ui/sidebar';
-import { BellDot, MenuIcon } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { MenuIcon } from 'lucide-react';
 import { useMounted } from '@/hooks/use-mounted';
 import HeaderBreadcrumb from './breadcrum-nav';
+import NotificationProvider from './notification-provider';
 
 export function CustomTrigger() {
     const { toggleSidebar } = useSidebar();
@@ -28,21 +28,7 @@ const Header: React.FC = React.memo(() => {
                 <HeaderBreadcrumb/>
 
                 <div className='ml-auto'>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant={'ghost'} className='size-8'>
-                                <BellDot className='size-5'></BellDot>
-                            </Button>
-                        </DropdownMenuTrigger>
-                        
-                        <DropdownMenuContent align='end'>
-                            <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                             
-                            <DropdownMenuItem>Team</DropdownMenuItem>
-                             
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                    <NotificationProvider/>
                 </div>
             </div>
         </header>

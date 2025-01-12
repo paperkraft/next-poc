@@ -3,9 +3,9 @@
 import React from "react";
 import { getFormattedDateTime } from "@/utils";
 import { DataTable } from "@/components/data-table/data-table";
-import { createColumns } from "@/app/settings/audit-log/column-data";
 import { DateWiseOnlineSession } from "@/app/action/audit.action";
 import { DetailsDialog } from "./view-details";
+import { createColumns } from "./column-data";
 interface AuditLogTableProp {
     data: {
         id: String,

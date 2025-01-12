@@ -1,17 +1,17 @@
-import AccessPage from "./AccessForm";
-import TitlePage from "@/components/custom/page-heading";
 import { Metadata } from "next";
+import TitlePage from "@/components/custom/page-heading";
 import NoRecordPage from "@/components/custom/no-record";
+import SomethingWentWrong from "@/components/custom/somthing-wrong";
+import AccessPage from "./AccessForm";
 import { fetchRoles } from "@/app/action/role.action";
 import { fetchModules } from "@/app/action/module.action";
-import SomethingWentWrong from "@/components/custom/somthing-wrong";
 
 export const metadata: Metadata = {
     title: "Access Control",
     description: "Define role access",
 };
 
-export default async function Page() {
+export default async function RBAC() {
     const modules = await fetchModules().then((d) => d.json());
     const isModules = modules && modules.success
     const hasModules = isModules && modules?.data?.length > 0;

@@ -17,19 +17,25 @@ export default function useSSE() {
     useEffect(() => {
         if (!session) return;
         const eventSource = new EventSource('/api/notifications/stream');
-        eventSource.onmessage = (event) => {
+        const handleNewMessage = (event: MessageEvent) => {
             try {
                 const newNotifications: Notification[] = JSON.parse(event.data);
-                setNotifications((prev) => {
-                    const ids = new Set(prev.map((notif) => notif.id));
-                    const uniqueNotifications = newNotifications.filter((notif) => !ids.has(notif.id));
-                    return [...uniqueNotifications, ...prev];
-                });
-                setCount(newNotifications.length)
+
+                // setNotifications((prev) => {
+                //     const ids = new Set(prev.map((notif) => notif.id));
+                //     const uniqueNotifications = newNotifications.filter((notif) => !ids.has(notif.id));
+                //     return [...uniqueNotifications, ...prev];
+                // });
+
+                setNotifications(newNotifications);
+                setCount(newNotifications.length);
+                
             } catch (error) {
-                console.error('Error parsing SSE message:', error)
+                console.error('Error parsing SSE message:', error);
             }
         };
+
+        eventSource.onmessage = handleNewMessage;
 
         eventSource.onerror = () => {
             console.error('SSE connection failed');

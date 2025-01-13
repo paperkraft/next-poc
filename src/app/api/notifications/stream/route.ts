@@ -46,23 +46,14 @@ export async function GET(_req: Request) {
     });
 }
 
-export const unreadNotifications = prisma.$extends({
-    model: {
-        notification: {
-            async getNotifications(userId: string) {
-                return await prisma.notification.findMany({
-                    where: { userId, read: false },
-                    orderBy: { createdAt: 'desc' },
-                });
-            },
-        }
-    },
-});
-
 const sendNotifications = async (controller: ReadableStreamDefaultController, userId: string) => {
     const encoder = new TextEncoder();
     try {
-        const notifications = await unreadNotifications.notification.getNotifications(userId);
+        const notifications = await prisma.notification.findMany({
+            where: { userId, read: false },
+            orderBy: { createdAt: 'desc' },
+        });
+
         if (notifications.length > 0) {
             controller.enqueue(encoder.encode(`data: ${JSON.stringify(notifications)}\n\n`));
         }

@@ -6,10 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
 export default function SendPushNotification() {
+    
+    const [message, setMessage] = useState<string | null>(null);
+    
     const { data } = useSession();
     const userId = data?.user?.id;
-
-    const [message, setMessage] = useState<string | null>(null);
 
     const handleSendNotification = () => {
         setMessage(null);

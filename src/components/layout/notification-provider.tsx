@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { BellIcon, CheckCheck, SettingsIcon } from 'lucide-react';
+import { BellIcon, CheckCheck, SettingsIcon, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -53,7 +53,7 @@ const NotificationProvider = () => {
                 </Button>
             </DropdownMenuTrigger>
 
-            <DropdownMenuContent align='end' className='min-w-64 max-w-72 shadow-lg'>
+            <DropdownMenuContent align='end' className='w-full min-w-64 max-w-72 shadow-lg'>
                 <DropdownMenuLabel className='p-2 text-lg flex items-center'>
                     <p className='ml-1'>Notifications</p>
                     <Button variant='ghost' size="icon" className='text-muted-foreground ml-auto'>
@@ -63,22 +63,25 @@ const NotificationProvider = () => {
 
                 <DropdownMenuSeparator />
 
-                <ScrollArea className={cn({ "h-80": notifications.length > 0 })}>
+                <ScrollArea className={cn({"max-h-80": notifications.length > 0 })}>
                     {notifications.length > 0 ? (
                         notifications.map((notification) => (
                             <DropdownMenuItem key={notification.id}>
-                                <Link href="#" className='w-full'>
-                                    <div className='p-1'>
+                                <Link href="#" className='w-full group'>
+                                    <div className='space-y-2 p-1'>
                                         <div className='flex max-h-10 overflow-hidden'>
                                             {notification.message}
-                                            <div className='bg-blue-500 rounded-full size-2 shrink-0 ml-auto'></div>
+                                            <div className='ml-auto shrink-0 flex flex-col items-end justify-between'>
+                                                <div className='bg-blue-500 rounded-full size-2 shrink-0'></div>
+                                                <X className='size-5 text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-red-500'
+                                                    onClick={() => handleMarkAsRead(notification.id)}
+                                                />
+                                            </div>
                                         </div>
-                                        <div className='flex mt-1'>
+
+                                        <div>
                                             <small className='text-muted-foreground'>
                                                 {new Date(notification.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour12: true, hour: '2-digit', minute: '2-digit' })}
-                                            </small>
-                                            <small className='hover:text-blue-500 ml-auto' onClick={() => handleMarkAsRead(notification.id)}>
-                                                {!notification.read && "Mark as read"}
                                             </small>
                                         </div>
                                     </div>
@@ -87,8 +90,10 @@ const NotificationProvider = () => {
                         ))
 
                     ) : (
-                        <DropdownMenuItem>
-                            <p>No new notifications</p>
+                        <DropdownMenuItem className='h-10'>
+                            <div className='w-full text-center'>
+                                No new notifications
+                            </div>
                         </DropdownMenuItem>
                     )}
                     <ScrollBar orientation='vertical' />

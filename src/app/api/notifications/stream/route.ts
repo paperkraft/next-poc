@@ -1,5 +1,4 @@
 import { auth } from '@/auth';
-import { PrismaClient } from '@prisma/client';
 import prisma from '@/lib/prisma';
 import notificationEmitter from '@/lib/event-emitter';
 
@@ -23,7 +22,7 @@ export async function GET(_req: Request) {
             // Send initial notifications
             await sendNotifications(controller, userId);
 
-            // Cleanup logic
+            // Cleanup
             controller.close = () => {
                 isStreamActive = false;
                 notificationEmitter.off('newNotification', onNewNotification);
@@ -47,7 +46,7 @@ export async function GET(_req: Request) {
     });
 }
 
-export const extendedPrisma = new PrismaClient().$extends({
+export const unreadNotifications = prisma.$extends({
     model: {
         notification: {
             async getNotifications(userId: string) {
@@ -60,10 +59,10 @@ export const extendedPrisma = new PrismaClient().$extends({
     },
 });
 
-const sendNotifications = async (controller: any, userId: string) => {
+const sendNotifications = async (controller: ReadableStreamDefaultController, userId: string) => {
     const encoder = new TextEncoder();
     try {
-        const notifications = await extendedPrisma.notification.getNotifications(userId);
+        const notifications = await unreadNotifications.notification.getNotifications(userId);
         if (notifications.length > 0) {
             controller.enqueue(encoder.encode(`data: ${JSON.stringify(notifications)}\n\n`));
         }

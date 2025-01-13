@@ -12,7 +12,6 @@ export function isNotificationSupported(): boolean {
 
 export function handleNotificationPermission(onSubscribe: (subs: PushSubscription | null) => void): void {
     const permission = Notification.permission;
-
     if (permission === 'granted') {
         registerServiceWorkerAndSubscribe(onSubscribe);
     }
@@ -70,7 +69,7 @@ export async function sendWebPushNotification({ message, userId, topic }: Notifi
         const pushBody = {
             title: 'Webdesk',
             body: message ?? 'Welcome to Webdesk',
-            image: '/sv.svg',
+            // image: '/sv.svg',
             icon: '/sv.svg',
             badge: '/sv.svg',
             url: 'http://localhost:4000/dashboard',

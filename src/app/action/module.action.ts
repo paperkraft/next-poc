@@ -1,5 +1,3 @@
-'use server'
-
 import prisma from "@/lib/prisma";
 import { IModule } from "../_Interface/Module";
 import { NextResponse } from "next/server";

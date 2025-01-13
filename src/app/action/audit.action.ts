@@ -1,5 +1,3 @@
-'use server'
-
 import prisma from "@/lib/prisma";
 import { getFormattedDateTime } from "@/utils";
 import { JsonObject } from "@prisma/client/runtime/library";

@@ -99,10 +99,12 @@ const NotificationProvider = () => {
                     <>
                         <DropdownMenuSeparator />
                         <div className='flex items-center p-2 px-4'>
-                            <small className='flex items-center cursor-pointer text-blue-500 hover:text-blue-700' onClick={() => handleMarkAsRead()}>
+                            <small className='flex items-center cursor-pointer text-muted-foreground hover:text-blue-600' onClick={() => handleMarkAsRead()}>
                                 <CheckCheck className='size-4 mr-1' /> Mark all as read
                             </small>
-                            <small className='cursor-pointer text-muted-foreground hover:text-blue-500 ml-auto'>View all</small>
+                            <Link href='/settings/notifications' className='ml-auto text-muted-foreground hover:text-blue-600 text-xs'>
+                                View all
+                            </Link>
                         </div>
                     </>
                 )}

@@ -14,15 +14,11 @@ export interface Notifications {
 }
 
 export default async function Notifications() {
-    const session = await auth();
-    const res = await getAllNotifications(session?.user?.id).then((d) => d.json());
-    const notifications: Notifications [] = res.data
-
     return (
         <>
             <TitlePage title='Notifications' description='Configure how you receive notifications.' />
             <div className="p-1">
-                <NotificationsList notifications={notifications}/>
+                <NotificationsList />
             </div>
         </>
     );

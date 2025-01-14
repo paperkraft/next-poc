@@ -9,9 +9,9 @@ import { cn } from '@/lib/utils';
 import useSSE from '@/hooks/use-sse';
 
 const NotificationProvider = () => {
-    const { notifications, setNotifications, count, setCount } = useSSE();
+    const { notifications, setNotifications, count, setUnreadCount } = useSSE();
 
-    const handleMarkAsRead = async (notificationIds?: string) => {
+    const handleMarkAsReadOL = async (notificationIds?: string) => {
 
         if (notificationIds) {
             const res = await fetch('/api/notifications', {
@@ -22,7 +22,7 @@ const NotificationProvider = () => {
             if (result.success) {
                 const update = notifications.filter((item) => item.id !== notificationIds);
                 setNotifications(update);
-                setCount(update.length);
+                setUnreadCount(update.length);
             }
         } else {
             const unreadIds = notifications.filter((n) => !n.read).map((n) => n.id);
@@ -34,10 +34,34 @@ const NotificationProvider = () => {
             const result = await res.json();
             if (result.success) {
                 setNotifications([]);
-                setCount(0);
+                setUnreadCount(0);
             }
         }
     }
+
+    // Ensure that we avoid infinite update loops in `handleMarkAsRead`
+    const handleMarkAsRead = async (notificationIds?: string) => {
+        const idsToMark = notificationIds ? [notificationIds] : notifications.filter((n) => !n.read).map((n) => n.id);
+
+        try {
+            // Only proceed if notifications were selected
+            const res = await fetch('/api/notifications', {
+                method: 'PUT',
+                body: JSON.stringify({ notificationIds: idsToMark }),
+            });
+            const result = await res.json();
+
+            if (result.success) {
+                // Update state only if there were successful changes
+                const updatedNotifications = notifications.filter((notification) => !idsToMark.includes(notification.id));
+                // Update global state and count
+                setNotifications(updatedNotifications);
+                setUnreadCount(updatedNotifications?.length);
+            }
+        } catch (error) {
+            console.error('Error in marking notifications as read', error);
+        }
+    };
 
     return (
         <DropdownMenu>
@@ -53,7 +77,7 @@ const NotificationProvider = () => {
                 </Button>
             </DropdownMenuTrigger>
 
-            <DropdownMenuContent align='end' className='w-full min-w-64 max-w-72 shadow-lg'>
+            <DropdownMenuContent align='end' className='min-w-64 max-w-72 shadow-lg'>
                 <DropdownMenuLabel className='p-2 text-lg flex items-center'>
                     <p className='ml-1'>Notifications</p>
                     <Button variant='ghost' size="icon" className='text-muted-foreground ml-auto'>
@@ -63,7 +87,7 @@ const NotificationProvider = () => {
 
                 <DropdownMenuSeparator />
 
-                <ScrollArea className={cn({"max-h-80": notifications.length > 0 })}>
+                <ScrollArea className={cn({"h-80": notifications.length > 0 })}>
                     {notifications.length > 0 ? (
                         notifications.map((notification) => (
                             <DropdownMenuItem key={notification.id}>

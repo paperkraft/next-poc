@@ -2,11 +2,11 @@ import { NextAuthConfig, User } from "next-auth"
 import prisma from "@/lib/prisma";
 import Credentials from "next-auth/providers/credentials";
 import GitHub from "next-auth/providers/github";
-import bcrypt from 'bcryptjs';
 import { AUTH_SECRET, GITHUB_ID, GITHUB_SECRET } from "@/utils/constants";
 import { logAuditAction } from "./audit-log";
 import { getIpAddress } from "./utils";
 import { fetchModuleByRole } from "@/app/action/module.action";
+import { comparePassword } from "@/utils/password";
 
 const authConfig: NextAuthConfig = {
     secret: AUTH_SECRET,
@@ -15,8 +15,8 @@ const authConfig: NextAuthConfig = {
         Credentials({
             name: "Credentails",
             credentials: {
-                email: { label: "Email", type: "text" },
-                password: { label: "Password", type: "password" },
+                email: {},
+                password: {},
             },
             authorize: async (credentials) => {
 
@@ -33,12 +33,12 @@ const authConfig: NextAuthConfig = {
                         include: { role: true }
                     });
 
-                    if (user && !(await bcrypt.compare(data.password, user.password as string))) {
+                    if (user && !(await comparePassword({ plainPassword: data.password, hashPassword: `${user.password}` }))) {
                         await logAuditAction('Error', 'auth/signin', { error: 'Invalid credentials' }, user?.id);
                         return null
                     }
 
-                    // await logAuditAction('login', 'auth/signin', { user: `${user?.firstName} ${user?.lastName}` }, user?.id);
+                    await logAuditAction('login', 'auth/signin', { user: `${user?.firstName} ${user?.lastName}` }, user?.id);
 
                     const menu = user && await fetchModuleByRole(user.roleId).then((d) => d.json());
 
@@ -94,7 +94,7 @@ const authConfig: NextAuthConfig = {
         },
 
 
-        async signIn({ user, account, profile }) {
+        async signIn({ user }) {
 
             const existingUser = await prisma.user.findUnique({
                 where: { email: user.email as string }
@@ -111,9 +111,17 @@ const authConfig: NextAuthConfig = {
             return true;
         },
 
-        async authorized({ request, auth }) {
-            if (auth) return true
-        }
+        authorized({ auth, request: { nextUrl } }) {
+            const isLoggedIn = !!auth?.user;
+            const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
+            if (isOnDashboard) {
+                if (isLoggedIn) return true;
+                return false;
+            } else if (isLoggedIn) {
+                return Response.redirect(new URL('/dashboard', nextUrl));
+            }
+            return true;
+        },
     },
 
     pages: { signIn: '/signin' },

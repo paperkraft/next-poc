@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { getAllNotifications } from '@/app/action/notifications.action';
+import { handleNoId } from '@/app/action/response.action';
+import notificationEmitter from '@/lib/event-emitter';
 
 export async function PUT(req: Request) {
     const { notificationIds } = await req.json();
@@ -11,15 +14,27 @@ export async function PUT(req: Request) {
                 where: { id: { in: notificationIds } },
                 data: { read: true },
             });
-
         } else {
             await prisma.notification.update({
                 where: { id: notificationIds },
                 data: { read: true },
             });
         }
+
         return NextResponse.json({ success: true });
     } catch (error) {
         return NextResponse.json({ success: false });
+    } finally {
+        console.log('trigger')
+        notificationEmitter.emit('newNotification');
     }
+}
+
+export async function GET(req: Request) {
+    const { searchParams } = new URL(req.url);
+    const userId = searchParams.get('userId');
+    if (!userId) {
+        return await handleNoId("UserId required")
+    }
+    return await getAllNotifications(userId);
 }

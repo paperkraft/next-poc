@@ -11,7 +11,7 @@ export async function GET(_req: Request) {
         async start(controller) {
             // Listen for new notifications
             const onNewNotification = async () => {
-                console.log('New notification received');
+                console.log('New notification');
                 if (!isStreamActive) return;
                 await sendNotifications(controller, userId);
             };

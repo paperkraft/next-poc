@@ -10,85 +10,72 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import useSSE from "@/hooks/use-sse";
 import { useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { useSession } from "next-auth/react";
-import Loading from "@/app/loading";
 
-export default function NotificationsList() {
+interface NotificationsListProps {
+    initialNotifications: Notifications[];
+}
+
+export default function NotificationsList({ initialNotifications }: NotificationsListProps) {
+
+    const [filterNotifications, setFilterNotifications] = useState<Notifications[]>(initialNotifications);
+    const [unread, setUnread] = useState<Notifications[]>(initialNotifications.filter((n) => !n.read));
+
     const route = useRouter();
 
-    const { setNotifications } = useSSE();
-    const { data: session } = useSession();
+    const { setNotifications, notifications } = useSSE();
 
-    const userId = session?.user?.id;
-
-    const { data: apiNotifications, isLoading } = useQuery({
-        queryKey: ["notification", userId],
-        queryFn: async () => {
-            const res = await fetch(`/api/notifications?userId=${userId}`);
-            const result = await res.json();
-            return result.success ? result.data : [];
-        },
-        enabled: !!userId
-    });
-
-    const [filterNotifications, setFilterNotifications] = useState<Notifications[]>();
-    const [unread, setUnread] = useState<Notifications[]>([]);
 
     useEffect(() => {
-        if (apiNotifications) {
-            setFilterNotifications(apiNotifications);
-
-            const unreadNotifications = apiNotifications.filter((item: Notifications) => !item.read);
-            setUnread(unreadNotifications);
-            setNotifications(unreadNotifications);
+        if (notifications) {
+            const ids = notifications.map((n) => n.id)
+            const filtered = initialNotifications.map((n) => !ids.includes(n.id) ? { ...n, read: true } : n);
+            console.log('sse notifications', notifications);
+            console.log('sse filter', filtered);
+            setFilterNotifications(filtered)
         }
-    }, [apiNotifications]);
+    }, [notifications, initialNotifications]);
+
+
+    useEffect(() => {
+        if (unread) {
+            setNotifications(unread);
+        }
+    }, [unread]);
 
     // Handler for marking notifications as read
-    const handleMarkAsRead = useCallback(
-        async (notificationIds?: string) => {
-            const idsToMark = notificationIds ? [notificationIds] : unread.map((n: Notifications) => n.id);
+    const handleMarkAsRead = useCallback(async (notificationIds?: string) => {
+        const idsToMark = notificationIds ? [notificationIds] : unread.map((n: Notifications) => n.id);
 
-            if (idsToMark.length === 0) return;
+        if (idsToMark.length === 0) return;
 
-            try {
-                const res = await fetch('/api/notifications', {
-                    method: 'PUT',
-                    body: JSON.stringify({ notificationIds: idsToMark }),
-                });
+        try {
+            const res = await fetch('/api/notifications', {
+                method: 'PUT',
+                body: JSON.stringify({ notificationIds: idsToMark }),
+            });
 
-                const result = await res.json();
+            const result = await res.json();
 
-                if (result.success) {
-                    toast.success(notificationIds ? 'Marked as read' : 'Marked all as read');
-                    const updatedNotifications = unread.filter((notification: Notifications) => !idsToMark.includes(notification.id));
-                    setNotifications(updatedNotifications as any);
-                }
-
-            } catch (error) {
-                console.error('Error in marking notifications as read', error);
-            } finally {
-                route.refresh();
+            if (result.success) {
+                toast.success(notificationIds ? 'Marked as read' : 'Marked all as read');
+                // const updatedNotifications = unread.filter((notification: Notifications) => !idsToMark.includes(notification.id));
+                const filterNotify = initialNotifications.map((n) => (idsToMark.includes(n.id) ? { ...n, read: true } : n))
+                setUnread(filterNotify.filter((n) => !n.read));
+                //localstate
+                console.log('filterNotify', filterNotify);
+                setFilterNotifications(filterNotify)
             }
-        },
-        [unread, route, setNotifications]
-    );
 
-    if (isLoading) {
-        return <Loading />;
-    }
+        } catch (error) {
+            console.error('Error in marking notifications as read', error);
+        } finally {
+            route.refresh();
+        }
+    }, [route]);
 
     return (
         <div className="space-y-4">
             <div className="flex items-center">
-                <Tabs defaultValue={"all"}>
-                    <TabsList>
-                        <TabsTrigger value="all" className="w-20" onClick={() => setFilterNotifications(apiNotifications)}>All</TabsTrigger>
-                        <TabsTrigger value="unread" className="w-20" disabled={unread?.length === 0} onClick={() => setFilterNotifications(unread)}>Unread</TabsTrigger>
-                    </TabsList>
-                </Tabs>
-
                 {unread?.length > 0 && (
                     <Button variant={'ghost'} className='text-muted-foreground hover:text-blue-600 ml-auto' onClick={() => handleMarkAsRead()}>
                         <CheckCheckIcon className='size-4 mr-1' /> Mark all as read
@@ -96,7 +83,7 @@ export default function NotificationsList() {
                 )}
             </div>
 
-            <ScrollArea className={cn({ "h-[calc(100vh-250px)]": apiNotifications?.length > 0 })}>
+            <ScrollArea className={cn({ "h-[calc(100vh-250px)]": initialNotifications?.length > 0 })}>
                 <ul className="space-y-2">
                     {filterNotifications?.map((notification) => (
                         <li key={notification.id} className={cn("hover:bg-gray-50 rounded", { "bg-gray-50": !notification.read })}>

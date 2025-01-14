@@ -6,27 +6,24 @@ import notificationEmitter from '@/lib/event-emitter';
 
 export async function PUT(req: Request) {
     const { notificationIds } = await req.json();
-
     try {
 
         if (Array.isArray(notificationIds)) {
-            await prisma.notification.updateMany({
+            const result = await prisma.notification.updateMany({
                 where: { id: { in: notificationIds } },
                 data: { read: true },
             });
+            return NextResponse.json({ success: true, data: result });
         } else {
-            await prisma.notification.update({
+            const result = await prisma.notification.update({
                 where: { id: notificationIds },
                 data: { read: true },
             });
+            return NextResponse.json({ success: true, data: result });
         }
 
-        return NextResponse.json({ success: true });
     } catch (error) {
         return NextResponse.json({ success: false });
-    } finally {
-        console.log('trigger')
-        notificationEmitter.emit('newNotification');
     }
 }
 

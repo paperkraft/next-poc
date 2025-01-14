@@ -1,12 +1,13 @@
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-
-interface Notification {
+export interface Notification {
     id: string;
-    title: string;
     message: string;
+    userId: string | null;
+    status: string;
     read: boolean;
-    createdAt: string;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 export default function useSSE() {
@@ -35,7 +36,6 @@ export default function useSSE() {
             eventSource.close();
         };
     }, [session]);
-
 
     // Function to handle updates when notifications are fetched from the API
     const updateNotifications = (newNotifications: Notification[]) => {

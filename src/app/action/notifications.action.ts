@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/prisma"
 import { handleError, handleNoId, handleSuccess } from "./response.action"
+import { NextResponse } from "next/server"
 
 export const getAllNotifications = async (userId: string) => {
     try {
@@ -15,7 +16,20 @@ export const getAllNotifications = async (userId: string) => {
             orderBy: { createdAt: 'desc' }
         })
 
-        return await handleSuccess("Success", notifications)
+        // Set no-cache headers
+        const response = NextResponse.json(
+            { success: true, data: notifications },
+            {
+                status: 200,
+                headers: {
+                    "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+                    "Pragma": "no-cache",
+                    "Expires": "0",
+                },
+            }
+        );
+
+        return response;
 
     } catch (error) {
         return await handleError("Error fetching notifications", error)

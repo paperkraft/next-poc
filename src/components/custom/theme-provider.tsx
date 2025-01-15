@@ -5,7 +5,6 @@ import { AppProgressBar as ProgressBar } from 'next-nprogress-bar';
 import { useMounted } from "@/hooks/use-mounted";
 
 export type ThemeProps = {
-    // setCurrentTheme: Dispatch<SetStateAction<string>>;
     toggleTheme: () => void;
     currentTheme: string;
 }

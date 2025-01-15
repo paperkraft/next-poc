@@ -104,7 +104,7 @@ const BellNotifications = () => {
                             <small className='flex items-center cursor-pointer text-muted-foreground hover:text-blue-600' onClick={() => handleMarkAsRead()}>
                                 <CheckCheck className='size-4 mr-1' /> Mark all as read
                             </small>
-                            <Link href='/settings/notifications' className='ml-auto text-muted-foreground hover:text-blue-600 text-xs'>
+                            <Link href='/notifications' className='ml-auto text-muted-foreground hover:text-blue-600 text-xs'>
                                 View all
                             </Link>
                         </div>

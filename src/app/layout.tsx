@@ -6,8 +6,8 @@ import { NextAuthProvider } from "@/components/custom/auth-provider";
 import { cn } from "@/lib/utils";
 import AppLayout from "@/components/layout/app-layout";
 import { ChildProps } from "@/types";
-import "./globals.css";
-import { NotificationsProvider } from "@/context/notification-context";
+import "@/styles/globals.css";
+import ThemeWrapper from "@/components/custom/theme-wrapper";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,9 +25,11 @@ export default function RootLayout({ children }: ChildProps) {
       <body className={cn(inter.className)}>
         <NextAuthProvider>
           <ThemeProvider>
-            <AppLayout>
-              {children}
-            </AppLayout>
+            <ThemeWrapper>
+              <AppLayout>
+                {children}
+              </AppLayout>
+            </ThemeWrapper>
             <Toaster richColors />
           </ThemeProvider>
         </NextAuthProvider>

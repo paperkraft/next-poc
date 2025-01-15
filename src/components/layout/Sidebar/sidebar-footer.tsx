@@ -25,12 +25,12 @@ const options = [
     },
     {
         label: 'Setting',
-        url: '#',
+        url: '/profile-settings',
         icon: Settings2Icon
     },
     {
         label: 'Notifications',
-        url: '#',
+        url: '/notifications',
         icon: BellIcon
     },
 ]

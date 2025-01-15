@@ -68,18 +68,15 @@ export default function AllowNotification() {
                     return
                 } else {
                     console.log('Update Push Subscription');
-                    localStorage.setItem('push-subscription', JSON.stringify(sub));
-                    setSubscription(sub);
-                    const serializedSub = JSON.parse(JSON.stringify(sub));
-                    await subscribeUser(serializedSub);
                 }
             } else {
                 console.log('New Push Subscription');
-                localStorage.setItem('push-subscription', JSON.stringify(sub));
-                setSubscription(sub);
-                const serializedSub = JSON.parse(JSON.stringify(sub));
-                await subscribeUser(serializedSub);
             }
+            
+            localStorage.setItem('push-subscription', JSON.stringify(sub));
+            setSubscription(sub);
+            const serializedSub = JSON.parse(JSON.stringify(sub));
+            await subscribeUser(serializedSub);
         } catch (error) {
             console.error("Error subscribing to push notifications:", error);
         }

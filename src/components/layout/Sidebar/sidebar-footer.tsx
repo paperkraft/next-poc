@@ -41,7 +41,7 @@ const SidebarFooterContent = React.memo(() => {
     const initials = user && user?.name?.split(' ').map((word: any[]) => word[0]).join('').toUpperCase();
 
     const logout = async () => {
-        // await logAuditAction('logout', 'auth/signout', { user: `${user?.name}` }, user.id);
+        await logAuditAction('logout', 'auth/signout', { user: `${user?.name}` }, user.id);
         signOut({ redirect: false });
     }
 

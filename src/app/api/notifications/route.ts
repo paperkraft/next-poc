@@ -8,17 +8,17 @@ export async function PUT(req: Request) {
     try {
 
         if (Array.isArray(notificationIds)) {
-            const result = await prisma.notification.updateMany({
+            await prisma.notification.updateMany({
                 where: { id: { in: notificationIds } },
                 data: { read: true },
             });
-            return NextResponse.json({ success: true, data: result });
+            return NextResponse.json({ success: true });
         } else {
-            const result = await prisma.notification.update({
+            await prisma.notification.update({
                 where: { id: notificationIds },
                 data: { read: true },
             });
-            return NextResponse.json({ success: true, data: result });
+            return NextResponse.json({ success: true });
         }
 
     } catch (error) {

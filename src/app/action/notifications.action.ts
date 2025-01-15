@@ -13,7 +13,8 @@ export const getAllNotifications = async (userId: string) => {
 
         const notifications = await prisma.notification.findMany({
             where: { userId },
-            orderBy: { createdAt: 'desc' }
+            orderBy: { createdAt: 'desc' },
+            take: 50
         })
 
         // Set no-cache headers

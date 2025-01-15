@@ -129,8 +129,8 @@ export default function AllowNotification() {
     return (
         <div>
             {notificationDenied && (
-                <Alert variant="default" className='bg-yellow-50 border border-yellow-300 text-yellow-900'>
-                    <AlertCircleIcon className="size-4 !text-yellow-900" />
+                <Alert variant="default" className='bg-yellow-50 border border-yellow-300 text-yellow-900 dark:bg-yellow-50/5 dark:border-accent dark:text-yellow-600'>
+                    <AlertCircleIcon className="size-4 !text-inherit" />
                     <AlertTitle className='flex'>
                         It looks like you denied notifications.
                         <X className='size-4 ml-auto cursor-pointer' onClick={() => setNotificationDenied(false)} />
@@ -145,10 +145,10 @@ export default function AllowNotification() {
                 </Alert>
             )}
 
-            {!subscription && (
+            {!subscription && !notificationDenied && (
                 <>
-                    <Alert variant="default" className='bg-yellow-50 border border-yellow-300 text-yellow-900'>
-                        <AlertCircleIcon className="size-4 !text-yellow-900" />
+                    <Alert variant="default" className='bg-yellow-50 border border-yellow-300 text-yellow-900 dark:bg-yellow-50/5 dark:border-accent dark:text-yellow-600'>
+                        <AlertCircleIcon className="size-4 !text-inherit" />
                         <AlertTitle>You are not subscribed to push notifications.</AlertTitle>
                         <AlertDescription className='space-y-2'>
                             <Button variant='outline' size='sm' onClick={() => subscribeToPush()}>Subscribe</Button>

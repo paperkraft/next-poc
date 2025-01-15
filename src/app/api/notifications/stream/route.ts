@@ -52,6 +52,7 @@ const sendNotifications = async (controller: ReadableStreamDefaultController, us
         const notifications = await prisma.notification.findMany({
             where: { userId, read: false },
             orderBy: { createdAt: 'desc' },
+            take: 10
         });
 
         if (notifications.length > 0) {

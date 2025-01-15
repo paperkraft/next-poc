@@ -41,7 +41,7 @@ const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
                         {children}
                         <ProgressBar
                             height="4px"
-                            color="#fffd00"
+                            color="rgb(26 139 244)"
                             options={{ showSpinner: false }}
                             shallowRouting
                         />

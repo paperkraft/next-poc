@@ -15,7 +15,8 @@ import ButtonContent from "@/components/custom/button-content";
 
 export const ModuleFormSchema = z.object({
   name: z.string().min(1, { message: "Module is required." }),
-  group: z.object({ value: z.string() }),
+  url: z.string().min(1, { message: "URL is required." }),
+  group: z.string(),
   isParent: z.boolean(),
   parent: z.object({ value: z.string() }).optional()
 }).refine((data) => {
@@ -28,13 +29,13 @@ export const ModuleFormSchema = z.object({
   path: ['parent.value']
 }
 ).refine((d) => {
-  if (!d.isParent && !d?.group?.value) {
+  if (!d.isParent && !d?.group) {
     return false;
   }
   return true;
 }, {
   message: "Group is required to categorized",
-  path: ['group.value']
+  path: ['group']
 }
 )
 
@@ -49,37 +50,39 @@ export default function AddModule({ modules, groups }: { modules: IModule[], gro
     resolver: zodResolver(ModuleFormSchema),
     defaultValues: {
       name: "",
-      group: { value: "" },
+      url: "",
+      group: "",
       parent: { value: "" },
       isParent: false
     },
   });
 
   const onSubmit = async (data: ModuleFormValues) => {
+    const url = data.url.startsWith('/') ? data.url : `/${data.url}`
     const final = data.isParent
-      ? { name: data.name, parentId: data?.parent?.value }
-      : { name: data.name, parentId: null, groupId: data?.group?.value }
+      ? { name: data.name, path: url, parentId: data?.parent?.value }
+      : { name: data.name, path: url, parentId: undefined, groupId: data?.group }
 
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/master/module`, {
-          method: "POST",
-          body: JSON.stringify(final),
-        }).then((d) => d.json()).catch((err) => console.error(err));
-    
-        if (res.success) {
-          toast.success('Module Created')
-          router.push('.');
-        } else {
-          toast.error('Failed to create module')
-        }
-      } catch (error) {
-        console.error(error)        
-        toast.error("Failed to create module. Please try again later.");
-      } finally {
-        router.refresh();
-        setLoading(false);
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/master/module`, {
+        method: "POST",
+        body: JSON.stringify(final),
+      }).then((d) => d.json()).catch((err) => console.error(err));
+
+      if (res.success) {
+        toast.success('Module Created')
+        router.push('.');
+      } else {
+        toast.error('Failed to create module')
       }
+    } catch (error) {
+      console.error(error)
+      toast.error("Failed to create module. Please try again later.");
+    } finally {
+      router.refresh();
+      setLoading(false);
+    }
   };
 
   return (
@@ -93,10 +96,6 @@ export default function AddModule({ modules, groups }: { modules: IModule[], gro
           reset
         />
 
-        <SelectController name={`group.value`} label="Category"
-          options={groups ?? []}
-          description={` ${form.watch('name')} will placed under : ${form.watch('group.value')}`} />
-
         <SwitchButton name="isParent" label="Is Sub Module?" />
 
         {
@@ -105,12 +104,26 @@ export default function AddModule({ modules, groups }: { modules: IModule[], gro
               description={`This will be parent module of ${form.watch('name')}`} />)
         }
 
+        {
+          !form.watch('isParent') &&
+          <SelectController name={`group`} label="Group"
+            options={groups ?? []}
+            description={form.watch('name') ? `${form.watch('name')} will placed under this group` : undefined} />
+        }
+
+        <InputController
+          type="text"
+          name="url"
+          label="URL"
+          placeholder="Enter URL"
+          description={`This will be use for routing.`}
+          reset
+        />
+
         <div className="flex justify-end my-4 gap-2">
-          <Button variant={"outline"} onClick={(e) => { e.preventDefault(); form.reset(); }} >
-            Reset
-          </Button>
+          <Button type="button" variant={"outline"} onClick={() => form.reset()}>Reset</Button>
           <Button type="submit" disabled={loading}>
-              <ButtonContent status={loading} text={"Create"}/>
+            <ButtonContent status={loading} text={"Create"} />
           </Button>
         </div>
       </form>
@@ -127,7 +140,7 @@ function formatModules(modules: IModule[], parentLabel: string = ''): IOption[] 
 
     // Recursively process submodules if any
     if (module.subModules && module.subModules.length > 0) {
-      const subModules = formatModules(module.subModules, label);
+      const subModules = formatModules(module.subModules as any, label);
       result.push(...subModules);
     }
   });

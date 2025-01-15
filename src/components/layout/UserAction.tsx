@@ -55,7 +55,7 @@ const UserAction = () => {
       <div className="flex items-center">
         <DropdownMenu>
           <DropdownMenuTrigger>
-            <CircleUserRound className="w-5 h-5 text-primary-foreground dark:text-white cursor-pointer" />
+            <CircleUserRound className="size-5 cursor-pointer" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className={cn("w-56 mt-4 mr-1 [&_svg]:w-5 [&_svg]:stroke-[1.5] [&_svg]:mr-2 [&_svg]:h-5")}>
             

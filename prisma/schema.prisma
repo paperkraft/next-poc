@@ -14,6 +14,9 @@ model Role {
   permissions       Int
   users             User[] // One-to-many relation to Users
   modulePermissions ModulePermission[] // One-to-many relation to ModulePermissions
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // Permissions assigned to modules
@@ -21,38 +24,51 @@ model Permission {
   id       String  @id @default(auto()) @map("_id") @db.ObjectId
   name     String  @unique
   bitmask  Int // Store permission bits for granular access control
-  module   Module? @relation(fields: [moduleId], references: [id])
+  module   Module? @relation(fields: [moduleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   moduleId String? @db.ObjectId
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // Users in the system
 model User {
-  id           String  @id @default(auto()) @map("_id") @db.ObjectId
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
   firstName    String?
   lastName     String?
   username     String?
-  email        String  @unique
+  email        String     @unique
   password     String?
   phone        String?
   organization String?
   state        String?
   city         String?
-  roleId       String  @db.ObjectId
-  role         Role    @relation(fields: [roleId], references: [id])
+  ip           String?
+  roleId       String     @db.ObjectId
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  auditLog     AuditLog[]
+  subscription Subscription[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // Define a module, which can have submodules (hierarchical)
 model Module {
   id                   String             @id @default(auto()) @map("_id") @db.ObjectId
   name                 String
+  path                 String?
   groupId              String?            @db.ObjectId
   parentId             String?            @db.ObjectId
-  group                Group?             @relation(fields: [groupId], references: [id])
+  group                Group?             @relation(fields: [groupId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   parent               Module?            @relation("ModuleParent", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   permissions          Permission[] // Module permissions
   modulePermissions    ModulePermission[] // ModulePermissions relation
   subModules           Module[]           @relation("ModuleParent") // Many-to-many for submodules
   subModulePermissions ModulePermission[] @relation("ModuleParent") // Many-to-many relation for submodule permissions
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // Permissions assigned to specific roles and modules (including submodules)
@@ -63,9 +79,12 @@ model ModulePermission {
   subModuleId String? @db.ObjectId
   permissions Int
 
-  role      Role    @relation(fields: [roleId], references: [id])
-  module    Module  @relation(fields: [moduleId], references: [id])
-  subModule Module? @relation("ModuleParent", fields: [subModuleId], references: [id])
+  role      Role    @relation(fields: [roleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  module    Module  @relation(fields: [moduleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  subModule Module? @relation("ModuleParent", fields: [subModuleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([roleId, moduleId]) // Ensure that each role can have only one set of permissions per module
   @@unique([roleId, moduleId, subModuleId]) // Unique constraint for module and submodule permissions
@@ -77,4 +96,42 @@ model Group {
   name String @unique
 
   modules Module[] // One-to-many relation with modules
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AuditLog {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  action    String
+  entity    String
+  userId    String   @db.ObjectId
+  details   Json
+  device    Json?
+  timestamp DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  message   String
+  userId    String?
+  status    String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Subscription {
+  id           String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String  @db.ObjectId
+  subscription Json
+  topic        String?
+  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

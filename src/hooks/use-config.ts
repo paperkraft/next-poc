@@ -11,23 +11,8 @@ type UserConfig = {
     modules: IModule[]
 } | null;
 
-type GroupConfig = {
-   id:string,
-   name:string
-}[] | null
-
 const userAtom = atomWithStorage<UserConfig>("user", null)
-const groupAtom = atomWithStorage<GroupConfig>("groups", null)
-const menusAtom = atomWithStorage<IModule[] | null>("menus", null)
 
 export function userConfig() {
     return useAtom(userAtom)
-}
-
-export function groupConfig() {
-    return useAtom(groupAtom)
-}
-
-export function menusConfig() {
-    return useAtom(menusAtom)
 }

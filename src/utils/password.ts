@@ -6,17 +6,17 @@ export async function makePassword(plainPassword: string): Promise<string> {
     const hash = await bcrypt.hash(plainPassword, salt);
     return hash;
   } catch (err) {
+    console.log(err);
     throw new Error('Error hashing password');
   }
 }
 
-export async function comparePassword({
-  plainPassword,
-  hashPassword
-}: {
+interface ComparePasswordProps {
   plainPassword: string,
   hashPassword: string
-}): Promise<boolean> {
+}
+
+export async function comparePassword({ plainPassword, hashPassword }: ComparePasswordProps): Promise<boolean> {
   try {
     return await bcrypt.compare(plainPassword, hashPassword);
   } catch (err) {

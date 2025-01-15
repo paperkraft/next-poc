@@ -1,9 +1,9 @@
-import Dashboard from "./Dashboard";
+import AllowNotification from "@/components/custom/allow-notification";
 
 export default function Page() {
   return (
     <>
-      <Dashboard/>
+      <AllowNotification />
     </>
   );
 }

@@ -166,7 +166,7 @@ export default function RoleEdit({ data }: { data: Role }) {
                 </div>
               </div>
               <div className="flex justify-end my-4 gap-2">
-                <Button variant={"outline"} onClick={() => router.back()} >
+                <Button type="button" variant={"outline"} onClick={() => router.back()} >
                   Cancel
                 </Button>
                 <Button type="submit" disabled={loading}>

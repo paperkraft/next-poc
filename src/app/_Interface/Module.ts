@@ -3,6 +3,7 @@ import { IGroup } from "./Group";
 interface ISubModule {
     id: string;
     name: string;
+    path: string;
     parentId: string | null;
     permissions: number | null;
     subModules: ISubModule[];
@@ -11,7 +12,8 @@ interface ISubModule {
 export interface IModule {
     id: string;
     name: string;
-    group?: string | null | undefined;
+    path: string | null;
+    group?: string | undefined;
     parentId: string | null;
     permissions: number | null;
     subModules: ISubModule[];
@@ -21,6 +23,7 @@ export interface IModule {
 export interface IModuleFormat {
     id: string;
     name: string;
+    path: string;
     parentId: string | null;
     subModules: IModuleFormat[] | null
 }
@@ -29,6 +32,7 @@ export interface IModuleFormat {
 export interface InputFormat {
     id: string,
     name: string,
+    path: string;
     group?: IGroup | null;
     parentId: string | null,
     subModules: InputFormat[] | null

@@ -21,7 +21,7 @@ async function main() {
   await prisma.role.create({
     data: {
       name: 'guest',
-      permissions: 3,
+      permissions: 1,
     },
   });
 
@@ -58,6 +58,7 @@ async function main() {
       { name: "Module" },
       { name: "Picture" },
       { name: "Uncategorized" },
+      { name: "Administrative" },
     ]
   });
   // Fetch the groups to get their IDs since createMany doesn't return created records
@@ -69,6 +70,7 @@ async function main() {
     data: {
       groupId: groupList[0].id,
       name: 'Dashboard',
+      path:'/dashboard'
     },
   });
 
@@ -77,6 +79,7 @@ async function main() {
       { name: "Settings", groupId: groupList[0].id },
       { name: "Gallery", groupId: groupList[4].id },
       { name: "Role", groupId: groupList[1].id },
+      { name: "Groups", groupId: groupList[1].id },
       { name: "Module", groupId: groupList[1].id },
       { name: "Academics", groupId: groupList[3].id },
       { name: "Student", groupId: groupList[3].id },
@@ -100,7 +103,6 @@ async function main() {
       firstName: 'Vishal',
       lastName: 'Sannake',
       username: 'vishal',
-      // name: 'Vishal Sannake',
       email: 'vishal.sannake@akronsystems.com',
       password: hash,
       phone: '8888812345',

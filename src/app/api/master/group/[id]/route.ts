@@ -1,3 +1,4 @@
+import { logAuditAction } from "@/lib/audit-log";
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -26,12 +27,15 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
             data: { name }
         });
 
+        await logAuditAction('Update', 'master/groups', { data });
+
         return NextResponse.json(
             { success: true, message: "Group updated", data },
             { status: 200 }
         );
     } catch (error) {
         console.error(error);
+        await logAuditAction('Error', 'master/groups', { error: "Error updating group" });
         return NextResponse.json(
             { success: false, message: "Error updating group" },
             { status: 500 }
@@ -47,6 +51,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
             { status: 400 }
         );
     }
+
     try {
         const data = await prisma.group.findUnique({
             where: { id: id },

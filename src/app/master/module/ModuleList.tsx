@@ -28,8 +28,8 @@ const ModuleList = memo(({ data }: { data: IModule[] }) => {
 
     return (
         <>
-            <ToggleGroup type="single" size={"sm"} className="justify-end my-4">
-                <ToggleGroupItem value={'list'} onClick={() => setToggle(false)} defaultChecked><List className="h-4 w-4" /></ToggleGroupItem>
+            <ToggleGroup type="single" size={"sm"} className="justify-end my-4" defaultValue="list">
+                <ToggleGroupItem value={'list'} onClick={() => setToggle(false)}><List className="h-4 w-4" /></ToggleGroupItem>
                 <ToggleGroupItem value={'group'} onClick={() => setToggle(true)}><LayoutDashboard className="h-4 w-4" /></ToggleGroupItem>
             </ToggleGroup>
             {

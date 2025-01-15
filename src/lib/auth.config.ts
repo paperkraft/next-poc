@@ -2,11 +2,11 @@ import { NextAuthConfig, User } from "next-auth"
 import prisma from "@/lib/prisma";
 import Credentials from "next-auth/providers/credentials";
 import GitHub from "next-auth/providers/github";
-import bcrypt from 'bcryptjs';
 import { AUTH_SECRET, GITHUB_ID, GITHUB_SECRET } from "@/utils/constants";
-import { userConfig } from "@/hooks/use-config";
-
-
+import { logAuditAction } from "./audit-log";
+import { getIpAddress } from "./utils";
+import { fetchModuleByRole } from "@/app/action/module.action";
+import { comparePassword } from "@/utils/password";
 
 const authConfig: NextAuthConfig = {
     secret: AUTH_SECRET,
@@ -15,63 +15,46 @@ const authConfig: NextAuthConfig = {
         Credentials({
             name: "Credentails",
             credentials: {
-                email: { label: "Email", type: "text" },
-                password: { label: "Password", type: "password" },
+                email: {},
+                password: {},
             },
+            authorize: async (credentials) => {
 
-            
+                try {
 
+                    const data = {
+                        email: credentials?.email as string,
+                        password: credentials?.password as string,
+                    }
 
-            async authorize(credentials): Promise<User | null> {
+                    /* GET User details */
+                    const user = await prisma.user.findUnique({
+                        where: { email: data.email },
+                        include: { role: true }
+                    });
 
-                const data = {
-                    email: credentials?.email as string,
-                    password: credentials?.password as string,
-                }
+                    if (user && !(await comparePassword({ plainPassword: data.password, hashPassword: `${user.password}` }))) {
+                        await logAuditAction('Error', 'auth/signin', { error: 'Invalid credentials' }, user?.id);
+                        return null
+                    }
 
-                /* GET User details */
-                const user = await prisma.user.findUnique({
-                    where: { email: data.email },
-                    include: { role: true }
-                });
+                    await logAuditAction('login', 'auth/signin', { user: `${user?.firstName} ${user?.lastName}` }, user?.id);
 
-                const userModulesGrouped = await prisma.modulePermission.findMany({
-                    where: {
+                    const menu = user && await fetchModuleByRole(user.roleId).then((d) => d.json());
+
+                    return {
+                        id: user?.id,
+                        name: user && `${user?.firstName} ${user?.lastName}`,
+                        email: data.email,
                         roleId: user?.roleId,
-                    },
-                    select: {
-                        module: {
-                            select: {
-                                id: true,
-                                name: true,
-                                parentId: true
-                            },
-                        },
-                        subModule: {
-                            select: {
-                                id: true,
-                                name: true,
-                                parentId: true
-                            },
-                        },
-                        permissions: true,
-                    },
-                });
-
-                const formattedJson = formatToParentChild(userModulesGrouped);
-
-                if (!user || !(await bcrypt.compare(data.password, user.password as string))) {
-                    return null
+                        permissions: user?.role?.permissions,
+                        modules: menu?.data
+                    } as User
+                } catch (error) {
+                    console.error("Error during authentication", error);
+                    return null;
                 }
 
-                return {
-                    id: user?.id,
-                    name: user && `${user?.firstName} ${user?.lastName}`,
-                    email: data.email,
-                    roleId: user?.roleId,
-                    permissions: user?.role?.permissions,
-                    modules: formattedJson
-                } as User
             }
         }),
 
@@ -84,110 +67,64 @@ const authConfig: NextAuthConfig = {
 
     session: {
         strategy: 'jwt',
-        maxAge: 10 * 60 * 60,
-        updateAge: 5 * 60
+        maxAge: 24 * 60 * 60, // 1 day in seconds
+        updateAge: 10 * 60 // 10 minutes in seconds
     },
 
     callbacks: {
-        async signIn({ user, account, profile }) {
-            
-            console.log("signIn - user", user,); // info related user
-            console.log("signIn - account", account,); // info related auth provider
-            console.log("signIn - profile", profile,); // same as user
+
+        async session({ session, token }) {
+            session.user = token.user as User;
+            return session;
+        },
+
+        async jwt({ token, user, trigger, session }) {
+            if (user) {
+                token.user = user;
+            }
+
+            if (trigger === "update" && session) {
+                console.log('Update triggered at JWT');
+                const menu = await fetchModuleByRole(session.roleId).then((d) => d.json());
+                const updateSession = { ...session, modules: menu.data }
+                token = { ...token, user: updateSession }
+                return token;
+            };
+            return token;
+        },
+
+
+        async signIn({ user }) {
 
             const existingUser = await prisma.user.findUnique({
                 where: { email: user.email as string }
             });
 
-            if (!existingUser) {
-                // add user to database
-                // await prisma.user.create({
-                //     data: {
-                //         email: `${user?.email}`,
-                //         name: user?.name || "",
-                //         firstName: user?.name?.split(" ")[0] || "",
-                //         lastName: user?.name?.split(" ")[1] || "",
-                //     }
-                // });
+            if (existingUser) {
+                await prisma.user.update({
+                    where: { email: user.email as string },
+                    data: {
+                        ip: await getIpAddress() ?? undefined
+                    }
+                })
             }
             return true;
         },
 
-        async jwt({ token, user }) {
-            if (user) {
-                token.id = user?.id;
-                token.roleId = user?.roleId;
-                token.permissions = user?.permissions;
-                token.modules = user?.modules;
+        authorized({ auth, request: { nextUrl } }) {
+            const isLoggedIn = !!auth?.user;
+            const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
+            if (isOnDashboard) {
+                if (isLoggedIn) return true;
+                return false;
+            } else if (isLoggedIn) {
+                return Response.redirect(new URL('/dashboard', nextUrl));
             }
-            return token;
+            return true;
         },
-
-        async session({ session, token }) {
-            if (token) {
-                session.user.id = token.id;
-                session.user.roleId = token.roleId;
-                session.user.permissions = token.permissions;
-                session.user.modules = token.modules;
-            }
-            return session;
-        }
     },
 
     pages: { signIn: '/signin' },
 }
 
 export default authConfig;
-interface InputFormat {
-    id: string;
-    name: string;
-    parentId: string | null;
-    permissions: number;
-    subModules: InputFormat[] | null;
-}
-
-// Function to transform the input into a parent-child hierarchical format
-function formatToParentChild(input: any[]): InputFormat[] {
-    // A map to store all modules by their id
-    const moduleMap: { [key: string]: InputFormat } = {};
-
-    // Step 1: Create a module map where each module/submodule is keyed by id
-    input.forEach((item) => {
-        const module = item.module;
-        const subModule = item.subModule;
-
-        if (!moduleMap[module.id]) {
-            moduleMap[module.id] = {
-                id: module.id,
-                name: module.name,
-                parentId: module.parentId,
-                permissions: item.permissions,
-                subModules: []
-            };
-        }
-
-        // If there is a submodule, process it similarly
-        if (subModule) {
-            if (!moduleMap[subModule.id]) {
-                moduleMap[subModule.id] = {
-                    id: subModule.id,
-                    name: subModule.name,
-                    parentId: subModule.parentId,
-                    permissions: item.permissions,
-                    subModules: []
-                };
-            }
-
-            // Add the submodule to the parent module's submodules
-            if (moduleMap[subModule.parentId!]) {
-                const parentModule = moduleMap[subModule.parentId!];
-                if (!parentModule.subModules!.some(s => s.id === subModule.id)) {
-                    parentModule.subModules!.push(moduleMap[subModule.id]);
-                }
-            }
-        }
-    });
-
-    // Step 2: Extract only the top-level modules (those with no parentId)
-    return Object.values(moduleMap).filter(module => module.parentId === null);
-}

@@ -2,17 +2,20 @@
 import { ReactNode } from "react";
 import { menusConfig } from "@/hooks/use-config";
 import { IModule } from "@/app/_Interface/Module";
+import { useSession } from "next-auth/react";
 
 interface GuardProps {
   permissionBit: number;
   moduleId: string;
   children: ReactNode;
 }
- 
-export const Guard = ({ children, permissionBit, moduleId }: GuardProps) => {
-  const [serverMenu] = menusConfig();
 
-  const hasPermissionForModule = serverMenu?.some((module: IModule) => {
+export const Guard = ({ children, permissionBit, moduleId }: GuardProps) => {
+  // const [serverMenu] = menusConfig();
+  const { data } = useSession();
+  const userMenus = data && data.user.modules;
+
+  const hasPermissionForModule = userMenus?.some((module: IModule) => {
     const checkModulePermission = (module: IModule): boolean => {
       if (module.id === moduleId) {
         return (module.permissions! & permissionBit) === permissionBit;

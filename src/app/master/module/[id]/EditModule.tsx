@@ -25,6 +25,7 @@ interface PageProps {
 const SubModuleSchema = z.object({
   id: z.string(),
   name: z.string(),
+  path: z.string(),
   parentId: z.string().nullable(),
   permissions: z.number().nullable(),
   subModules: z.array(z.lazy((): z.ZodType<any> => SubModuleSchema)),
@@ -33,7 +34,8 @@ const SubModuleSchema = z.object({
 const ModuleFormSchema = z.object({
   id: z.string(),
   name: z.string(),
-  group: z.object({ value: z.string() }),
+  path: z.string(),
+  group: z.string(),
   parentId: z.string().nullable(),
   permissions: z.number().nullable(),
   subModules: z.array(SubModuleSchema),
@@ -57,7 +59,8 @@ export default function EditModule({ moduleData, groupOptions }: PageProps) {
     defaultValues: {
       id: moduleData.id,
       name: moduleData.name,
-      group: { value: moduleData.group as string },
+      path: moduleData.path as string,
+      group: moduleData.group as string,
       parentId: moduleData.parentId,
       permissions: moduleData.permissions,
       subModules: moduleData.subModules
@@ -71,14 +74,15 @@ export default function EditModule({ moduleData, groupOptions }: PageProps) {
 
   const onSubmit = async (data: ModuleFormValues) => {
     setLoading(true);
+    const url = data.path.startsWith('/') ? data.path : `/${data.path}`
     try {
       const res = await fetch(`/api/master/module`, {
         method: "PUT",
-        body: JSON.stringify({ ...data, group: data.group.value })
+        body: JSON.stringify({ ...data, path: url })
       }).then((d) => d.json()).catch((err) => err);
 
       if (res.success) {
-        toast.success('Module updated')
+        toast.success('Module updated');
         router.push('.');
       } else {
         toast.error('Failed to update module');
@@ -166,19 +170,21 @@ export default function EditModule({ moduleData, groupOptions }: PageProps) {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="p-2 space-y-2">
-            <SelectController name={`group.value`} label="Group" options={groupOptions} disabled={hasSubmenu} />
+            <SelectController name={`group`} label="Group" options={groupOptions} readOnly={!show} disabled={hasSubmenu} />
 
-            <InputController name={'name'} label="Module" />
+            <InputController name={'name'} label="Module" readOnly={!show} />
+
+            <InputController name={'path'} label="URL" type="text" readOnly={!show} />
 
             {moduleData && (renderSubmodules(fields, "subModules"))}
 
             {show && (
               <div className="flex justify-end my-4 gap-2">
                 <Button type="button" variant={"outline"} onClick={() => router.back()}>
-                    Cancel
+                  Cancel
                 </Button>
                 <Button type="submit" disabled={loading}>
-                    <ButtonContent status={loading} text={"Update"}/>
+                  <ButtonContent status={loading} text={"Update"} />
                 </Button>
               </div>
             )}

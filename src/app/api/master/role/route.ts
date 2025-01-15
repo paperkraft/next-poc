@@ -1,3 +1,4 @@
+import { logAuditAction } from "@/lib/audit-log";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
@@ -27,11 +28,14 @@ export async function POST(request: Request) {
         const data = await prisma.role.create({
             data: { name, permissions }
         })
+        await logAuditAction('Create', 'master/role', { data });
         return NextResponse.json(
             { success: true, message: 'Role created', data },
             { status: 200 }
         );
     } catch (error) {
+        console.error(error);
+        await logAuditAction('Error', 'master/role', { error: 'Failed to create role' });
         return NextResponse.json(
             { success: false, message: 'Error in creating role' }, 
             { status: 400 }
@@ -53,13 +57,14 @@ export async function DELETE(request: Request) {
         const deletedRole = await prisma.role.delete({
             where: { id },
         });
-
+        await logAuditAction('Delete', 'master/role', { data:id });
         return NextResponse.json(
             { success: true, message: "Role deleted", data: deletedRole },
             { status: 200 }
         );
     } catch (error) {
         console.error(error);
+        await logAuditAction('Error', 'master/role', { error: 'Failed to delete role' });
         return NextResponse.json(
             { success: false, message: "Error deleting role" },
             { status: 500 }

@@ -7,10 +7,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { CheckCheckIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
 import { INotifications, useNotifications } from "@/context/notification-context";
 import { useSession } from "next-auth/react";
-import Loading from "@/app/loading";
 
 export default function NotificationsList() {
 
@@ -21,12 +19,10 @@ export default function NotificationsList() {
 
     const [filterNotifications, setFilterNotifications] = useState<INotifications[]>([]);
     const [unread, setUnread] = useState<INotifications[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
 
     useEffect(() => {
         const fetchNotifications = async (userId: string) => {
             try {
-                setLoading(true);
                 const res = await fetch(`/api/notifications?userId=${userId}`);
                 const result = await res.json();
                 if (result.success) {
@@ -36,14 +32,14 @@ export default function NotificationsList() {
                 }
             } catch (error) {
                 console.error("Error", error);
-            } finally {
-                setLoading(false);
             }
         }
 
-        fetchNotifications(userId);
+        if(userId){
+            fetchNotifications(userId);
+        }
 
-    }, [notifications]);
+    }, [notifications, userId]);
 
     // useEffect(() => {
     //     if (notifications) {
@@ -51,6 +47,7 @@ export default function NotificationsList() {
     //         setFilterNotifications((prev) => prev.map((n) => !ids.includes(n.id) ? { ...n, read: true } : n))
     //     }
     // }, [notifications]);
+    
 
     // Handler for marking notifications as read
     const handleMarkAsRead = useCallback(async (notificationIds?: string) => {
@@ -77,11 +74,6 @@ export default function NotificationsList() {
         }
     }, [notifications, updateNotifications]);
 
-
-    if (loading) {
-        return (<Loading />)
-    }
-
     return (
         <div className="space-y-4">
             <div className="flex items-center">
@@ -96,7 +88,7 @@ export default function NotificationsList() {
                 <ul className="space-y-2">
                     {filterNotifications?.map((notification) => (
                         <li key={notification.id} className={cn("hover:bg-accent rounded", { "bg-accent": !notification.read })}>
-                            <Link href="#" className='w-full'>
+                            <Link href="#" className='w-full group'>
                                 <div className='p-2'>
                                     <div className={cn("flex gap-1 max-h-10 overflow-hidden text-[14px] text-balance", { "font-semibold": !notification.read })}>
                                         {!notification.read && <div className='bg-blue-500 rounded-full size-2 mt-1 shrink-0'></div>}
@@ -106,7 +98,7 @@ export default function NotificationsList() {
                                         <small className='text-muted-foreground'>
                                             {new Date(notification.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour12: true, hour: '2-digit', minute: '2-digit' })}
                                         </small>
-                                        <small className='hover:text-blue-500 ml-auto' onClick={() => handleMarkAsRead(notification.id)}>
+                                        <small className='opacity-0 hover:text-blue-500 ml-auto group-hover:opacity-100' onClick={() => handleMarkAsRead(notification.id)}>
                                             {!notification.read && "Mark as read"}
                                         </small>
                                     </div>

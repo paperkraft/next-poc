@@ -1,6 +1,6 @@
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-export interface Notification {
+export interface Notifications {
     id: string;
     message: string;
     userId: string | null;
@@ -12,21 +12,24 @@ export interface Notification {
 
 export default function useSSE() {
     const { data: session } = useSession();
-    const [notifications, setNotifications] = useState<Notification[]>([]);
+    const [notifications, setNotifications] = useState<Notifications[]>([]);
     const [count, setUnreadCount] = useState<number>(0);
 
     useEffect(() => {
         if (!session) return;
         const eventSource = new EventSource('/api/notifications/stream');
+        
         const handleNewMessage = (event: MessageEvent) => {
             try {
-                const newNotifications: Notification[] = JSON.parse(event.data);
+                const newNotifications: Notifications[] = JSON.parse(event.data);
                 setNotifications(newNotifications);
                 setUnreadCount(newNotifications?.length);
             } catch (error) {
                 console.error('Error parsing SSE message:', error);
             }
         };
+       
+
         eventSource.onmessage = handleNewMessage;
         eventSource.onerror = () => {
             console.error('SSE connection failed');
@@ -38,7 +41,7 @@ export default function useSSE() {
     }, [session]);
 
     // Function to handle updates when notifications are fetched from the API
-    const updateNotifications = (newNotifications: Notification[]) => {
+    const updateNotifications = (newNotifications: Notifications[]) => {
         setNotifications(newNotifications);
         setUnreadCount(newNotifications?.length);
     };

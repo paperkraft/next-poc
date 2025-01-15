@@ -16,36 +16,39 @@ import Header from "../Header"
 import RenderMenus from "./sidebar-menus"
 import SidebarHeaderContent from "./sidebar-header"
 import SidebarFooterContent from "./sidebar-footer"
+import { NotificationsProvider } from "@/context/notification-context";
 
 const AppSidebar = ({ children }: ChildProps) => {
     const queryClient = new QueryClient();
     return (
         <QueryClientProvider client={queryClient}>
-            <SidebarProvider>
-                <Sidebar>
-                    <SidebarHeader className="h-16 border-b">
-                        <SidebarHeaderContent />
-                    </SidebarHeader>
+            <NotificationsProvider>
+                <SidebarProvider>
+                    <Sidebar>
+                        <SidebarHeader className="h-16 border-b">
+                            <SidebarHeaderContent />
+                        </SidebarHeader>
 
-                    <SidebarContent>
-                        <ScrollArea className="h-[100vh]">
-                            <RenderMenus />
-                            <ScrollBar orientation="vertical" />
-                        </ScrollArea>
-                    </SidebarContent>
+                        <SidebarContent>
+                            <ScrollArea className="h-[100vh]">
+                                <RenderMenus />
+                                <ScrollBar orientation="vertical" />
+                            </ScrollArea>
+                        </SidebarContent>
 
-                    <SidebarFooter>
-                        <SidebarFooterContent />
-                    </SidebarFooter>
-                </Sidebar>
+                        <SidebarFooter>
+                            <SidebarFooterContent />
+                        </SidebarFooter>
+                    </Sidebar>
 
-                <SidebarInset>
-                    <Header />
-                    <div className="grid grid-rows p-4 gap-3">
-                        {children}
-                    </div>
-                </SidebarInset>
-            </SidebarProvider>
+                    <SidebarInset>
+                        <Header />
+                        <div className="grid grid-rows p-4 gap-3">
+                            {children}
+                        </div>
+                    </SidebarInset>
+                </SidebarProvider>
+            </NotificationsProvider>
         </QueryClientProvider>
     )
 }

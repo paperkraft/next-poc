@@ -4,6 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import AppSidebar from "./Sidebar/app-sidebar";
 import { useSession } from "next-auth/react";
 import Loading from "@/app/loading";
+import { NotificationsProvider } from "@/context/notification-context";
 
 export const publicURL = ["/signin", "/signup"];
 

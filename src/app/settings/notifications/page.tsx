@@ -2,6 +2,7 @@ import prisma from "@/lib/prisma";
 import NotificationsList from "./List";
 import TitlePage from "@/components/custom/page-heading";
 import { auth } from "@/auth";
+import { NotificationsProvider } from "@/context/notification-context";
 
 export interface Notifications {
     id: string;
@@ -25,7 +26,7 @@ export default async function NotificationsPage() {
         return (
             <>
                 <TitlePage title="Notifications" description="Configure how you receive notifications." />
-                <div className="p-1">
+                <div className="p-1"> 
                     <NotificationsList initialNotifications={notifications} />
                 </div>
             </>

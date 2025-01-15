@@ -6,7 +6,7 @@ import { useSidebar } from '@/components/ui/sidebar';
 import { MenuIcon } from 'lucide-react';
 import { useMounted } from '@/hooks/use-mounted';
 import HeaderBreadcrumb from './breadcrum-nav';
-import NotificationProvider from './notification-provider';
+import BellNotifications from './bell-notifications';
 
 export function CustomTrigger() {
     const { toggleSidebar } = useSidebar();
@@ -28,7 +28,7 @@ const Header: React.FC = React.memo(() => {
                 <HeaderBreadcrumb/>
 
                 <div className='ml-auto'>
-                    <NotificationProvider/>
+                    <BellNotifications/>
                 </div>
             </div>
         </header>

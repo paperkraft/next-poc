@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import AppLayout from "@/components/layout/app-layout";
 import { ChildProps } from "@/types";
 import "./globals.css";
+import { NotificationsProvider } from "@/context/notification-context";
 
 const inter = Inter({ subsets: ["latin"] });
 

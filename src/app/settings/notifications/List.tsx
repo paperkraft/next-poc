@@ -1,50 +1,40 @@
-'use client'
+'use client';
+
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { Notifications } from "./page";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CheckCheckIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import useSSE from "@/hooks/use-sse";
 import { useRouter } from "next/navigation";
+import { INotifications, useNotifications } from "@/context/notification-context";
 
 interface NotificationsListProps {
-    initialNotifications: Notifications[];
+    initialNotifications: INotifications[];
 }
 
 export default function NotificationsList({ initialNotifications }: NotificationsListProps) {
 
-    const [filterNotifications, setFilterNotifications] = useState<Notifications[]>(initialNotifications);
-    const [unread, setUnread] = useState<Notifications[]>(initialNotifications.filter((n) => !n.read));
-
     const route = useRouter();
+    
+    const { updateNotifications, notifications } = useNotifications();
 
-    const { setNotifications, notifications } = useSSE();
-
+    const [filterNotifications, setFilterNotifications] = useState<INotifications[]>(initialNotifications);
+    const [unread, setUnread] = useState<INotifications[]>(initialNotifications.filter((n) => !n.read));
 
     useEffect(() => {
         if (notifications) {
+            // local update
             const ids = notifications.map((n) => n.id)
             const filtered = initialNotifications.map((n) => !ids.includes(n.id) ? { ...n, read: true } : n);
-            console.log('sse notifications', notifications);
-            console.log('sse filter', filtered);
             setFilterNotifications(filtered)
         }
-    }, [notifications, initialNotifications]);
-
-
-    useEffect(() => {
-        if (unread) {
-            setNotifications(unread);
-        }
-    }, [unread]);
+    }, [notifications]);
 
     // Handler for marking notifications as read
     const handleMarkAsRead = useCallback(async (notificationIds?: string) => {
-        const idsToMark = notificationIds ? [notificationIds] : unread.map((n: Notifications) => n.id);
+        const idsToMark = notificationIds ? [notificationIds] : unread.map((n: INotifications) => n.id);
 
         if (idsToMark.length === 0) return;
 
@@ -58,12 +48,16 @@ export default function NotificationsList({ initialNotifications }: Notification
 
             if (result.success) {
                 toast.success(notificationIds ? 'Marked as read' : 'Marked all as read');
-                // const updatedNotifications = unread.filter((notification: Notifications) => !idsToMark.includes(notification.id));
-                const filterNotify = initialNotifications.map((n) => (idsToMark.includes(n.id) ? { ...n, read: true } : n))
+
+                const filterNotify = filterNotifications.map((n) => (idsToMark.includes(n.id) ? { ...n, read: true } : n))
                 setUnread(filterNotify.filter((n) => !n.read));
-                //localstate
-                console.log('filterNotify', filterNotify);
-                setFilterNotifications(filterNotify)
+
+                // context update
+                const updatedNotifications = notifications.filter((n) => !idsToMark.includes(n.id));
+                updateNotifications(updatedNotifications);
+
+                //local update
+                setFilterNotifications(filterNotify);
             }
 
         } catch (error) {
@@ -71,7 +65,7 @@ export default function NotificationsList({ initialNotifications }: Notification
         } finally {
             route.refresh();
         }
-    }, [route]);
+    }, [route, notifications, filterNotifications, updateNotifications]);
 
     return (
         <div className="space-y-4">

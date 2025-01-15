@@ -6,40 +6,12 @@ import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import useSSE from '@/hooks/use-sse';
+import { useNotifications } from '@/context/notification-context';
 
-const NotificationProvider = () => {
-    const { notifications, setNotifications, count, setUnreadCount } = useSSE();
+const BellNotifications = () => {
+    const { notifications, updateNotifications, count, setUnreadCount } = useNotifications();
+    // console.log('Bell', notifications);
 
-    const handleMarkAsReadOL = async (notificationIds?: string) => {
-
-        if (notificationIds) {
-            const res = await fetch('/api/notifications', {
-                method: "PUT",
-                body: JSON.stringify({ notificationIds })
-            })
-            const result = await res.json();
-            if (result.success) {
-                const update = notifications.filter((item) => item.id !== notificationIds);
-                setNotifications(update);
-                setUnreadCount(update.length);
-            }
-        } else {
-            const unreadIds = notifications.filter((n) => !n.read).map((n) => n.id);
-            if (unreadIds.length === 0) return;
-            const res = await fetch('/api/notifications', {
-                method: "PUT",
-                body: JSON.stringify({ notificationIds: unreadIds })
-            })
-            const result = await res.json();
-            if (result.success) {
-                setNotifications([]);
-                setUnreadCount(0);
-            }
-        }
-    }
-
-    // Ensure that we avoid infinite update loops in `handleMarkAsRead`
     const handleMarkAsRead = async (notificationIds?: string) => {
         const idsToMark = notificationIds ? [notificationIds] : notifications.filter((n) => !n.read).map((n) => n.id);
 
@@ -54,8 +26,9 @@ const NotificationProvider = () => {
             if (result.success) {
                 // Update state only if there were successful changes
                 const updatedNotifications = notifications.filter((notification) => !idsToMark.includes(notification.id));
+
                 // Update global state and count
-                setNotifications(updatedNotifications);
+                updateNotifications(updatedNotifications);
                 setUnreadCount(updatedNotifications?.length);
             }
         } catch (error) {
@@ -87,7 +60,7 @@ const NotificationProvider = () => {
 
                 <DropdownMenuSeparator />
 
-                <ScrollArea className={cn({"h-80": notifications.length > 0 })}>
+                <ScrollArea className={cn({ "h-80": notifications.length > 0 })}>
                     {notifications.length > 0 ? (
                         notifications.map((notification) => (
                             <DropdownMenuItem key={notification.id}>
@@ -142,4 +115,4 @@ const NotificationProvider = () => {
     );
 };
 
-export default NotificationProvider;
+export default BellNotifications;

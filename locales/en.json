@@ -6,14 +6,16 @@
       "title": "Profile",
       "description": "This is how others will see you on the site.",
       "form": {
+        "firstName": "First Name",
+        "firstName_desc": "This is your public display name. You can not change",
+        "middleName": "Middle Name",
+        "middleName_desc": "This is your public display name. You can not change",
+        "lastName": "Last Name",
+        "lastName_desc": "This is your public display name. You can not change",
         "username": "Username",
         "username_desc": "This is your public display name. It can be your real name or a pseudonym. You can only change this once every 30 days.",
         "email": "Email",
-        "email_desc": "You can manage verified email addresses in your email settings",
-        "bio": "Bio",
-        "bio_desc": "You can @mention other users and organizations to link to them.",
-        "urls": "URLs",
-        "urls_desc": "Add links to your website, blog, or social media profiles.",
+        "email_desc": "This is your verified email",
         "btn": "Update Profile"
       }
     },

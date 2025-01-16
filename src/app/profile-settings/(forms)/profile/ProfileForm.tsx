@@ -1,147 +1,112 @@
 "use client"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useFieldArray, useForm } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import {
-} from "@/components/ui/select"
-import {  } from "@/components/ui/textarea"
-import { toast } from "sonner"
+import { Form } from "@/components/ui/form"
 import { InputController } from "@/components/custom/form.control/InputController"
 import { TextareaController } from "@/components/custom/form.control/TextareaController"
-import { SelectController } from "@/components/custom/form.control/SelectController"
 import { useTranslations } from "next-intl"
+import { useEffect } from "react"
+import { useSession } from "next-auth/react"
+import { toast } from "sonner"
 
 const profileFormSchema = z.object({
+  firstName: z.string({ required_error: "First Name is required" })
+    .min(1, "First Name is required"),
+  lastName: z.string({ required_error: "Last Name is required" })
+    .min(1, "Last Name is required"),
   username: z
-    .string()
-    .min(2, {
-      message: "Username must be at least 2 characters.",
-    })
-    .max(30, {
-      message: "Username must not be longer than 30 characters.",
+    .string().min(3, {
+      message: "Username must be at least 3 characters.",
+    }).max(10, {
+      message: "Username must not be longer than 10 characters.",
     }),
-  email: z
-    .string({
-      required_error: "Please select an email to display.",
-    })
-    .email(),
-  bio: z.string().max(160).min(4),
-  urls: z
-    .array(
-      z.object({
-        value: z.string().url({ message: "Please enter a valid URL." }),
-      })
-    )
-    .optional(),
+  email: z.string({
+    required_error: "Please enter email.",
+  }).email("Invalid email"),
 })
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>
 
 const defaultValues: Partial<ProfileFormValues> = {
-  bio: "I own a computer.",
-  urls: [
-    { value: "https://shadcn.com" },
-    { value: "http://example.com" },
-  ],
+  username: "",
 }
-
-const emails = [
-  {label:"m@example.com", value:"m@example.com"},
-  {label:"m@google.com", value:"m@google.com"},
-  {label:"m@support.com", value:"m@support.com"},
-]
 
 export function ProfileForm() {
   const t = useTranslations('setting');
+
+  const { data: session } = useSession();
+  const user = session?.user;
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues,
     mode: "onChange",
-  })
+  });
 
-  const { fields, append } = useFieldArray({
-    name: "urls",
-    control: form.control,
-  })
+  useEffect(() => {
+    if (user) {
+      const fetchItem = async () => {
+        const response = await fetch(`/api/user/id`, {
+          method: "POST",
+          body: JSON.stringify({ id: user.id })
+        });
 
-  function onSubmit(data: ProfileFormValues) {
-    toast("You submitted the following values:", {
-      description: (
-        <pre className="mt-2 w-[295px] md:w-[324px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
+        const data = await response.json();
+
+        Object.entries(data).map(([key, val]: any) => {
+          if (val) form.setValue(key, val);
+        })
+      };
+      fetchItem();
+    }
+  }, [user]);
+
+  async function onSubmit(data: ProfileFormValues) {
+    const res = await fetch('/api/user/update', {
+      method: "POST",
+      body: JSON.stringify(data)
     })
+
+    const result = await res.json();
+    if (result.success) {
+      toast.success("Profile updated");
+    } else {
+      toast.error("Failed to update profile");
+    }
   }
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <InputController
+            name="firstName"
+            label={t("profile.form.firstName")}
+            description={t("profile.form.firstName_desc")}
+          />
+
+          <InputController
+            name="lastName"
+            label={t("profile.form.lastName")}
+            description={t("profile.form.lastName_desc")}
+          />
+        </div>
+
         <InputController
           name="username"
           label={t("profile.form.username")}
           description={t("profile.form.username_desc")}
         />
 
-        <SelectController
+        <InputController
           name="email"
-          options={emails}
           label={t("profile.form.email")}
           description={t("profile.form.email_desc")}
-          placeholder="Select a verified email to display"
-        />
-        
-        <TextareaController
-          name="bio"
-          label={t("profile.form.bio")}
-          description={t("profile.form.bio_desc")}
         />
 
-        <div>
-          {fields.map((field, index) => (
-            <FormField
-              control={form.control}
-              key={field.id}
-              name={`urls.${index}.value`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className={cn(index !== 0 && "sr-only")}>
-                  {t("profile.form.urls")}
-                  </FormLabel>
-                  <FormDescription className={cn(index !== 0 && "sr-only")}>
-                  {t("profile.form.urls_desc")}
-                  </FormDescription>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          ))}
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="mt-2"
-            onClick={() => append({ value: "" })}
-          >
-            Add URL
-          </Button>
-        </div>
         <Button type="submit">{t("profile.form.btn")}</Button>
       </form>
     </Form>

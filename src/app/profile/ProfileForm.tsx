@@ -10,7 +10,6 @@ import * as z from "zod"
 import { toast } from "sonner";
 
 const formSchema = z.object({
-    name: z.string(),
     firstName: z.string({ required_error: "First Name is required" })
         .min(1, "First Name is required"),
     lastName: z.string({ required_error: "Last Name is required" })
@@ -20,7 +19,6 @@ const formSchema = z.object({
         .min(6, "Username must be more than 6 characters")
         .max(8, "Username must be less than 8 characters"),
     email: z.string({ required_error: "Email is required" })
-        .min(1, "Email is required")
         .email("Invalid email"),
 });
 
@@ -33,7 +31,6 @@ export default function Profile() {
     const form = useForm({
         resolver: zodResolver(formSchema),
         defaultValues:{
-            name:"",
             firstName:"",
             lastName:"",
             username: "",

@@ -1,9 +1,10 @@
 import { Separator } from "@/components/ui/separator";
 import { ProfileForm } from "./ProfileForm";
-import { useServerTranslation } from "@/i18n/server";
+import { getTranslations } from "next-intl/server";
 
 export default async function SettingsProfilePage() {
-  const {t} = await useServerTranslation('setting');
+  const t = await getTranslations('setting');
+
   return (
     <div className="space-y-6">
       <div>

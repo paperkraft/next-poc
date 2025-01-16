@@ -4,14 +4,14 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { FormDescription, FormItem, Form, FormLabel } from "@/components/ui/form"
 import { toast } from "sonner"
-import { Button} from "@/components/ui/button"
+import { Button } from "@/components/ui/button"
 import { themeConfig } from "@/hooks/use-config"
 import { layoutBlock, RenderBlocks, themeBlocks } from "./components/Blocks"
 import React from "react"
 import RenderColors from "./components/ColorBlocks"
 import RenderRadius from "./components/RadiusBlocks"
 import RenderFonts from "./components/FontsBlocks"
-import { useClientTranslation } from "@/i18n/client"
+import { useTranslations } from "next-intl"
 
 const appearanceFormSchema = z.object({
   theme: z.enum(["light", "dark"], {
@@ -26,29 +26,29 @@ const appearanceFormSchema = z.object({
 type AppearanceFormValues = z.infer<typeof appearanceFormSchema>
 
 export function AppearanceForm() {
-    const [config] = themeConfig();
-    const {t} = useClientTranslation('setting');
+  const [config] = themeConfig();
+  const t = useTranslations('setting');
 
-    const form = useForm<AppearanceFormValues>({
-        resolver: zodResolver(appearanceFormSchema),
-        defaultValues:{
-          theme:"light",
-          font: config.font,
-          layout: config.layout,
-          color: config.theme,
-          radius: config.radius,
-        }
-    })
-
-    function onSubmit(data: AppearanceFormValues) {
-      toast("You submitted the following values:",{
-        description: (
-          <pre className="mt-2 w-[295px] md:w-[324px] rounded-md bg-slate-950 p-4">
-            <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-          </pre>
-        ),
-      });
+  const form = useForm<AppearanceFormValues>({
+    resolver: zodResolver(appearanceFormSchema),
+    defaultValues: {
+      theme: "light",
+      font: config.font,
+      layout: config.layout,
+      color: config.theme,
+      radius: config.radius,
     }
+  })
+
+  function onSubmit(data: AppearanceFormValues) {
+    toast("You submitted the following values:", {
+      description: (
+        <pre className="mt-2 w-[295px] md:w-[324px] rounded-md bg-slate-950 p-4">
+          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
+        </pre>
+      ),
+    });
+  }
 
   return (
     <Form {...form}>
@@ -57,25 +57,25 @@ export function AppearanceForm() {
           <FormLabel>{t('appearance.form.font')}</FormLabel>
           <FormDescription>{t('appearance.form.font_desc')}</FormDescription>
         </FormItem>
-        <RenderFonts/>
+        <RenderFonts />
 
         <FormItem>
           <FormLabel>{t('appearance.form.theme')}</FormLabel>
           <FormDescription>{t('appearance.form.theme_desc')}</FormDescription>
         </FormItem>
-        <RenderBlocks context={config.mode} component={themeBlocks} type={'theme'}/>
+        <RenderBlocks context={config.mode} component={themeBlocks} type={'theme'} />
 
         <FormItem>
           <FormLabel>{t('appearance.form.layout')}</FormLabel>
           <FormDescription>{t('appearance.form.layout_desc')}</FormDescription>
         </FormItem>
-        <RenderBlocks context={config.layout} component={layoutBlock} type={'layout'}/>
+        <RenderBlocks context={config.layout} component={layoutBlock} type={'layout'} />
 
         <FormItem>
           <FormLabel>{t('appearance.form.primary_color')}</FormLabel>
           <FormDescription>{t('appearance.form.primary_color_desc')}</FormDescription>
         </FormItem>
-        <RenderColors/>
+        <RenderColors />
 
         <FormItem>
           <FormLabel>{t('appearance.form.radius')}</FormLabel>

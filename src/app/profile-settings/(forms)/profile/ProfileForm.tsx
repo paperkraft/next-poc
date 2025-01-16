@@ -21,7 +21,7 @@ import { toast } from "sonner"
 import { InputController } from "@/components/custom/form.control/InputController"
 import { TextareaController } from "@/components/custom/form.control/TextareaController"
 import { SelectController } from "@/components/custom/form.control/SelectController"
-import { useClientTranslation } from "@/i18n/client"
+import { useTranslations } from "next-intl"
 
 const profileFormSchema = z.object({
   username: z
@@ -64,7 +64,7 @@ const emails = [
 ]
 
 export function ProfileForm() {
-  const {t} = useClientTranslation('setting');
+  const t = useTranslations('setting');
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),

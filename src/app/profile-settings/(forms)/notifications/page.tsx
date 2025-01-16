@@ -1,7 +1,7 @@
 import { Separator } from "@/components/ui/separator";
 import { NotificationsForm } from "./NotificationsForm";
 import { Metadata } from "next";
-import { useServerTranslation } from "@/i18n/server";
+import { getTranslations } from "next-intl/server";
 
 export const metadata: Metadata = {
   title: "Notifications",
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 export default async function SettingsNotificationsPage() {
-  const {t} = await useServerTranslation('setting')
+  const t = await getTranslations('setting');
   return (
     <div className="space-y-6">
       <div>

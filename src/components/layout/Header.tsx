@@ -7,6 +7,7 @@ import { MenuIcon } from 'lucide-react';
 import { useMounted } from '@/hooks/use-mounted';
 import HeaderBreadcrumb from './breadcrum-nav';
 import BellNotifications from './bell-notifications';
+import LocaleSwitcher from './locale-switcher';
 
 export function CustomTrigger() {
     const { toggleSidebar } = useSidebar();
@@ -28,7 +29,10 @@ const Header: React.FC = React.memo(() => {
                 <HeaderBreadcrumb/>
 
                 <div className='ml-auto'>
-                    <BellNotifications/>
+                    <div className='flex gap-2'>
+                        <LocaleSwitcher />
+                        <BellNotifications/>
+                    </div>
                 </div>
             </div>
         </header>

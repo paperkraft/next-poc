@@ -35,6 +35,7 @@ export default function ThemeWrapper({
     newMeta.setAttribute("content", `hsl(${val})`);
     document.head.appendChild(newMeta);
   }
+  
   return (
     <section
       className={cn("w-full", className, `

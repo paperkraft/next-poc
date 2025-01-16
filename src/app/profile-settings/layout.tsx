@@ -1,10 +1,11 @@
 import TitlePage from "@/components/custom/page-heading";
 import { ReactNode, Suspense } from "react";
 import { SidebarNav } from "./components/sidebar-nav";
-import { useServerTranslation } from "@/i18n/server";
+import { getTranslations } from "next-intl/server";
 
 export default async function Layout({ children }: { children: ReactNode }) {
-  const { t } = await useServerTranslation('setting');
+
+  const t = await getTranslations('setting');
 
   const sidebarNavItems = [
     {
@@ -23,11 +24,8 @@ export default async function Layout({ children }: { children: ReactNode }) {
       title: t('notifications.title'),
       href: "/profile-settings/notifications",
     },
-    {
-      title: t('display.title'),
-      href: "/profile-settings/display",
-    },
   ]
+  
   return (
     <>
       <TitlePage title={t('title')} description={t('description')} />

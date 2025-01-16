@@ -6,12 +6,12 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { InputController } from "@/components/custom/form.control/InputController"
 import { DateController } from "@/components/custom/form.control/DateController"
+import { SelectController } from "@/components/custom/form.control/SelectController"
 import { Form } from "@/components/ui/form"
-import { useClientTranslation } from "@/i18n/client"
 import { themeConfig } from "@/hooks/use-config"
 
-import { SelectController } from "@/components/custom/form.control/SelectController"
-import { switchLocaleAction } from "@/app/action/locals.action"
+import {useTranslations} from 'next-intl';
+import { setUserLocale } from "@/services/locale"
 
 
 const languages = [
@@ -45,7 +45,8 @@ const defaultValues: Partial<AccountFormValues> = {
 }
 
 export function AccountForm() {
-  const { t } = useClientTranslation('setting');
+  const t = useTranslations('setting');
+
   const [config, setConfig] = themeConfig();
   const form = useForm<AccountFormValues>({
     resolver: zodResolver(accountFormSchema),
@@ -64,7 +65,7 @@ export function AccountForm() {
       )
     });
 
-    switchLocaleAction(data.language);
+    setUserLocale(data.language);
 
     setConfig({
       ...config,

@@ -17,13 +17,57 @@ import RenderMenus from "./sidebar-menus"
 import SidebarHeaderContent from "./sidebar-header"
 import SidebarFooterContent from "./sidebar-footer"
 import { NotificationsProvider } from "@/context/notification-context";
+import { themeConfig } from "@/hooks/use-config";
+import { getLightValues } from "@/utils";
+import {
+    inconsolata,
+    inter,
+    montserrat,
+    noto_sans,
+    poppins,
+    roboto,
+    trio,
+} from "@/lib/fonts";
 
 const AppSidebar = ({ children }: ChildProps) => {
     const queryClient = new QueryClient();
+    const [config] = themeConfig();
+    const val = getLightValues(config.theme);
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+
+    if (themeColorMeta) {
+        // If the meta tag exists, update its content
+        themeColorMeta.setAttribute("content", `hsl(${val})`);
+    } else {
+        // If it doesn't exist, create it
+        const newMeta = document.createElement("meta");
+        newMeta.setAttribute("name", "theme-color");
+        newMeta.setAttribute("content", `hsl(${val})`);
+        document.head.appendChild(newMeta);
+    }
+
     return (
         <QueryClientProvider client={queryClient}>
             <NotificationsProvider>
-                <SidebarProvider>
+                <SidebarProvider 
+                    className={`
+                        theme-${config.theme}
+                        ${inter.variable} 
+                        ${roboto.variable} 
+                        ${inconsolata.variable} 
+                        ${montserrat.variable} 
+                        ${noto_sans.variable} 
+                        ${trio.variable} 
+                        ${poppins.variable}`
+                    }
+
+                    style={
+                        {
+                            "--radius": `${config.radius}rem`,
+                            fontFamily: `var(--${config.font})`,
+                        } as React.CSSProperties
+                    } 
+                >
                     <Sidebar>
                         <SidebarHeader className="h-16 border-b">
                             <SidebarHeaderContent />

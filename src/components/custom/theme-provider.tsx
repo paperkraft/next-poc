@@ -26,14 +26,14 @@ const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     }, [isMounted]);
 
     return (
-        
+
         <ThemeContext.Provider value={{ toggleTheme, currentTheme }}>
             <NextThemesProvider
                 attribute="class"
                 defaultTheme={"system"}
                 enableSystem
                 disableTransitionOnChange
-            >   
+            >
                 {
                     isMounted &&
                     <>

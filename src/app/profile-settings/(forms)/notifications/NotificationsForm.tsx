@@ -10,6 +10,7 @@ import { SwitchButton } from "@/components/custom/form.control/SwitchButton"
 import { Separator } from "@/components/ui/separator"
 import { useEffect, useState } from "react"
 import { subscribeToPush } from "@/components/custom/allow-notification"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 
 const notificationsFormSchema = z.object({
   allow_notify: z.boolean().optional(),
@@ -29,25 +30,25 @@ const defaultValues: Partial<NotificationsFormValues> = {
 }
 
 export function NotificationsForm() {
+  const router = useRouter();
+  const path = usePathname();
+  const params = useSearchParams().get('sub');
+
   const t = useTranslations('setting');
-  const [isSub, setSub] = useState<boolean>(false)
 
   const form = useForm<NotificationsFormValues>({
     resolver: zodResolver(notificationsFormSchema),
     defaultValues,
   });
 
-  const storedSubscription = localStorage.getItem('push-subscription');
-
   useEffect(() => {
-    if(storedSubscription){
-      setSub(true);
+    if (params !== 'false') {
       form.setValue('allow_notify', true);
     }
-  }, [storedSubscription]);
+  }, [params]);
 
   function onSubmit(data: NotificationsFormValues) {
-    toast("You submitted the following values:",{
+    toast("You submitted the following values:", {
       description: (
         <pre className="mt-2 w-[295px] md:w-[324px] rounded-md bg-slate-950 p-4">
           <code className="text-white">{JSON.stringify(data, null, 2)}</code>
@@ -55,8 +56,9 @@ export function NotificationsForm() {
       ),
     });
 
-    if(isSub){
-      subscribeToPush()
+    if (data.allow_notify) {
+      subscribeToPush();
+      router.replace(path);
     }
   }
 
@@ -69,7 +71,7 @@ export function NotificationsForm() {
             <SwitchButton name="allow_notify" label={t('notifications.form.allow_notify')} description={t('notifications.form.allow_notify_desc')} />
           </div>
         </div>
-        <Separator/>
+        <Separator />
         <div>
           <h3 className="mb-4 text-lg font-medium">{t('notifications.form.email_notify')}</h3>
           <div className="space-y-4">

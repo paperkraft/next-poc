@@ -1,6 +1,5 @@
 'use client';
-import { Dispatch, SetStateAction, useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { useEffect, useState } from 'react';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircleIcon, X } from 'lucide-react';
@@ -21,7 +20,6 @@ export default function AllowNotification() {
 
     async function registerServiceWorker() {
         try {
-            const storedSubscription = localStorage.getItem('push-subscription');
             const registration = await navigator.serviceWorker.register('/sw.js', {
                 scope: '/',
                 updateViaCache: 'none',
@@ -30,20 +28,15 @@ export default function AllowNotification() {
             const sub = await registration.pushManager.getSubscription();
             setSubscription(sub);
 
-            if (storedSubscription) {
-                const parsedstoredSubscription: PushSubscription = JSON.parse(storedSubscription);
-
-                if (sub && checkExistSubscription(sub, parsedstoredSubscription)) {
-                    return
-                } else {
-                    console.log('Update');
-                    setSubscription(null);
-                }
+            if (sub && checkSubscription(sub)) {
+                return
             } else {
+                console.log('Update');
                 setSubscription(null);
             }
         } catch (error) {
             console.error("Error registering service worker", error);
+            setSubscription(null);
         }
     }
 
@@ -60,8 +53,12 @@ export default function AllowNotification() {
                     const permission = await Notification.requestPermission();
                     if (permission === 'granted') {
                         setNotificationDenied(false);
+                        console.log('granted');
+                        const isCheck = subscription && checkSubscription(subscription);
+                        if (!isCheck) setSubscription(null)
                     } else {
                         setNotificationDenied(true);
+                        console.log('denied');
                     }
                 } catch (error) {
                     console.error('Error requesting notification permission:', error);
@@ -84,7 +81,7 @@ export default function AllowNotification() {
         )
     }
 
-    if(subscription){
+    if (subscription) {
         return null
     }
 
@@ -114,7 +111,7 @@ export default function AllowNotification() {
                         <AlertTitle>You are not subscribed to push notifications.</AlertTitle>
                         <AlertDescription className='space-y-2'>
                             {/* <Button variant='outline' size='sm' onClick={() => subscribeToPush()}>Subscribe</Button> */}
-                            Go to Notification setting <Link href={'/profile-settings/notifications'} className='hover:text-blue-400'> click here</Link>
+                            Go to Notification setting <Link href={'/profile-settings/notifications?sub=false'} className='hover:text-blue-400'> click here</Link>
                         </AlertDescription>
                     </Alert>
                 </>
@@ -123,34 +120,22 @@ export default function AllowNotification() {
     );
 }
 
-function checkExistSubscription(current: PushSubscription, stored: PushSubscription): Boolean {
-    return current.endpoint === stored.endpoint
-}
-
 export async function subscribeToPush() {
     try {
-        const storedSubscription = localStorage.getItem('push-subscription');
         const registration = await navigator.serviceWorker.ready;
         const sub = await registration.pushManager.subscribe({
             userVisibleOnly: true,
             applicationServerKey: urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!),
         });
 
-        if (storedSubscription) {
-            const parsedstoredSubscription: PushSubscription = JSON.parse(storedSubscription);
-
-            if (sub && checkExistSubscription(sub, parsedstoredSubscription)) {
-                console.log('Exist Push Subscription');
-                return
-            } else {
-                console.log('Update Push Subscription');
-            }
+        if (sub && checkSubscription(sub)) {
+            console.log('Exist Push Subscription');
+            return
         } else {
-            console.log('New Push Subscription');
+            console.log('Update Push Subscription');
         }
-        
+
         localStorage.setItem('push-subscription', JSON.stringify(sub));
-        // setSubscription(sub);
         const serializedSub = JSON.parse(JSON.stringify(sub));
         await subscribeUser(serializedSub);
     } catch (error) {
@@ -172,4 +157,14 @@ async function subscribeUser(subscription: PushSubscription) {
     } catch (error) {
         console.error('Failed to save subscription:', error);
     }
-} 
+}
+
+function checkSubscription(current: PushSubscription): Boolean {
+    const storedSubscription = localStorage.getItem("push-subscription")
+    if (storedSubscription) {
+        const stored: PushSubscription = JSON.parse(storedSubscription);
+        return current.endpoint === stored.endpoint
+    } else {
+        return false
+    }
+}

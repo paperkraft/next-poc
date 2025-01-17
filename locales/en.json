@@ -53,11 +53,10 @@
       "title": "Notifications",
       "description": "Configure how you receive notifications.",
       "form": {
-        "notify": "Notify me about...",
-        "notify_desc": "Notify me about...",
-        "new_msg": "All new messages",
-        "direct_msg": "Direct messages and mentions",
-        "nothing": "Nothing",
+        "app_notify": "App Notifications",
+        "allow_notify": "Allow app notifications",
+        "allow_notify_desc": "Receive notifications about your account activity",
+        
         "email_notify": "Email Notifications",
         "comm_email": "Communication emails",
         "comm_email_desc": "Receive emails about your account activity.",

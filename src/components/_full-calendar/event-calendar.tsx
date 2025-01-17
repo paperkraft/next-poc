@@ -131,7 +131,7 @@ export default function EventCalendar() {
 
   const RenderEventContent = ({ info }: EventContentProps) => {
     const { event, view, timeText } = info;
-    const [left, right] = timeText.includes(" - ") ? timeText.split(" - ") : ["", ""];
+    // const [left, right] = timeText.includes(" - ") ? timeText.split(" - ") : ["", ""];
 
     const isMonthView = view.type === "dayGridMonth";
     const isListWeekView = view.type === "listWeek";
@@ -142,11 +142,10 @@ export default function EventCalendar() {
           // Day Grid Month View
           isMonthView &&
           <div style={{ backgroundColor: info.backgroundColor }}
-            className={"w-full overflow-hidden rounded p-2 text-[0.5rem] sm:text-[0.6rem] md:text-xs"}
+            className={"w-full leading-tight rounded p-2 text-[0.5rem] sm:text-[0.6rem] md:text-xs"}
           >
-            <p className="w-full font-semibold text-gray-950 line-clamp-1">{event.title}</p>
-            <p className="text-gray-800">{left}</p>
-            <p className="text-gray-800">{right}</p>
+            <p className="w-full font-semibold text-gray-950 truncate">{event.title}</p>
+            <p className="text-gray-800 truncate">{`${timeText}`}</p>
           </div>
         }
 
@@ -287,7 +286,7 @@ export default function EventCalendar() {
                 initialView="dayGridMonth"
                 headerToolbar={false}
                 events={filteredEvents}
-                dayMaxEvents={2}
+                dayMaxEvents={1}
 
                 slotMinTime={"09:00"} // 09:00
                 slotMaxTime={"22:00"} // 22:00

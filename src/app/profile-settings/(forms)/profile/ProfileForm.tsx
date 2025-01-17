@@ -86,12 +86,14 @@ export function ProfileForm() {
             name="firstName"
             label={t("profile.form.firstName")}
             description={t("profile.form.firstName_desc")}
+            readOnly
           />
 
           <InputController
             name="lastName"
             label={t("profile.form.lastName")}
             description={t("profile.form.lastName_desc")}
+            readOnly
           />
         </div>
 
@@ -105,6 +107,7 @@ export function ProfileForm() {
           name="email"
           label={t("profile.form.email")}
           description={t("profile.form.email_desc")}
+          readOnly
         />
 
         <Button type="submit">{t("profile.form.btn")}</Button>

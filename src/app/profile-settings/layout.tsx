@@ -2,6 +2,7 @@ import TitlePage from "@/components/custom/page-heading";
 import { ReactNode, Suspense } from "react";
 import { SidebarNav } from "./components/sidebar-nav";
 import { getTranslations } from "next-intl/server";
+import Loading from "../loading";
 
 export default async function Layout({ children }: { children: ReactNode }) {
 
@@ -25,7 +26,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
       href: "/profile-settings/notifications",
     },
   ]
-  
+
   return (
     <>
       <TitlePage title={t('title')} description={t('description')} />
@@ -34,7 +35,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
           <SidebarNav items={sidebarNavItems} />
         </aside>
         <div className="flex-1 lg:max-w-4xl">
-          <Suspense fallback={<>Loading...</>}>
+          <Suspense fallback={<Loading />}>
             {children}
           </Suspense>
         </div>

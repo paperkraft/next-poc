@@ -53,8 +53,10 @@ const BellNotifications = () => {
             <DropdownMenuContent align='end' className='min-w-64 max-w-72 shadow-lg'>
                 <DropdownMenuLabel className='p-2 text-lg flex items-center'>
                     <h1 className='ml-1'>Notifications</h1>
-                    <Button variant='ghost' size="icon" className='text-muted-foreground ml-auto'>
-                        <SettingsIcon className='size-5' />
+                    <Button variant='ghost' size="icon" className='text-muted-foreground ml-auto' asChild>
+                        <Link href={'/profile-settings/notifications'}>
+                            <SettingsIcon className='size-5' />
+                        </Link>
                     </Button>
                 </DropdownMenuLabel>
 

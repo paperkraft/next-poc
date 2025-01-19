@@ -1,7 +1,6 @@
 "use client";
 import { ColumnDef } from "@tanstack/react-table";
 import { InfoIcon, MonitorIcon, SmartphoneIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -27,27 +26,23 @@ export const createColumns = ({ setOpen, setDetails }: createColumnsProps) => {
         {
             id: "select",
             header: ({ table }) => (
-                <div className="px-1 ml-1">
-                    <Checkbox
-                        checked={
-                            table.getIsAllPageRowsSelected() ||
-                            (table.getIsSomePageRowsSelected() && "indeterminate")
-                        }
-                        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-                        aria-label="Select all"
-                        className={"translate-y-0.5 data-[state=checked]:bg-sky-500 data-[state=checked]:text-primary-foreground data-[state=checked]:border-0 border-gray-400 shadow-none"}
-                    />
-                </div>
+                <Checkbox
+                    checked={
+                        table.getIsAllPageRowsSelected() ||
+                        (table.getIsSomePageRowsSelected() && "indeterminate")
+                    }
+                    onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+                    aria-label="Select all"
+                    className={"mx-2 translate-y-0.5 data-[state=checked]:bg-sky-500 data-[state=checked]:text-primary-foreground data-[state=checked]:border-0 border-gray-400 shadow-none"}
+                />
             ),
             cell: ({ row }) => (
-                <div className="px-1 ml-1">
-                    <Checkbox
-                        checked={row.getIsSelected()}
-                        onCheckedChange={(value) => row.toggleSelected(!!value)}
-                        aria-label="Select row"
-                        className={"translate-y-0.5 data-[state=checked]:bg-sky-500 data-[state=checked]:text-primary-foreground data-[state=checked]:border-0 border-gray-400 shadow-none"}
-                    />
-                </div>
+                <Checkbox
+                    checked={row.getIsSelected()}
+                    onCheckedChange={(value) => row.toggleSelected(!!value)}
+                    aria-label="Select row"
+                    className={"mx-2 translate-y-0.5 data-[state=checked]:bg-sky-500 data-[state=checked]:text-primary-foreground data-[state=checked]:border-0 border-gray-400 shadow-none"}
+                />
             ),
         },
         {
@@ -80,14 +75,7 @@ export const createColumns = ({ setOpen, setDetails }: createColumnsProps) => {
                     }
                 })();
                 return (
-                    <Button
-                        size={'icon'}
-                        variant={'ghost'}
-                        className="hover:text-blue-500 size-7"
-                        onClick={() => { setOpen(true); setDetails(details); }}
-                    >
-                        <InfoIcon className="size-4" />
-                    </Button>
+                    <InfoIcon className="size-4 hover:text-blue-500 cursor-pointer" onClick={() => { setOpen(true); setDetails(details); }} />
                 )
             }
         },
@@ -104,18 +92,13 @@ export const createColumns = ({ setOpen, setDetails }: createColumnsProps) => {
                     }
                 })();
                 return (
-                    <Button
-                        size={'icon'}
-                        variant={'ghost'}
-                        className="hover:text-blue-500 size-7"
-                        onClick={() => { setOpen(true); setDetails(device); }}
-                    >
+                    <>
                         {
                             device.device?.toLowerCase()?.includes('windows')
-                                ? (<MonitorIcon className="size-4" />)
-                                : (<SmartphoneIcon className="size-4" />)
+                                ? (<MonitorIcon className="size-4 hover:text-blue-500 cursor-pointer" onClick={() => { setOpen(true); setDetails(device); }} />)
+                                : (<SmartphoneIcon className="size-4 hover:text-blue-500 cursor-pointer" onClick={() => { setOpen(true); setDetails(device); }} />)
                         }
-                    </Button>
+                    </>
                 )
             }
         },

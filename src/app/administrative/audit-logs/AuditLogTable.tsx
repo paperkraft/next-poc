@@ -3,7 +3,6 @@
 import React from "react";
 import { getFormattedDateTime } from "@/utils";
 import { DataTable } from "@/components/data-table/data-table";
-import { DateWiseOnlineSession } from "@/app/action/audit.action";
 import { DetailsDialog } from "./view-details";
 import { createColumns } from "./column-data";
 interface AuditLogTableProp {
@@ -17,7 +16,6 @@ interface AuditLogTableProp {
         device: Record<string, string | undefined>,
         timestamp: Date
     }[],
-    sessionwise?: DateWiseOnlineSession[] | null
 }
 
 const AuditLogTable = ({ data }: AuditLogTableProp) => {
@@ -41,7 +39,7 @@ const AuditLogTable = ({ data }: AuditLogTableProp) => {
 
     return (
         <>
-            {final && (<DataTable columns={columns} data={final} toolbar pageSize={10} />)}
+            <DataTable columns={columns} data={final} toolbar pageSize={10} />
             <DetailsDialog open={open} setOpen={setOpen} details={details} />
         </>
     );

@@ -1,0 +1,1 @@
+Get-ComputerInfo | Select-Object OsName, OSDisplayVersion, OsArchitecture, CsManufacturer, CsModel

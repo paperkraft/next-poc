@@ -29,6 +29,7 @@ interface DataTableProps<TData, TValue> {
     pageSize?: number;
     getRowCanExpand?: (row: Row<TData>) => boolean;
     renderSubComponent?: (props: { row: Row<TData> }) => React.ReactElement;
+    isLoading?: boolean;
 }
 
 interface GlobalFilterState {
@@ -36,7 +37,7 @@ interface GlobalFilterState {
     value: any;
 }
 
-export function DataTable<TData, TValue>({ columns, data, toolbar = false, pageSize, getRowCanExpand, renderSubComponent }: DataTableProps<TData, TValue>) {
+export function DataTable<TData, TValue>({ columns, data, toolbar = false, pageSize, getRowCanExpand, renderSubComponent, isLoading = false }: DataTableProps<TData, TValue>) {
 
     const [sorting, setSorting] = useState<SortingState>([]);
     const [globalFilter, setGlobalFilter] = useState<GlobalFilterState | undefined>();
@@ -77,80 +78,111 @@ export function DataTable<TData, TValue>({ columns, data, toolbar = false, pageS
     return (
         <div className="rounded-md border">
             {toolbar && <DataTableToolbar table={table} />}
-            <Table>
-                <TableHeader>
-                    {table.getHeaderGroups().map((headerGroup) => (
-                        <TableRow key={headerGroup.id}>
-                            {headerGroup.headers.map((header) => (
-                                <TableHead key={header.id}
-                                    className={cn("transition-[padding]", {
-                                        "p-1": density === "sm",
-                                        "p-2": density === "md",
-                                        "p-3": density === "lg",
-                                    })}
-                                >
-                                    {header.isPlaceholder
-                                        ? null
-                                        : (header.column.getCanSort()
-                                            ? (
-                                                <Button
-                                                    variant="ghost"
-                                                    onClick={header.column.getToggleSortingHandler()}
-                                                    className="flex items-center gap-2 p-0 hover:bg-transparent"
-                                                >
-                                                    {flexRender(header.column.columnDef.header, header.getContext())}
-                                                    {header.column.getIsSorted() ? (
-                                                        header.column.getIsSorted() === "desc" ? (
-                                                            <ArrowDownWideNarrow className="size-4" />
+            {isLoading ? (
+                <div className="flex items-center justify-center h-64">Loading...</div>
+            ) : (
+                <Table>
+                    <TableHeader>
+                        {table.getHeaderGroups().map((headerGroup) => (
+                            <TableRow key={headerGroup.id}>
+                                {headerGroup.headers.map((header) => (
+                                    <TableHead key={header.id}
+                                        className={cn("transition-[padding]", {
+                                            "p-1": density === "sm",
+                                            "p-2": density === "md",
+                                            "p-3": density === "lg",
+                                        })}
+                                    >
+                                        {header.isPlaceholder
+                                            ? null
+                                            : (header.column.getCanSort()
+                                                ? (
+                                                    <Button
+                                                        variant="ghost"
+                                                        onClick={header.column.getToggleSortingHandler()}
+                                                        className="flex items-center gap-2 p-0 hover:bg-transparent"
+                                                    >
+                                                        {flexRender(header.column.columnDef.header, header.getContext())}
+                                                        {header.column.getIsSorted() ? (
+                                                            header.column.getIsSorted() === "desc" ? (
+                                                                <ArrowDownWideNarrow className="size-4" />
+                                                            ) : (
+                                                                <ArrowUpNarrowWide className="size-4" />
+                                                            )
                                                         ) : (
-                                                            <ArrowUpNarrowWide className="size-4" />
-                                                        )
-                                                    ) : (
-                                                        <ArrowDownUp className="size-4" />
-                                                    )}
-                                                </Button>
-                                            )
-                                            : (
-                                                flexRender(header.column.columnDef.header, header.getContext())
-                                            )
-                                        )}
-                                </TableHead>
-                            ))}
-                        </TableRow>
-                    ))}
-                </TableHeader>
+                                                            <ArrowDownUp className="size-4" />
+                                                        )}
+                                                    </Button>
+                                                )
+                                                : (
+                                                    flexRender(header.column.columnDef.header, header.getContext())
+                                                )
+                                            )}
+                                    </TableHead>
+                                ))}
+                            </TableRow>
+                        ))}
+                    </TableHeader>
 
-                <TableBody>
-                    {table.getRowModel().rows?.length ? (
-                        table.getRowModel().rows.map((row) => (
-                            <React.Fragment key={row.id}>
-                                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
-                                    {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id}
-                                            className={cn("transition-[padding]", {
-                                                "p-1": density === "sm",
-                                                "p-2": density === "md",
-                                                "p-3": density === "lg",
-                                            })}
-                                        >
-                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                        </TableCell>
-                                    ))}
+                    <TableBody>
+                        {table.getRowModel().rows?.length ? (
+                            table.getRowModel().rows.map((row) => (
+                                <React.Fragment key={row.id}>
+                                    <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}
+                                        className={cn({
+                                            "h-9": density === "sm",
+                                            "h-11": density === "md",
+                                            "h-[3.25rem]": density === "lg",
+                                        })}
+                                    >
+                                        {row.getVisibleCells().map((cell) => (
+                                            <TableCell key={cell.id}
+                                                className={cn("transition-[padding]", {
+                                                    "p-1": density === "sm",
+                                                    "p-2": density === "md",
+                                                    "p-3": density === "lg",
+                                                })}
+                                            >
+                                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                            </TableCell>
+                                        ))}
+                                    </TableRow>
+                                    {row.getIsExpanded() && (renderSubComponent && renderSubComponent({ row }))}
+                                </React.Fragment>
+                            ))
+                        ) : (
+                            <TableRow>
+                                <TableCell colSpan={columns.length} className="h-24 text-center">
+                                    No results.
+                                </TableCell>
+                            </TableRow>
+                        )}
+
+                        {/* Add empty rows to fill space if on the last page */}
+                        {table.getPageCount() > 1 &&
+                            Array.from({ length: pagination.pageSize - table.getRowModel().rows.length }).map((_, index) => (
+                                <TableRow key={`empty-${index}`} className={cn("invisible border-transparent", {
+                                    "h-9": density === "sm",
+                                    "h-11": density === "md",
+                                    "h-[3.25rem]": density === "lg",
+                                })}>
+                                    <TableCell
+                                        colSpan={columns.length}
+                                        className={cn("transition-[padding]", {
+                                            "p-1": density === "sm",
+                                            "p-2": density === "md",
+                                            "p-3": density === "lg",
+                                        })}
+                                    >
+                                        &nbsp;
+                                    </TableCell>
                                 </TableRow>
-                                {row.getIsExpanded() && (renderSubComponent && renderSubComponent({ row }))}
-                            </React.Fragment>
-                        ))
-                    ) : (
-                        <TableRow>
-                            <TableCell colSpan={columns.length} className="h-24 text-center">
-                                No results.
-                            </TableCell>
-                        </TableRow>
-                    )}
+                            ))}
 
 
-                </TableBody>
-            </Table>
+                    </TableBody>
+                </Table>
+            )}
             {pageSize && <DataTablePagination table={table} />}
         </div>
     );

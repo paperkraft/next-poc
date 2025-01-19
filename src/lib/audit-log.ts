@@ -4,7 +4,6 @@ import { Prisma, PrismaClient } from '@prisma/client';
 import { headers } from 'next/headers';
 import { getDeviceDetails } from './utils';
 
-
 const prisma = new PrismaClient();
 /**
  * Logs an action to the audit log.

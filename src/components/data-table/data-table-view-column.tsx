@@ -1,21 +1,10 @@
+'use client'
 import type { Table } from "@tanstack/react-table"
-import { Check, ChevronsUpDown, Columns3Icon, EyeIcon, EyeOffIcon } from "lucide-react"
-
-import { cn, toSentenceCase } from "@/lib/utils"
+import { ChevronsUpDown, EyeIcon, EyeOffIcon } from "lucide-react"
+import { toSentenceCase } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import {
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-    CommandList,
-} from "@/components/ui/command"
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 
 interface DataTableViewColumnProps<TData> {
     table: Table<TData>
@@ -55,12 +44,10 @@ export function DataTableViewColumn<TData>({ table }: DataTableViewColumnProps<T
                                             <span className="truncate">
                                                 {toSentenceCase(column.id)}
                                             </span>
-                                            <Check
-                                                className={cn(
-                                                    "ml-auto size-4 shrink-0",
-                                                    column.getIsVisible() ? "opacity-100" : "opacity-0"
-                                                )}
-                                            />
+                                            {column.getIsVisible()
+                                                ? <EyeIcon className="ml-auto size-4 shrink-0" />
+                                                : <EyeOffIcon className="ml-auto size-4 shrink-0" />
+                                            }
                                         </CommandItem>
                                     )
                                 })}

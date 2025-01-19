@@ -16,16 +16,16 @@ interface IModule {
     [x:string]: any;
 }
 
-export const findModuleId = (modules: IModule[], moduleName: string): string | null => {
+export const findModuleId = (modules: IModule[], moduleName: string): string | undefined => {
     for (const module of modules) {
         if (module.name === moduleName) {
-            return module.id;
+            return module.id as string;
         }
 
         if (module.subModules && module.subModules.length > 0) {
             const subModuleId = findModuleId(module.subModules, moduleName);
-            if (subModuleId) return subModuleId;
+            if (subModuleId) return subModuleId as string;
         }
     }
-    return null;
+    return undefined;
 };

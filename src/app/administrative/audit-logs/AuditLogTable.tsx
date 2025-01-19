@@ -16,9 +16,10 @@ interface AuditLogTableProp {
         device: Record<string, string | undefined>,
         timestamp: Date
     }[],
+    moduleId?: string;
 }
 
-const AuditLogTable = ({ data }: AuditLogTableProp) => {
+const AuditLogTable = ({ data, moduleId }: AuditLogTableProp) => {
     const [open, setOpen] = React.useState(false);
     const [details, setDetails] = React.useState<Record<string, string | undefined> | null>(null);
 
@@ -37,9 +38,27 @@ const AuditLogTable = ({ data }: AuditLogTableProp) => {
         [data]
     );
 
+    const deleteRecord = async (ids: string | string[]) => {
+        try {
+            await fetch('/api/audit-log', {
+                method: 'DELETE',
+                body: JSON.stringify({ ids }),
+            });
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
     return (
         <>
-            <DataTable columns={columns} data={final} toolbar pageSize={10} />
+            <DataTable
+                columns={columns}
+                data={final}
+                pageSize={10}
+                moduleId={moduleId}
+                deleteRecord={deleteRecord}
+                toolbar={["columns", "density", "export"]}
+            />
             <DetailsDialog open={open} setOpen={setOpen} details={details} />
         </>
     );

@@ -14,12 +14,12 @@ interface createColumnsProps {
 export const createColumns = ({ setOpen, setDetails }: createColumnsProps) => {
 
     const actionStyles: Record<string, string> = useMemo(() => ({
-        login: "bg-violet-50 border-violet-300 text-violet-600 dark:bg-violet-50/5 dark:text-violet-400",
-        error: "bg-orange-50 border-orange-300 text-orange-600 dark:bg-orange-50/5 dark:text-orange-400",
-        create: "bg-green-50 border-green-300 text-green-600 dark:bg-green-50/5 dark:text-green-400",
-        update: "bg-blue-50 border-blue-300 text-blue-600 dark:bg-blue-50/5 dark:text-blue-400",
-        upsert: "bg-pink-50 border-pink-300 text-pink-600 dark:bg-pink-50/5 dark:text-pink-400",
-        delete: "bg-red-50 border-red-300 text-red-600 dark:bg-red-50/5 dark:text-red-400",
+        login: "bg-violet-50 border-violet-300 text-violet-600 dark:bg-violet-50/5 dark:text-violet-500 dark:border-violet-500",
+        error: "bg-orange-50 border-orange-300 text-orange-600 dark:bg-orange-50/5 dark:text-yellow-500 dark:border-yellow-500",
+        create: "bg-green-50 border-green-300 text-green-600 dark:bg-green-50/5 dark:text-green-500 dark:border-green-500",
+        update: "bg-blue-50 border-blue-300 text-blue-600 dark:bg-blue-50/5 dark:text-blue-500 dark:border-blue-500",
+        upsert: "bg-pink-50 border-pink-300 text-pink-600 dark:bg-pink-50/5 dark:text-pink-500 dark:border-pink-500",
+        delete: "bg-red-50 border-red-300 text-red-600 dark:bg-red-50/5 dark:text-red-500 dark:border-red-500",
     }), []);
 
     const columns: ColumnDef<any>[] = useMemo(() => [

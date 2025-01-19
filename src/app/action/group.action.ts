@@ -8,10 +8,10 @@ export async function fetchGroups() {
             select: { id: true, name: true }
         });
 
-        const formated = groups.map((item: IGroup) => ({ label: item.name, value: item.id }));
+        // const formated = groups.map((item: IGroup) => ({ label: item.name, value: item.id }));
 
         return NextResponse.json(
-            { success: true, message: 'Success', data: formated },
+            { success: true, message: 'Success', data: groups },
             { status: 200 }
         );
     } catch (error) {

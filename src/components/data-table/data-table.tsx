@@ -18,18 +18,21 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { ArrowDownUp, ArrowDownWideNarrow, ArrowUpNarrowWide } from "lucide-react";
 import { DataTablePagination } from "./data-table-pagination";
-import { DataTableToolbar } from "./data-table-toolbar";
+import { DataTableToolbar, ToolbarOptions } from "./data-table-toolbar";
 import { DensityFeature, DensityState } from "@/utils/tanstack-utils";
 import { cn } from "@/lib/utils";
+import { ExpandedState } from "@tanstack/react-table";
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
-    toolbar?: boolean;
     pageSize?: number;
     getRowCanExpand?: (row: Row<TData>) => boolean;
     renderSubComponent?: (props: { row: Row<TData> }) => React.ReactElement;
     isLoading?: boolean;
+    deleteRecord?: (id: string | string[]) => Promise<void>;
+    moduleId?: string;
+    toolbar?: ToolbarOptions[];
 }
 
 interface GlobalFilterState {
@@ -37,13 +40,15 @@ interface GlobalFilterState {
     value: any;
 }
 
-export function DataTable<TData, TValue>({ columns, data, toolbar = false, pageSize, getRowCanExpand, renderSubComponent, isLoading = false }: DataTableProps<TData, TValue>) {
+export function DataTable<TData, TValue>({ columns, data, toolbar, pageSize, getRowCanExpand, renderSubComponent, isLoading = false, deleteRecord, moduleId }: DataTableProps<TData, TValue>) {
 
     const [sorting, setSorting] = useState<SortingState>([]);
     const [globalFilter, setGlobalFilter] = useState<GlobalFilterState | undefined>();
     const [rowSelection, setRowSelection] = useState({})
     const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: pageSize ?? data.length });
     const [density, setDensity] = useState<DensityState>("sm");
+
+    const [expanded, setExpanded] = React.useState<ExpandedState>({})
 
     const table = useReactTable({
         // debugTable: true,
@@ -56,6 +61,7 @@ export function DataTable<TData, TValue>({ columns, data, toolbar = false, pageS
             globalFilter,
             rowSelection,
             density,
+            expanded,
         },
 
         enableRowSelection: true,
@@ -73,11 +79,12 @@ export function DataTable<TData, TValue>({ columns, data, toolbar = false, pageS
         onRowSelectionChange: setRowSelection,
         onGlobalFilterChange: setGlobalFilter,
         onDensityChange: setDensity,
+        onExpandedChange: setExpanded,
     });
 
     return (
         <div className="rounded-md border">
-            {toolbar && <DataTableToolbar table={table} />}
+            <DataTableToolbar table={table} deleteRecord={deleteRecord} moduleId={moduleId} toolbar={toolbar} />
             {isLoading ? (
                 <div className="flex items-center justify-center h-64">Loading...</div>
             ) : (
@@ -129,7 +136,7 @@ export function DataTable<TData, TValue>({ columns, data, toolbar = false, pageS
                             table.getRowModel().rows.map((row) => (
                                 <React.Fragment key={row.id}>
                                     <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}
-                                        className={cn({
+                                        className={cn("group", {
                                             "h-9": density === "sm",
                                             "h-11": density === "md",
                                             "h-[3.25rem]": density === "lg",
@@ -178,8 +185,6 @@ export function DataTable<TData, TValue>({ columns, data, toolbar = false, pageS
                                     </TableCell>
                                 </TableRow>
                             ))}
-
-
                     </TableBody>
                 </Table>
             )}

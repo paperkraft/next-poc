@@ -20,11 +20,22 @@ import React, { memo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { IModule } from "@/app/_Interface/Module";
+import { DataTable } from "@/components/data-table/data-table";
+import { ModuleMasterColumns } from "./module-column-data";
+import { Row } from "@tanstack/react-table";
 
-const ModuleList = memo(({ data }: { data: IModule[] }) => {
+interface ModuleMasterProps {
+    data: IModule[];
+    moduleId?: string
+}
+
+const ModuleMasterList = memo(({ data, moduleId }: ModuleMasterProps) => {
+    const { columns } = ModuleMasterColumns();
 
     const grouped = data && groupByGroupIfParentIdIsNull(data);
     const [toggle, setToggle] = useState(false);
+
+    console.log('modules', data);
 
     return (
         <>
@@ -91,6 +102,16 @@ const ModuleList = memo(({ data }: { data: IModule[] }) => {
                     </Table>
                 )
             }
+
+
+            <DataTable
+                columns={columns}
+                data={data}
+                // deleteRecord={deleteRecord}
+                getRowCanExpand={() => true} renderSubComponent={renderSubComponent}
+                moduleId={moduleId}
+                pageSize={10}
+            />
         </>
     );
 })
@@ -110,14 +131,14 @@ const Nested = memo(({ data, level }: { data: IModule, level: number }) => {
                     <TableCell>{data?.group}</TableCell>
                     {
                         <CollapsibleTrigger asChild>
-                            <TableCell style={{ paddingLeft: `${level * 8}px` }} className={cn("align-bottom",{ "cursor-pointer flex items-center gap-2 [&[data-state=open]>svg]:rotate-90": hasSubModules })}>
+                            <TableCell style={{ paddingLeft: `${level * 8}px` }} className={cn("align-bottom", { "cursor-pointer flex items-center gap-2 [&[data-state=open]>svg]:rotate-90": hasSubModules })}>
                                 {data?.parentId ? renderDash(level) : null}
                                 {data?.name}
                                 {hasSubModules && <ChevronRight className="size-4 transition-transform" />}
                             </TableCell>
                         </CollapsibleTrigger>
                     }
-                    
+
                     <TableCell className="align-bottom">
                         <Button variant={"ghost"} className="size-5 hover:text-blue-500" asChild size={'icon'}>
                             <Link href={`${path}/${data.id}`}><Eye className="size-4" /></Link>
@@ -190,6 +211,23 @@ function groupByGroupIfParentIdIsNull(modules: IModule[]): { group: string, modu
 
 Tree.displayName = 'Tree';
 Nested.displayName = 'Nested';
-ModuleList.displayName = 'ModuleList';
+ModuleMasterList.displayName = 'ModuleMasterList';
 
-export default ModuleList;
+export default ModuleMasterList;
+
+
+const renderSubComponent = ({ row }: { row: Row<any> }) => {
+    const data = row.original
+
+    console.log('sub-row', data);
+    
+    return (
+        <>
+            {
+                data.subModules.map((item: any, idx: number) => (
+                    <Nested data={item} key={idx} level={1} />
+                ))
+            }
+        </>
+    )
+}

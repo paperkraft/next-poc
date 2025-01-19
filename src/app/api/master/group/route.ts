@@ -55,9 +55,9 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-    const { id } = await request.json();
+    const { ids } = await request.json();
 
-    if (!id) {
+    if (!ids || !Array.isArray(ids)) {
         return NextResponse.json(
             { success: false, message: "Id is required" },
             { status: 400 }
@@ -65,11 +65,19 @@ export async function DELETE(request: Request) {
     }
 
     try {
-        const record = await prisma.group.delete({
-            where: { id },
+        const existingRecords = await prisma.group.findMany({
+            where: { id: { in: ids } }
+        });
+        
+        if (existingRecords.length !== ids.length) {
+            return NextResponse.json({ success: false, message: 'Some records were not found' }, { status: 404 });
+        }
+
+        const record = await prisma.group.deleteMany({
+            where: { id: { in: ids } },
         });
 
-        await logAuditAction('Delete', 'master/groups', { data: record });
+        await logAuditAction('Delete', 'master/groups', { data: existingRecords });
 
         return NextResponse.json(
             { success: true, message: "Group deleted", data: record },

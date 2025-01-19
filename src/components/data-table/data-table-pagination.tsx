@@ -20,7 +20,7 @@ interface DataTablePaginationProps<TData> {
     pageSizeOptions?: number[]
 }
 
-export function DataTablePagination<TData>({ table, pageSizeOptions = [5, 10, 20, 30, 40, 50, 100] }: DataTablePaginationProps<TData>) {
+export function DataTablePagination<TData>({ table, pageSizeOptions = [5, 10, 20, 25, 50, 100] }: DataTablePaginationProps<TData>) {
     return (
         <div className="flex w-full flex-col-reverse items-center justify-between gap-4 overflow-auto py-2 px-4 sm:flex-row sm:gap-8 border-t">
             <div className="hidden lg:block text-sm select-none">

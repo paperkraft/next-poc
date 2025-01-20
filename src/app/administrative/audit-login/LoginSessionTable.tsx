@@ -173,7 +173,7 @@ export default function LoginSessionTable() {
 
             {data && !isSessionLoading &&
                 <div>
-                    <DataTable columns={columns} data={data} getRowCanExpand={() => true} renderSubComponent={renderSubComponent} />
+                    <DataTable columns={columns} data={data} getRowCanExpand={() => true} />
                     <div className="text-muted-foreground text-sm text-left p-2 m-0" >
                         <p>* Forgot to logout.</p>
                         <p># beyond working hours.</p>
@@ -193,23 +193,4 @@ export default function LoginSessionTable() {
             }
         </>
     );
-}
-
-const renderSubComponent = ({ row }: { row: Row<any> }) => {
-    const data = row.original
-    return (
-        <>
-            {
-                data.sessions.map((item: any, idx: number) => (
-                    <TableRow key={idx}>
-                        <TableCell></TableCell>
-                        <TableCell></TableCell>
-                        <TableCell>{item.startTime}</TableCell>
-                        <TableCell>{item.endTime === 'active' ? 'Active' : item.endTime}</TableCell>
-                        <TableCell className={cn({ "text-red-500": checkWorkingHours(item.duration) })}>{item.duration} {checkWorkingHours(item.duration) ? "#" : null}</TableCell>
-                    </TableRow>
-                )).reverse()
-            }
-        </>
-    )
 }

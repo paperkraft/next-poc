@@ -13,7 +13,7 @@ export default async function ModuleMasterPage() {
     const response = await fetchModules().then((d) => d.json());
 
     return (
-      <>
+      <div className="space-y-2">
         <TitlePage title="Module List" description="List of all module and submodule" listPage moduleId={moduleId} />
         {response.success
           ? response.data.length === 0
@@ -21,7 +21,7 @@ export default async function ModuleMasterPage() {
             : <ModuleMasterList data={response.data} moduleId={moduleId as string} />
           : <SomethingWentWrong message={response.message} />
         }
-      </>
+      </div>
     );
 
   } catch (error) {

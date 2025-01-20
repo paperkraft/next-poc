@@ -1,16 +1,23 @@
 "use client";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-import { ColumnDef } from "@tanstack/react-table";
+import { ColumnDef, RowData } from "@tanstack/react-table";
 import { ChevronDownIcon, ChevronRightIcon, Eye } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
 
+interface ModuleData {
+    id: string;
+    name: string;
+    group?: string;
+    subModules?: ModuleData[];
+}
+
 export const ModuleMasterColumns = () => {
     const path = usePathname();
 
-    const columns: ColumnDef<any>[] = useMemo(() => [
+    const columns: ColumnDef<ModuleData>[] = useMemo(() => [
         {
             id: "select",
             header: ({ table }) => (
@@ -32,38 +39,41 @@ export const ModuleMasterColumns = () => {
                     className={"mx-2 translate-y-0.5 data-[state=checked]:bg-sky-500 data-[state=checked]:text-primary-foreground data-[state=checked]:border-0 border-gray-400 shadow-none"}
                 />
             ),
-            size: 50,
-            maxSize: 100,
         },
         {
             accessorKey: "name",
             header: "Module",
-            cell: ({row}) => {
-                const { name, subModules } = row.original;
-                const hasSubModules = subModules.length > 0;
-                return(
-                    <div className={cn({"flex gap-2 items-center cursor-pointer": hasSubModules})} aria-expanded={row.getIsExpanded()} onClick={row.getToggleExpandedHandler()}>
-                        {name}
-                        {
-                            hasSubModules && row.getCanExpand() 
-                            ?  row.getIsExpanded() 
-                                ? <ChevronDownIcon className="size-4" />
-                                : <ChevronRightIcon className="size-4" />
-                            : null
-                        }
+            enableExpanding: true,
+            cell: ({ row, getValue }) => {
+                const { subModules } = row.original;
+                const hasSubModules = subModules && subModules?.length > 0;
+                return (
+                    <div className={cn({ "flex gap-2 items-center cursor-pointer": hasSubModules })} aria-expanded={row.getIsExpanded()} onClick={row.getToggleExpandedHandler()}>
+                        {getValue<boolean>()}
+                        {hasSubModules && row.getCanExpand() && (row.getIsExpanded() ? <ChevronDownIcon className="size-4" /> : <ChevronRightIcon className="size-4" />)}
                     </div>
                 )
             }
         },
         {
-            accessorKey: "view",
+            accessorKey: "group",
+            header: "Group",
+        },
+        {
+            id:"view",
             header: () => null,
             cell: ({ row }) => (
-                <Link href={`${path}/${row.original.id}`} className="hover:text-blue-500 block size-4"><Eye className="size-4" /></Link>
+                <Link
+                    href={`${path}/${row.original.id}`}
+                    className="opacity-0 group-hover:opacity-100 hover:text-blue-500 block size-4"
+                    aria-label={`View details for module ${row.original.name}`}
+                >
+                    <Eye className="size-4" />
+                </Link>
             ),
-            enableSorting: false,
+            // enableSorting: false,
         }
-    ], []);
+    ], [path]);
 
     return { columns };
 };

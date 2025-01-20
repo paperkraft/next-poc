@@ -40,7 +40,7 @@ export const GroupsMasterColumns = () => {
       accessorKey: "view",
       header:() => null,
       cell: ({row}) => (
-        <Link href={`${path}/${row.original.id}`} className="opacity-0 group-hover:opacity-100 hover:text-blue-500"><Eye className="size-4" /></Link>
+        <Link href={`${path}/${row.original.id}`} className="opacity-0 group-hover:opacity-100 hover:text-blue-500 block size-4"><Eye className="size-4" /></Link>
       ),
       enableSorting: false,
     }

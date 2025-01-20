@@ -32,7 +32,7 @@
 
 .fc .fc-daygrid-day-frame {
   /* @apply h-auto */
-  @apply h-[102px]
+  @apply h-auto md:h-[102px]
 }
 
 .fc-timegrid-slot-label-cushion {

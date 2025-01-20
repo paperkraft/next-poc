@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     ColumnDef,
     flexRender,
@@ -13,6 +13,7 @@ import {
     getSortedRowModel,
     PaginationState,
     Row,
+    ExpandedState,
 } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -21,14 +22,12 @@ import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar, ToolbarOptions } from "./data-table-toolbar";
 import { DensityFeature, DensityState } from "@/utils/tanstack-utils";
 import { cn } from "@/lib/utils";
-import { ExpandedState } from "@tanstack/react-table";
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
     pageSize?: number;
     getRowCanExpand?: (row: Row<TData>) => boolean;
-    renderSubComponent?: (props: { row: Row<TData> }) => React.ReactElement;
     isLoading?: boolean;
     deleteRecord?: (id: string | string[]) => Promise<void>;
     moduleId?: string;
@@ -40,21 +39,19 @@ interface GlobalFilterState {
     value: any;
 }
 
-export function DataTable<TData, TValue>({ columns, data, toolbar, pageSize, getRowCanExpand, renderSubComponent, isLoading = false, deleteRecord, moduleId }: DataTableProps<TData, TValue>) {
+export function DataTable<TData extends { subModules?: TData[] }, TValue>({ columns, data, toolbar, pageSize, getRowCanExpand, isLoading = false, deleteRecord, moduleId }: DataTableProps<TData, TValue>) {
 
     const [sorting, setSorting] = useState<SortingState>([]);
     const [globalFilter, setGlobalFilter] = useState<GlobalFilterState | undefined>();
     const [rowSelection, setRowSelection] = useState({})
     const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: pageSize ?? data.length });
     const [density, setDensity] = useState<DensityState>("sm");
-
-    const [expanded, setExpanded] = React.useState<ExpandedState>({})
+    const [expanded, setExpanded] = React.useState<ExpandedState>({});
 
     const table = useReactTable({
         // debugTable: true,
         data,
         columns,
-        getRowCanExpand,
         state: {
             sorting,
             pagination,
@@ -64,9 +61,18 @@ export function DataTable<TData, TValue>({ columns, data, toolbar, pageSize, get
             expanded,
         },
 
+        getRowCanExpand,
+        getSubRows: (row) => row.subModules || [],
+
+
         enableRowSelection: true,
         autoResetPageIndex: false,
         _features: [DensityFeature],
+
+        filterFromLeafRows: true,
+        maxLeafRowFilterDepth: 3,
+        // paginateExpandedRows: false,
+
 
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
@@ -81,6 +87,22 @@ export function DataTable<TData, TValue>({ columns, data, toolbar, pageSize, get
         onDensityChange: setDensity,
         onExpandedChange: setExpanded,
     });
+
+    useEffect(() => {
+        if (globalFilter) {
+            const ids = table.getFilteredRowModel().flatRows.map((row) => row.id);
+            if (ids.length > 0) {
+                const expandedState = convertToExpandedState(ids);
+                setExpanded(expandedState);
+            } else {
+                setExpanded({});
+                table.resetExpanded()
+            }
+        } else {
+            setExpanded({});
+            table.resetExpanded()
+        }
+    }, [globalFilter]);
 
     return (
         <div className="rounded-md border">
@@ -144,17 +166,23 @@ export function DataTable<TData, TValue>({ columns, data, toolbar, pageSize, get
                                     >
                                         {row.getVisibleCells().map((cell) => (
                                             <TableCell key={cell.id}
+                                                style={cell.column.id === "select" ? { width: "40px" } : {}}
                                                 className={cn("transition-[padding]", {
                                                     "p-1": density === "sm",
                                                     "p-2": density === "md",
                                                     "p-3": density === "lg",
+                                                    "pl-[10px]": cell.column.id === "name" && row.depth === 1,
+                                                    "pl-[20px]": cell.column.id === "name" && row.depth === 2,
+                                                    "pl-[30px]": cell.column.id === "name" && row.depth === 3,
                                                 })}
                                             >
                                                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                             </TableCell>
                                         ))}
                                     </TableRow>
-                                    {row.getIsExpanded() && (renderSubComponent && renderSubComponent({ row }))}
+                                    {/* {row.getIsExpanded() && (renderSubComponent && renderSubComponent({ row }))} */}
+
+
                                 </React.Fragment>
                             ))
                         ) : (
@@ -191,4 +219,11 @@ export function DataTable<TData, TValue>({ columns, data, toolbar, pageSize, get
             {pageSize && <DataTablePagination table={table} />}
         </div>
     );
+}
+
+function convertToExpandedState(ids: string[]): { [key: string]: boolean } {
+    return ids.reduce((acc, id) => {
+        acc[id] = true;
+        return acc;
+    }, {} as { [key: string]: boolean });
 }

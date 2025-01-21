@@ -32,7 +32,7 @@ export default function HeaderNavigationMenu() {
                         <Button variant={'ghost'} autoFocus={false}>{item.at(0)?.label}</Button>
                     </DropdownMenuTrigger>
 
-                    <DropdownMenuContent>
+                    <DropdownMenuContent align="start">
                         {item.map((component, idx) => (
                             <NestedMenu key={idx} item={component as menuType} />
                         ))}

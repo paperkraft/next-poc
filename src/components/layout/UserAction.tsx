@@ -1,9 +1,12 @@
 "use client";
 import React, { useEffect } from "react";
 import {
+  BellIcon,
   CircleUserRound,
+  EllipsisVerticalIcon,
   PowerIcon,
   Settings,
+  Settings2Icon,
   UserIcon
 } from "lucide-react";
 import Image from "next/image";
@@ -24,11 +27,13 @@ import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { signOut, useSession } from "next-auth/react";
 import { AvatarIcon } from "@radix-ui/react-icons";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 const UserAction = () => {
-  const router = useRouter();
   const { setTheme, resolvedTheme } = useTheme();
-  const { data: session } = useSession();
+  const { data } = useSession();
+  const user = data && data?.user;
+  const initials = user && user?.name?.split(' ').map((word: any[]) => word[0]).join('').toUpperCase();
 
   // shortcut key to logout ctrl + q
   useEffect(() => {
@@ -36,60 +41,87 @@ const UserAction = () => {
       if (e.key === "q" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         localStorage.removeItem("user");
-        signOut({redirect: false});
+        signOut({ redirect: false });
       }
     };
 
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
-  }, [router]);
+  }, []);
 
   const handleSignOut = async () => {
-    localStorage.removeItem("user");
     sessionStorage.clear();
     await signOut({ callbackUrl: "/" });
   };
+
+  const RenderUserInfo = () => {
+    return (
+      <>
+        <Avatar className="size-8 border p-0.5">
+          <AvatarImage src={user?.image} alt={user?.name} />
+          <AvatarFallback className="rounded-full">{initials ?? "UN"}</AvatarFallback>
+        </Avatar>
+        <div className="grid text-left text-sm leading-tight">
+          <span className="truncate font-semibold">
+            {user?.name}
+          </span>
+          <span className="truncate text-xs">
+            {user?.email}
+          </span>
+        </div>
+      </>
+    )
+  }
+
+  const options = [
+    {
+      label: 'Profile',
+      url: '/profile',
+      icon: UserIcon
+    },
+    {
+      label: 'Setting',
+      url: '/profile-settings',
+      icon: Settings2Icon
+    },
+    {
+      label: 'Notifications',
+      url: '/notifications',
+      icon: BellIcon
+    },
+  ]
 
   return (
     <React.Fragment>
       <div className="flex items-center">
         <DropdownMenu>
-          <DropdownMenuTrigger>
-            <CircleUserRound className="size-5 cursor-pointer" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className={cn("w-56 mt-4 mr-1 [&_svg]:w-5 [&_svg]:stroke-[1.5] [&_svg]:mr-2 [&_svg]:h-5")}>
+          <DropdownMenuTrigger asChild>
+            <Avatar className="size-8 border p-0.5 cursor-pointer">
+              <AvatarImage src={user?.image} alt={user?.name} />
+              <AvatarFallback className="rounded-full">{initials ?? "UN"}</AvatarFallback>
+            </Avatar>
             
-            <DropdownMenuLabel className="flex items-center">
-              {
-                session?.user?.email.includes('vishal') 
-                ? <Image src={"/sv.svg"} width={38} height={38} alt="user" />
-                : <AvatarIcon className="h-10 w-10"/>
-              }
-              <span className="flex flex-col ml-4 overflow-ellipsis">
-                <span>{session?.user?.name ?? "Vishal Sannake"}</span>
-                <span className={cn("text-muted-foreground text-xs",{
-                  "truncate w-2/3": Number(session?.user?.email?.length) >= 23
-                })}>
-                  {session?.user?.email ?? "vishal.sannake@akronsystems.com"}
-                </span>
-              </span>
+            {/* <CircleUserRound className="size-5 cursor-pointer" /> */}
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className={cn("w-56 mt-4 mr-1")}>
+
+            <DropdownMenuLabel className="flex gap-1 items-center cursor-pointer">
+              <RenderUserInfo />
             </DropdownMenuLabel>
 
             <DropdownMenuSeparator />
 
             <DropdownMenuGroup className="space-y-1">
 
-              <li className="flex text-sm p-2 group hover:bg-accent">
-                <Link href={'/profile'} className="flex w-full">
-                <UserIcon /> Profile
-                </Link>
-              </li>
-
-              <li className="flex text-sm p-2 group hover:bg-accent">
-                <Link href={'#'} className="flex w-full">
-                  <Settings /> Settings
-                </Link>
-              </li>
+              {
+                options.map((item) => (
+                  <DropdownMenuItem key={item.label} asChild>
+                    <Link href={item.url} className="flex flex-1 items-center cursor-pointer">
+                      {item.icon && <item.icon className="size-4 mr-1"/>}{item.label}
+                    </Link>
+                  </DropdownMenuItem>
+                ))
+              }
 
             </DropdownMenuGroup>
 
@@ -97,8 +129,8 @@ const UserAction = () => {
 
             <li className="flex text-sm hover:bg-accent text-primary">
               <Button onClick={handleSignOut} variant={'ghost'} className="flex w-full px-2">
-                  <PowerIcon />Logout
-                  <DropdownMenuShortcut>Ctrl+Q</DropdownMenuShortcut>
+                <PowerIcon />Logout
+                <DropdownMenuShortcut>Ctrl+Q</DropdownMenuShortcut>
               </Button>
             </li>
 

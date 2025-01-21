@@ -46,3 +46,7 @@
 [2025-01-21T04:37:21.528Z] Script executed successfully on win32. Output: {"OsName":"Microsoft Windows 11 Pro","OSDisplayVersion":"24H2","OsArchitecture":"64-bit","CsManufacturer":"Dell Inc.","CsModel":"Latitude 7490"}
 [2025-01-21T04:37:21.845Z] Received request for device info.
 [2025-01-21T04:37:27.338Z] Script executed successfully on win32. Output: {"OsName":"Microsoft Windows 11 Pro","OSDisplayVersion":"24H2","OsArchitecture":"64-bit","CsManufacturer":"Dell Inc.","CsModel":"Latitude 7490"}
+[2025-01-21T16:49:37.125Z] Received request for device info.
+[2025-01-21T16:49:42.359Z] Script executed successfully on win32. Output: {"OsName":"Microsoft Windows 11 Pro","OSDisplayVersion":"24H2","OsArchitecture":"64-bit","CsManufacturer":"HP","CsModel":"HP EliteBook 840 G5"}
+[2025-01-21T16:49:42.476Z] Received request for device info.
+[2025-01-21T16:49:46.228Z] Script executed successfully on win32. Output: {"OsName":"Microsoft Windows 11 Pro","OSDisplayVersion":"24H2","OsArchitecture":"64-bit","CsManufacturer":"HP","CsModel":"HP EliteBook 840 G5"}

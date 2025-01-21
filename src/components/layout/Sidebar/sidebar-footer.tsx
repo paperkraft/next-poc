@@ -50,9 +50,6 @@ const SidebarFooterContent = React.memo(() => {
         const down = (e: KeyboardEvent) => {
             if (e.key === "q" && (e.metaKey || e.ctrlKey)) {
                 e.preventDefault();
-                localStorage.removeItem("user");
-                localStorage.removeItem("groups");
-                localStorage.removeItem("menus");
                 signOut({ redirect: true, redirectTo:'/signin' });
             }
         };
@@ -103,7 +100,7 @@ const SidebarFooterContent = React.memo(() => {
                         <DropdownMenuGroup>
                             {
                                 options.map((item) => (
-                                    <DropdownMenuItem key={item.label}>
+                                    <DropdownMenuItem key={item.label} asChild>
                                         <Link href={item.url} className="flex flex-1 items-center">
                                             {item.icon && <item.icon />}{item.label}
                                         </Link>

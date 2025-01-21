@@ -11,6 +11,7 @@ import LocaleSwitcher from './locale-switcher';
 import HeaderNavigationMenu from './header-navbar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { themeConfig } from '@/hooks/use-config';
+import UserAction from './UserAction';
 
 export function CustomTrigger() {
     const { toggleSidebar } = useSidebar();
@@ -43,6 +44,7 @@ const Header: React.FC = React.memo(() => {
                     <div className='flex gap-2'>
                         <LocaleSwitcher />
                         <BellNotifications />
+                        {theme.layout === "navbar" && <UserAction />}
                     </div>
                 </div>
             </div>

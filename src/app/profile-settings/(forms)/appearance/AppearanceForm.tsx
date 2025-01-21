@@ -66,6 +66,12 @@ export function AppearanceForm() {
         <RenderBlocks context={config.mode} component={themeBlocks} type={'theme'} />
 
         <FormItem>
+          <FormLabel>{t('appearance.form.layout')}</FormLabel>
+          <FormDescription>{t('appearance.form.layout_desc')}</FormDescription>
+        </FormItem>
+        <RenderBlocks context={config.layout} component={layoutBlock} type={'layout'} />
+
+        <FormItem>
           <FormLabel>{t('appearance.form.primary_color')}</FormLabel>
           <FormDescription>{t('appearance.form.primary_color_desc')}</FormDescription>
         </FormItem>

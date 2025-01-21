@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react";
 
 export default function Home() {
   const { status } = useSession();
- 
+
   switch (status) {
     case "loading":
       return <Loading/>;

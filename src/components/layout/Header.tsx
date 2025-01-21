@@ -8,6 +8,9 @@ import { useMounted } from '@/hooks/use-mounted';
 import HeaderBreadcrumb from './breadcrum-nav';
 import BellNotifications from './bell-notifications';
 import LocaleSwitcher from './locale-switcher';
+import HeaderNavigationMenu from './header-navbar';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { themeConfig } from '@/hooks/use-config';
 
 export function CustomTrigger() {
     const { toggleSidebar } = useSidebar();
@@ -16,22 +19,30 @@ export function CustomTrigger() {
 
 const Header: React.FC = React.memo(() => {
     const mounted = useMounted();
-    if(!mounted) return null
+    const isMobile = useIsMobile();
+    const [theme] = themeConfig();
+
+    if (!mounted) return null;
 
     return (
         //w-full transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12
         <header className="flex sticky top-0 bg-background h-16 shrink-0 items-center gap-2 border-b px-4 z-50">
             <div className="flex items-center gap-2 w-full">
-                <CustomTrigger />
                 
-                <Separator orientation="vertical" className="mr-2 h-4" />
+                {theme.layout !== "navbar" && (
+                    <>
+                        <CustomTrigger />
+                        <Separator orientation="vertical" className="mr-2 h-4" />
+                        <HeaderBreadcrumb />
+                    </>
+                )}
 
-                <HeaderBreadcrumb/>
+                {!isMobile && theme.layout === "navbar" && <HeaderNavigationMenu />}
 
                 <div className='ml-auto'>
                     <div className='flex gap-2'>
                         <LocaleSwitcher />
-                        <BellNotifications/>
+                        <BellNotifications />
                     </div>
                 </div>
             </div>

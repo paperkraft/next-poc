@@ -10,16 +10,12 @@ import SidebarSkeleton from "./sidebar-skeleton";
 import NestedMenu from "./sidebar-nested-menus";
 import { mapMenu, menuType, submenuType } from "./helper";
 
-
-
 const RenderMenus = React.memo(() => {
 
     const { data, status } = useSession();
     const [filter, setFilter] = React.useState<menuType[][]>();
     const [menus, setMenus] = React.useState<menuType[][]>([]);
     const [query, setQuery] = React.useState<string>('');
-
-    // const { data: groups, isLoading } = useQuery({ queryKey: ["group"], queryFn: fetchGroups });
 
     React.useEffect(() => {
         if (data) {

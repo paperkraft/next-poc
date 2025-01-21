@@ -31,6 +31,7 @@ import {
 
 const AppSidebar = ({ children }: ChildProps) => {
     const queryClient = new QueryClient();
+    const [open, setOpen] = React.useState(true);
     const [config] = themeConfig();
     const val = getLightValues(config.theme);
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
@@ -45,6 +46,14 @@ const AppSidebar = ({ children }: ChildProps) => {
         newMeta.setAttribute("content", `hsl(${val})`);
         document.head.appendChild(newMeta);
     }
+
+    React.useEffect(() => {
+        if(config.layout === 'navbar'){
+            setOpen(false)
+        } else {
+            setOpen(true)
+        }
+    }, [config]);
 
     return (
         <QueryClientProvider client={queryClient}>
@@ -66,7 +75,10 @@ const AppSidebar = ({ children }: ChildProps) => {
                             "--radius": `${config.radius}rem`,
                             fontFamily: `var(--${config.font})`,
                         } as React.CSSProperties
-                    } 
+                    }
+
+                    open={open}
+                    onOpenChange={setOpen}
                 >
                     <Sidebar>
                         <SidebarHeader className="h-16 border-b">

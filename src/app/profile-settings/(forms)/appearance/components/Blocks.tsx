@@ -1,4 +1,5 @@
 import { SkeletonDarkTheme, SkeletonLightTheme, SkeletonSidebarLayout, SkeletonStackedLayout, SkeletonSystemTheme } from "@/components/custom/layout-skeleton";
+import { useSidebar } from "@/components/ui/sidebar";
 import { themeConfig } from "@/hooks/use-config";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
@@ -44,13 +45,19 @@ export const layoutBlock:BlockProps[] = [
 export const RenderBlocks = ({context, component, type}:Blocks) => {
     const [config, setConfig] = themeConfig();
     const { setTheme } = useTheme();
+    const { setOpen } = useSidebar();
 
     const handleClick = (current:string, type:string) => {
         if(type === 'layout'){
           setConfig({
             ...config,
             layout: current
-          })
+          });
+          if(current === "navbar"){
+            setOpen(false)
+          } else {
+            setOpen(true)
+          }
         }
 
         if(type === 'theme'){

@@ -3,7 +3,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { MonitorIcon, MoonIcon, SunIcon } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useContext } from "react";
-import { ThemeContext } from "../custom/theme-provider";
+import { ThemeContext } from "../../context/theme-provider";
 
 export default function ToggleButtons(){
     const { setTheme } = useTheme();

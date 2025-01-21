@@ -1,7 +1,7 @@
 "use client";
 import { memo } from "react";
 import { IGroup } from "@/app/_Interface/Group";
-import { DataTable } from "@/components/data-table/data-table";
+import { DataTable } from "@/components/_data-table/data-table";
 import { GroupsMasterColumns } from "./groups-column-data";
 
 interface GroupListProps {

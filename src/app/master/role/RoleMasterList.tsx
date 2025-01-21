@@ -1,7 +1,7 @@
 "use client";
 import { memo } from "react";
 import { IRole } from "@/app/_Interface/Role";
-import { DataTable } from "@/components/data-table/data-table";
+import { DataTable } from "@/components/_data-table/data-table";
 import { RoleMasterColumns } from "./role-column-data";
 
 interface RoleMasterProps {

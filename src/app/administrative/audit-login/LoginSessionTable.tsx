@@ -1,6 +1,6 @@
 'use client'
 import { calculateDateWiseOnlineSessions, DateWiseOnlineSession } from "@/app/action/audit.action";
-import { DataTable } from "@/components/data-table/data-table";
+import { DataTable } from "@/components/_data-table/data-table";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";

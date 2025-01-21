@@ -2,7 +2,7 @@
 
 import React from "react";
 import { getFormattedDateTime } from "@/utils";
-import { DataTable } from "@/components/data-table/data-table";
+import { DataTable } from "@/components/_data-table/data-table";
 import { DetailsDialog } from "./view-details";
 import { createColumns } from "./column-data";
 interface AuditLogTableProp {

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import AppLayout from "@/components/layout/app-layout";
-import ThemeProvider from "@/components/custom/theme-provider";
+import ThemeProvider from "@/context/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
-import { NextAuthProvider } from "@/components/custom/auth-provider";
+import { NextAuthProvider } from "@/context/auth-provider";
 import { cn } from "@/lib/utils";
 import { ChildProps } from "@/types";
 import { NextIntlClientProvider } from 'next-intl';

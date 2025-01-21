@@ -20,7 +20,7 @@ import React, { memo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { IModule } from "@/app/_Interface/Module";
-import { DataTable } from "@/components/data-table/data-table";
+import { DataTable } from "@/components/_data-table/data-table";
 import { ModuleMasterColumns } from "./module-list-column";
 
 interface ModuleMasterProps {

@@ -55,7 +55,7 @@ export default function AllowNotification() {
                         setNotificationDenied(false);
                         console.log('granted');
                         const isCheck = subscription && checkSubscription(subscription);
-                        if (!isCheck) setSubscription(null)
+                        if (!isCheck) setSubscription(null);
                     } else {
                         setNotificationDenied(true);
                         console.log('denied');

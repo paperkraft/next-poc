@@ -53,7 +53,7 @@
       "title": "Notifications",
       "description": "Configure how you receive notifications.",
       "form": {
-        "app_notify": "App Notifications",
+        "app_notify": "Push Notifications",
         "allow_notify": "Allow app notifications",
         "allow_notify_desc": "Receive notifications about your account activity",
         

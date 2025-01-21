@@ -1,4 +1,4 @@
-import FormBuilder from "@/components/form-builder";
+import FormBuilder from "@/components/_form-builder";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {

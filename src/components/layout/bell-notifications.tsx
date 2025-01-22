@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { BellIcon, CheckCheck, SettingsIcon, X } from 'lucide-react';
+import { BellIcon, BellOffIcon, CheckCheck, SettingsIcon, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -51,8 +51,8 @@ const BellNotifications = () => {
             </DropdownMenuTrigger>
 
             <DropdownMenuContent align='end' className='min-w-64 max-w-72 shadow-lg'>
-                <DropdownMenuLabel className='p-2 text-lg flex items-center'>
-                    <h1 className='ml-1'>Notifications</h1>
+                <DropdownMenuLabel className='p-2 text-lg font-normal flex items-center'>
+                    <p className='ml-1'>Notifications</p>
                     <Button variant='ghost' size="icon" className='text-muted-foreground ml-auto' asChild>
                         <Link href={'/profile-settings/notifications'}>
                             <SettingsIcon className='size-5' />
@@ -67,7 +67,7 @@ const BellNotifications = () => {
                         notifications.map((notification) => (
                             <DropdownMenuItem key={notification.id}>
                                 <Link href="#" className='w-full group'>
-                                    <div className='space-y-2 p-1'>
+                                    <div className='space-y-2 p-1 w-full'>
                                         <div className='flex max-h-10 overflow-hidden'>
                                             {notification.message}
                                             <div className='ml-auto shrink-0 flex flex-col items-end justify-between'>
@@ -89,9 +89,13 @@ const BellNotifications = () => {
                         ))
 
                     ) : (
-                        <DropdownMenuItem className='h-10'>
-                            <div className='w-full text-center'>
-                                No new notifications
+                        <DropdownMenuItem>
+                            <div className='w-full text-center h-80 text-muted-foreground flex flex-col justify-center'>
+                                <div className='flex justify-center'>
+                                    <BellOffIcon className='size-8'/>
+                                </div>
+                                <p>We'll notify you</p>
+                                <p>when something arives</p>
                             </div>
                         </DropdownMenuItem>
                     )}
@@ -102,14 +106,16 @@ const BellNotifications = () => {
                 {notifications.length > 0 && (
                     <>
                         <DropdownMenuSeparator />
-                        <div className='flex items-center p-2 px-4'>
-                            <small className='flex items-center cursor-pointer text-muted-foreground hover:text-blue-600' onClick={() => handleMarkAsRead()}>
-                                <CheckCheck className='size-4 mr-1' /> Mark all as read
-                            </small>
-                            <Link href='/notifications' className='ml-auto text-muted-foreground hover:text-blue-600 text-xs'>
-                                View all
-                            </Link>
-                        </div>
+                        <DropdownMenuItem asChild>
+                            <div className='flex items-center p-2 px-4'>
+                                <small className='flex items-center cursor-pointer text-muted-foreground hover:text-blue-600' onClick={() => handleMarkAsRead()}>
+                                    <CheckCheck className='size-4 mr-1' /> Mark all as read
+                                </small>
+                                <Link href='/notifications' className='ml-auto text-muted-foreground hover:text-blue-600 text-xs' onClick={()=>{}}>
+                                    View all
+                                </Link>
+                            </div>
+                        </DropdownMenuItem>
                     </>
                 )}
             </DropdownMenuContent>

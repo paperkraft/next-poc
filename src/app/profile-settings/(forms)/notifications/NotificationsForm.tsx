@@ -64,7 +64,7 @@ export function NotificationsForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div>
           <h3 className="mb-4 text-lg font-medium">{t('notifications.form.app_notify')}</h3>
           <div className="space-y-4">

@@ -3,7 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useSidebar } from '@/components/ui/sidebar';
-import { MenuIcon } from 'lucide-react';
+import { MenuIcon, PaletteIcon } from 'lucide-react';
 import { useMounted } from '@/hooks/use-mounted';
 import HeaderBreadcrumb from './breadcrum-nav';
 import BellNotifications from './bell-notifications';
@@ -12,6 +12,8 @@ import HeaderNavigationMenu from './header-navbar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { themeConfig } from '@/hooks/use-config';
 import UserAction from './UserAction';
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Customizer } from '@/app/profile-settings/(forms)/appearance/components/Customizer';
 
 export function CustomTrigger() {
     const { toggleSidebar } = useSidebar();
@@ -42,6 +44,16 @@ const Header: React.FC = React.memo(() => {
 
                 <div className='ml-auto'>
                     <div className='flex gap-2'>
+                        {!isMobile && (
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button variant={'ghost'} size="icon"><PaletteIcon className='!size-[18px]'/></Button>
+                                </PopoverTrigger>
+                                <PopoverContent align="end" className="w-[340px] rounded-lg">
+                                    <Customizer />
+                                </PopoverContent>
+                            </Popover>
+                        )}
                         <LocaleSwitcher />
                         <BellNotifications />
                         {theme.layout === "navbar" && <UserAction />}

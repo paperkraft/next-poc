@@ -6,6 +6,7 @@ import { Table } from "@tanstack/react-table";
 import { toast } from "sonner";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { ThemeWrapper } from "../layout/theme-wrapper";
 
 interface DeleteToolbarProps<TData> {
     table: Table<TData>;
@@ -56,29 +57,31 @@ export default function DeleteRecordDialog<TData>({ table, deleteRecord }: Delet
                 </Button>
             </DialogTrigger>
             <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Are you absolutely sure?</DialogTitle>
-                    <DialogDescription>
-                        This action cannot be undone. This will permanently delete your{" "}
-                        <span className="font-medium">{table.getFilteredSelectedRowModel().rows.length}</span>
-                        {table.getFilteredSelectedRowModel().rows.length === 1 ? " record" : " records"} from our servers.
-                    </DialogDescription>
-                </DialogHeader>
-                <DialogFooter className="gap-2 sm:space-x-0">
-                    <DialogClose asChild>
-                        <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-                    </DialogClose>
-                    <Button
-                        aria-label="Delete selected rows"
-                        variant="destructive"
-                        onClick={onDelete}
-                        disabled={loading}
-                    >
-                        {loading && <Loader className="size-4 animate-spin" />}
-                        Delete
-                    </Button>
-                </DialogFooter>
+                <ThemeWrapper>
+                    <DialogHeader>
+                        <DialogTitle>Are you absolutely sure?</DialogTitle>
+                        <DialogDescription>
+                            This action cannot be undone. This will permanently delete your{" "}
+                            <span className="font-medium">{table.getFilteredSelectedRowModel().rows.length}</span>
+                            {table.getFilteredSelectedRowModel().rows.length === 1 ? " record" : " records"} from our servers.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="gap-2 sm:space-x-0">
+                        <DialogClose asChild>
+                            <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+                        </DialogClose>
+                        <Button
+                            aria-label="Delete selected rows"
+                            variant="destructive"
+                            onClick={onDelete}
+                            disabled={loading}
+                        >
+                            {loading && <Loader className="size-4 animate-spin" />}
+                            Delete
+                        </Button>
+                    </DialogFooter>
+                </ThemeWrapper>
             </DialogContent>
         </Dialog>
-    );
+    )
 }

@@ -1,4 +1,6 @@
 import { IModule } from "@/app/_Interface/Module"
+import { Style } from "@/registry/registry-styles";
+import { BaseColor } from "@/registry/registry-base-colors";
 import { useAtom } from "jotai"
 import { atomWithStorage } from "jotai/utils"
 
@@ -13,11 +15,11 @@ type UserConfig = {
 
 export type ThemeConfig = {
     lang: "en" | "hi" | "mr" | string
-    style: string
+    style: Style["name"]
     font: string
     mode: string
     layout: string
-    theme: string
+    theme:  BaseColor["name"]
     radius: number
 }
 

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default async function SettingsNotificationsPage() {
   const t = await getTranslations('setting');
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div>
         <h3 className="text-lg font-medium">{t("notifications.title")}</h3>
         <p className="text-sm text-muted-foreground">{t("notifications.description")}</p>

@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { themeConfig } from "@/hooks/use-config";
 import { cn } from "@/lib/utils";
-import { themes } from "@/registry/theme";
+import { baseColors } from "@/registry/registry-base-colors";
 import { CheckIcon } from "lucide-react";
 
 const RenderColors = () => {
@@ -10,7 +10,7 @@ const RenderColors = () => {
       <div className="space-y-1.5">
         <div className="grid grid-cols-3 gap-2">
           {
-            themes.map((theme) => {
+            baseColors.filter((theme) => !["stone", "gray", "neutral"].includes(theme.name)).map((theme) => {
               const isActive = config.theme === theme.name
               return (
                 <Button

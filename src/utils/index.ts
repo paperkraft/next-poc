@@ -1,4 +1,4 @@
-import { themes } from "@/registry/theme";
+import { baseColors } from "@/registry/registry-base-colors";
 
 export function getLocalTime(date: Date): string {
     return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: "2-digit", hour12: true });
@@ -29,6 +29,6 @@ export function urlBase64ToUint8Array(base64String: string) {
   }
 
   export function getLightValues(themeName: string) {
-    const theme = themes.find(t => t.name === themeName);
+    const theme = baseColors.find(t => t.name === themeName);
     return theme ? theme.activeColor.light : null;
   }

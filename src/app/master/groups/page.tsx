@@ -11,7 +11,7 @@ export default async function GroupPage() {
     const session = await auth();
     const moduleId = session && findModuleId(session?.user?.modules, "Groups");
     const response = await fetchGroups().then((d) => d.json());
-
+    
     return (
       <>
         <TitlePage title="Groups" description="List of all groups, basically to catagorized menu" listPage moduleId={moduleId} />

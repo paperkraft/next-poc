@@ -1,16 +1,12 @@
 'use client'
 import { useLocale, useTranslations } from 'next-intl';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
 import { setUserLocale } from '@/services/locale';
 import { Locale } from '@/i18n/config';
-import { LanguagesIcon } from 'lucide-react';
+import { CheckIcon, LanguagesIcon } from 'lucide-react';
 import { themeConfig } from '@/hooks/use-config';
+import { cn } from '@/lib/utils';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu';
+import { Button } from '../ui/button';
 
 export default function LocaleSwitcher() {
     const t = useTranslations('LocaleSwitcher');
@@ -44,20 +40,22 @@ export default function LocaleSwitcher() {
     }
 
     return (
-        <div className="relative">
-            <Select defaultValue={locale} onValueChange={onChange}>
-                <SelectTrigger className="w-[120px]">
-                    <LanguagesIcon className="size-4" />
-                    <SelectValue placeholder={t('label')} />
-                </SelectTrigger>
-                <SelectContent>
-                    {items.map((item, index) => (
-                        <SelectItem key={index} value={item.value}>
-                            {item.label}
-                        </SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
-        </div>
+        <>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant={'ghost'} size={'icon'}><LanguagesIcon className="!size-[18px]" /></Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    {
+                        items.map((item) => (
+                            <DropdownMenuItem key={item.label} onClick={() => onChange(item.value)}>
+                                {item.label}
+                                <CheckIcon className={cn('size-4 opacity-0 ml-auto', { 'opacity-100': item.value === locale })} />
+                            </DropdownMenuItem>
+                        ))
+                    }
+                </DropdownMenuContent>
+            </DropdownMenu>
+        </>
     );
 }

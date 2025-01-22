@@ -56,6 +56,7 @@ export default function AllowNotification() {
                         console.log('granted');
                         const isCheck = subscription && checkSubscription(subscription);
                         if (!isCheck) setSubscription(null);
+                        await subscribeToPush();
                     } else {
                         setNotificationDenied(true);
                         console.log('denied');
@@ -127,13 +128,6 @@ export async function subscribeToPush() {
             userVisibleOnly: true,
             applicationServerKey: urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!),
         });
-
-        if (sub && checkSubscription(sub)) {
-            console.log('Exist Push Subscription');
-            return
-        } else {
-            console.log('Update Push Subscription');
-        }
 
         localStorage.setItem('push-subscription', JSON.stringify(sub));
         const serializedSub = JSON.parse(JSON.stringify(sub));

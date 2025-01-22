@@ -18,32 +18,6 @@ export default function DeleteRecordDialog<TData>({ table, deleteRecord }: Delet
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
-    const onDeleteLog = async () => {
-        setLoading(true);
-        const selectedIds = table.getFilteredSelectedRowModel().rows.map((row: any) => row.original.id)
-
-        try {
-            const response = await fetch('/api/audit-log', {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ ids: selectedIds }),
-            });
-
-            if (response.ok) {
-                toast.success("Log deleted");
-            }
-            table.toggleAllRowsSelected(false);
-        } catch (error) {
-            console.error(error)
-            toast.error("Error in deleting log");
-        } finally {
-            setOpen(false);
-            setLoading(false);
-        }
-    }
-
     const onDelete = async () => {
         const selectedIds = table.getFilteredSelectedRowModel().rows.map((row: any) => row.original.id);
         if (!selectedIds.length) {

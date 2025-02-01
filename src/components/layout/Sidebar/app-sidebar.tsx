@@ -18,7 +18,6 @@ import SidebarHeaderContent from "./sidebar-header"
 import SidebarFooterContent from "./sidebar-footer"
 import { NotificationsProvider } from "@/context/notification-context";
 import { themeConfig } from "@/hooks/use-config";
-import { getLightValues } from "@/utils";
 import {
     inconsolata,
     inter,
@@ -33,22 +32,9 @@ const AppSidebar = ({ children }: ChildProps) => {
     const queryClient = new QueryClient();
     const [open, setOpen] = React.useState(true);
     const [config] = themeConfig();
-    const val = getLightValues(config.theme);
-    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-
-    if (themeColorMeta) {
-        // If the meta tag exists, update its content
-        themeColorMeta.setAttribute("content", `hsl(${val})`);
-    } else {
-        // If it doesn't exist, create it
-        const newMeta = document.createElement("meta");
-        newMeta.setAttribute("name", "theme-color");
-        newMeta.setAttribute("content", `hsl(${val})`);
-        document.head.appendChild(newMeta);
-    }
 
     React.useEffect(() => {
-        if(config.layout === 'navbar'){
+        if (config.layout === 'navbar') {
             setOpen(false)
         } else {
             setOpen(true)
@@ -58,7 +44,7 @@ const AppSidebar = ({ children }: ChildProps) => {
     return (
         <QueryClientProvider client={queryClient}>
             <NotificationsProvider>
-                <SidebarProvider 
+                <SidebarProvider
                     className={`
                         theme-${config.theme}
                         ${inter.variable} 

@@ -6,6 +6,9 @@ import { mapMenu, menuType } from "./Sidebar/helper"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "../ui/dropdown-menu"
 import { Button } from "../ui/button"
 import Link from "next/link"
+import { cn } from "@/lib/utils"
+import { usePathname } from "next/navigation"
+import { ThemeWrapper } from "./theme-wrapper"
 
 export default function HeaderNavigationMenu() {
     const { data } = useSession();
@@ -33,9 +36,11 @@ export default function HeaderNavigationMenu() {
                     </DropdownMenuTrigger>
 
                     <DropdownMenuContent align="start">
-                        {item.map((component, idx) => (
-                            <NestedMenu key={idx} item={component as menuType} />
-                        ))}
+                        <ThemeWrapper>
+                            {item.map((component, idx) => (
+                                <NestedMenu key={idx} item={component as menuType} />
+                            ))}
+                        </ThemeWrapper>
                     </DropdownMenuContent>
                 </DropdownMenu>
             ))}
@@ -43,13 +48,14 @@ export default function HeaderNavigationMenu() {
     );
 }
 
-const NestedMenu = ({ item }: { item: menuType }) => {
+const NestedMenu = React.memo(({ item }: { item: menuType }) => {
+    const path = usePathname();
     const hasSubmenu = item?.submenu?.length > 0;
 
     if (!hasSubmenu) {
         return (
             <DropdownMenuItem asChild>
-                <Link href={item.url} className="w-full">{item.title}</Link>
+                <Link href={item.url} className={cn("w-full hover:!text-primary hover:bg-muted", { "bg-muted !text-primary": item.url === path })}>{item.title}</Link>
             </DropdownMenuItem>
         )
     }
@@ -61,11 +67,15 @@ const NestedMenu = ({ item }: { item: menuType }) => {
             </DropdownMenuSubTrigger>
             <DropdownMenuPortal>
                 <DropdownMenuSubContent>
-                    {item?.submenu.map((ele, idx) => (
-                        <NestedMenu key={idx} item={ele as menuType} />
-                    ))}
+                    <ThemeWrapper>
+                        {item?.submenu.map((ele, idx) => (
+                            <NestedMenu key={idx} item={ele as menuType} />
+                        ))}
+                    </ThemeWrapper>
                 </DropdownMenuSubContent>
             </DropdownMenuPortal>
         </DropdownMenuSub>
     )
-}
+})
+
+NestedMenu.displayName = "NestedMenu"

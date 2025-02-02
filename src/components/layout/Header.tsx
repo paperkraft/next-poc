@@ -12,8 +12,7 @@ import HeaderNavigationMenu from './header-navbar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { themeConfig } from '@/hooks/use-config';
 import UserAction from './UserAction';
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Customizer } from '@/app/profile-settings/(forms)/appearance/components/Customizer';
+import ThemeConfig from '@/components/layout/ThemeCustomizer';
 
 export function CustomTrigger() {
     const { toggleSidebar } = useSidebar();
@@ -31,8 +30,8 @@ const Header: React.FC = React.memo(() => {
         //w-full transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12
         <header className="flex sticky top-0 bg-background h-16 shrink-0 items-center gap-2 border-b px-4 z-50">
             <div className="flex items-center gap-2 w-full">
-                
-                {theme.layout !== "navbar" && (
+
+                {theme.layout !== "horizontal" && (
                     <>
                         <CustomTrigger />
                         <Separator orientation="vertical" className="mr-2 h-4" />
@@ -40,23 +39,14 @@ const Header: React.FC = React.memo(() => {
                     </>
                 )}
 
-                {!isMobile && theme.layout === "navbar" && <HeaderNavigationMenu />}
+                {!isMobile && theme.layout === "horizontal" && <HeaderNavigationMenu />}
 
                 <div className='ml-auto'>
                     <div className='flex gap-2'>
-                        {!isMobile && (
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                    <Button variant={'ghost'} size="icon"><PaletteIcon className='!size-[18px]'/></Button>
-                                </PopoverTrigger>
-                                <PopoverContent align="end" className="w-[340px] rounded-lg">
-                                    <Customizer />
-                                </PopoverContent>
-                            </Popover>
-                        )}
-                        <LocaleSwitcher />
+                        {!isMobile && <ThemeConfig />}
+                        {!isMobile && <LocaleSwitcher />}
                         <BellNotifications />
-                        {theme.layout === "navbar" && <UserAction />}
+                        {theme.layout === "horizontal" && <UserAction />}
                     </div>
                 </div>
             </div>

@@ -12,6 +12,7 @@ import RenderColors from "./components/ColorBlocks"
 import RenderRadius from "./components/RadiusBlocks"
 import RenderFonts from "./components/FontsBlocks"
 import { useTranslations } from "next-intl"
+import { useTheme } from "next-themes"
 
 const appearanceFormSchema = z.object({
   theme: z.enum(["light", "dark"], {
@@ -27,6 +28,7 @@ type AppearanceFormValues = z.infer<typeof appearanceFormSchema>
 
 export function AppearanceForm() {
   const [config] = themeConfig();
+  const { theme } = useTheme();
   const t = useTranslations('setting');
 
   const form = useForm<AppearanceFormValues>({
@@ -63,7 +65,7 @@ export function AppearanceForm() {
           <FormLabel>{t('appearance.form.theme')}</FormLabel>
           <FormDescription>{t('appearance.form.theme_desc')}</FormDescription>
         </FormItem>
-        <RenderBlocks context={config.mode} component={themeBlocks} type={'theme'} />
+        <RenderBlocks context={theme as string} component={themeBlocks} type={'theme'} />
 
         <FormItem>
           <FormLabel>{t('appearance.form.layout')}</FormLabel>

@@ -19,6 +19,7 @@ export type ThemeConfig = {
     font: string
     mode: string
     layout: string
+    content: string
     theme:  BaseColor["name"]
     radius: number
 }
@@ -29,7 +30,8 @@ const themeAtom = atomWithStorage<ThemeConfig>("theme-config", {
     font: "font-inter",
     theme: "zinc",
     mode: "system",
-    layout: "sidebar",
+    layout: "vertical",
+    content: "wide",
     radius: 0.5,
 })
 

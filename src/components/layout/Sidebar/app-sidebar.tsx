@@ -27,6 +27,7 @@ import {
     roboto,
     trio,
 } from "@/lib/fonts";
+import { cn } from "@/lib/utils";
 
 const AppSidebar = ({ children }: ChildProps) => {
     const queryClient = new QueryClient();
@@ -34,7 +35,7 @@ const AppSidebar = ({ children }: ChildProps) => {
     const [config] = themeConfig();
 
     React.useEffect(() => {
-        if (config.layout === 'navbar') {
+        if (config.layout === 'horizontal') {
             setOpen(false)
         } else {
             setOpen(true)
@@ -85,7 +86,7 @@ const AppSidebar = ({ children }: ChildProps) => {
 
                     <SidebarInset>
                         <Header />
-                        <div className="grid grid-rows p-4 gap-3">
+                        <div className={cn("grid grid-rows p-4 gap-4", {"container mx-auto": config.content === 'compact'})}>
                             {children}
                         </div>
                     </SidebarInset>

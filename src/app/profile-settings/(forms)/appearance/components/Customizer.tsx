@@ -9,12 +9,30 @@ import { cn } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ThemeWrapper } from "@/components/layout/theme-wrapper"
 import { useMounted } from "@/hooks/use-mounted"
-import { baseColors } from "@/registry/registry-base-colors"
+import { BaseColor, baseColors } from "@/registry/registry-base-colors"
 
 export function Customizer() {
     const mounted = useMounted();
     const { setTheme: setMode, resolvedTheme: mode } = useTheme()
-    const [config, setConfig] = themeConfig()
+    const [config, setConfig] = themeConfig();
+
+    const resetConfig = () => {
+        setConfig({
+            ...config,
+            font: "font-inter",
+            theme: "zinc",
+            radius: 0.5,
+        });
+        setMode('light');
+    };
+
+    const handleThemeChange = (themeName: BaseColor['name']) => {
+        setConfig({ ...config, theme: themeName });
+    };
+
+    const handleRadiusChange = (radiusValue: string) => {
+        setConfig({ ...config, radius: parseFloat(radiusValue) });
+    };
 
     return (
         <ThemeWrapper className="flex flex-col space-y-4 md:space-y-6">
@@ -27,19 +45,7 @@ export function Customizer() {
                         Customize your components colors.
                     </div>
                 </div>
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className="ml-auto rounded-[0.5rem]"
-                    onClick={() => {
-                        setConfig({
-                            ...config,
-                            font: "font-inter",
-                            theme: "zinc",
-                            radius: 0.5,
-                        })
-                    }}
-                >
+                <Button variant="ghost" size="icon" className="ml-auto rounded-[0.5rem]" onClick={resetConfig}>
                     <Repeat />
                     <span className="sr-only">Reset</span>
                 </Button>
@@ -48,28 +54,23 @@ export function Customizer() {
                 <div className="space-y-1.5">
                     <Label className="text-xs">Color</Label>
                     <div className="grid grid-cols-3 gap-2">
-                        {baseColors.filter((theme) => !["stone", "gray", "neutral"].includes(theme.name))
-                            .map((theme) => {
-                                const isActive = config.theme === theme.name
+                        {baseColors.filter(({ name }) => !["stone", "gray", "neutral"].includes(name))
+                            .map(({ name, label, activeColor }) => {
+                                const isActive = config.theme === name
 
                                 return mounted ? (
                                     <Button
                                         variant={"outline"}
                                         size="sm"
-                                        key={theme.name}
-                                        onClick={() => {
-                                            setConfig({
-                                                ...config,
-                                                theme: theme.name,
-                                            })
-                                        }}
+                                        key={name}
+                                        onClick={() => handleThemeChange(name)}
                                         className={cn(
                                             "justify-start",
                                             isActive && "border-2 border-primary"
                                         )}
                                         style={
                                             {
-                                                "--theme-primary": `hsl(${theme?.activeColor[mode === "dark" ? "dark" : "light"]})`,
+                                                "--theme-primary": `hsl(${activeColor[mode === "dark" ? "dark" : "light"]})`,
                                             } as React.CSSProperties
                                         }
                                     >
@@ -80,10 +81,10 @@ export function Customizer() {
                                         >
                                             {isActive && <CheckIcon className="h-4 w-4 text-white" />}
                                         </span>
-                                        {theme.label}
+                                        {label}
                                     </Button>
                                 ) : (
-                                    <Skeleton className="h-8 w-full" key={theme.name} />
+                                    <Skeleton className="h-8 w-full" key={name} />
                                 )
                             })}
                     </div>
@@ -97,16 +98,8 @@ export function Customizer() {
                                     variant={"outline"}
                                     size="sm"
                                     key={value}
-                                    onClick={() => {
-                                        setConfig({
-                                            ...config,
-                                            radius: parseFloat(value),
-                                        })
-                                    }}
-                                    className={cn(
-                                        config.radius === parseFloat(value) &&
-                                        "border-2 border-primary"
-                                    )}
+                                    onClick={() => handleRadiusChange(value)}
+                                    className={cn(config.radius === parseFloat(value) && "border-2 border-primary")}
                                 >
                                     {value}
                                 </Button>

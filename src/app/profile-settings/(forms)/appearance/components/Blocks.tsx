@@ -33,11 +33,11 @@ export const themeBlocks:BlockProps[] = [
 
 export const layoutBlock:BlockProps[] = [
     {
-      setCurrent: 'sidebar',
+      setCurrent: 'vertical',
       block: <SkeletonSidebarLayout/>
     },
     {
-      setCurrent: 'navbar',
+      setCurrent: 'horizontal',
       block: <SkeletonStackedLayout/>
     },
 ];
@@ -53,7 +53,7 @@ export const RenderBlocks = ({context, component, type}:Blocks) => {
             ...config,
             layout: current
           });
-          if(current === "navbar"){
+          if(current === "horizontal"){
             setOpen(false)
           } else {
             setOpen(true)

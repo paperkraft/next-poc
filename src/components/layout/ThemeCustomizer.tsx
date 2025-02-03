@@ -69,15 +69,17 @@ export default function ThemeCustomizer() {
                                         <p>Theme Customizer</p>
                                         <p className="text-muted-foreground text-xs">Customize & Preview in Real Time</p>
                                     </div>
-                                    <Button variant="ghost" size="icon" className="ml-auto rounded-[0.5rem]" onClick={resetConfig}>
+                                    <Button variant="ghost" size="icon" className="ml-auto mr-4 rounded-[0.5rem]" onClick={resetConfig}>
                                         <Repeat />
                                         <span className="sr-only">Reset</span>
                                     </Button>
                                 </div>
                             </SheetTitle>
                         </SheetHeader>
-                        <Separator className="my-4" />
-                        <ScrollArea className="h-[calc(100vh-160px)]">
+
+                        <Separator className="my-2"/>
+
+                        <ScrollArea className="h-[calc(100vh-110px)]">
                             <div className="flex flex-1 flex-col space-y-4 md:space-y-6">
                                 <div className="space-y-1.5">
                                     <Label className="text-xs">Primary Color</Label>

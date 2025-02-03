@@ -86,7 +86,7 @@ const AppSidebar = ({ children }: ChildProps) => {
 
                     <SidebarInset>
                         <Header />
-                        <div className={cn("grid grid-rows p-4 gap-4", {"container mx-auto": config.content === 'compact'})}>
+                        <div className={cn("grid grid-rows p-4 gap-4", { "container mx-auto": config.content === 'compact' })}>
                             {children}
                         </div>
                     </SidebarInset>

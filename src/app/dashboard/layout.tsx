@@ -1,3 +1,4 @@
+import StepperForm from "@/components/_stepper-form/StepperForm";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -26,6 +27,8 @@ export default function DashboardLayout({
           <div className="aspect-video rounded-xl bg-muted/50" />
           <div className="aspect-video rounded-xl bg-muted/50" />
       </div>
+
+      <StepperForm/>
     </>
   );
 }

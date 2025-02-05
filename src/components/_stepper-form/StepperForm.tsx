@@ -8,6 +8,8 @@ import { Form } from "../ui/form";
 import { Button } from "../ui/button";
 import StepOne from "./(forms)/step-one/page";
 import { LucideBuilding2, MapPin, Phone, User } from "lucide-react";
+import { z } from "zod"
+import { zodResolver } from "@hookform/resolvers/zod"
 
 function getStepContent(step: number) {
     switch (step) {
@@ -26,7 +28,14 @@ function getStepContent(step: number) {
     }
 }
 
-const stepIcons = [<User />, <MapPin />, <Phone />, <LucideBuilding2 />]
+const stepIcons = [<User />, <MapPin />, <Phone />, <LucideBuilding2 />];
+
+const profileFormSchema = z.object({
+  firstName: z.string({ required_error: "First Name is required" })
+    .min(1, "First Name is required"),
+  lastName: z.string({ required_error: "Last Name is required" })
+    .min(1, "Last Name is required"),
+})
 
 export default function StepperForm() {
 
@@ -34,11 +43,12 @@ export default function StepperForm() {
     const [activeStep, setActiveStep] = useState(1);
 
     const form = useForm<StepperFormValues>({
-        // mode: "onTouched",
+        resolver: zodResolver(profileFormSchema),
         defaultValues: {
             firstName: "",
             lastName: "",
-        }
+        },
+        mode:"all"
     });
 
     const handleNext = async () => {

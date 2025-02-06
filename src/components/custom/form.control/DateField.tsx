@@ -1,4 +1,5 @@
 import { Calendar } from "@/components/ui/calendar";
+import { FloatingLabel } from "@/components/ui/floating-input";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
@@ -8,19 +9,18 @@ import { ChangeEvent, useState } from "react";
 
 interface DateFieldProps {
   name: string;
+  label?: string;
   value: Date | null;
   onChange: (date: Date | null) => void;
   disabled?: boolean;
   readOnly?: boolean;
+  floatingLabel?: boolean;
   fromYear?: number;
   toYear?: number;
 }
 
-export const DateField: React.FC<DateFieldProps> = ({ value, onChange, ...rest }) => {
-  const [inputValue, setInputValue] = useState<string>(
-    value ? format(value, "dd-MM-yyyy") : ""
-  );
-
+export const DateField: React.FC<DateFieldProps> = ({ value, label, onChange, ...rest }) => {
+  const [inputValue, setInputValue] = useState<string>(value ? format(value, "dd-MM-yyyy") : "");
   const datePattern = /^(\d{2})-(\d{2})-(\d{4})$/;
 
   const handleDateChange = (date: Date | undefined) => {
@@ -71,9 +71,6 @@ export const DateField: React.FC<DateFieldProps> = ({ value, onChange, ...rest }
 
   return (
     <Popover>
-      <label htmlFor={rest.name} className="sr-only">
-        {rest.name}
-      </label>
       <div className="relative">
         <Input
           id={rest.name}
@@ -94,14 +91,15 @@ export const DateField: React.FC<DateFieldProps> = ({ value, onChange, ...rest }
             )}
           />
         </PopoverTrigger>
+        {label && <FloatingLabel>{label}</FloatingLabel>}
       </div>
+
       <PopoverContent className="w-auto p-0" align="end">
         <Calendar
           mode="single"
           selected={value || undefined}
           defaultMonth={value || undefined}
           onSelect={handleDateChange}
-          disabled={{after: new Date()}}
         />
       </PopoverContent>
     </Popover>

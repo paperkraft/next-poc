@@ -33,29 +33,28 @@ export const FloatingInputController = <T extends FieldValues>({ name, label, re
             rules={{ required: rest?.required ? `${label} is required` : undefined }}
             render={({ field }) => (
                 <FormItem className="w-full">
-                    <FormControl>
-                        <div className="relative">
-                            <FloatingLabelInput
-                                {...field}
-                                label={label}
-                                type={rest.type === 'number' ? 'text' : rest?.type ?? 'text'}
-                                disabled={rest?.disabled}
-                                readOnly={rest?.readOnly}
-                                onChange={(e) => {
-                                    const value = rest.type === undefined
-                                        ? e.target.value.replace(/[^a-zA-Z\s]/g, '').trimStart()
-                                        : rest.type === 'number'
-                                            ? e.target.value.replace(/[^0-9]/g, '').trimStart()
-                                            : e.target.value
-                                    field.onChange(value)
-                                }}
-                                minLength={rest?.minLength}
-                                maxLength={rest?.maxLength}
-                            />
-                            {reset && field.value && <X onClick={() => form.resetField(name)}
-                                className={cn("size-7 absolute right-1 top-1/2 -translate-y-1/2 px-1.5 font-normal cursor-pointer")} />}
-                        </div>
-                    </FormControl>
+                    <div className="relative">
+                        <FloatingLabelInput
+                            {...field}
+                            id={label}
+                            label={label}
+                            type={rest.type === 'number' ? 'text' : rest?.type ?? 'text'}
+                            disabled={rest?.disabled}
+                            readOnly={rest?.readOnly}
+                            onChange={(e) => {
+                                const value = rest.type === undefined
+                                    ? e.target.value.replace(/[^a-zA-Z\s]/g, '').trimStart()
+                                    : rest.type === 'number'
+                                        ? e.target.value.replace(/[^0-9]/g, '').trimStart()
+                                        : e.target.value
+                                field.onChange(value)
+                            }}
+                            minLength={rest?.minLength}
+                            maxLength={rest?.maxLength}
+                        />
+                        {reset && field.value && <X onClick={() => form.resetField(name)}
+                            className={cn("opacity-50 hover:opacity-100 size-7 absolute right-1 top-1/2 -translate-y-1/2 px-1.5 font-normal cursor-pointer")} />}
+                    </div>
                     {rest?.description && <FormDescription>{rest?.description}</FormDescription>}
                     <FormMessage />
                 </FormItem>

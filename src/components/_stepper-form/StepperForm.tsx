@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { StepperFormValues } from "./types/stepperTypes";
+// import { StepperFormValues } from "./types/stepperTypes";
 import StepperIndicator from "./components/stepper-indicator/page";
 import { Form } from "../ui/form";
 import { Button } from "../ui/button";
@@ -31,11 +31,19 @@ function getStepContent(step: number) {
 const stepIcons = [<User />, <MapPin />, <Phone />, <LucideBuilding2 />];
 
 const profileFormSchema = z.object({
-  firstName: z.string({ required_error: "First Name is required" })
-    .min(1, "First Name is required"),
-  lastName: z.string({ required_error: "Last Name is required" })
-    .min(1, "Last Name is required"),
-})
+    firstName: z.string({ required_error: "First Name is required" })
+        .min(1, "First Name is required"),
+    middleName: z.string().optional(),
+    lastName: z.string({ required_error: "Last Name is required" })
+        .min(1, "Last Name is required"),
+    dob: z.coerce.date({ errorMap: () => ({ message: "Date is required.", }) }),
+    email: z.string({ required_error: "Email is required" })
+        .min(1, "Email is required").email(),
+    state: z.string({ required_error: "Please select a state." })
+        .min(1, "Please select a state."),
+});
+
+type StepperFormValues = z.infer<typeof profileFormSchema>
 
 export default function StepperForm() {
 
@@ -46,9 +54,13 @@ export default function StepperForm() {
         resolver: zodResolver(profileFormSchema),
         defaultValues: {
             firstName: "",
+            middleName: "",
             lastName: "",
+            dob: undefined,
+            email: "",
+            state: ""
         },
-        mode:"all"
+        mode: "all"
     });
 
     const handleNext = async () => {
@@ -69,7 +81,7 @@ export default function StepperForm() {
             <StepperIndicator activeStep={activeStep} steps={steps} stepIcons={stepIcons} icons />
 
             <Form {...form}>
-                <form noValidate>
+                <form noValidate className="p-4">
 
                     {getStepContent(activeStep)}
 

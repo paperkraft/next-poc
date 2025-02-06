@@ -1,6 +1,6 @@
 export const STEPPER_FORM_KEYS = {
-    1: ['firstName', 'lastName'],
-    2: ['address', 'city', 'state', 'zipCode'],
+    1: ['firstName', 'middleName', 'lastName', 'dob', 'email'],
+    2: ['address1', 'address2', 'city', 'state', 'zipCode'],
     5: ['bankName', 'accountNumber', 'creditScore'],
 } as const;
 
@@ -9,10 +9,7 @@ export type StepperFormKeysType =
 
 export type StepperFormValues = {
     [FieldName in StepperFormKeysType]: FieldName extends
-    | "annualIncome"
-    | "loanAmount"
-    | "repaymentTerms"
-    | "creditScore"
+    | "zipCode"
     ? number
     : string;
 };

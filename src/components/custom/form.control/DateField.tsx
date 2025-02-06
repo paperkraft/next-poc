@@ -1,5 +1,5 @@
 import { Calendar } from "@/components/ui/calendar";
-import { FloatingLabel } from "@/components/ui/floating-input";
+import { FloatingLabel, FloatingLabelInput } from "@/components/ui/floating-input";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
@@ -72,9 +72,10 @@ export const DateField: React.FC<DateFieldProps> = ({ value, label, onChange, ..
   return (
     <Popover>
       <div className="relative">
-        <Input
-          id={rest.name}
-          placeholder="DD-MM-YYYY"
+        <FloatingLabelInput
+          id={label}
+          label={label}
+          // placeholder="DD-MM-YYYY"
           value={inputValue}
           onChange={handleInputChange}
           pattern={datePattern.source}
@@ -91,7 +92,6 @@ export const DateField: React.FC<DateFieldProps> = ({ value, label, onChange, ..
             )}
           />
         </PopoverTrigger>
-        {label && <FloatingLabel>{label}</FloatingLabel>}
       </div>
 
       <PopoverContent className="w-auto p-0" align="end">

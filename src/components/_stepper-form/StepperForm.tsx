@@ -1,15 +1,13 @@
 "use client";
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-// import { StepperFormValues } from "./types/stepperTypes";
-import StepperIndicator from "./components/stepper-indicator/page";
 import { Form } from "../ui/form";
 import { Button } from "../ui/button";
-import StepOne from "./(forms)/step-one/page";
 import { LucideBuilding2, MapPin, Phone, User } from "lucide-react";
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
+import StepperIndicator from "./components/stepper-indicator/page";
+import StepOne from "./(forms)/step-one/page";
 
 function getStepContent(step: number) {
     switch (step) {
@@ -39,7 +37,7 @@ const profileFormSchema = z.object({
     dob: z.coerce.date({ errorMap: () => ({ message: "Date is required.", }) }),
     email: z.string({ required_error: "Email is required" })
         .min(1, "Email is required").email(),
-    state: z.string({ required_error: "Please select a state." })
+    gender: z.string({ required_error: "Please select a state." })
         .min(1, "Please select a state."),
 });
 
@@ -58,7 +56,7 @@ export default function StepperForm() {
             lastName: "",
             dob: undefined,
             email: "",
-            state: ""
+            gender: ""
         },
         mode: "all"
     });
@@ -79,25 +77,14 @@ export default function StepperForm() {
     return (
         <>
             <StepperIndicator activeStep={activeStep} steps={steps} stepIcons={stepIcons} icons />
-
             <Form {...form}>
                 <form noValidate className="p-4">
-
                     {getStepContent(activeStep)}
-
                     <div className="flex justify-evenly">
-                        <Button type="button" className="w-[100px]" variant="secondary" onClick={handleBack} disabled={activeStep === 1}>
-                            Back
-                        </Button>
-                        {activeStep === steps ? (
-                            <Button className="w-[100px]" type="button" onClick={form.handleSubmit(onSubmit)}>
-                                Submit
-                            </Button>
-                        ) : (
-                            <Button type="button" className="w-[100px]" onClick={handleNext}>
-                                Next
-                            </Button>
-                        )}
+                        <Button type="button" className="w-[100px]" variant="secondary" onClick={handleBack} disabled={activeStep === 1}>Back</Button>
+                        {activeStep === steps
+                            ? (<Button className="w-[100px]" type="button" onClick={form.handleSubmit(onSubmit)}>Submit</Button>)
+                            : (<Button type="button" className="w-[100px]" onClick={handleNext}>Next</Button>)}
                     </div>
                 </form>
             </Form>

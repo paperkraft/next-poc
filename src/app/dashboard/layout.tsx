@@ -27,8 +27,6 @@ export default function DashboardLayout({
           <div className="aspect-video rounded-xl bg-muted/50" />
           <div className="aspect-video rounded-xl bg-muted/50" />
       </div>
-
-      <StepperForm/>
     </>
   );
 }

@@ -32,10 +32,10 @@ export const FloatingSelectController = <T extends FieldValues>({ options, name,
             render={({ field }) => (
                 <FormItem className={cn("w-full", rest?.className)}>
                     <Select onValueChange={field.onChange} defaultValue={field.value} disabled={rest?.disabled}>
-                        <SelectTrigger>
-                            <SelectValue placeholder={rest.placeholder ?? label} />
-                            {field.value && <FloatingLabel>{label}</FloatingLabel>}
-                        </SelectTrigger>
+                        <div className="relative">
+                            <FloatingLabelInput id={label} label={label} {...field} readOnly />
+                            <SelectTrigger className="absolute top-0 justify-end shadow-none" />
+                        </div>
                         <SelectContent>
                             {
                                 options?.map((item, i) => (

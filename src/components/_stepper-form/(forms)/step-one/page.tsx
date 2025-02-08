@@ -2,10 +2,21 @@ import { FloatingDateController } from "@/components/custom/form.control/Floatin
 import { FloatingInputController } from "@/components/custom/form.control/FloatingInputController";
 import { FloatingSelectController } from "@/components/custom/form.control/FloatingSelectController";
 
-const options = [
+const genderOptions = [
     { label: "Male", value: "Male" },
     { label: "Female", value: "Female" },
     { label: "Other", value: "Other" },
+];
+
+const bloodGroupOptions = [
+    { label: "A +ve", value: "A +ve" },
+    { label: "A -ve", value: "A -ve" },
+    { label: "B +ve", value: "B +ve" },
+    { label: "B -ve", value: "B -ve" },
+    { label: "AB +ve", value: "AB +ve" },
+    { label: "AB -ve", value: "AB -ve" },
+    { label: "O +ve", value: "O +ve" },
+    { label: "O -ve", value: "O -ve" },
 ];
 
 export default function StepOne() {
@@ -17,9 +28,9 @@ export default function StepOne() {
                 <FloatingInputController name="middleName" label={"Middle Name"} reset />
                 <FloatingInputController name="lastName" label={"Last Name"} reset />
 
-                <FloatingDateController name="dob" label={"Date"} />
-                <FloatingSelectController name="gender" label={"Gender"} options={options} />
-                <FloatingInputController name="email" label={"Email"} type="email" />
+                <FloatingDateController name="dob" label={"Date of Birth"} />
+                <FloatingSelectController name="gender" label={"Gender"} options={genderOptions} />
+                <FloatingSelectController name="bloodGroup" label={"Blood Group"} options={bloodGroupOptions} />
             </div>
         </div>
     );

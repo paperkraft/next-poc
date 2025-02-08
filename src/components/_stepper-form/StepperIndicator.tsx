@@ -23,8 +23,6 @@ const StepperIndicator = ({ steps, activeStep, icons = false, stepIcons = [] }: 
               "border-primary text-primary": step === activeStep
             })}
           >
-            {/* {!icons && step >= activeStep ? step : <Check className="size-5" />} */}
-
             {icons && stepIcons[step - 1]
               ? stepIcons[step - 1]
               : step < activeStep

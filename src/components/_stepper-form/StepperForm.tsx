@@ -6,8 +6,9 @@ import { Button } from "../ui/button";
 import { LucideBuilding2, MapPin, Phone, User } from "lucide-react";
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
-import StepperIndicator from "./components/stepper-indicator/page";
+import StepperIndicator from "./StepperIndicator";
 import StepOne from "./(forms)/step-one/page";
+import { cn } from "@/lib/utils";
 
 function getStepContent(step: number) {
     switch (step) {
@@ -35,10 +36,12 @@ const profileFormSchema = z.object({
     lastName: z.string({ required_error: "Last Name is required" })
         .min(1, "Last Name is required"),
     dob: z.coerce.date({ errorMap: () => ({ message: "Date is required.", }) }),
-    email: z.string({ required_error: "Email is required" })
-        .min(1, "Email is required").email(),
     gender: z.string({ required_error: "Please select a state." })
         .min(1, "Please select a state."),
+    bloodGroup: z.string({ required_error: "Please select a blood group." })
+        .min(1, "Please select a blood group."),
+    email: z.string({ required_error: "Email is required" })
+        .min(1, "Email is required").email(),
 });
 
 type StepperFormValues = z.infer<typeof profileFormSchema>
@@ -55,8 +58,9 @@ export default function StepperForm() {
             middleName: "",
             lastName: "",
             dob: undefined,
+            gender: "",
+            bloodGroup: "",
             email: "",
-            gender: ""
         },
         mode: "all"
     });
@@ -78,10 +82,10 @@ export default function StepperForm() {
         <>
             <StepperIndicator activeStep={activeStep} steps={steps} stepIcons={stepIcons} icons />
             <Form {...form}>
-                <form noValidate className="p-4">
+                <form noValidate className="space-y-4">
                     {getStepContent(activeStep)}
-                    <div className="flex justify-evenly">
-                        <Button type="button" className="w-[100px]" variant="secondary" onClick={handleBack} disabled={activeStep === 1}>Back</Button>
+                    <div className="flex justify-between">
+                        <Button type="button" className={cn("w-[100px]", { 'invisible': activeStep === 1 })} variant="secondary" onClick={handleBack} disabled={activeStep === 1}>Back</Button>
                         {activeStep === steps
                             ? (<Button className="w-[100px]" type="button" onClick={form.handleSubmit(onSubmit)}>Submit</Button>)
                             : (<Button type="button" className="w-[100px]" onClick={handleNext}>Next</Button>)}

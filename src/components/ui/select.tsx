@@ -8,9 +8,7 @@ import {
   ChevronUpIcon,
 } from "@radix-ui/react-icons"
 import * as SelectPrimitive from "@radix-ui/react-select"
-
 import { cn } from "@/lib/utils"
-import { FloatingLabel } from "./floating-input"
 
 const Select = SelectPrimitive.Root
 

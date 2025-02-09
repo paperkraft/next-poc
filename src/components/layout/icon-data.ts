@@ -1,4 +1,5 @@
 import {
+    BlocksIcon,
     Book,
     GraduationCapIcon,
     Grid,
@@ -41,5 +42,9 @@ export const IconData = [
     {
         title: "Settings",
         icon: Settings2,
+    },
+    {
+        title: "UI Blocks",
+        icon: BlocksIcon,
     }
 ]

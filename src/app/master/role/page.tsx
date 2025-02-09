@@ -1,30 +1,34 @@
-import TitlePage from "@/components/custom/page-heading";
-import RoleList from "./List";
-import NoRecordPage from "@/components/custom/no-record";
 import { auth } from "@/auth";
+import TitlePage from "@/components/custom/page-heading";
+import NoRecordPage from "@/components/custom/no-record";
+import SomethingWentWrong from "@/components/custom/somthing-wrong";
 import { findModuleId } from "@/utils/helper";
 import { fetchRoles } from "@/app/action/role.action";
-import SomethingWentWrong from "@/components/custom/somthing-wrong";
+import RoleList from "./RoleMasterList";
 
+export default async function RoleMasterPage() {
+  try {
+    const session = await auth();
+    const moduleId = session && findModuleId(session?.user?.modules, "Role");
+    const response = await fetchRoles().then((d) => d.json());
 
-export default async function Page() {
-  const roles = await fetchRoles().then((d) => d.json());
-  const isRole = roles && roles.success
-  const hasRoles = isRole && roles?.data?.length > 0;
-
-  const session = await auth();
-  const moduleId = session && findModuleId(session?.user.modules, "Role") as string;
-
-  return (
-    <div className="space-y-4 p-2">
-      <TitlePage title="Role" description="List of all roles" listPage moduleId={moduleId} />
-      {
-        isRole
-          ? hasRoles
-            ? <RoleList data={roles.data} />
-            : <NoRecordPage text={"module"} />
-          : <SomethingWentWrong message={roles.message} />
-      }
-    </div>
-  );
+    return (
+      <>
+        <TitlePage title="Role" description="List of all roles" listPage moduleId={moduleId} />
+        {response.success
+          ? response.data.length === 0
+            ? <NoRecordPage text="role" />
+            : <RoleList data={response.data} moduleId={moduleId as string} />
+          : <SomethingWentWrong message={response.message} />
+        }
+      </>
+    );
+  } catch (error) {
+    return (
+      <>
+        <TitlePage title="Role" description="List of all roles" listPage />
+        <SomethingWentWrong message="An unexpected error occurred." />
+      </>
+    )
+  }
 }

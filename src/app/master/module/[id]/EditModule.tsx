@@ -74,7 +74,7 @@ export default function EditModule({ moduleData, groupOptions }: PageProps) {
 
   const onSubmit = async (data: ModuleFormValues) => {
     setLoading(true);
-    const url = data.path.startsWith('/') ? data.path : `/${data.path}`
+    const url = data.path.startsWith('/') ? data.path : data.path.startsWith('#') ? undefined : `/${data.path}`
     try {
       const res = await fetch(`/api/master/module`, {
         method: "PUT",

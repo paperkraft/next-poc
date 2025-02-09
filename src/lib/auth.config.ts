@@ -84,7 +84,6 @@ const authConfig: NextAuthConfig = {
             }
 
             if (trigger === "update" && session) {
-                console.log('Update triggered at JWT');
                 const menu = await fetchModuleByRole(session.roleId).then((d) => d.json());
                 const updateSession = { ...session, modules: menu.data }
                 token = { ...token, user: updateSession }

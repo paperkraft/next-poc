@@ -4,7 +4,7 @@ import { BellIcon, EllipsisVerticalIcon, LogOutIcon, Settings2Icon, UserIcon } f
 import { signOut, useSession } from "next-auth/react";
 import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar";
-import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "../../ui/sidebar";
+import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "../../ui/sidebar";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { ThemeWrapper } from "../theme-wrapper";
 
 const options = [
     {
@@ -25,18 +26,19 @@ const options = [
     },
     {
         label: 'Setting',
-        url: '#',
+        url: '/profile-settings',
         icon: Settings2Icon
     },
     {
         label: 'Notifications',
-        url: '#',
+        url: '/notifications',
         icon: BellIcon
     },
 ]
 
 const SidebarFooterContent = React.memo(() => {
     const { data } = useSession();
+    const { isMobile } = useSidebar();
     const user = data && data?.user;
     const initials = user && user?.name?.split(' ').map((word: any[]) => word[0]).join('').toUpperCase();
 
@@ -50,9 +52,6 @@ const SidebarFooterContent = React.memo(() => {
         const down = (e: KeyboardEvent) => {
             if (e.key === "q" && (e.metaKey || e.ctrlKey)) {
                 e.preventDefault();
-                localStorage.removeItem("user");
-                localStorage.removeItem("groups");
-                localStorage.removeItem("menus");
                 signOut({ redirect: true, redirectTo:'/signin' });
             }
         };
@@ -64,9 +63,9 @@ const SidebarFooterContent = React.memo(() => {
     const RenderUserInfo = () => {
         return (
             <>
-                <Avatar className="size-8 border p-0.5">
+                <Avatar className="size-8 border p-0.5 rounded-lg">
                     <AvatarImage src={user?.image} alt={user?.name} />
-                    <AvatarFallback className="rounded-full">{initials ?? "UN"}</AvatarFallback>
+                    <AvatarFallback className="rounded-lg">{initials ?? "UN"}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-semibold">
@@ -85,39 +84,46 @@ const SidebarFooterContent = React.memo(() => {
             <SidebarMenuItem>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
+                        <SidebarMenuButton size="lg" className="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus-within:!ring-primary">
                             <RenderUserInfo />
                             <EllipsisVerticalIcon className="ml-auto size-4" />
                         </SidebarMenuButton>
                     </DropdownMenuTrigger>
 
-                    <DropdownMenuContent className={cn("w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg [&_svg]:size-4 [&_svg]:stroke-[1.5] [&_svg]:mr-2 mb-2")}>
-                        <DropdownMenuLabel className="p-0 font-normal">
-                            <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                                <RenderUserInfo />
-                            </div>
-                        </DropdownMenuLabel>
+                    <DropdownMenuContent 
+                        side={isMobile ? "bottom" : "right"} 
+                        align="end"
+                        sideOffset={4}
+                        className={cn("w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg [&_svg]:size-4 [&_svg]:mr-2 mb-2")}
+                    >
+                        <ThemeWrapper>
+                            <DropdownMenuLabel className="p-0 font-normal">
+                                <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+                                    <RenderUserInfo />
+                                </div>
+                            </DropdownMenuLabel>
 
-                        <DropdownMenuSeparator />
+                            <DropdownMenuSeparator />
 
-                        <DropdownMenuGroup>
-                            {
-                                options.map((item) => (
-                                    <DropdownMenuItem key={item.label}>
-                                        <Link href={item.url} className="flex flex-1 items-center">
-                                            {item.icon && <item.icon />}{item.label}
-                                        </Link>
-                                    </DropdownMenuItem>
-                                ))
-                            }
-                        </DropdownMenuGroup>
+                            <DropdownMenuGroup>
+                                {
+                                    options.map((item) => (
+                                        <DropdownMenuItem key={item.label} asChild className="cursor-pointer">
+                                            <Link href={item.url} className="flex flex-1 items-center hover:!text-primary">
+                                                {item.icon && <item.icon />}{item.label}
+                                            </Link>
+                                        </DropdownMenuItem>
+                                    ))
+                                }
+                            </DropdownMenuGroup>
 
-                        <DropdownMenuSeparator />
+                            <DropdownMenuSeparator />
 
-                        <DropdownMenuItem onClick={() => logout()} className="cursor-pointer">
-                            <LogOutIcon /> Log out
-                        </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => logout()} className="cursor-pointer hover:!text-primary">
+                                <LogOutIcon /> Log out
+                            </DropdownMenuItem>
 
+                        </ThemeWrapper>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </SidebarMenuItem>

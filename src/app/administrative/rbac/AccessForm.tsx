@@ -13,7 +13,6 @@ import { LoaderCircleIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { SelectController } from "@/components/custom/form.control/SelectController";
-import { RoleType } from "@/app/master/role/List";
 import { useFieldArray, useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,6 +23,7 @@ import ButtonContent from "@/components/custom/button-content";
 import { IModule, IPermission, mergeModules, Module, transformModules, updateModules } from "./helper";
 import RenderRows from "./RenderRows";
 import { fetchModuleByRole } from "@/app/action/module.action";
+import { IRole } from "@/app/_Interface/Role";
 
 const bitmask = [
   { name: "VIEW", bitmask: 1 },
@@ -53,7 +53,7 @@ const FormSchema = z.object({
 type FormValues = z.infer<typeof FormSchema>;
 
 interface IAccessProps {
-  roles: RoleType[];
+  roles: IRole[];
   modules: IModule[] | null;
 }
 
@@ -79,7 +79,7 @@ const processModulePermissions = (module: IModule, bitmask: IPermission[]): any 
   };
 };
 
-const processRolesOptions = (role: RoleType): any => {
+const processRolesOptions = (role: IRole): any => {
   return {
     value: role.id,
     label: role.name,

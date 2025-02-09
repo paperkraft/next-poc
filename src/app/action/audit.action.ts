@@ -39,7 +39,6 @@ export type DateWiseOnlineSession = {
 
 export async function calculateDateWiseOnlineSessions(userId: string, toDate: Date = new Date()): Promise<DateWiseOnlineSession[]> {
 
-    
     if (!userId) {
         throw new Error("User ID is required.");
     }
@@ -126,7 +125,7 @@ export async function calculateDateWiseOnlineSessions(userId: string, toDate: Da
         const durationMs = toDate.getTime() - lastLoginTime.getTime();
         const duration = formatDuration(durationMs);
 
-         // If the session has been active for too long, we assume it's an "inactive" session
+        // If the session has been active for too long, we assume it's an "inactive" session
         //  if (durationMs > sessionTimeout) {
         //     lastLoginTime = null;  // Force session end if it exceeds timeout
         // }
@@ -177,7 +176,7 @@ export async function getLastThreeLogins(userId: string): Promise<LoginDetail[]>
         const details = login.device ? login.device as JsonObject : {};
         return {
             timestamp: `${getFormattedDateTime(login.timestamp)}`,
-            device: details.device +' '+ details.browser as string,
+            device: details.device + ' ' + details.browser as string,
             ipAddress: details.ip as string,
         };
     });

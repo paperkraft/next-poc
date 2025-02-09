@@ -29,7 +29,9 @@ function Calendar({
   numberOfMonths,
   ...props
 }: CalendarProps) {
-  const [navView, setNavView] = React.useState<"days" | "years">("days")
+  const [navView, setNavView] = React.useState<"days" | "months" | "years">("days")
+  const [selectedYear, setSelectedYear] = React.useState<number | null>(null);
+
   const [displayYears, setDisplayYears] = React.useState<{
     from: number
     to: number
@@ -45,7 +47,7 @@ function Calendar({
 
   const { onNextClick, onPrevClick, startMonth, endMonth } = props
 
-  const columnsDisplayed = navView === "years" ? 1 : numberOfMonths
+  const columnsDisplayed = navView === "years" || navView === "months" ? 1 : numberOfMonths
 
   return (
     <DayPicker
@@ -224,16 +226,41 @@ function Calendar({
             variant="ghost"
             size="sm"
             onClick={() =>
-              setNavView((prev) => (prev === "days" ? "years" : "days"))
+              setNavView((prev) =>
+                prev === "days" ? "years" : prev === "years" ? "months" : "days"
+              )
             }
           >
             {navView === "days"
               ? children
-              : displayYears.from + " - " + displayYears.to}
+              : navView === "months"
+                ? selectedYear ?? new Date().getFullYear()
+                : displayYears.from + " - " + displayYears.to}
           </Button>
         ),
         MonthGrid: ({ className, children, ...props }) => {
           const { goToMonth } = useDayPicker()
+
+          if (navView === "months") {
+            return (
+              <div className={cn("grid grid-cols-3 gap-2", className)} {...props}>
+                {[...Array(12)].map((_, i) => (
+                  <Button
+                    key={i}
+                    className="h-7 w-full text-sm font-normal text-foreground"
+                    variant="ghost"
+                    onClick={() => {
+                      setNavView("days")
+                      goToMonth?.(new Date(selectedYear ?? new Date().getFullYear(), i))
+                    }}
+                  >
+                    {new Date(0, i).toLocaleString("default", { month: "short" })}
+                  </Button>
+                ))}
+              </div>
+            )
+          }
+
           if (navView === "years") {
             return (
               <div
@@ -266,13 +293,8 @@ function Calendar({
                         )}
                         variant="ghost"
                         onClick={() => {
-                          setNavView("days")
-                          goToMonth(
-                            new Date(
-                              displayYears.from + i,
-                              new Date().getMonth()
-                            )
-                          )
+                          setNavView("months")
+                          setSelectedYear(displayYears.from + i)
                         }}
                         disabled={navView === "years" ? isDisabled : undefined}
                       >

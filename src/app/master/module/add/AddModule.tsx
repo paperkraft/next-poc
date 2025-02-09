@@ -58,7 +58,8 @@ export default function AddModule({ modules, groups }: { modules: IModule[], gro
   });
 
   const onSubmit = async (data: ModuleFormValues) => {
-    const url = data.url.startsWith('/') ? data.url : `/${data.url}`
+    const url = data.url.startsWith('/') ? data.url : data.url.startsWith('#') ? undefined : `/${data.url}`
+
     const final = data.isParent
       ? { name: data.name, path: url, parentId: data?.parent?.value }
       : { name: data.name, path: url, parentId: undefined, groupId: data?.group }

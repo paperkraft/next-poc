@@ -1,29 +1,34 @@
-import TitlePage from "@/components/custom/page-heading";
-import GroupList from "./GroupList";
-import NoRecordPage from "@/components/custom/no-record";
 import { auth } from "@/auth";
+import TitlePage from "@/components/custom/page-heading";
+import NoRecordPage from "@/components/custom/no-record";
+import SomethingWentWrong from "@/components/custom/somthing-wrong";
 import { findModuleId } from "@/utils/helper";
 import { fetchGroups } from "@/app/action/group.action";
-import SomethingWentWrong from "@/components/custom/somthing-wrong";
+import GroupMasterList from "./GroupMasterList";
 
-export default async function Page() {
-  const groups = await fetchGroups().then((d) => d.json());
-  const isGroup = groups && groups.success
-  const hasGroups = isGroup && groups?.data?.length > 0;
-
-  const session = await auth();
-  const moduleId = session && findModuleId(session?.user.modules, "Role");
-
-  return (
-    <div className="space-y-4 p-2">
-      <TitlePage title="Group" description="List of all groups, basically to catagorized menu" listPage moduleId={moduleId} />
-      {
-        isGroup
-          ? hasGroups
-            ? <GroupList data={groups.data} />
-            : <NoRecordPage text={"group"} />
-          : <SomethingWentWrong message={groups.message} />
-      }
-    </div>
-  );
+export default async function GroupPage() {
+  try {
+    const session = await auth();
+    const moduleId = session && findModuleId(session?.user?.modules, "Groups");
+    const response = await fetchGroups().then((d) => d.json());
+    
+    return (
+      <>
+        <TitlePage title="Groups" description="List of all groups, basically to catagorized menu" listPage moduleId={moduleId} />
+        {response.success
+          ? response.data.length === 0
+            ? <NoRecordPage text="group" />
+            : <GroupMasterList data={response.data} moduleId={moduleId as string} />
+          : <SomethingWentWrong message={response.message} />
+        }
+      </>
+    );
+  } catch (error) {
+    return (
+      <>
+        <TitlePage title="Groups" description="List of all groups, basically to catagorized menu" listPage />
+        <SomethingWentWrong message="An unexpected error occurred." />
+      </>
+    )
+  }
 }

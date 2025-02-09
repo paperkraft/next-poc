@@ -1,4 +1,5 @@
 import { Calendar } from "@/components/ui/calendar";
+import { FloatingLabel, FloatingLabelInput } from "@/components/ui/floating-input";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
@@ -8,19 +9,18 @@ import { ChangeEvent, useState } from "react";
 
 interface DateFieldProps {
   name: string;
+  label?: string;
   value: Date | null;
   onChange: (date: Date | null) => void;
   disabled?: boolean;
   readOnly?: boolean;
+  floatingLabel?: boolean;
   fromYear?: number;
   toYear?: number;
 }
 
-export const DateField: React.FC<DateFieldProps> = ({ value, onChange, ...rest }) => {
-  const [inputValue, setInputValue] = useState<string>(
-    value ? format(value, "dd-MM-yyyy") : ""
-  );
-
+export const DateField: React.FC<DateFieldProps> = ({ value, label, onChange, ...rest }) => {
+  const [inputValue, setInputValue] = useState<string>(value ? format(value, "dd-MM-yyyy") : "");
   const datePattern = /^(\d{2})-(\d{2})-(\d{4})$/;
 
   const handleDateChange = (date: Date | undefined) => {
@@ -71,13 +71,11 @@ export const DateField: React.FC<DateFieldProps> = ({ value, onChange, ...rest }
 
   return (
     <Popover>
-      <label htmlFor={rest.name} className="sr-only">
-        {rest.name}
-      </label>
       <div className="relative">
-        <Input
-          id={rest.name}
-          placeholder="DD-MM-YYYY"
+        <FloatingLabelInput
+          id={label}
+          label={label}
+          // placeholder="DD-MM-YYYY"
           value={inputValue}
           onChange={handleInputChange}
           pattern={datePattern.source}
@@ -89,19 +87,19 @@ export const DateField: React.FC<DateFieldProps> = ({ value, onChange, ...rest }
           <CalendarIcon
             aria-label="Open Calendar"
             className={cn(
-              "h-7 w-7 absolute right-1 top-1/2 -translate-y-1/2 px-1.5 cursor-pointer",
+              "h-7 w-7 absolute right-1 top-1/2 -translate-y-1/2 px-1.5 cursor-pointer opacity-50 hover:opacity-100",
               rest.disabled && "text-muted-foreground"
             )}
           />
         </PopoverTrigger>
       </div>
+
       <PopoverContent className="w-auto p-0" align="end">
         <Calendar
           mode="single"
           selected={value || undefined}
           defaultMonth={value || undefined}
           onSelect={handleDateChange}
-          disabled={{after: new Date()}}
         />
       </PopoverContent>
     </Popover>

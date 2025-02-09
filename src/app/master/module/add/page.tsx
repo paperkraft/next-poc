@@ -4,26 +4,32 @@ import { fetchModules } from "@/app/action/module.action";
 import { fetchGroups } from "@/app/action/group.action";
 import NoRecordPage from "@/components/custom/no-record";
 import SomethingWentWrong from "@/components/custom/somthing-wrong";
+import { IGroup } from "@/app/_Interface/Group";
 
-export default async function Page() {
-  const modules = await fetchModules().then((d) => d.json());
-  const isModules = modules && modules.success;
-  const hasModules = isModules && modules.data.length > 0
+export default async function AddModulePage() {
+  try {
+    const moduleResponse = await fetchModules().then((d) => d.json());
+    const groupsResponse = await fetchGroups().then((d) => d.json());
+    const groupOptions = groupsResponse?.data?.map((item: IGroup) => ({ label: item.name, value: item.id }));
 
-  const groups = await fetchGroups().then((d) => d.json());
-  const isGroups = groups && groups.success;
-  const hasGroups = isGroups && groups.data.length > 0;
+    return (
+      <>
+        <TitlePage title="Create Module" description="Define a new module" createPage />
+        {moduleResponse.success && groupsResponse.success
+          ? moduleResponse.data.length > 0 && groupsResponse.data.length > 0
+            ? <AddModule modules={moduleResponse.data} groups={groupOptions} />
+            : <NoRecordPage text={moduleResponse.data.length > 0 ? "group" : "module"} />
+          : <SomethingWentWrong message={moduleResponse.success ? groupsResponse.message : moduleResponse.message} />
+        }
+      </>
+    );
 
-  return (
-    <div className="space-y-4 p-2">
-      <TitlePage title="Create Module" description="Define a new module" createPage />
-      {
-        isModules && isGroups
-          ? hasModules && hasGroups
-            ? <AddModule modules={modules.data} groups={groups.data} />
-            : <NoRecordPage text={modules.data.length > 0 ? "group" : "module"} />
-          : <SomethingWentWrong message={modules.success ? groups.message : modules.message} />
-      }
-    </div>
-  );
+  } catch (error) {
+    return (
+      <>
+        <TitlePage title="Create Module" description="Define a new module" createPage />
+        <SomethingWentWrong message="An unexpected error occurred." />
+      </>
+    )
+  }
 }

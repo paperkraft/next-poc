@@ -1,6 +1,5 @@
 "use client";
 import { ReactNode } from "react";
-import { menusConfig } from "@/hooks/use-config";
 import { IModule } from "@/app/_Interface/Module";
 import { useSession } from "next-auth/react";
 
@@ -11,7 +10,6 @@ interface GuardProps {
 }
 
 export const Guard = ({ children, permissionBit, moduleId }: GuardProps) => {
-  // const [serverMenu] = menusConfig();
   const { data } = useSession();
   const userMenus = data && data.user.modules;
 

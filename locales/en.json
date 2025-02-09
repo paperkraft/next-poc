@@ -1,0 +1,90 @@
+{
+  "setting": {
+    "title": "Setting",
+    "description": "Manage your account settings.",
+    "profile": {
+      "title": "Profile",
+      "description": "This is how others will see you on the site.",
+      "form": {
+        "firstName": "First Name",
+        "firstName_desc": "This is your public display name. You can not change",
+        "middleName": "Middle Name",
+        "middleName_desc": "This is your public display name. You can not change",
+        "lastName": "Last Name",
+        "lastName_desc": "This is your public display name. You can not change",
+        "username": "Username",
+        "username_desc": "This is your public display name. It can be your real name or a pseudonym. You can only change this once every 30 days.",
+        "email": "Email",
+        "email_desc": "This is your verified email",
+        "btn": "Update Profile"
+      }
+    },
+    "account": {
+      "title": "Account",
+      "description": "Update your account settings. Set your preferred language and timezone.",
+      "form": {
+        "name": "Name",
+        "name_desc": "This is the name that will be displayed on your profile and in emails.",
+        "dob": "Date of birth",
+        "dob_desc": "Your date of birth is used to calculate your age.",
+        "lang": "Language",
+        "lang_desc": "This is the language that will be used in the app.",
+        "btn": "Update account"
+      }
+    },
+    "appearance": {
+      "title": "Appearance",
+      "description": "Customize the appearance of the app. Automatically switch between day and night themes.",
+      "form": {
+        "font": "Font",
+        "font_desc": "Set the font you want to use in the app.",
+        "theme": "Theme",
+        "theme_desc": "Select the theme for the app.",
+        "layout": "Layout",
+        "layout_desc": "Select the layout for the navigation.",
+        "primary_color": "Primary Color",
+        "primary_color_desc": "Select the color for the app.",
+        "radius": "Radius",
+        "radius_desc": "Select the radius for the app.",
+        "btn": "Update preferences"
+      }
+    },
+    "notifications": {
+      "title": "Notifications",
+      "description": "Configure how you receive notifications.",
+      "form": {
+        "app_notify": "Push Notifications",
+        "allow_notify": "Allow app notifications",
+        "allow_notify_desc": "Receive notifications about your account activity",
+        
+        "email_notify": "Email Notifications",
+        "comm_email": "Communication emails",
+        "comm_email_desc": "Receive emails about your account activity.",
+        "market_email": "Marketing emails",
+        "market_email_desc": "Receive emails about new products, features, and more.",
+        "social_email": "Social emails",
+        "social_email_desc": "Social emails",
+        "security_email": "Security emails",
+        "security_email_desc": "Receive emails about your account activity and security.",
+        "mobile_setting": "Use different settings for my mobile devices",
+        "mobile_setting_desc": "You can manage your mobile notifications in the mobile settings page",
+        "btn": "Update notifications"
+      }
+    },
+    "display": {
+      "title": "Display",
+      "description": "Turn items on or off to control what's displayed in the app.",
+      "form": {
+        "sidebar": "Sidebar",
+        "sidebar_desc": "Select the items you want to display in the sidebar.",
+        "btn": "Update display"
+      }
+    }
+  },
+  "LocaleSwitcher": {
+    "en": "English",
+    "hi": "Hindi",
+    "mr": "Marathi",
+    "label": "Language"
+  }
+}

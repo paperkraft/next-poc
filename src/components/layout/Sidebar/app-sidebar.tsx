@@ -17,13 +17,56 @@ import RenderMenus from "./sidebar-menus"
 import SidebarHeaderContent from "./sidebar-header"
 import SidebarFooterContent from "./sidebar-footer"
 import { NotificationsProvider } from "@/context/notification-context";
+import { themeConfig } from "@/hooks/use-config";
+import {
+    inconsolata,
+    inter,
+    montserrat,
+    noto_sans,
+    poppins,
+    roboto,
+    trio,
+} from "@/lib/fonts";
+import { cn } from "@/lib/utils";
 
 const AppSidebar = ({ children }: ChildProps) => {
     const queryClient = new QueryClient();
+    const [open, setOpen] = React.useState(true);
+    const [config] = themeConfig();
+
+    React.useEffect(() => {
+        if (config.layout === 'horizontal') {
+            setOpen(false)
+        } else {
+            setOpen(true)
+        }
+    }, [config]);
+
     return (
         <QueryClientProvider client={queryClient}>
             <NotificationsProvider>
-                <SidebarProvider>
+                <SidebarProvider
+                    className={`
+                        theme-${config.theme}
+                        ${inter.variable} 
+                        ${roboto.variable} 
+                        ${inconsolata.variable} 
+                        ${montserrat.variable} 
+                        ${noto_sans.variable} 
+                        ${trio.variable} 
+                        ${poppins.variable}`
+                    }
+
+                    style={
+                        {
+                            "--radius": `${config.radius}rem`,
+                            fontFamily: `var(--${config.font})`,
+                        } as React.CSSProperties
+                    }
+
+                    open={open}
+                    onOpenChange={setOpen}
+                >
                     <Sidebar>
                         <SidebarHeader className="h-16 border-b">
                             <SidebarHeaderContent />
@@ -43,7 +86,7 @@ const AppSidebar = ({ children }: ChildProps) => {
 
                     <SidebarInset>
                         <Header />
-                        <div className="grid grid-rows p-4 gap-3">
+                        <div className={cn("grid grid-rows p-4 gap-4", { "container mx-auto": config.content === 'compact' })}>
                             {children}
                         </div>
                     </SidebarInset>

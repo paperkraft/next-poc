@@ -15,6 +15,24 @@ export default function WelcomePage() {
     }
   }, [mounted, status, route]);
 
+  // useEffect(() => {
+  //   async function fetchDeviceInfo() {
+  //     console.log('Device Info API');
+  //     try {
+  //       const response = await fetch('/api/device-info');
+  //       if (!response.ok) {
+  //         throw new Error('Failed to fetch device info');
+  //       }
+  //       const data = await response.json();
+  //       console.log('Device Info:', data);
+  //     } catch (error) {
+  //       console.error('Error fetching device info:', error);
+  //     }
+  //   }
+
+  //   fetchDeviceInfo();
+  // }, []);
+
   return (
     mounted && data &&
     <>

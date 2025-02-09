@@ -21,16 +21,17 @@ export const SwitchButton = ({ name, label, ...rest }: SwitchProps) => {
       control={form.control}
       name={name}
       render={({ field }) => (
-        <FormItem className={cn("w-full",rest.className, {"flex flex-col": label})}>
-            {label && <FormLabel>{label}</FormLabel>}
-            <FormControl>
-                <Switch
-                    checked={field.value}
-                    onCheckedChange={(checked) => field.onChange(checked)}
-                />
-            </FormControl>
-            {rest?.description && <FormDescription>{rest?.description}</FormDescription>}
-            <FormMessage/>
+        <FormItem className={cn("w-full", rest.className, { "flex flex-col": label })}>
+          {label && <FormLabel>{label}</FormLabel>}
+          <FormControl>
+            <Switch
+              checked={field.value}
+              onCheckedChange={(checked) => field.onChange(checked)}
+              disabled={rest?.disabled}
+            />
+          </FormControl>
+          {rest?.description && <FormDescription>{rest?.description}</FormDescription>}
+          <FormMessage />
         </FormItem>
       )}
     />

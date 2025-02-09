@@ -31,7 +31,8 @@
 }
 
 .fc .fc-daygrid-day-frame {
-  @apply h-auto
+  /* @apply h-auto */
+  @apply h-auto md:h-[102px]
 }
 
 .fc-timegrid-slot-label-cushion {
@@ -45,7 +46,7 @@ td.fc-daygrid-day.fc-day {
 }
 
 .fc-day-today {
-  @apply bg-green-50 !important;
+  @apply !bg-green-50;
 }
 
 .fc-daygrid-day-top {

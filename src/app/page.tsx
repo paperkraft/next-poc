@@ -1,21 +1,24 @@
 'use client'
+import { useMounted } from "@/hooks/use-mounted";
 import LandingPage from "./landing";
-import WelcomePage from "./welcome";
 import Loading from "./loading";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
   const { status } = useSession();
+  const route = useRouter();
+  const mounted = useMounted();
 
   switch (status) {
     case "loading":
-      return <Loading/>;
+      return mounted && <Loading />;
 
     case "authenticated":
-      return <WelcomePage />;
+      return mounted && route.push("/dashboard");
 
     case "unauthenticated":
-      return <LandingPage />;
+      return mounted && <LandingPage />;
 
     default:
       return null;

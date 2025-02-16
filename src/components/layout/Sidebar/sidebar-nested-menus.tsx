@@ -1,6 +1,6 @@
 'use cleint'
 import React, { useMemo } from "react";
-import { SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, useSidebar } from "../../ui/sidebar";
+import { SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubItem, useSidebar } from "../../ui/sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
@@ -9,7 +9,120 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../../ui/co
 import { ChevronRight, DotIcon } from "lucide-react";
 import { menuType, submenuType } from "./helper";
 
-const NestedMenu = React.memo(({ item, isSearchActive }: { item: menuType, isSearchActive: boolean }) => {
+const NestedMenu = React.memo(({ item, active, submenu }: { item: menuType, active?: (a: string) => void, submenu?: (a: submenuType[]) => void }) => {
+
+    const { toggleSidebar, setOpen } = useSidebar();
+    const isMobile = useIsMobile();
+    const path = usePathname();
+    const hasSubmenu = item?.submenu?.length > 0;
+    const isActive = useMemo(() => checkIsActive(item, path), [item, path]);
+
+    if (!hasSubmenu) {
+        return (
+            <SidebarMenuButton 
+                asChild
+                tooltip={{ children: item.title, hidden: false }} 
+                className={cn("focus-within:!ring-primary hover:!text-primary hover:bg-muted", { "bg-muted text-primary": isActive })} 
+                onClick={() => { isMobile && toggleSidebar(); setOpen(false); }}
+            >
+                <Link href={item.url}>
+                    {item.icon ? <item.icon /> : <DotIcon />}
+                </Link>
+            </SidebarMenuButton>
+        )
+    } else {
+        return (
+            <SidebarMenuButton 
+                tooltip={{ children: item.title, hidden: false }} 
+                className={cn("focus-within:!ring-primary hover:!text-primary hover:bg-muted", { "bg-muted text-primary": isActive })} 
+                onClick={() => { 
+                    setOpen(true);
+                    active && active(item.title); 
+                    submenu && submenu(item.submenu) 
+                }}
+            >
+                {item.icon ? <item.icon /> : <DotIcon />}
+            </SidebarMenuButton>
+        )
+    }
+});
+
+NestedMenu.displayName = "NestedMenu";
+
+export default NestedMenu;
+
+export const NestedSubMenu = React.memo(({ item, isSearchActive, level }: { item: submenuType, isSearchActive: boolean, level:number }) => {
+
+    const { toggleSidebar } = useSidebar();
+    const isMobile = useIsMobile();
+    const path = usePathname();
+    const hasSubmenu = item?.submenu && item?.submenu?.length > 0;
+
+    const isActive = useMemo(() => checkIsActive(item as menuType, path), [item, path]);
+    const shouldExpand = isSearchActive ? true : isActive;
+
+    if (!hasSubmenu) {
+        return (
+            <SidebarMenuButton 
+                asChild
+                onClick={() => { isMobile && toggleSidebar(); }} 
+                className={cn("focus-within:!ring-primary hover:!text-primary hover:bg-muted", { "bg-muted text-primary": isActive })}
+            >
+                <Link href={item.url}>
+                    {level == 0 && <DotIcon /> }
+                    {item.title}
+                </Link>
+            </SidebarMenuButton>
+        )
+    } else {
+        return (
+            <Collapsible defaultOpen={shouldExpand} className="group/collapsible" asChild>
+                <React.Fragment>
+                    <CollapsibleTrigger asChild>
+                        <SidebarMenuButton className="focus-within:!ring-primary hover:!text-primary hover:bg-muted [&[data-state=open]>svg:not(:first-child)]:rotate-90">
+                            <DotIcon />
+                            <>{item.title}</>
+                            <ChevronRight className="ml-auto transition-transform duration-200" />
+                        </SidebarMenuButton>
+                    </CollapsibleTrigger>
+
+                    <CollapsibleContent className='CollapsibleContent' asChild>
+                        <SidebarMenuSub>
+                            {
+                                item?.submenu?.map((subItem, index) => (
+                                    <SidebarMenuSubItem key={index} >
+                                        <NestedSubMenu item={subItem} isSearchActive={isSearchActive} level={index + 1}/>
+                                    </SidebarMenuSubItem>
+                                ))
+                            }
+                        </SidebarMenuSub>
+                    </CollapsibleContent>
+                </React.Fragment>
+            </Collapsible>
+        )
+    }
+});
+
+NestedSubMenu.displayName = "NestedSubMenu";
+
+function checkIsActive(item: menuType, pathname: string): boolean {
+    const isSubmenuActive = (submenu: submenuType[]): boolean => {
+        return submenu.some(sub =>
+            sub.url === pathname ||
+            pathname.startsWith(sub.url) ||
+            (sub.submenu ? isSubmenuActive(sub.submenu) : false)
+        );
+    };
+
+    return (
+        item.url === pathname ||
+        pathname.startsWith(item.url) ||
+        isSubmenuActive(item.submenu)
+    );
+}
+
+
+export const RenderMobileMenus = React.memo(({ item, isSearchActive }: { item: menuType, isSearchActive: boolean }) => {
 
     const { toggleSidebar } = useSidebar();
     const isMobile = useIsMobile();
@@ -44,7 +157,7 @@ const NestedMenu = React.memo(({ item, isSearchActive }: { item: menuType, isSea
                     <SidebarMenuSub>
                         {
                             item?.submenu.map((subItem, index) => (
-                                <NestedMenu key={index} item={subItem as menuType} isSearchActive={isSearchActive}/>
+                                <RenderMobileMenus key={index} item={subItem as menuType} isSearchActive={isSearchActive}/>
                             ))
                         }
                     </SidebarMenuSub>
@@ -55,22 +168,3 @@ const NestedMenu = React.memo(({ item, isSearchActive }: { item: menuType, isSea
 });
 
 NestedMenu.displayName = "NestedMenu";
-
-export default NestedMenu;
-
-
-function checkIsActive(item: menuType, pathname: string): boolean {
-    const isSubmenuActive = (submenu: submenuType[]): boolean => {
-        return submenu.some(sub =>
-            sub.url === pathname ||
-            pathname.startsWith(sub.url) ||
-            (sub.submenu ? isSubmenuActive(sub.submenu) : false)
-        );
-    };
-
-    return (
-        item.url === pathname ||
-        pathname.startsWith(item.url) ||
-        isSubmenuActive(item.submenu)
-    );
-}

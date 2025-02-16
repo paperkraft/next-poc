@@ -7,7 +7,7 @@ import { useMounted } from "@/hooks/use-mounted";
 
 export const publicURL = ["/signin", "/signup"];
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+export default function AppLayout({ children, defaultOpen }: { children: React.ReactNode, defaultOpen:boolean }) {
   const route = useRouter();
   const mounted = useMounted();
   const pathname = usePathname();
@@ -27,6 +27,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   if (status === "authenticated") {
-    return mounted && (<AppSidebar>{children}</AppSidebar>)
+    return mounted && (<AppSidebar defaultOpen={defaultOpen}>{children}</AppSidebar>)
   }
 }

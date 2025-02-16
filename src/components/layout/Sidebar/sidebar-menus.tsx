@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 
 import DefaultMenu from "./sidebar-default";
 import SidebarSkeleton from "./sidebar-skeleton";
-import NestedMenu from "./sidebar-nested-menus";
+import NestedMenu, { RenderMobileMenus } from "./sidebar-nested-menus";
 import { mapMenu, menuType, submenuType } from "./helper";
 
 const RenderMenus = React.memo(() => {
@@ -103,7 +103,7 @@ const RenderMenus = React.memo(() => {
                     <SidebarGroupLabel>{group[0]?.label}</SidebarGroupLabel>
                     <SidebarMenu>
                         {group.map((item, index) => (
-                            <NestedMenu key={index} item={item} isSearchActive={isSearching} />
+                            <RenderMobileMenus key={index} item={item} isSearchActive={isSearching}/>
                         ))}
                     </SidebarMenu>
                 </SidebarGroup>

@@ -84,7 +84,7 @@ const SidebarFooterContent = React.memo(() => {
             <SidebarMenuItem>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <SidebarMenuButton size="lg" className="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus-within:!ring-primary">
+                        <SidebarMenuButton size="lg" className="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus-within:!ring-primary p-0 size-8">
                             <RenderUserInfo />
                             <EllipsisVerticalIcon className="ml-auto size-4" />
                         </SidebarMenuButton>

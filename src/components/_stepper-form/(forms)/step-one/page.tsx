@@ -3,20 +3,20 @@ import { FloatingInputController } from "@/components/custom/form.control/Floati
 import { FloatingSelectController } from "@/components/custom/form.control/FloatingSelectController";
 
 const genderOptions = [
-    { label: "Male", value: "Male" },
-    { label: "Female", value: "Female" },
-    { label: "Other", value: "Other" },
+    { label: "Male", value: "male" },
+    { label: "Female", value: "female" },
+    { label: "Other", value: "other" },
 ];
 
 const bloodGroupOptions = [
-    { label: "A +ve", value: "A +ve" },
-    { label: "A -ve", value: "A -ve" },
-    { label: "B +ve", value: "B +ve" },
-    { label: "B -ve", value: "B -ve" },
-    { label: "AB +ve", value: "AB +ve" },
-    { label: "AB -ve", value: "AB -ve" },
-    { label: "O +ve", value: "O +ve" },
-    { label: "O -ve", value: "O -ve" },
+    { label: "A +", value: "A+" },
+    { label: "A -", value: "A-" },
+    { label: "B +", value: "B+" },
+    { label: "B -", value: "B-" },
+    { label: "AB +", value: "AB+" },
+    { label: "AB -", value: "AB-" },
+    { label: "O +", value: "O+" },
+    { label: "O -", value: "O-" },
 ];
 
 export default function StepOne() {

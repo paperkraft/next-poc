@@ -33,8 +33,12 @@ const Header: React.FC = React.memo(() => {
 
                 {(isMobile || theme.layout !== "horizontal") && (
                     <>
-                        <CustomTrigger />
-                        <Separator orientation="vertical" className="mr-2 h-4" />
+                        {   isMobile && 
+                            <>
+                                <CustomTrigger />
+                                <Separator orientation="vertical" className="mr-2 h-4" />
+                            </>
+                        }
                         <HeaderBreadcrumb />
                     </>
                 )}

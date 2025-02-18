@@ -8,8 +8,65 @@ import { cn } from "@/lib/utils";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../../ui/collapsible";
 import { ChevronRight, DotIcon } from "lucide-react";
 import { menuType, submenuType } from "./helper";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuGroup,
+    DropdownMenuSub,
+    DropdownMenuSubTrigger,
+    DropdownMenuPortal,
+    DropdownMenuSubContent,
+} from "@/components/ui/dropdown-menu"
+import { ThemeWrapper } from "../theme-wrapper";
 
-const NestedMenu = React.memo(({ item, active, submenu }: { item: menuType, active?: (a: string) => void, submenu?: (a: submenuType[]) => void }) => {
+
+const RenderNested = ({ item }: { item: submenuType }) => {
+    const hasSubmenu = item?.submenu && item?.submenu?.length > 0;
+    const path = usePathname();
+    const isActive = useMemo(() => checkIsActive(item as menuType, path), [item, path]);
+    if (hasSubmenu) {
+        return (
+            <>
+                <Collapsible defaultOpen={isActive} asChild className="group/collapsible">
+                    <React.Fragment>
+                        <CollapsibleTrigger asChild>
+                            <SidebarMenuButton className="[&[data-state=open]>svg:first-child]:rotate-90">
+                                <ChevronRight className="transition-transform duration-200" />
+                                {item.title}
+                            </SidebarMenuButton>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent asChild>
+                            <SidebarMenuSub className="mr-0">
+                                {item.submenu?.map((submenu, idx) => (
+                                    <SidebarMenuSubItem key={idx}>
+                                        <RenderNested key={submenu.title} item={submenu} />
+                                    </SidebarMenuSubItem>
+                                ))}
+                            </SidebarMenuSub>
+                        </CollapsibleContent>
+                    </React.Fragment>
+                </Collapsible>
+            </>
+        )
+    } else {
+        return (
+            <DropdownMenuItem asChild key={item.title}>
+                <SidebarMenuButton asChild className={cn("focus-within:!ring-primary hover:!text-primary hover:bg-muted", { "bg-muted text-primary": isActive })}>
+                    <Link href={item.url}>
+                        <DotIcon />
+                        {item.title}
+                    </Link>
+                </SidebarMenuButton>
+            </DropdownMenuItem>
+        )
+    }
+}
+
+const NestedMenu = React.memo(({ item, active, submenu, dropdown }: { item: menuType, active?: (a: string) => void, submenu?: (a: submenuType[]) => void, dropdown?: boolean }) => {
 
     const { toggleSidebar, setOpen } = useSidebar();
     const isMobile = useIsMobile();
@@ -19,10 +76,10 @@ const NestedMenu = React.memo(({ item, active, submenu }: { item: menuType, acti
 
     if (!hasSubmenu) {
         return (
-            <SidebarMenuButton 
+            <SidebarMenuButton
                 asChild
-                tooltip={{ children: item.title, hidden: false }} 
-                className={cn("focus-within:!ring-primary hover:!text-primary hover:bg-muted", { "bg-muted text-primary": isActive })} 
+                tooltip={{ children: item.title, hidden: false }}
+                className={cn("focus-within:!ring-primary hover:!text-primary hover:bg-muted", { "bg-muted text-primary": isActive })}
                 onClick={() => { isMobile && toggleSidebar(); setOpen(false); }}
             >
                 <Link href={item.url}>
@@ -32,17 +89,54 @@ const NestedMenu = React.memo(({ item, active, submenu }: { item: menuType, acti
         )
     } else {
         return (
-            <SidebarMenuButton 
-                tooltip={{ children: item.title, hidden: false }} 
-                className={cn("focus-within:!ring-primary hover:!text-primary hover:bg-muted", { "bg-muted text-primary": isActive })} 
-                onClick={() => { 
-                    setOpen(true);
-                    active && active(item.title); 
-                    submenu && submenu(item.submenu) 
-                }}
-            >
-                {item.icon ? <item.icon /> : <DotIcon />}
-            </SidebarMenuButton>
+            <>
+                {dropdown ? (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <SidebarMenuButton
+                                tooltip={{ children: item.title, hidden: false }}
+                                className={cn("focus-within:!ring-primary hover:!text-primary hover:bg-muted", { "bg-muted text-primary": isActive })}
+                                onClick={() => {
+                                    setOpen(true);
+                                    active && active(item.title);
+                                    submenu && submenu(item.submenu)
+                                }}
+                            >
+                                {item.icon ? <item.icon /> : <DotIcon />}
+                            </SidebarMenuButton>
+                        </DropdownMenuTrigger>
+
+                        <DropdownMenuContent
+                            side={isMobile ? "bottom" : "right"}
+                            align={isMobile ? "end" : "start"}
+                            className="min-w-56 rounded-lg"
+                        >
+                            <ThemeWrapper>
+                                <DropdownMenuLabel>{item.title}</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                {item.submenu.map((item) => (
+                                    <DropdownMenuGroup key={item.title}>
+                                        <RenderNested item={item} />
+                                    </DropdownMenuGroup>
+                                ))}
+                            </ThemeWrapper>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                ) : (
+                    <SidebarMenuButton
+                        tooltip={{ children: item.title, hidden: false }}
+                        className={cn("focus-within:!ring-primary hover:!text-primary hover:bg-muted", { "bg-muted text-primary": isActive })}
+                        onClick={() => {
+                            setOpen(true);
+                            active && active(item.title);
+                            submenu && submenu(item.submenu)
+                        }}
+                    >
+                        {item.icon ? <item.icon /> : <DotIcon />}
+                    </SidebarMenuButton>
+                )
+                }
+            </>
         )
     }
 });
@@ -51,7 +145,7 @@ NestedMenu.displayName = "NestedMenu";
 
 export default NestedMenu;
 
-export const NestedSubMenu = React.memo(({ item, isSearchActive, level }: { item: submenuType, isSearchActive: boolean, level:number }) => {
+export const NestedSubMenu = React.memo(({ item, isSearchActive, level }: { item: submenuType, isSearchActive: boolean, level: number }) => {
 
     const { toggleSidebar } = useSidebar();
     const isMobile = useIsMobile();
@@ -63,13 +157,13 @@ export const NestedSubMenu = React.memo(({ item, isSearchActive, level }: { item
 
     if (!hasSubmenu) {
         return (
-            <SidebarMenuButton 
+            <SidebarMenuButton
                 asChild
-                onClick={() => { isMobile && toggleSidebar(); }} 
+                onClick={() => { isMobile && toggleSidebar(); }}
                 className={cn("focus-within:!ring-primary hover:!text-primary hover:bg-muted", { "bg-muted text-primary": isActive })}
             >
                 <Link href={item.url}>
-                    {level == 0 && <DotIcon /> }
+                    {level == 0 && <DotIcon />}
                     {item.title}
                 </Link>
             </SidebarMenuButton>
@@ -91,7 +185,7 @@ export const NestedSubMenu = React.memo(({ item, isSearchActive, level }: { item
                             {
                                 item?.submenu?.map((subItem, index) => (
                                     <SidebarMenuSubItem key={index} >
-                                        <NestedSubMenu item={subItem} isSearchActive={isSearchActive} level={index + 1}/>
+                                        <NestedSubMenu item={subItem} isSearchActive={isSearchActive} level={index + 1} />
                                     </SidebarMenuSubItem>
                                 ))
                             }
@@ -157,7 +251,7 @@ export const RenderMobileMenus = React.memo(({ item, isSearchActive }: { item: m
                     <SidebarMenuSub>
                         {
                             item?.submenu.map((subItem, index) => (
-                                <RenderMobileMenus key={index} item={subItem as menuType} isSearchActive={isSearchActive}/>
+                                <RenderMobileMenus key={index} item={subItem as menuType} isSearchActive={isSearchActive} />
                             ))
                         }
                     </SidebarMenuSub>

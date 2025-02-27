@@ -5,12 +5,21 @@ import { auth } from "@/auth";
 import { findModuleId } from "@/utils/helper";
 import { fetchModules } from "@/app/action/module.action";
 import SomethingWentWrong from "@/components/custom/somthing-wrong";
+import { hasPermission } from "@/lib/rbac";
+import AccessDenied from "@/components/custom/access-denied";
 
 export default async function ModuleMasterPage() {
   try {
     const session = await auth();
     const moduleId = session && findModuleId(session?.user?.modules, "Module");
     const response = await fetchModules().then((d) => d.json());
+
+    const rolePermissions = +session?.user?.permissions;
+    const permission = hasPermission(rolePermissions, 8);
+  
+    if (!permission) {
+      return <AccessDenied />;
+    }
 
     return (
       <div className="space-y-2">

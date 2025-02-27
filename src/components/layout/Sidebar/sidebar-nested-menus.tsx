@@ -16,10 +16,6 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuGroup,
-    DropdownMenuSub,
-    DropdownMenuSubTrigger,
-    DropdownMenuPortal,
-    DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu"
 import { ThemeWrapper } from "../theme-wrapper";
 
@@ -97,7 +93,7 @@ const NestedMenu = React.memo(({ item, active, submenu, dropdown }: { item: menu
                                 tooltip={{ children: item.title, hidden: false }}
                                 className={cn("focus-within:!ring-primary hover:!text-primary hover:bg-muted", { "bg-muted text-primary": isActive })}
                                 onClick={() => {
-                                    setOpen(true);
+                                    // setOpen(true);
                                     active && active(item.title);
                                     submenu && submenu(item.submenu)
                                 }}

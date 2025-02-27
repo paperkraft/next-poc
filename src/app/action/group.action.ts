@@ -1,5 +1,4 @@
 import prisma from "@/lib/prisma";
-import { IGroup } from "../_Interface/Group";
 import { NextResponse } from "next/server";
 
 export async function fetchGroups() {

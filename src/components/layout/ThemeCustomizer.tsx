@@ -54,6 +54,11 @@ export default function ThemeCustomizer() {
         setConfig({ ...config, content });
     }
 
+    const handleChange = () => {
+        const prev = config.collapse;
+        setConfig({ ...config, collapse: !prev });
+    }
+
     return (
         <>
             <Sheet>
@@ -262,6 +267,15 @@ export default function ThemeCustomizer() {
                                             <Label className="text-xs">Compact</Label>
                                         </div>
                                     </div>
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <div>
+                                        <Label className="text-xs">Collapsed Menu</Label>
+                                    </div>
+                                    <Button variant={"outline"} className={cn({ "border-2 border-primary": config.collapse })} onClick={()=> handleChange()}>
+                                        Collapsed Menu
+                                    </Button>
                                 </div>
                             </div>
 

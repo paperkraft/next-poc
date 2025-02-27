@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 
 import DefaultMenu from "./sidebar-default";
 import SidebarSkeleton from "./sidebar-skeleton";
-import NestedMenu, { RenderMobileMenus } from "./sidebar-nested-menus";
+import { RenderMobileMenus } from "./sidebar-nested-menus";
 import { mapMenu, menuType, submenuType } from "./helper";
 
 const RenderMenus = React.memo(() => {

@@ -77,7 +77,10 @@ const AppSidebar = ({ children, defaultOpen }: { children: React.ReactNode, defa
             setTitle(activeSubmenus.title);
             setSubmenus(activeSubmenus.submenu);
             setFilteredMenus(activeSubmenus.submenu);
-            setOpen(true);
+            // setOpen(true);
+            if(!config.collapse){
+                setOpen(true);
+            }
         }
         if (path === '/dashboard') {
             setOpen(false);
@@ -161,7 +164,7 @@ const AppSidebar = ({ children, defaultOpen }: { children: React.ReactNode, defa
                                     </SidebarGroupLabel>
                                     <SidebarMenu>
                                         {group.map((item, index) => (
-                                            <NestedMenu key={index} item={item} active={getActive} submenu={getSubmenus} />
+                                            <NestedMenu key={index} item={item} active={getActive} submenu={getSubmenus} dropdown={config.collapse}/>
                                         ))}
                                     </SidebarMenu>
                                 </SidebarGroup>

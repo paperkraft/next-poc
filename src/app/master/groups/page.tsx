@@ -5,12 +5,21 @@ import SomethingWentWrong from "@/components/custom/somthing-wrong";
 import { findModuleId } from "@/utils/helper";
 import { fetchGroups } from "@/app/action/group.action";
 import GroupMasterList from "./GroupMasterList";
+import { hasPermission } from "@/lib/rbac";
+import AccessDenied from "@/components/custom/access-denied";
 
 export default async function GroupPage() {
   try {
     const session = await auth();
     const moduleId = session && findModuleId(session?.user?.modules, "Groups");
     const response = await fetchGroups().then((d) => d.json());
+
+    const rolePermissions = +session?.user?.permissions;
+    const permission = hasPermission(rolePermissions, 8);
+  
+    if (!permission) {
+      return <AccessDenied />;
+    }
     
     return (
       <>

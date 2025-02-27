@@ -5,12 +5,23 @@ import { fetchGroups } from "@/app/action/group.action";
 import NoRecordPage from "@/components/custom/no-record";
 import SomethingWentWrong from "@/components/custom/somthing-wrong";
 import { IGroup } from "@/app/_Interface/Group";
+import { auth } from "@/auth";
+import { hasPermission } from "@/lib/rbac";
+import AccessDenied from "@/components/custom/access-denied";
 
 export default async function AddModulePage() {
   try {
     const moduleResponse = await fetchModules().then((d) => d.json());
     const groupsResponse = await fetchGroups().then((d) => d.json());
     const groupOptions = groupsResponse?.data?.map((item: IGroup) => ({ label: item.name, value: item.id }));
+
+    const session = await auth();
+    const rolePermissions = +session?.user?.permissions;
+    const permission = hasPermission(rolePermissions, 8);
+  
+    if (!permission) {
+      return <AccessDenied />;
+    }
 
     return (
       <>

@@ -1,6 +1,6 @@
 "use client";
 import { Form, FormLabel } from "@/components/ui/form";
-import { InputController } from "@/components/custom/form.control/InputController";
+import { InputController } from "@/components/_form-controls/InputController";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,7 +19,7 @@ import DialogBox from "@/components/custom/dialog-box";
 import { toast } from "sonner";
 import useModuleIdByName from "@/hooks/use-module-id";
 import { Guard } from "@/components/custom/permission-guard";
-import { SwitchButton } from "@/components/custom/form.control/SwitchButton";
+import { SwitchButton } from "@/components/_form-controls/SwitchButton";
 import ButtonContent from "@/components/custom/button-content";
 
 type Role = {

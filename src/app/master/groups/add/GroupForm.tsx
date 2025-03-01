@@ -1,6 +1,6 @@
 'use client';
 import { Form } from "@/components/ui/form";
-import { InputController } from "@/components/custom/form.control/InputController";
+import { InputController } from "@/components/_form-controls/InputController";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import * as z from "zod";

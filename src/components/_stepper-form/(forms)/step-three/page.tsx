@@ -1,4 +1,4 @@
-import { FloatingInputController } from "@/components/custom/form.control/FloatingInputController";
+import { FloatingInputController } from "@/components/_form-controls/floating-label/input-controller";
 
 export default function StepThree() {
     return (

@@ -2,10 +2,10 @@
 'use client';
 
 import React from 'react';
-import { InputController } from './form.control/InputController';
-import { DateController } from './form.control/DateController';
-import { SelectController } from './form.control/SelectController';
-import { SwitchButton } from './form.control/SwitchButton';
+import { InputController } from '../_form-controls/InputController';
+import { DateController } from '../_form-controls/DateController';
+import { SelectController } from '../_form-controls/SelectController';
+import { SwitchButton } from '../_form-controls/SwitchButton';
 
 const DynamicFormComponent = ({ formFields }: { formFields: object }) => {
 

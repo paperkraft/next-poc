@@ -11,7 +11,7 @@ const SidebarHeaderContent = React.memo(() => {
                 <SidebarMenuButton asChild size="lg" className="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground p-0 size-8" onClick={() => setOpen(false)}>
                     <Link href={'/dashboard'}>
                         <div className="flex aspect-square size-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                            <span className="text-xs">WD</span>
+                            <span className="text-xs">SV</span>
                         </div>
                     </Link>
                 </SidebarMenuButton>

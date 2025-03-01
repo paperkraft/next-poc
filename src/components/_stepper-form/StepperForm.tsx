@@ -69,7 +69,7 @@ export default function StepperForm() {
     const form = useForm<StepperFormValues>({
         resolver: zodResolver(profileFormSchema),
         shouldUnregister: false,
-        mode: 'onTouched',
+        mode: 'onChange',
         defaultValues: {
             firstName: "",
             middleName: "",
@@ -116,7 +116,6 @@ export default function StepperForm() {
     };
 
     const handleBack = () => {
-        // setActiveStep((prev) => prev - 1);
         setActiveStep((prev) => Math.max(prev - 1, 1)); 
     };
 
@@ -143,7 +142,7 @@ export default function StepperForm() {
             <Form {...form}>
                 <form noValidate className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
                     {getStepContent(activeStep)}
-                    <div className="flex justify-between">
+                    <div className="flex justify-between px-4">
                         <Button type="button" className={cn("w-[100px]", { 'invisible': activeStep === 1 })} variant="secondary" onClick={handleBack} disabled={activeStep === 1}>Back</Button>
                         {activeStep === steps
                             ? (<Button className="w-[100px]" type="submit">Submit</Button>)

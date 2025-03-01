@@ -1,4 +1,4 @@
-import { SwitchButton } from "@/components/custom/form.control/SwitchButton";
+import { SwitchButton } from "@/components/_form-controls/SwitchButton";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";

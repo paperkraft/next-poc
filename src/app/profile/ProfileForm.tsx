@@ -1,5 +1,5 @@
 'use client'
-import { InputController } from "@/components/custom/form.control/InputController";
+import { InputController } from "@/components/_form-controls/InputController";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { useSession } from "next-auth/react";

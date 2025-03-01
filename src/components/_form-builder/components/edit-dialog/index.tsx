@@ -11,9 +11,9 @@ import If from '@/components/ui/if'
 import { FormFieldType } from '@/types'
 import { Form } from '@/components/ui/form'
 import { useForm } from 'react-hook-form'
-import { InputController } from '@/components/custom/form.control/InputController'
-import { SelectController } from '@/components/custom/form.control/SelectController'
-import { SwitchButton } from '@/components/custom/form.control/SwitchButton'
+import { InputController } from '@/components/_form-controls/InputController'
+import { SelectController } from '@/components/_form-controls/SelectController'
+import { SwitchButton } from '@/components/_form-controls/SwitchButton'
 
 type EditFieldDialogProps = {
   isOpen: boolean

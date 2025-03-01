@@ -12,7 +12,7 @@ import {
 import { LoaderCircleIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { SelectController } from "@/components/custom/form.control/SelectController";
+import { SelectController } from "@/components/_form-controls/SelectController";
 import { useFieldArray, useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";

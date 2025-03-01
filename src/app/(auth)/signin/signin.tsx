@@ -11,7 +11,7 @@ import { LoaderCircle } from "lucide-react";
 import { useMounted } from "@/hooks/use-mounted";
 import { signIn } from "next-auth/react";
 import { RECAPTCHA_SITE_KEY } from "@/utils/constants";
-import { InputController } from "@/components/custom/form.control/InputController";
+import { InputController } from "@/components/_form-controls/InputController";
 import Divider from "@/components/custom/divider";
 import { toast } from "sonner";
 import ButtonContent from "@/components/custom/button-content";

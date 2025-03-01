@@ -4,10 +4,10 @@ import { Form } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { InputController } from '@/components/custom/form.control/InputController';
-import { SelectController } from '@/components/custom/form.control/SelectController';
+import { InputController } from '@/components/_form-controls/InputController';
+import { SelectController } from '@/components/_form-controls/SelectController';
 import { toast } from '@/hooks/use-toast';
-import { DateController } from '@/components/custom/form.control/DateController';
+import { DateController } from '@/components/_form-controls/DateController';
 
 const formSchema = z.object({
     name: z.string({

@@ -1,6 +1,6 @@
 "use client";
 import { Form, FormField, FormItem, FormLabel } from "@/components/ui/form";
-import { InputController } from "@/components/custom/form.control/InputController";
+import { InputController } from "@/components/_form-controls/InputController";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Switch } from "@/components/ui/switch";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { SwitchButton } from "@/components/custom/form.control/SwitchButton";
+import { SwitchButton } from "@/components/_form-controls/SwitchButton";
 
 export const bitmask = [
   { name: "VIEW", bitmask: 1 },

@@ -1,8 +1,9 @@
-import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { FormDescription, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { HTMLAttributes } from "react"
 import { FieldValues, Path, PathValue, useFormContext } from "react-hook-form"
-import { DateField } from "./DateField";
+import { DateField } from "../DateField";
 import { isDate } from "date-fns";
+import { FloatingDateField } from "./FloatingDateField";
 
 interface IInputControllerProps<T extends FieldValues>
     extends HTMLAttributes<HTMLInputElement> {
@@ -26,7 +27,7 @@ export const FloatingDateController = <T extends FieldValues>({ name, label, ...
             name={name}
             render={({ field }) => (
                 <FormItem className="w-full">
-                    <DateField
+                    <FloatingDateField
                         name={name}
                         label={label}
                         value={field.value ? new Date(field.value) : null}

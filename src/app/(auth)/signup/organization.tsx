@@ -7,7 +7,7 @@ import * as z from "zod"
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { LoaderCircle } from "lucide-react";
-import { InputController } from "@/components/custom/form.control/InputController";
+import { InputController } from "@/components/_form-controls/InputController";
 import { useMounted } from "@/hooks/use-mounted";
 import { signUp } from "./signup";
 import { toast } from "sonner";

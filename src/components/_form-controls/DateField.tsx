@@ -1,5 +1,4 @@
 import { Calendar } from "@/components/ui/calendar";
-import { FloatingLabel, FloatingLabelInput } from "@/components/ui/floating-input";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
@@ -72,10 +71,9 @@ export const DateField: React.FC<DateFieldProps> = ({ value, label, onChange, ..
   return (
     <Popover>
       <div className="relative">
-        <FloatingLabelInput
+        <Input
           id={label}
-          label={label}
-          // placeholder="DD-MM-YYYY"
+          placeholder="DD-MM-YYYY"
           value={inputValue}
           onChange={handleInputChange}
           pattern={datePattern.source}
@@ -87,7 +85,7 @@ export const DateField: React.FC<DateFieldProps> = ({ value, label, onChange, ..
           <CalendarIcon
             aria-label="Open Calendar"
             className={cn(
-              "h-7 w-7 absolute right-1 top-1/2 -translate-y-1/2 px-1.5 cursor-pointer opacity-50 hover:opacity-100",
+              "size-7 absolute right-1 top-1/2 -translate-y-1/2 px-1.5 cursor-pointer opacity-50 hover:opacity-100",
               rest.disabled && "text-muted-foreground"
             )}
           />

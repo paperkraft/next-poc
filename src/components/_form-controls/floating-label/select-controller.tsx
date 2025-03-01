@@ -31,16 +31,16 @@ export const FloatingSelectController = <T extends FieldValues>({ options, name,
             control={form.control}
             name={name}
             render={({ field }) => (
-                <FormItem className={cn("w-full", rest?.className)} id={name}>
-                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={rest?.disabled}>
-                        <SelectTrigger className="relative">
+                <FormItem className={cn("w-full", rest?.className)}>
+                    <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value} disabled={rest?.disabled}>
+                        <SelectTrigger className="relative" id={name}>
                             <Label
                                 htmlFor={name}
                                 className={cn(
-                                    "absolute start-2 z-10 origin-[0] transform px-1.5 text-sm text-muted-foreground transition-all",
-                                    "peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:scale-100",
-                                    "peer-focus:-translate-y-4 peer-focus:scale-90 peer-focus:px-1.5 peer-focus:bg-background",
-                                    field.value ? "-translate-y-4 scale-90 px-1.5 bg-background top-1.5" : ""
+                                    "absolute start-2 top-1/2 transform -translate-y-1/2 px-1.5 text-sm text-muted-foreground transition-all bg-background",
+                                    field.value
+                                        ? "top-[5px] -translate-y-4 scale-90 px-1.5 start-1"
+                                        : "top-1/2 -translate-y-1/2 scale-100"
                                 )}
                             >
                                 {label}

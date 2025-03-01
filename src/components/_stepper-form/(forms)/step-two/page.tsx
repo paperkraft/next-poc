@@ -1,6 +1,6 @@
-import { FloatingDateController } from "@/components/custom/form.control/FloatingDateController";
-import { FloatingInputController } from "@/components/custom/form.control/FloatingInputController";
-import { FloatingSelectController } from "@/components/custom/form.control/FloatingSelectController";
+import { FloatingDateController } from "@/components/_form-controls/floating-label/date-controller";
+import { FloatingInputController } from "@/components/_form-controls/floating-label/input-controller";
+import { FloatingSelectController } from "@/components/_form-controls/floating-label/select-controller";
 
 const countryOptions = [
     { label: "India", value: "India" },

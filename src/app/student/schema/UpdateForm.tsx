@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { TextareaController } from "@/components/custom/form.control/TextareaController";
+import { TextareaController } from "@/components/_form-controls/TextareaController";
 import { useRouter } from "next/navigation";
 
 const UpdateSchemaForm = () => {

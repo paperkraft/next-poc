@@ -10,7 +10,7 @@ import SidebarSkeleton from "./sidebar-skeleton";
 import { RenderMobileMenus } from "./sidebar-nested-menus";
 import { mapMenu, menuType, submenuType } from "./helper";
 
-const RenderMenus = React.memo(() => {
+const VerticalMenus = React.memo(() => {
 
     const { data, status } = useSession();
     const [filteredMenus, setFilteredMenus] = React.useState<menuType[][]>();
@@ -77,6 +77,7 @@ const RenderMenus = React.memo(() => {
                         className="px-8 focus-within:!ring-primary"
                         value={query ?? ""}
                         onChange={(e) => setQuery(e.target.value)}
+                        autoFocus={false}
                     />
                     <SearchIcon className="pointer-events-none absolute left-2 top-1/2 size-4 -translate-y-1/2 select-none opacity-50" />
                     {
@@ -112,5 +113,5 @@ const RenderMenus = React.memo(() => {
     )
 });
 
-RenderMenus.displayName = 'RenderMenus';
-export default RenderMenus;
+VerticalMenus.displayName = 'VerticalMenus';
+export default VerticalMenus;

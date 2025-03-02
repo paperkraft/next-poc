@@ -166,10 +166,10 @@ export default function StepperForm() {
                 <form noValidate className="space-y-4">
                     <motion.div
                         key={activeStep}
-                        initial={{ x: 30, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
-                        exit={{ x: -30, opacity: 0 }}
-                    // transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                        initial={{ y: 30, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: -30, opacity: 0 }}
+                        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                     >
                         {StepComponent && <StepComponent />}
                     </motion.div>

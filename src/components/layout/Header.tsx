@@ -31,17 +31,14 @@ const Header: React.FC = React.memo(() => {
         <header className="flex sticky top-0 bg-background h-16 shrink-0 items-center gap-2 border-b px-4 z-50">
             <div className="flex items-center gap-2 w-full">
 
-                {(isMobile || theme.layout !== "horizontal") && (
+                {(isMobile || theme.layout === "vertical") && (
                     <>
-                        {   isMobile && 
-                            <>
-                                <CustomTrigger />
-                                <Separator orientation="vertical" className="mr-2 h-4" />
-                            </>
-                        }
-                        <HeaderBreadcrumb />
+                        <CustomTrigger />
+                        <Separator orientation="vertical" className="mr-2 h-4" />
                     </>
                 )}
+                {!isMobile && theme.layout !== "horizontal" && <HeaderBreadcrumb />}
+                
 
                 {!isMobile && theme.layout === "horizontal" && <HeaderNavigationMenu />}
 

@@ -17,6 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { ThemeWrapper } from "../theme-wrapper";
+import { themeConfig } from "@/hooks/use-config";
 
 const options = [
     {
@@ -38,6 +39,7 @@ const options = [
 
 const SidebarFooterContent = React.memo(() => {
     const { data } = useSession();
+    const [config] = themeConfig();
     const { isMobile } = useSidebar();
     const user = data && data?.user;
     const initials = user && user?.name?.split(' ').map((word: any[]) => word[0]).join('').toUpperCase();
@@ -63,7 +65,7 @@ const SidebarFooterContent = React.memo(() => {
     const RenderUserInfo = () => {
         return (
             <>
-                <Avatar className="size-8 border p-0.5 rounded-lg">
+                <Avatar className={cn("border p-0.5 rounded-lg", (config.layout === "collapsed" && !isMobile) && "size-8")}>
                     <AvatarImage src={user?.image} alt={user?.name} />
                     <AvatarFallback className="rounded-lg">{initials ?? "UN"}</AvatarFallback>
                 </Avatar>
@@ -84,7 +86,11 @@ const SidebarFooterContent = React.memo(() => {
             <SidebarMenuItem>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <SidebarMenuButton size="lg" className="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus-within:!ring-primary p-0 size-8">
+                        <SidebarMenuButton size="lg" 
+                            className={cn("data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus-within:!ring-primary p-0",
+                                (config.layout === "collapsed" && !isMobile) && "size-8"
+                            )}
+                        >
                             <RenderUserInfo />
                             <EllipsisVerticalIcon className="ml-auto size-4" />
                         </SidebarMenuButton>

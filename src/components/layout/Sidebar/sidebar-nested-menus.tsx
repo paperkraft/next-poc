@@ -62,7 +62,7 @@ const RenderNested = ({ item }: { item: submenuType }) => {
     }
 }
 
-const NestedMenu = React.memo(({ item, active, submenu, dropdown }: { item: menuType, active?: (a: string) => void, submenu?: (a: submenuType[]) => void, dropdown?: boolean }) => {
+export const IconMenus = React.memo(({ item, active, submenu, dropdown }: { item: menuType, active?: (a: string) => void, submenu?: (a: submenuType[]) => void, dropdown?: boolean }) => {
 
     const { toggleSidebar, setOpen } = useSidebar();
     const isMobile = useIsMobile();
@@ -93,7 +93,7 @@ const NestedMenu = React.memo(({ item, active, submenu, dropdown }: { item: menu
                                 tooltip={{ children: item.title, hidden: false }}
                                 className={cn("focus-within:!ring-primary hover:!text-primary hover:bg-muted", { "bg-muted text-primary": isActive })}
                                 onClick={() => {
-                                    // setOpen(true);
+                                    setOpen(false);
                                     active && active(item.title);
                                     submenu && submenu(item.submenu)
                                 }}
@@ -137,11 +137,10 @@ const NestedMenu = React.memo(({ item, active, submenu, dropdown }: { item: menu
     }
 });
 
-NestedMenu.displayName = "NestedMenu";
+IconMenus.displayName = "IconMenus";
 
-export default NestedMenu;
 
-export const NestedSubMenu = React.memo(({ item, isSearchActive, level }: { item: submenuType, isSearchActive: boolean, level: number }) => {
+export const IconSubMenus = React.memo(({ item, isSearchActive, level }: { item: submenuType, isSearchActive: boolean, level: number }) => {
 
     const { toggleSidebar } = useSidebar();
     const isMobile = useIsMobile();
@@ -181,7 +180,7 @@ export const NestedSubMenu = React.memo(({ item, isSearchActive, level }: { item
                             {
                                 item?.submenu?.map((subItem, index) => (
                                     <SidebarMenuSubItem key={index} >
-                                        <NestedSubMenu item={subItem} isSearchActive={isSearchActive} level={index + 1} />
+                                        <IconSubMenus item={subItem} isSearchActive={isSearchActive} level={index + 1} />
                                     </SidebarMenuSubItem>
                                 ))
                             }
@@ -193,7 +192,7 @@ export const NestedSubMenu = React.memo(({ item, isSearchActive, level }: { item
     }
 });
 
-NestedSubMenu.displayName = "NestedSubMenu";
+IconSubMenus.displayName = "IconSubMenus";
 
 function checkIsActive(item: menuType, pathname: string): boolean {
     const isSubmenuActive = (submenu: submenuType[]): boolean => {
@@ -210,6 +209,7 @@ function checkIsActive(item: menuType, pathname: string): boolean {
         isSubmenuActive(item.submenu)
     );
 }
+
 
 
 export const RenderMobileMenus = React.memo(({ item, isSearchActive }: { item: menuType, isSearchActive: boolean }) => {
@@ -257,4 +257,4 @@ export const RenderMobileMenus = React.memo(({ item, isSearchActive }: { item: m
     )
 });
 
-NestedMenu.displayName = "NestedMenu";
+RenderMobileMenus.displayName = "RenderMobileMenus";

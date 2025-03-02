@@ -4,10 +4,13 @@ import { usePathname, useRouter } from "next/navigation";
 import AppSidebar from "./Sidebar/app-sidebar";
 import { useSession } from "next-auth/react";
 import { useMounted } from "@/hooks/use-mounted";
+import { SidebarProvider } from "../ui/sidebar";
+import { NotificationsProvider } from "@/context/notification-context";
+import { ThemeWrapper } from "./theme-wrapper";
 
 export const publicURL = ["/signin", "/signup"];
 
-export default function AppLayout({ children, defaultOpen }: { children: React.ReactNode, defaultOpen:boolean }) {
+export default function AppLayout({ children, defaultOpen }: { children: React.ReactNode, defaultOpen: boolean }) {
   const route = useRouter();
   const mounted = useMounted();
   const pathname = usePathname();
@@ -27,6 +30,16 @@ export default function AppLayout({ children, defaultOpen }: { children: React.R
   }
 
   if (status === "authenticated") {
-    return mounted && (<AppSidebar defaultOpen={defaultOpen}>{children}</AppSidebar>)
+    return mounted && (
+      <ThemeWrapper>
+        <SidebarProvider>
+          <NotificationsProvider>
+            <AppSidebar>
+              {children}
+            </AppSidebar>
+          </NotificationsProvider>
+        </SidebarProvider>
+      </ThemeWrapper>
+    )
   }
 }

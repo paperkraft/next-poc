@@ -13,16 +13,20 @@ type UserConfig = {
     modules: IModule[]
 } | null;
 
+export type LayoutType = {
+    layout: "vertical" | "horizontal" | "collapsed"
+}
+
 export type ThemeConfig = {
     lang: "en" | "hi" | "mr" | string
     style: Style["name"]
     font: string
     mode: string
-    layout: string
+    layout: LayoutType | string
     content: string
     theme:  BaseColor["name"]
     radius: number
-    collapse: boolean
+    dual: boolean
 }
 
 const themeAtom = atomWithStorage<ThemeConfig>("theme-config", {
@@ -34,7 +38,7 @@ const themeAtom = atomWithStorage<ThemeConfig>("theme-config", {
     layout: "vertical",
     content: "wide",
     radius: 0.5,
-    collapse: false
+    dual: false
 })
 
 const userAtom = atomWithStorage<UserConfig>("user", null)

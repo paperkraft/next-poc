@@ -7,7 +7,6 @@ import { Form } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { LoaderCircle } from "lucide-react";
 import { useMounted } from "@/hooks/use-mounted";
 import { signIn } from "next-auth/react";
 import { RECAPTCHA_SITE_KEY } from "@/utils/constants";
@@ -36,8 +35,8 @@ export default function SignInPage() {
   const form = useForm<signInT>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
-      email: "vishal.sannake@akronsystems.com",
-      password: "123123",
+      email: "",
+      password: "",
     },
   });
 

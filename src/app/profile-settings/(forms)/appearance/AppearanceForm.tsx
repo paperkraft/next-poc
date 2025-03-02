@@ -36,7 +36,7 @@ export function AppearanceForm() {
     defaultValues: {
       theme: "light",
       font: config.font,
-      layout: config.layout,
+      layout: config.layout as string,
       color: config.theme,
       radius: config.radius,
     }

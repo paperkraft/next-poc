@@ -1,6 +1,6 @@
 import { SkeletonDarkTheme, SkeletonLightTheme, SkeletonSidebarLayout, SkeletonStackedLayout, SkeletonSystemTheme } from "@/components/custom/layout-skeleton";
 import { useSidebar } from "@/components/ui/sidebar";
-import { themeConfig } from "@/hooks/use-config";
+import { LayoutType, themeConfig } from "@/hooks/use-config";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
 import React from "react"
@@ -11,7 +11,7 @@ interface BlockProps{
 }
 
 interface Blocks{
-    context: string;
+    context: string | LayoutType
     component: BlockProps[];
     type: string;
 }

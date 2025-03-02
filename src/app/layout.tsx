@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     template: "%s | App",
     absolute: "App",
   },
-  description: "Educational ERP",
+  description: "CRM",
 };
 
 export default async function RootLayout({ children }: ChildProps) {

@@ -8,7 +8,7 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title:{
-    default:"Webdesk",
+    default:"Demo App",
     template:"%s | Auth"
 } ,
   description: "Signin to get started",
@@ -27,12 +27,12 @@ export default function AuthLayout({children}:ChildProps) {
               <div className="mt-auto p-4 text-center">
                 <div className="flex justify-center items-center gap-2 my-2">
                     <div className="flex aspect-square size-8 items-center justify-center rounded-full bg-sidebar-primary text-sidebar-primary-foreground">
-                        <span className="text-xs">WD</span>
+                        <span className="text-xs">SV</span>
                     </div>
-                    Webdesk
+                    Demo App
                 </div>
                 <p className="text-sm text-muted-foreground mb-6">
-                  © 2024, All Rights Reserved.
+                  © 2025, All Rights Reserved.
                 </p>
                 <ToggleButtons/>
               </div>

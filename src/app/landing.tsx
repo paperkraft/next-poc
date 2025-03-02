@@ -28,9 +28,9 @@ export default function LandingPage() {
 
                     <div className="flex items-center gap-2 px-4">
                         <div className="flex aspect-square size-8 items-center justify-center rounded-full bg-sidebar-primary text-sidebar-primary-foreground">
-                            <span className="text-xs">WD</span>
+                            <span className="text-xs">SV</span>
                         </div>
-                        Webdesk
+                        Demo App
                     </div>
 
                     <div className="flex items-center gap-2 px-4 ml-auto">
@@ -48,7 +48,7 @@ export default function LandingPage() {
                             <div className="space-y-8 text-center md:text-left text-balance">
                                 <h1 className="text-5xl leading-tight">All you need for managing your business online</h1>
                                 <p className="text-wrap text-xl">
-                                    Run your entire business on Webdesk with our unified cloud software,
+                                    Run your entire business on Demo App with our unified cloud software,
                                     seamlessly migrate their academic delivery and administration online by complementing their traditional practices.
                                 </p>
                                 <Image src={'/landing_01.png'} className="aspect-auto mt-20" alt="team" width={500} height={400} />

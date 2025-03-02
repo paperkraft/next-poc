@@ -49,7 +49,7 @@ export const FloatingInputController = <T extends FieldValues>({ name, label, re
                                     : rest.type === 'number'
                                         ? e.target.value.replace(/[^0-9]/g, '').trimStart()
                                         : e.target.value
-                                field.onChange(value.trim())
+                                field.onChange(value)
                             }}
                             minLength={rest?.minLength}
                             maxLength={rest?.maxLength}

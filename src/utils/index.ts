@@ -33,3 +33,13 @@ export function getLightValues(themeName: string) {
   const theme = baseColors.find(t => t.name === themeName);
   return theme ? theme.activeColor.light : null;
 }
+
+export function debounce<T extends (...args: any[]) => void>(func: T, delay: number) {
+  let timer: NodeJS.Timeout;
+  return (...args: Parameters<T>) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      func(...args);
+    }, delay);
+  };
+}

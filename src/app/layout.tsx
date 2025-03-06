@@ -26,8 +26,8 @@ export default async function RootLayout({ children }: ChildProps) {
   const messages = await getMessages();
 
   const cookieStore = cookies()
-  const defaultOpen = Boolean(cookieStore.get("sidebar:state")?.value)
-
+  const defaultOpen = Boolean(cookieStore.get("sidebar:state")?.value);
+    
   return (
     <html lang={locale} suppressHydrationWarning={true}>
       <body className={cn(inter.className)}>
@@ -37,7 +37,7 @@ export default async function RootLayout({ children }: ChildProps) {
               <AppLayout defaultOpen={defaultOpen}>
                 {children}
               </AppLayout>
-              <Toaster richColors />
+              <Toaster richColors position="top-center"/>
             </ThemeProvider>
           </NextIntlClientProvider>
         </NextAuthProvider>

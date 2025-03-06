@@ -34,18 +34,15 @@ const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
                 enableSystem
                 disableTransitionOnChange
             >
-                {
-                    isMounted &&
-                    <>
-                        {children}
-                        <ProgressBar
-                            height="4px"
-                            color="rgb(26 139 244)"
-                            options={{ showSpinner: false }}
-                            shallowRouting
-                        />
-                    </>
-                }
+                <>
+                    {isMounted && children}
+                    <ProgressBar
+                        height="4px"
+                        color="rgb(26 139 244)"
+                        options={{ showSpinner: false }}
+                        shallowRouting
+                    />
+                </>
             </NextThemesProvider>
         </ThemeContext.Provider>
     )

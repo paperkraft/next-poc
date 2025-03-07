@@ -40,26 +40,19 @@ export default function AllowNotification() {
         }
     }
 
-    async function unsubscribeFromPush() {
-        await subscription?.unsubscribe()
-        setSubscription(null)
-        // await unsubscribeUser()
-    }
-
     useEffect(() => {
-        const requestNotificationPermission = async () => {
+        async function requestNotificationPermission() {
             if ('Notification' in window) {
                 try {
                     const permission = await Notification.requestPermission();
                     if (permission === 'granted') {
                         setNotificationDenied(false);
-                        console.log('granted');
-                        const isCheck = subscription && checkSubscription(subscription);
-                        if (!isCheck) setSubscription(null);
-                        await subscribeToPush();
+                        if (!subscription || !checkSubscription(subscription)) {
+                            setSubscription(null);
+                            await subscribeToPush();
+                        }
                     } else {
                         setNotificationDenied(true);
-                        console.log('denied');
                     }
                 } catch (error) {
                     console.error('Error requesting notification permission:', error);
@@ -87,7 +80,7 @@ export default function AllowNotification() {
     }
 
     return (
-        <div>
+        <>
             {notificationDenied && (
                 <Alert variant="default" className='bg-yellow-50 border border-yellow-300 text-yellow-900 dark:bg-yellow-50/5 dark:border-accent dark:text-yellow-600'>
                     <AlertCircleIcon className="size-4 !text-inherit" />
@@ -111,13 +104,12 @@ export default function AllowNotification() {
                         <AlertCircleIcon className="size-4 !text-inherit" />
                         <AlertTitle>You are not subscribed to push notifications.</AlertTitle>
                         <AlertDescription className='space-y-2'>
-                            {/* <Button variant='outline' size='sm' onClick={() => subscribeToPush()}>Subscribe</Button> */}
                             Go to Notification setting <Link href={'/profile-settings/notifications?sub=false'} className='hover:text-blue-400'> click here</Link>
                         </AlertDescription>
                     </Alert>
                 </>
             )}
-        </div>
+        </>
     );
 }
 
@@ -134,6 +126,21 @@ export async function subscribeToPush() {
         await subscribeUser(serializedSub);
     } catch (error) {
         console.error("Error subscribing to push notifications:", error);
+    }
+}
+
+
+export async function unsubscribeFromPush() {
+    try {
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.getSubscription();
+        if (subscription) {
+            await subscription.unsubscribe();
+            localStorage.removeItem('push-subscription');
+            console.log("Unsubscribed from push notifications");
+        }
+    } catch (error) {
+        console.error("Error unsubscribing from push notifications:", error);
     }
 }
 
@@ -155,10 +162,6 @@ async function subscribeUser(subscription: PushSubscription) {
 
 function checkSubscription(current: PushSubscription): Boolean {
     const storedSubscription = localStorage.getItem("push-subscription")
-    if (storedSubscription) {
-        const stored: PushSubscription = JSON.parse(storedSubscription);
-        return current.endpoint === stored.endpoint
-    } else {
-        return false
-    }
+    if (!storedSubscription) return false;
+    return current.endpoint === JSON.parse(storedSubscription).endpoint;
 }

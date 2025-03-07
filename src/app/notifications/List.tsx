@@ -41,14 +41,6 @@ export default function NotificationsList() {
 
     }, [notifications, userId]);
 
-    // useEffect(() => {
-    //     if (notifications) {
-    //         const ids = notifications.map((n) => n.id)
-    //         setFilterNotifications((prev) => prev.map((n) => !ids.includes(n.id) ? { ...n, read: true } : n))
-    //     }
-    // }, [notifications]);
-    
-
     // Handler for marking notifications as read
     const handleMarkAsRead = useCallback(async (notificationIds?: string) => {
         const idsToMark = notificationIds ? [notificationIds] : unread.map((n: INotifications) => n.id);

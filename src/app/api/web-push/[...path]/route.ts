@@ -108,8 +108,7 @@ async function handleSendPush(request: Request) {
         );
 
         // Log the notification into the database
-        const status = 'sent';
-        await saveNotificationToDB(userId, message, status);
+        await saveNotificationToDB(userId, message, "sent");
 
         return NextResponse.json(
             { success: true, message: 'Notification sent successfully' },
@@ -117,8 +116,7 @@ async function handleSendPush(request: Request) {
         );
 
     } catch (error) {
-        const status = 'failed';
-        await saveNotificationToDB(userId, message, status);
+        await saveNotificationToDB(userId, message, "failed");
         return handleError('Failed to send notification', error);
     }
 }

@@ -67,12 +67,12 @@ interface NotificationProps {
 export async function sendWebPushNotification({ message, userId, topic }: NotificationProps) {
     try {
         const pushBody = {
-            title: 'Webdesk',
-            body: message ?? 'Welcome to Webdesk',
+            title: 'SV',
+            body: message ?? 'Welcome to Demo App',
             // image: '/sv.svg',
             icon: '/sv.svg',
             badge: '/sv.svg',
-            url: 'http://localhost:4000/dashboard',
+            url: '/',
             userId,
             topic,
         };
@@ -86,7 +86,6 @@ export async function sendWebPushNotification({ message, userId, topic }: Notifi
         });
 
         const result = await response.json();
-        console.log('Push notification result:', result);
         return result;
 
     } catch (error) {

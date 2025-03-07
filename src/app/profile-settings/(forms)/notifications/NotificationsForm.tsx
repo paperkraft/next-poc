@@ -11,6 +11,8 @@ import { Separator } from "@/components/ui/separator"
 import { useEffect, useState } from "react"
 import { subscribeToPush } from "@/components/custom/allow-notification"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { sendWebPushNotification } from "@/push"
+import { useSession } from "next-auth/react"
 
 const notificationsFormSchema = z.object({
   allow_notify: z.boolean().optional(),
@@ -33,6 +35,9 @@ export function NotificationsForm() {
   const router = useRouter();
   const path = usePathname();
   const params = useSearchParams().get('sub');
+  const { data } = useSession();
+  const userId = data?.user?.id;
+
 
   const t = useTranslations('setting');
 
@@ -48,17 +53,14 @@ export function NotificationsForm() {
   }, [params]);
 
   function onSubmit(data: NotificationsFormValues) {
-    toast("You submitted the following values:", {
-      description: (
-        <pre className="mt-2 w-[295px] md:w-[324px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-    });
+    toast.success("Notifications setting updated")
 
     if (data.allow_notify) {
       subscribeToPush();
-      router.replace(path);
+      setTimeout(() => {
+        sendWebPushNotification({ userId, message: "Welcome" });
+        router.replace(path);
+      },3000)
     }
   }
 

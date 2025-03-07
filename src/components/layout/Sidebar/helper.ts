@@ -1,6 +1,5 @@
 import { IconData } from "../icon-data";
 
-
 type inputType = {
     id: string;
     name: string;

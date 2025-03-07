@@ -10,13 +10,13 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useDebounce } from "@/hooks/use-debounce";
 import _ from "lodash";
 import { cn } from "@/lib/utils";
-import SidebarHeaderContent from "./sidebar-header";
 import { themeConfig } from "@/hooks/use-config";
 import { usePathname } from "next/navigation";
-import SidebarFooterContent from "./sidebar-footer";
 import { Button } from "@/components/ui/button";
 import { RenderCollapseIconMenus } from "./render-collapse-menus";
 import { RenderCollapseIconSubmenus } from "./render-collapse-submenu";
+import SidebarHeaderContent from "./sidebar-header";
+import SidebarFooterContent from "./sidebar-footer";
 
 
 const CollapseMenus = React.memo(() => {
@@ -80,7 +80,7 @@ const CollapseMenus = React.memo(() => {
                                 </SidebarGroupLabel>
                                 <SidebarMenu>
                                     {group.map((item, index) => (
-                                        <RenderCollapseIconMenus key={index} item={item} active={setTitle} submenu={setSubmenus} dropdown={!config.dual} />
+                                        <RenderCollapseIconMenus key={index} item={item} active={setTitle} submenu={setSubmenus} dropdown={!config.dual} isSearchActive={isSearching}/>
                                     ))}
                                 </SidebarMenu>
                             </SidebarGroup>

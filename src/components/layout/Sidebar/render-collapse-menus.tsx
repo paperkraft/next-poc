@@ -23,9 +23,10 @@ interface CollapseMenusProps {
     active?: (a: string) => void,
     submenu?: (a: submenuType[]) => void,
     dropdown?: boolean
+    isSearchActive: boolean
 }
 
-export const RenderCollapseIconMenus = React.memo(({ item, active, submenu, dropdown }: CollapseMenusProps) => {
+export const RenderCollapseIconMenus = React.memo(({ item, active, submenu, dropdown, isSearchActive }: CollapseMenusProps) => {
 
     const { toggleSidebar, setOpen, isMobile } = useSidebar();
     const path = usePathname();
@@ -79,7 +80,7 @@ export const RenderCollapseIconMenus = React.memo(({ item, active, submenu, drop
                         <DropdownMenuSeparator />
                         {item.submenu.map((item) => (
                             <DropdownMenuGroup key={item.title}>
-                                <RenderDropdownsMenus item={item} />
+                                <RenderDropdownsMenus item={item} isSearchActive={isSearchActive} />
                             </DropdownMenuGroup>
                         ))}
                     </ThemeWrapper>

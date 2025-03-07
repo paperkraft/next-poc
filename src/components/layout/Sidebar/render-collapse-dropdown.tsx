@@ -10,13 +10,14 @@ import { SidebarMenuButton, SidebarMenuSub, SidebarMenuSubItem } from "@/compone
 import { submenuType, menuType, checkIsActive } from "./helper";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
-const RenderDropdownsMenus = ({ item }: { item: submenuType }) => {
+const RenderDropdownsMenus = ({ item, isSearchActive }: { item: submenuType, isSearchActive:boolean }) => {
     const path = usePathname();
     const hasSubmenu = item?.submenu && item?.submenu?.length > 0;
     const isActive = useMemo(() => checkIsActive(item as menuType, path), [item, path]);
+    const shouldExpand = isSearchActive ? true : isActive;
 
     return hasSubmenu ? (
-        <Collapsible defaultOpen={isActive} asChild className="group/collapsible">
+        <Collapsible defaultOpen={shouldExpand} asChild className="group/collapsible">
             <React.Fragment>
                 <CollapsibleTrigger asChild className="[&[data-state=open]>svg:first-child]:rotate-90">
                     <SidebarMenuButton className="[&[data-state=open]>svg:first-child]:rotate-90">
@@ -28,7 +29,7 @@ const RenderDropdownsMenus = ({ item }: { item: submenuType }) => {
                     <SidebarMenuSub className="mr-0">
                         {item.submenu?.map((submenu, idx) => (
                             <SidebarMenuSubItem key={submenu.title || idx}>
-                                <RenderDropdownsMenus key={submenu.title} item={submenu} />
+                                <RenderDropdownsMenus key={submenu.title} item={submenu} isSearchActive={isSearchActive}/>
                             </SidebarMenuSubItem>
                         ))}
                     </SidebarMenuSub>

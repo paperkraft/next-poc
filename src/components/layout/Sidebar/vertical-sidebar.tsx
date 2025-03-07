@@ -124,7 +124,7 @@ export const RenderMobileMenus = React.memo(({ item, isSearchActive }: { item: m
     if (!hasSubmenu) {
         return (
             <SidebarMenuButton tooltip={item.title} asChild onClick={() => isMobile && toggleSidebar()} className="focus-within:!ring-primary">
-                <Link href={item.url} className={cn("hover:!text-primary hover:bg-muted", { "bg-muted text-primary": item.url === path })}>
+                <Link href={item.url} className={cn("hover:!text-primary hover:bg-muted", { "bg-muted text-primary": isActive })}>
                     {item.icon ? <item.icon /> : <DotIcon />}
                     {item.title}
                 </Link>

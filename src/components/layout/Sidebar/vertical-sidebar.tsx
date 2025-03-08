@@ -99,7 +99,7 @@ const VerticalMenus = React.memo(() => {
                         <SidebarGroupLabel>{group[0]?.label}</SidebarGroupLabel>
                         <SidebarMenu>
                             {group.map((item, index) => (
-                                <RenderMobileMenus key={index} item={item} isSearchActive={isSearching} />
+                                <RenderMenus key={index} item={item} isSearchActive={isSearching} />
                             ))}
                         </SidebarMenu>
                     </SidebarGroup>
@@ -113,7 +113,7 @@ const VerticalMenus = React.memo(() => {
 VerticalMenus.displayName = 'VerticalMenus';
 export default VerticalMenus;
 
-export const RenderMobileMenus = React.memo(({ item, isSearchActive }: { item: menuType, isSearchActive: boolean }) => {
+export const RenderMenus = React.memo(({ item, isSearchActive }: { item: menuType, isSearchActive: boolean }) => {
 
     const { toggleSidebar, isMobile } = useSidebar();
     const path = usePathname();
@@ -146,7 +146,7 @@ export const RenderMobileMenus = React.memo(({ item, isSearchActive }: { item: m
                 <CollapsibleContent className='CollapsibleContent'>
                     <SidebarMenuSub>
                         {item?.submenu.map((subItem, index) => (
-                            <RenderMobileMenus key={index} item={subItem as menuType} isSearchActive={isSearchActive} />
+                            <RenderMenus key={index} item={subItem as menuType} isSearchActive={isSearchActive} />
                         ))}
                     </SidebarMenuSub>
                 </CollapsibleContent>
@@ -155,4 +155,4 @@ export const RenderMobileMenus = React.memo(({ item, isSearchActive }: { item: m
     )
 });
 
-RenderMobileMenus.displayName = "RenderMobileMenus";
+RenderMenus.displayName = "RenderMenus";

@@ -16,17 +16,16 @@ import {
     DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu"
 import { ThemeWrapper } from "../theme-wrapper";
-import RenderDropdownsMenus from "./render-collapse-dropdown";
+import RenderCollapseDropdownsMenus from "./render-collapse-dropdown";
 
 interface CollapseMenusProps {
     item: menuType,
     active?: (a: string) => void,
     submenu?: (a: submenuType[]) => void,
     dropdown?: boolean
-    isSearchActive: boolean
 }
 
-export const RenderCollapseIconMenus = React.memo(({ item, active, submenu, dropdown, isSearchActive }: CollapseMenusProps) => {
+export const RenderCollapseMenus = React.memo(({ item, active, submenu, dropdown }: CollapseMenusProps) => {
 
     const { toggleSidebar, setOpen, isMobile } = useSidebar();
     const path = usePathname();
@@ -46,28 +45,26 @@ export const RenderCollapseIconMenus = React.memo(({ item, active, submenu, drop
 
     const renderIcon = () => (item.icon ? <item.icon /> : <DotIcon />);
 
+    const renderSidebarMenuButton = (onClick: () => void, asChild: boolean) => (
+        <SidebarMenuButton
+            tooltip={{ children: item.title, hidden: false }}
+            className={cn("focus-within:!ring-primary hover:!text-primary hover:bg-muted", { "bg-muted text-primary": isActive })}
+            onClick={onClick}
+            asChild={asChild}
+        >
+            {asChild ? <Link href={item.url}>{renderIcon()}</Link> : renderIcon()}
+        </SidebarMenuButton>
+    );
+
     if (!hasSubmenu) {
         return (
-            <SidebarMenuButton
-                asChild
-                tooltip={{ children: item.title, hidden: false }}
-                className={cn("focus-within:!ring-primary hover:!text-primary hover:bg-muted", { "bg-muted text-primary": isActive })}
-                onClick={handleClick}
-            >
-                <Link href={item.url}>{renderIcon()}</Link>
-            </SidebarMenuButton>
+            renderSidebarMenuButton(handleClick, true)
         )
     } else {
         return dropdown ? (
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <SidebarMenuButton
-                        tooltip={{ children: item.title, hidden: false }}
-                        className={cn("focus-within:!ring-primary hover:!text-primary hover:bg-muted", { "bg-muted text-primary": isActive })}
-                        onClick={handleSubmenuClick}
-                    >
-                        {renderIcon()}
-                    </SidebarMenuButton>
+                    {renderSidebarMenuButton(handleSubmenuClick, false)}
                 </DropdownMenuTrigger>
 
                 <DropdownMenuContent
@@ -80,22 +77,16 @@ export const RenderCollapseIconMenus = React.memo(({ item, active, submenu, drop
                         <DropdownMenuSeparator />
                         {item.submenu.map((item) => (
                             <DropdownMenuGroup key={item.title}>
-                                <RenderDropdownsMenus item={item} isSearchActive={isSearchActive} />
+                                <RenderCollapseDropdownsMenus item={item} />
                             </DropdownMenuGroup>
                         ))}
                     </ThemeWrapper>
                 </DropdownMenuContent>
             </DropdownMenu>
         ) : (
-            <SidebarMenuButton
-                tooltip={{ children: item.title, hidden: false }}
-                className={cn("focus-within:!ring-primary hover:!text-primary hover:bg-muted", { "bg-muted text-primary": isActive })}
-                onClick={handleSubmenuClick}
-            >
-                {renderIcon()}
-            </SidebarMenuButton>
+            renderSidebarMenuButton(handleSubmenuClick, false)
         )
     }
 });
 
-RenderCollapseIconMenus.displayName = "RenderCollapseIconMenus";
+RenderCollapseMenus.displayName = "RenderCollapseMenus";

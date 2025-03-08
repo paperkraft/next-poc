@@ -10,16 +10,15 @@ import { SidebarMenuButton, SidebarMenuSub, SidebarMenuSubItem } from "@/compone
 import { submenuType, menuType, checkIsActive } from "./helper";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
-const RenderDropdownsMenus = ({ item, isSearchActive }: { item: submenuType, isSearchActive:boolean }) => {
+const RenderCollapseDropdownsMenus = ({ item }: { item: submenuType }) => {
     const path = usePathname();
     const hasSubmenu = item?.submenu && item?.submenu?.length > 0;
     const isActive = useMemo(() => checkIsActive(item as menuType, path), [item, path]);
-    const shouldExpand = isSearchActive ? true : isActive;
 
     return hasSubmenu ? (
-        <Collapsible defaultOpen={shouldExpand} asChild className="group/collapsible">
-            <React.Fragment>
-                <CollapsibleTrigger asChild className="[&[data-state=open]>svg:first-child]:rotate-90">
+        <Collapsible defaultOpen={isActive} asChild className="group/collapsible">
+            <>
+                <CollapsibleTrigger asChild>
                     <SidebarMenuButton className="[&[data-state=open]>svg:first-child]:rotate-90">
                         <ChevronRight className="transition-transform duration-200" />
                         {item.title}
@@ -29,12 +28,12 @@ const RenderDropdownsMenus = ({ item, isSearchActive }: { item: submenuType, isS
                     <SidebarMenuSub className="mr-0">
                         {item.submenu?.map((submenu, idx) => (
                             <SidebarMenuSubItem key={submenu.title || idx}>
-                                <RenderDropdownsMenus key={submenu.title} item={submenu} isSearchActive={isSearchActive}/>
+                                <RenderCollapseDropdownsMenus key={submenu.title} item={submenu} />
                             </SidebarMenuSubItem>
                         ))}
                     </SidebarMenuSub>
                 </CollapsibleContent>
-            </React.Fragment>
+            </>
         </Collapsible>
     ) : (
         <DropdownMenuItem asChild key={item.title}>
@@ -48,5 +47,5 @@ const RenderDropdownsMenus = ({ item, isSearchActive }: { item: submenuType, isS
     );
 };
 
-export default React.memo(RenderDropdownsMenus);
+export default React.memo(RenderCollapseDropdownsMenus);
 

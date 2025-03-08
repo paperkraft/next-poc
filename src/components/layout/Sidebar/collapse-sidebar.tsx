@@ -13,8 +13,8 @@ import { cn } from "@/lib/utils";
 import { themeConfig } from "@/hooks/use-config";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { RenderCollapseIconMenus } from "./render-collapse-menus";
-import { RenderCollapseIconSubmenus } from "./render-collapse-submenu";
+import { RenderCollapseMenus } from "./render-collapse-menus";
+import { RenderCollapseSubmenus } from "./render-collapse-submenu";
 import SidebarHeaderContent from "./sidebar-header";
 import SidebarFooterContent from "./sidebar-footer";
 
@@ -80,7 +80,7 @@ const CollapseMenus = React.memo(() => {
                                 </SidebarGroupLabel>
                                 <SidebarMenu>
                                     {group.map((item, index) => (
-                                        <RenderCollapseIconMenus key={index} item={item} active={setTitle} submenu={setSubmenus} dropdown={!config.dual} isSearchActive={isSearching}/>
+                                        <RenderCollapseMenus key={index} item={item} active={setTitle} submenu={setSubmenus} dropdown={!config.dual}/>
                                     ))}
                                 </SidebarMenu>
                             </SidebarGroup>
@@ -125,7 +125,7 @@ const CollapseMenus = React.memo(() => {
                                 )}
                                 {status !== "loading" && filteredSubmenus.map((item, idx) => (
                                     <SidebarMenuItem key={idx}>
-                                        <RenderCollapseIconSubmenus item={item} isSearchActive={isSearching} level={0} />
+                                        <RenderCollapseSubmenus item={item} isSearchActive={isSearching} level={0} />
                                     </SidebarMenuItem>
                                 ))}
                             </SidebarMenu>

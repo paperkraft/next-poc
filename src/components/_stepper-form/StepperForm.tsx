@@ -1,6 +1,6 @@
 "use client";
-import { useCallback, useEffect, useRef } from "react";
-import { FieldErrors, useForm } from "react-hook-form";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { FieldErrors, useForm, UseFormReturn } from "react-hook-form";
 import { Form } from "../ui/form";
 import { Button } from "../ui/button";
 import { MapPin, Phone, User } from "lucide-react";
@@ -8,55 +8,67 @@ import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import StepperIndicator from "./StepperIndicator";
 import { cn } from "@/lib/utils";
-import StepOne from "./(forms)/step-one/page";
-import StepTwo from "./(forms)/step-two/page";
 import { toast } from "sonner";
-import StepThree from "./(forms)/step-three/page";
-import { useStepperStore } from "./useStepperStore";
+import { createStore } from "./useStepperStore";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { debounce } from "@/utils";
 
-const stepComponents = [StepOne, StepTwo, StepThree];
+import StepOne from "./(forms)/step-one/page";
+import StepTwo from "./(forms)/step-two/page";
+import StepThree from "./(forms)/step-three/page";
+import StepFour from "./(forms)/step-four/page";
+
+const stepComponents = [StepOne, StepTwo, StepThree, StepFour];
 const stepIcons = [<User />, <MapPin />, <Phone />];
 
 const profileFormSchema = z.object({
-    firstName: z.string({ required_error: "First Name is required" })
-        .min(1, "First Name is required"),
+    firstName: z.string().min(1, "First Name is required"),
     middleName: z.string().optional(),
-    lastName: z.string({ required_error: "Last Name is required" })
-        .min(1, "Last Name is required"),
-    dob: z.coerce.date({ errorMap: () => ({ message: "Date is required.", }) }),
-    gender: z.string({ required_error: "Please select a gender." })
-        .min(1, "Please select a gender."),
-    bloodGroup: z.string({ required_error: "Please select a blood group." })
-        .min(1, "Please select a blood group."),
-    email: z.string({ required_error: "Email is required" })
-        .min(1, "Email is required").email(),
+    lastName: z.string().min(1, "Last Name is required"),
+    dob: z.coerce.date().refine((date) => !!date, { message: "Date is required." }),
+    gender: z.string().min(1, "Please select a gender."),
+    bloodGroup: z.string().min(1, "Please select a blood group."),
+    email: z.string().email("Please enter a valid email address."),
     mobile: z.string().min(1, "Mobile No. is required"),
-    alternateMobile: z.string(),
+    alternateMobile: z.string().optional(),
 
-    addressLine1: z.string(),
-    addressLine2: z.string(),
-    addressLine3: z.string(),
+    location: z.object({
+        addressLine1: z.string().min(1, "Address Line 1 is required"),
+        addressLine2: z.string().optional(),
+        addressLine3: z.string().optional(),
+        country: z.string().min(1, "Please select a country."),
+        state: z.string().min(1, "Please select a state."),
+        city: z.string().min(1, "Please select a city."),
+    }),
 
-    country: z.string().min(1, "Please select a country."),
-    state: z.string().min(1, "Please select a state."),
-    city: z.string().min(1, "Please select a city."),
+    emergencyContacts: z.array(z.object({
+        contact: z.string().min(1, "Contact is required"),
+    })).optional(),
 });
 
-type StepperFormValues = z.infer<typeof profileFormSchema>
+type StepperFormValues = z.infer<typeof profileFormSchema>;
 
-const stepFields: Record<number, (keyof StepperFormValues)[]> = {
+const stepFields: Record<number, (keyof StepperFormValues | `location.${keyof StepperFormValues["location"]}`)[]> = {
     1: ["firstName", "middleName", "lastName", "dob", "gender", "bloodGroup"],
-    2: ["addressLine1", "addressLine2", "addressLine3", "country", "state", "city"],
+    2: [
+        "location.addressLine1",
+        "location.addressLine2",
+        "location.addressLine3",
+        "location.country",
+        "location.state",
+        "location.city"
+    ],
     3: ["email", "mobile", "alternateMobile"],
+    4: ["emergencyContacts"],
 };
+
+const steps = Object.keys(stepFields).length;
+const stepperStore = createStore("profile-form");
 
 export default function StepperForm() {
     const router = useRouter();
-    const steps = Object.keys(stepFields).length;
-    const { activeStep, setActiveStep, formData, updateFormData, resetForm } = useStepperStore();
+    const { activeStep, setActiveStep, formData, updateFormData, resetForm } = stepperStore();
 
     const form = useForm<StepperFormValues>({
         resolver: zodResolver(profileFormSchema),
@@ -70,16 +82,20 @@ export default function StepperForm() {
             gender: formData.gender || "",
             bloodGroup: formData.bloodGroup || "",
 
-            addressLine1: formData.addressLine1 || "",
-            addressLine2: formData.addressLine2 || "",
-            addressLine3: formData.addressLine3 || "",
-            country: formData.country || "",
-            state: formData.state || "",
-            city: formData.city || "",
+            location: {
+                addressLine1: formData.location?.addressLine1 || "",
+                addressLine2: formData.location?.addressLine2 || "",
+                addressLine3: formData.location?.addressLine3 || "",
+                country: formData.location?.country || "",
+                state: formData.location?.state || "",
+                city: formData.location?.city || "",
+            },
 
             email: formData.email || "",
             mobile: formData.mobile || "",
             alternateMobile: formData.alternateMobile || "",
+
+            emergencyContacts: formData.emergencyContacts || [{ contact: "" }],
         },
     });
 
@@ -96,61 +112,48 @@ export default function StepperForm() {
     );
 
     useEffect(() => {
-        if (Object.keys(formData).length) {
-            const filteredData = Object.fromEntries(
-                Object.entries(formData).filter(([key]) => Object.keys(profileFormSchema.shape).includes(key))
-            );
-            form.reset(filteredData);
-        }
-    }, [formData]);
-
-    useEffect(() => {
         const subscription = form.watch((values) => {
-            const filteredData = Object.fromEntries(
-                Object.entries(values).filter(([key]) => Object.keys(profileFormSchema.shape).includes(key))
-            );
+            const filteredData = {
+                ...values,
+                location: JSON.parse(JSON.stringify(values.location)),
+                emergencyContacts: JSON.parse(JSON.stringify(values.emergencyContacts)),
+            };
             debouncedUpdateFormData(filteredData as StepperFormValues);
         });
 
         return () => subscription.unsubscribe();
-    }, [debouncedUpdateFormData]);
+    }, [debouncedUpdateFormData, form]);
 
     const handleNext = async () => {
         if (activeStep === steps) return;
+
         const currentStepFields = stepFields[activeStep] || [];
         const isStepValid = await form.trigger(currentStepFields, { shouldFocus: true });
 
         if (!isStepValid) {
-            const firstErrorField = currentStepFields.find(field => form.formState.errors[field]);
-            if (firstErrorField) {
-                toast.error(form.formState.errors[firstErrorField]?.message || "Please fix the errors.");
-            }
+            handleError(form, form.formState.errors, activeStep);
             return;
         }
+
         setActiveStep(activeStep + 1);
     };
 
     const handleBack = () => setActiveStep(Math.max(activeStep - 1, 1));
 
-    const handleError = (errors: FieldErrors<StepperFormValues>) => {
-        const firstErrorField = Object.keys(errors)[0] as keyof StepperFormValues;
-        if (firstErrorField) {
-            toast.error(errors[firstErrorField]?.message || "Please fix the errors.");
-        }
-    }
-
     const onSubmit = async (formData: StepperFormValues) => {
         console.log("Form submitted:", formData);
-        const promise = () => new Promise((resolve) => setTimeout(() => resolve({ name: 'Form submitted successfully!' }), 2000));
-
         prevValues.current = null;
         resetForm();
-
+        form.reset();
+        
+        const promise = () => new Promise((resolve) => setTimeout(() => resolve({ name: 'Form submitted successfully!' }), 2000));
+        
         toast.promise(promise, {
             loading: 'Loading...',
             success: () => {
-                router.refresh();
                 setActiveStep(1);
+                router.refresh();
+                stepperStore.persist.clearStorage();
                 return `Form submitted successfully!`;
             },
             error: 'Error',
@@ -184,7 +187,7 @@ export default function StepperForm() {
                             Back
                         </Button>
                         {activeStep === steps
-                            ? (<Button type="button" className="w-[100px]" onClick={form.handleSubmit(onSubmit, (errors) => handleError(errors))}>Submit</Button>)
+                            ? (<Button type="button" className="w-[100px]" onClick={form.handleSubmit(onSubmit, (errors) => handleError(form, errors, activeStep))}>Submit</Button>)
                             : (<Button type="button" className="w-[100px]" onClick={handleNext}>Next</Button>)}
                     </div>
                 </form>
@@ -192,3 +195,38 @@ export default function StepperForm() {
         </>
     );
 }
+
+interface NestedErrors {
+    [key: string]: any
+}
+
+const getNestedError = (errors: NestedErrors, fieldPath: string): { message?: string } | undefined => {
+    return fieldPath.split('.').reduce((acc, key) => acc?.[key], errors);
+};
+
+const handleError = (form: UseFormReturn<StepperFormValues>, errors: FieldErrors<StepperFormValues>, activeStep: number) => {
+
+    let firstErrorMessage: string | undefined;
+    const currentStepFields = stepFields[activeStep] ?? Object.keys(errors)
+
+    const dynamicFields = currentStepFields.flatMap((field) =>
+        field === "emergencyContacts"
+            ? (form.getValues("emergencyContacts") || []).map(
+                (_, index) => `emergencyContacts.${index}.contact`
+            )
+            : field
+    );
+
+    for (const key of dynamicFields) {
+        const error = getNestedError(errors, key);
+        if (error) {
+            firstErrorMessage = error.message;
+            break;
+        }
+    }
+
+    if (firstErrorMessage) {
+        toast.error(firstErrorMessage);
+    }
+}
+

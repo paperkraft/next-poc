@@ -43,10 +43,19 @@ const SidebarFooterContent = React.memo(() => {
     const { isMobile } = useSidebar();
     const user = data && data?.user;
     const initials = user && user?.name?.split(' ').map((word: any[]) => word[0]).join('').toUpperCase();
+    const [isLoggingOut, setIsLoggingOut] = React.useState(false);
+
 
     const logout = async () => {
-        await logAuditAction('logout', 'auth/signout', { user: `${user?.name}` }, user.id);
-        signOut({ redirect: false });
+        setIsLoggingOut(true);
+        try {
+            await logAuditAction('logout', 'auth/signout', { user: `${user?.name}` }, user.id);
+            signOut({ redirect: true, redirectTo:'/signin' });
+        } catch (error) {
+            console.error("Logout failed", error);
+        } finally {
+            setIsLoggingOut(false);
+        }
     }
 
     // shortcut key to logout ctrl + q
@@ -54,7 +63,8 @@ const SidebarFooterContent = React.memo(() => {
         const down = (e: KeyboardEvent) => {
             if (e.key === "q" && (e.metaKey || e.ctrlKey)) {
                 e.preventDefault();
-                signOut({ redirect: true, redirectTo:'/signin' });
+                logout();
+                // signOut({ redirect: true, redirectTo:'/signin' });
             }
         };
 
@@ -126,7 +136,7 @@ const SidebarFooterContent = React.memo(() => {
                             <DropdownMenuSeparator />
 
                             <DropdownMenuItem onClick={() => logout()} className="cursor-pointer hover:!text-primary">
-                                <LogOutIcon /> Log out
+                                {isLoggingOut ? <span>Logging out...</span> : <><LogOutIcon /> Log out</>}
                             </DropdownMenuItem>
 
                         </ThemeWrapper>

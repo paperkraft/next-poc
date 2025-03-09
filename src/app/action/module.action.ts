@@ -201,7 +201,7 @@ function RoleModules(data: InputModuleFormat[]): RoleModulesProps[] {
                 moduleMap.set(module.id, createModuleEntry({
                     id: module.id,
                     name: module.name,
-                    path: module.path,
+                    path: module?.path,
                     group: module.group?.name,
                     parentId: module.parentId,
                     permissions
@@ -214,7 +214,7 @@ function RoleModules(data: InputModuleFormat[]): RoleModulesProps[] {
                 moduleMap.set(subModule.id, createModuleEntry({
                     id: subModule.id,
                     name: subModule.name,
-                    path: subModule.path,
+                    path: subModule?.path,
                     group: undefined,
                     parentId: subModule.parentId,
                     permissions

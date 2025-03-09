@@ -87,14 +87,10 @@ const processRolesOptions = (role: IRole): any => {
 };
 
 function calculateBitmask(permissions: IPermissionBoolean[]) {
-  let combinedBitmask = 0;
-  permissions.forEach((permission) => {
+  return permissions.reduce((combinedBitmask, permission) => {
     const matchingBitmask = bitmask.find((b) => b.name === permission.name);
-    if (matchingBitmask && permission.bitmask) {
-      combinedBitmask |= matchingBitmask.bitmask;
-    }
-  });
-  return combinedBitmask;
+    return matchingBitmask && permission.bitmask ? combinedBitmask | matchingBitmask.bitmask : combinedBitmask;
+  }, 0);
 }
 
 const applyBitmaskRecursively = (item: any): IModule => {
@@ -103,28 +99,23 @@ const applyBitmaskRecursively = (item: any): IModule => {
     permissions: calculateBitmask(item.permissions),
   };
   if (updatedItem.subModules && updatedItem.subModules.length > 0) {
-    updatedItem.subModules = updatedItem.subModules.map(
-      applyBitmaskRecursively
+    updatedItem.subModules = updatedItem.subModules.map(applyBitmaskRecursively
     );
   }
   return updatedItem;
 };
 
-function removePermissions(modules: Module[]): any[] {
-  return modules.map(module => {
-    const { permissions, subModules, ...rest } = module;
-    const updatedSubmodules = removePermissions(subModules);
-    return {
-      ...rest,
-      subModules: updatedSubmodules,
-    };
-  });
+function removePermissions(modules: Module[]): IModule[] {
+  return modules.map(({ permissions, subModules, ...rest }) => ({
+    ...rest,
+    subModules: removePermissions(subModules),
+  }));
 }
 
 export default function AccessPage({ roles, modules }: IAccessProps) {
 
   const route = useRouter();
-  const initialModules = removePermissions(modules as any);
+  const initialModules = removePermissions(modules as unknown as Module[]);
 
   const initialRoles = roles
   const Thead = ["Module", "View", "Edit", "Create", "Delete"];
@@ -134,7 +125,7 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
   const [roleModules, setRoleModules] = useState<IModule[]>();
   const [previousModules, setPreviousModules] = useState<Module[]>();
 
-  const defaultModules = initialModules?.map((module) => processModulePermissions(module as any, bitmask));
+  const defaultModules = initialModules?.map((module) => processModulePermissions(module as IModule, bitmask));
   const roleOptions = initialRoles.map((role) => processRolesOptions(role));
 
   const form = useForm({
@@ -162,8 +153,8 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
           // get previous modules of role
           if (data && initialModules) {
             setPreviousModules(data);
-            const mergePreviousWithDefault = mergeModules(initialModules as any, data);
-            const previousModules = mergePreviousWithDefault.map((module) => processModulePermissions(module as any, bitmask));
+            const mergePreviousWithDefault = mergeModules(initialModules as unknown  as Module[], data);
+            const previousModules = mergePreviousWithDefault.map((module) => processModulePermissions(module as unknown as IModule, bitmask));
             setRoleModules(previousModules);
             form.setValue("modules", previousModules);
           }

@@ -51,86 +51,73 @@ export default function SignInPage() {
     });
 
     // get user
-    const response = await fetch("/api/user", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...data, token }),
-    }).then((res) =>res.json());
 
-    if(response.success){
-      setLoading(false);
-    }
+    try {
+      const response = await fetch("/api/user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...data, token }),
+      }).then((res) => res.json());
 
-    if (response.type === "CredentialsSignin" || response.code === "credentials") {
-      toast.error("Invalid credentials");
+      if (response.success) {
+        window.location.href = "/dashboard";
+      }
+
+      if (response.type === "CredentialsSignin" || response.code === "credentials") {
+        toast.error("Invalid credentials");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong");
+    } finally {
       setLoading(false);
-    } else {
-      window.location.href = "/dashboard";
     }
   };
 
+  if (!mounted) return null;
+
   return (
-    mounted && (
-      <>
-        <Script
-          src={`https://www.google.com/recaptcha/api.js?render=${RECAPTCHA_SITE_KEY}`}
-          strategy="afterInteractive"
-          onLoad={() => {
-            console.log("reCAPTCHA script loaded successfully");
-          }}
-        />
+    <>
+      <Script
+        src={`https://www.google.com/recaptcha/api.js?render=${RECAPTCHA_SITE_KEY}`}
+        strategy="afterInteractive"
+        onLoad={() => {
+          console.log("reCAPTCHA loaded successfully");
+        }}
+      />
 
-        <Form {...form}>
-          <form
-            id="form_submit"
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="flex items-center justify-center py-12 p-4"
-          >
-            <div className="mx-auto grid w-[350px] gap-6">
-              <div className="grid gap-2">
-                <h1 className="text-2xl font-semibold tracking-tight">
-                  Sign in
-                </h1>
-                <p className="text-muted-foreground text-sm">
-                  Enter your email below to Sign in to your account
-                </p>
-              </div>
-              <div className="grid gap-2">
-                <InputController name="email" label="Email" type="email" />
-                <InputController
-                  name="password"
-                  label="Password"
-                  type="password"
-                />
-
-                <Button type="submit" className="w-full" disabled={loading}>
-                  <ButtonContent status={loading} text="Signin" loadingText="Signing..."/>
-                </Button>
-
-                <Divider text="Or continue with" className="my-4" />
-
-                <Button
-                  variant="outline"
-                  type="button"
-                  className="w-full"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    signIn("github");
-                  }}
-                >
-                  Sign in with GitHub
-                </Button>
-              </div>
-              <div className="mt-4 text-center text-sm">
-                Don&apos;t have an account?&nbsp;
-                <Link href="/signup" className="underline">
-                  Sign up
-                </Link>
-              </div>
+      <Form {...form}>
+        <form id="form_submit" onSubmit={form.handleSubmit(onSubmit)} className="flex items-center justify-center py-12 p-4">
+          <div className="mx-auto grid w-[350px] gap-6">
+            <div className="grid gap-2">
+              <h1 className="text-2xl font-semibold tracking-tight">Sign in</h1>
+              <p className="text-muted-foreground text-sm">
+                Enter your email below to Sign in to your account
+              </p>
             </div>
-          </form>
-        </Form>
-      </>
-    )
+            <div className="grid gap-2">
+              <InputController name="email" label="Email" type="email" />
+              <InputController name="password" label="Password" type="password" />
+
+              <Button type="submit" className="w-full" disabled={loading}>
+                <ButtonContent status={loading} text="Signin" loadingText="Signing..." />
+              </Button>
+
+              <Divider text="Or continue with" className="my-4" />
+
+              <Button variant="outline" type="button" className="w-full" onClick={(e) => { e.preventDefault(); signIn("github") }}>
+                Sign in with GitHub
+              </Button>
+            </div>
+            <div className="mt-4 text-center text-sm">
+              Don&apos;t have an account?&nbsp;
+              <Link href="/signup" className="underline">
+                Sign up
+              </Link>
+            </div>
+          </div>
+        </form>
+      </Form>
+    </>
   );
 }

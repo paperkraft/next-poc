@@ -25,6 +25,8 @@ const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
         if (themeLocalStorage) setCurrentTheme(themeLocalStorage);
     }, [isMounted]);
 
+    if(!isMounted) return null;
+
     return (
 
         <ThemeContext.Provider value={{ toggleTheme, currentTheme }}>

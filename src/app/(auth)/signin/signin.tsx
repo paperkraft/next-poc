@@ -66,15 +66,15 @@ export default function SignInPage() {
   return (
     <>
       <Form {...form}>
-        <form id="form_submit" onSubmit={form.handleSubmit(onSubmit)} className="flex items-center justify-center py-12 p-4">
-          <div className="mx-auto grid w-[350px] gap-6">
-            <div className="grid gap-2">
+        <form id="form_submit" onSubmit={form.handleSubmit(onSubmit)} className="flex items-center justify-center py-10 p-4">
+          <div className="mx-auto w-[350px] space-y-4">
+            <div className="space-y-2">
               <h1 className="text-2xl font-semibold tracking-tight">Sign in</h1>
               <p className="text-muted-foreground text-sm">
                 Enter your email below to Sign in to your account
               </p>
             </div>
-            <div className="grid gap-2">
+            <div className="space-y-4">
               <InputController name="email" label="Email" type="email" />
               <InputController name="password" label="Password" type="password" />
 

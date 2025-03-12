@@ -21,8 +21,10 @@ export default function AuthLayout({ children }: ChildProps) {
           <div className="w-full lg:flex rounded-xl bg-card text-card-foreground md:border md:shadow-xl">
             {/* side image slider */}
             <div className="hidden w-2/4 lg:flex items-center border-r overflow-hidden p-4">
-              <div className="w-full h-full grid">
+              <div className="w-full h-full">
+                
                 <CarouselPlugin />
+
                 <div className="mt-auto p-4 text-center">
                   <div className="flex justify-center items-center gap-2 my-2">
                     <div className="flex aspect-square size-8 items-center justify-center rounded-full bg-sidebar-primary text-sidebar-primary-foreground">
@@ -50,6 +52,12 @@ export default function AuthLayout({ children }: ChildProps) {
               {children}
             </div>
           </div>
+        </div>
+      </div>
+
+      <div className="w-full flex justify-center items-center absolute bottom-10">
+        <div className="w-full md:w-[60%] flex justify-center items-center bg-card text-card-foreground md:border md:shadow-xl rounded-xl p-4">
+          <p>Sannake.Vishal #SV</p>
         </div>
       </div>
     </>

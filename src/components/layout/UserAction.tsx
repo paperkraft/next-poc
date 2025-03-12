@@ -33,7 +33,6 @@ const UserAction = () => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "q" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        localStorage.removeItem("user");
         signOut({ redirect: false });
       }
     };
@@ -42,9 +41,8 @@ const UserAction = () => {
     return () => document.removeEventListener("keydown", down);
   }, []);
 
-  const handleSignOut = async () => {
-    sessionStorage.clear();
-    await signOut({ callbackUrl: "/" });
+  const handleSignOut = () => {
+    signOut({ redirect: false });
   };
 
   const RenderUserInfo = () => {
@@ -99,7 +97,7 @@ const UserAction = () => {
             <ThemeWrapper>
               <DropdownMenuLabel className="p-0 font-normal">
                 <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                    <RenderUserInfo />
+                  <RenderUserInfo />
                 </div>
               </DropdownMenuLabel>
 
@@ -111,7 +109,7 @@ const UserAction = () => {
                   options.map((item) => (
                     <DropdownMenuItem key={item.label} asChild>
                       <Link href={item.url} className="flex flex-1 items-center cursor-pointer hover:!text-primary">
-                        {item.icon && <item.icon className="size-4 mr-2"/>}{item.label}
+                        {item.icon && <item.icon className="size-4 mr-2" />}{item.label}
                       </Link>
                     </DropdownMenuItem>
                   ))

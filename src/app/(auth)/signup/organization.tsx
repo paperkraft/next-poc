@@ -6,22 +6,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod"
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
-import { LoaderCircle } from "lucide-react";
 import { InputController } from "@/components/_form-controls/InputController";
 import { useMounted } from "@/hooks/use-mounted";
 import { signUp } from "./signup";
 import { toast } from "sonner";
 import ButtonContent from "@/components/custom/button-content";
-
-const OrganizationSchema = z.object({
-    organization: z.string({ required_error: "Organization name is required" })
-        .min(1, "Organization name is required")
-        .max(30, "Organization name must be less than 30 characters"),
-    state: z.string({ required_error: "State is required" })
-        .min(1, "State is required"),
-    city: z.string({ required_error: "City is required" })
-        .min(1, "City is required")
-});
+import { OrganizationSchema } from "@/lib/zod";
 
 type orgType = z.infer<typeof OrganizationSchema>;
 
@@ -62,17 +52,18 @@ export default function OrganizationPage(signupData: signUp) {
         }
     }
 
+    if(!mounted) return null;
+
     return (
-        mounted &&
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="flex items-center justify-center py-10">
-                <div className="mx-auto grid w-[350px] gap-6">
-                    <div className="grid gap-2">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="flex items-center justify-center py-10 p-4">
+                <div className="mx-auto w-[350px] space-y-4">
+                    <div className="space-y-2">
                         <h1 className="text-2xl font-semibold tracking-tight">Lets get started</h1>
                         <p className="text-sm text-muted-foreground">Enter your organization information</p>
                     </div>
 
-                    <div className="grid gap-2">
+                    <div className="space-y-4">
                         <InputController
                             name="organization"
                             label="Organization Name"

@@ -40,10 +40,3 @@ export async function middleware(req: NextRequest) {
         return new NextResponse('Internal Server Error', { status: 500 });
     }
 }
-
-export const config = {
-    matcher: [
-        // Apply middleware to all pages except critical Next.js paths
-        '/((?!_next/(?:static|image)|favicon.ico|api/).*)',
-    ],
-};

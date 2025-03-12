@@ -7,10 +7,9 @@ interface NextAuthProviderProps {
 }
 
 export const NextAuthProvider = ({ children }: NextAuthProviderProps) => {
-  const mounted = useMounted();
   return (
     <SessionProvider>
-      {mounted ? children : null}
+      {children}
     </SessionProvider>
   )
 };

@@ -18,11 +18,6 @@ export async function middleware(req: NextRequest) {
             return NextResponse.next();
         }
 
-        // Redirect unauthenticated users (except home page "/")
-        if (!session && currentPath !== '/') {
-            return NextResponse.redirect(new URL('/signin', req.nextUrl.origin));
-        }
-
         // Skip permission checks if there are no required permissions for the current path
         const requiredPermissions = ROUTE_PERMISSIONS[currentPath];
         if (!requiredPermissions) return NextResponse.next();

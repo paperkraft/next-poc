@@ -30,8 +30,8 @@ export default function HeaderBreadcrumb() {
                     <BreadcrumbLink href="#">{firstBreadcrumb?.label ?? "Home"}</BreadcrumbLink>
                 </BreadcrumbItem>
 
-                {breadcrumb?.map((item) => (
-                    <React.Fragment key={item.url}>
+                {breadcrumb?.map((item, idx) => (
+                    <React.Fragment key={idx}>
                         <BreadcrumbSeparator className="hidden md:block" />
                         <BreadcrumbItem className={cn("hidden md:block", { "": breadcrumb.length - 1 })}>
                             <BreadcrumbLink href="#">{item.title}</BreadcrumbLink>

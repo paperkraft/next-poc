@@ -8,52 +8,42 @@ import AuditLogTable from "./AuditLogTable";
 import { findModuleId } from "@/utils/helper";
 import SomethingWentWrong from "@/components/custom/somthing-wrong";
 import NoRecordPage from "@/components/custom/no-record";
+import { Suspense } from "react";
+import Loading from "@/app/loading";
 
 export const metadata: Metadata = {
     title: "Audit-log",
     description: "Audit log for recently activities",
 };
 
-export default async function AuditLog() {
-    try {
-        const session = await auth();
-        const hasAccess = session && hasPermission(+session?.user?.permissions, 15);
-        const moduleId = session && findModuleId(session?.user?.modules, "Audit Logs");
-        const response = await fetchAuditLogs().then((res) => res.json());
+export default function AuditLog() {
+    return (
+        <Suspense fallback={<Loading />}>
+            <AuditLogContent />
+        </Suspense>
+    );
+}
 
-        if (!hasAccess) {
-            return (
-                <>
-                    <TitlePage title={"Audit Log"} description={"Audit log for users activities"} />
-                    <AccessDenied />
-                </>
-            )
-        }
+async function AuditLogContent() {
+    const session = await auth();
+    const hasAccess = session && hasPermission(+session?.user?.permissions, 15);
+    const moduleId = session && findModuleId(session?.user?.modules, "Audit Logs");
 
-        const renderContent = () => {
-            if (!response.success) {
-                return <SomethingWentWrong message={response.message} />;
-            }
-
-            if (response.data.length === 0) {
-                return <NoRecordPage text="audit logs" />;
-            }
-
-            return <AuditLogTable data={response.data} moduleId={moduleId as string} />;
-        };
-
-        return (
-            <>
-                <TitlePage title="Audit Log" description="Audit log for user activities" />
-                {renderContent()}
-            </>
-        );
-    } catch (error) {
-        return (
-            <>
-                <TitlePage title="Audit Log" description="Audit log for user activities" />
-                <SomethingWentWrong message="An unexpected error occurred." />
-            </>
-        )
+    if (!hasAccess) {
+        return (<AccessDenied />)
     }
+
+    const { success, data, message } = await fetchAuditLogs().then((res) => res.json());
+
+    return (
+        <>
+            <TitlePage title="Audit Log" description="Audit log for user activities" />
+            {success ?
+                data.length === 0
+                    ? <NoRecordPage text="audit logs" />
+                    : <AuditLogTable data={data} moduleId={moduleId as string} />
+                : <SomethingWentWrong message={message} />
+            }
+        </>
+    );
 }

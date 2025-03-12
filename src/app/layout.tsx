@@ -9,7 +9,6 @@ import { cn } from "@/lib/utils";
 import { ChildProps } from "@/types";
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
-import { cookies } from "next/headers";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -18,15 +17,12 @@ export const metadata: Metadata = {
     template: "%s | App",
     absolute: "App",
   },
-  description: "CRM",
+  description: "CRM"
 };
 
 export default async function RootLayout({ children }: ChildProps) {
   const locale = await getLocale();
   const messages = await getMessages();
-
-  const cookieStore = cookies()
-  const defaultOpen = Boolean(cookieStore.get("sidebar:state")?.value)
 
   return (
     <html lang={locale} suppressHydrationWarning={true}>
@@ -34,10 +30,10 @@ export default async function RootLayout({ children }: ChildProps) {
         <NextAuthProvider>
           <NextIntlClientProvider messages={messages}>
             <ThemeProvider>
-              <AppLayout defaultOpen={defaultOpen}>
+              <AppLayout>
                 {children}
               </AppLayout>
-              <Toaster richColors />
+              <Toaster richColors position="top-center"/>
             </ThemeProvider>
           </NextIntlClientProvider>
         </NextAuthProvider>

@@ -1,38 +1,35 @@
 import { auth } from '@/auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { hasPermissions } from './lib/rbac';
-
-const ROUTE_PERMISSIONS: { [key: string]: number[] } = {
-    '/student': [1, 2, 20],
-};
-
-const publicURL = ["/signin", "/signup"];
+import { publicURL, ROUTE_PERMISSIONS } from './constants/routes';
 
 export async function middleware(req: NextRequest) {
     try {
-        const session = await auth();
         const currentPath = req?.nextUrl?.pathname;
 
-        // Skip session check for public URLs
+        // Get session (user authentication)
+        const session = await auth();
+
+        // Allow public URLs without authentication
         if (publicURL.includes(currentPath)) {
+            if (session) {
+                return NextResponse.redirect(new URL('/dashboard', req.nextUrl.origin));
+            }
             return NextResponse.next();
         }
 
-        // Handle non-authenticated access (redirect to /signin if not logged in)
-        // if (!session && currentPath !== "/") {
-        //     const signInUrl = new URL("/signin", req?.nextUrl?.origin);
-        //     return NextResponse.redirect(signInUrl);
-        // }
+        // Redirect unauthenticated users (except home page "/")
+        if (!session && currentPath !== '/') {
+            return NextResponse.redirect(new URL('/signin', req.nextUrl.origin));
+        }
 
         // Skip permission checks if there are no required permissions for the current path
         const requiredPermissions = ROUTE_PERMISSIONS[currentPath];
         if (!requiredPermissions) return NextResponse.next();
 
-        // Ensure user has the required permissions
-        const userPermissions = session?.user?.permissions || [];
-        const hasRequiredPermissions = hasPermissions(userPermissions, requiredPermissions);
-
-        if (!hasRequiredPermissions) {
+        // Validate user's permissions
+        const userPermissions = session?.user?.permissions ?? [];
+        if (!hasPermissions(userPermissions, requiredPermissions)) {
             return new NextResponse('Forbidden: You do not have permission to access this resource', { status: 403 });
         }
 
@@ -43,9 +40,3 @@ export async function middleware(req: NextRequest) {
         return new NextResponse('Internal Server Error', { status: 500 });
     }
 }
-
-export const config = {
-    matcher: [
-        "/((?!_next/static|_next/image|favicon.ico|api).*)",
-    ],
-};

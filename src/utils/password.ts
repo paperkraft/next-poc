@@ -16,7 +16,7 @@ interface ComparePasswordProps {
   hashPassword: string
 }
 
-export async function comparePassword({ plainPassword, hashPassword }: ComparePasswordProps): Promise<boolean> {
+export async function verifyPassword({ plainPassword, hashPassword }: ComparePasswordProps): Promise<boolean> {
   try {
     return await bcrypt.compare(plainPassword, hashPassword);
   } catch (err) {

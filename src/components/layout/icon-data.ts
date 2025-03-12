@@ -1,4 +1,5 @@
 import {
+    BellPlusIcon,
     BlocksIcon,
     Book,
     GraduationCapIcon,
@@ -6,7 +7,9 @@ import {
     Home,
     ImageIcon,
     LayoutGrid,
+    Logs,
     Settings2,
+    Shield,
     User2,
 } from "lucide-react"
 
@@ -46,5 +49,17 @@ export const IconData = [
     {
         title: "UI Blocks",
         icon: BlocksIcon,
+    },
+    {
+        title: "Push Notification",
+        icon: BellPlusIcon,
+    },
+    {
+        title: "RBAC",
+        icon: Shield,
+    },
+    {
+        title: "Audit Logs",
+        icon: Logs,
     }
 ]

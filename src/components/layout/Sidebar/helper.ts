@@ -1,6 +1,5 @@
 import { IconData } from "../icon-data";
 
-
 type inputType = {
     id: string;
     name: string;
@@ -88,4 +87,50 @@ export function getBreadcrumbs(menus: menuType[], url: string): { label: string;
     }
 
     return null;
+}
+
+
+export function checkIsActive(item: menuType, pathname: string): boolean {
+    const isSubmenuActive = (submenu: submenuType[]): boolean => {
+        return submenu.some(sub =>
+            sub.url === pathname ||
+            pathname.startsWith(sub.url) ||
+            (sub.submenu ? isSubmenuActive(sub.submenu) : false)
+        );
+    };
+
+    return (
+        item.url === pathname ||
+        pathname.startsWith(item.url) ||
+        isSubmenuActive(item.submenu)
+    );
+}
+
+export function findTopParent(menu: menuType[][], path: string): menuType | null {
+    for (const section of menu) {
+        for (const item of section) {
+            const result = searchSubmenuRecursive(item.submenu, item, path);
+            if (result) return result;
+        }
+    }
+    return null;
+}
+
+export function searchSubmenuRecursive(items: submenuType[], parent: menuType | null, path: string): menuType | null {
+    for (const item of items) {
+        if (item.url === path) return parent ?? (item as menuType);
+        if (item.submenu?.length) {
+            const found = searchSubmenuRecursive(item.submenu, parent ?? (item as menuType), path);
+            if (found) return found;
+        }
+    }
+    return null;
+}
+
+export function searchSubmenu(submenu: submenuType[], query: string): boolean {
+    return submenu.some(
+        item =>
+            item.title.toLowerCase().includes(query) ||
+            (item.submenu && searchSubmenu(item.submenu, query))
+    );
 }

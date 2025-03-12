@@ -23,7 +23,7 @@ self.addEventListener('push', function (event) {
     const payload = event.data.json();
     const { body, icon, image, badge, url, title } = payload;
 
-    const notificationTitle = title ?? 'Welcome to Webdesk';
+    const notificationTitle = title ?? 'Welcome to Demo App';
     const notificationOptions = {
         body,
         icon,

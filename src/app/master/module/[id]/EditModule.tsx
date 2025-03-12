@@ -121,6 +121,7 @@ export default function EditModule({ moduleData, groupOptions }: PageProps) {
 
   const handleDelete = async (id: string) => {
     try {
+      setLoading(true);
       const res = await fetch("/api/master/module", {
         method: "DELETE",
         body: JSON.stringify({ id }),
@@ -139,6 +140,7 @@ export default function EditModule({ moduleData, groupOptions }: PageProps) {
       toast.error("Failed to delete module. Please try again later.");
       console.error(error);
     } finally {
+      setLoading(false);
       handleClose();
       router.refresh();
     }
@@ -196,7 +198,9 @@ export default function EditModule({ moduleData, groupOptions }: PageProps) {
         <DialogBox open={open} title={"Delete Confirmation"} preventClose setClose={handleClose}>
           <h1 className="pb-4">Are you sure? Do you want to delete module {moduleData.name}</h1>
           <div className="flex justify-end">
-            <Button onClick={() => handleDelete(moduleData.id)} variant={'destructive'}>Confirm</Button>
+            <Button onClick={() => handleDelete(moduleData.id)} variant={'destructive'} disabled={loading}>
+              <ButtonContent status={loading} text={"Confirm"} loadingText="Deleting..." />
+            </Button>
           </div>
         </DialogBox>
       )}

@@ -72,8 +72,6 @@ export const NotificationsProvider: React.FC<{ children: ReactNode }> = ({ child
             {children}
         </NotificationsContext.Provider>
     );
-
-    
 };
 
 // Custom hook to use notifications context

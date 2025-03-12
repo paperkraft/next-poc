@@ -7,30 +7,28 @@ import { useMounted } from "@/hooks/use-mounted";
 import { SidebarProvider } from "../ui/sidebar";
 import { NotificationsProvider } from "@/context/notification-context";
 import { ThemeWrapper } from "./theme-wrapper";
+import { publicURL } from "@/constants/routes";
 
-export const publicURL = ["/signin", "/signup"];
-
-export default function AppLayout({ children, defaultOpen }: { children: React.ReactNode, defaultOpen: boolean }) {
+export default function AppLayout({ children }: { children: React.ReactNode }) {
   const route = useRouter();
   const mounted = useMounted();
   const pathname = usePathname();
   const isPublicURL = publicURL.includes(pathname);
-  const { status } = useSession();
-
-  useSession({
+  const { status } = useSession({
     required: true,
     onUnauthenticated() {
-      mounted && !isPublicURL && route.push("/");
+      !isPublicURL && route.replace("/");
     },
-
   });
 
+  if (!mounted) return null;
+
   if (isPublicURL || (pathname === "/" && status !== "authenticated")) {
-    return mounted && <React.Fragment>{children}</React.Fragment>;
+    return <React.Fragment>{children}</React.Fragment>;
   }
 
   if (status === "authenticated") {
-    return mounted && (
+    return (
       <ThemeWrapper>
         <SidebarProvider>
           <NotificationsProvider>

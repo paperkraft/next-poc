@@ -1,37 +1,35 @@
 'use client'
-import { useMounted } from "@/hooks/use-mounted";
+
 import LandingPage from "./landing";
 import Loading from "./loading";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { useAuth } from "@/context/auth-context";
+import { useEffect, useState } from "react";
 
 export default function Home() {
   const { status } = useSession();
   const route = useRouter();
-  const mounted = useMounted();
-  const { setIsAuthenticated } = useAuth();
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    if (status === "authenticated" && mounted) {
-      setIsAuthenticated(true);
-      route.push("/dashboard");
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      route.replace("/dashboard");
     }
-  }, [status, mounted, route, setIsAuthenticated]);
+  }, [status, route]);
 
-  if (!mounted) {
-    return null;
+  if (!isClient) return null;
+
+  if (status === "loading") {
+    return <Loading />;
   }
 
-  switch (status) {
-    case "loading":
-      return <Loading />;
-
-    case "unauthenticated":
-      return <LandingPage />;
-
-    default:
-      return null;
+  if (status === "unauthenticated") {
+    return <LandingPage />;
   }
+
+  return null;
 }

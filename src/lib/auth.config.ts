@@ -3,10 +3,10 @@ import prisma from "@/lib/prisma";
 import Credentials from "next-auth/providers/credentials";
 import GitHub from "next-auth/providers/github";
 import { AUTH_SECRET, GITHUB_ID, GITHUB_SECRET } from "@/utils/constants";
-import { logAuditAction } from "./audit-log";
 import { getIpAddress } from "./utils";
 import { fetchModuleByRole } from "@/app/action/module.action";
-import { comparePassword } from "@/utils/password";
+import { signInSchema } from "./zod";
+import { getUser } from "@/app/action/auth.action";
 
 const authConfig: NextAuthConfig = {
     secret: AUTH_SECRET,
@@ -19,37 +19,20 @@ const authConfig: NextAuthConfig = {
                 password: {},
             },
             authorize: async (credentials) => {
-
                 try {
-
-                    const data = {
-                        email: credentials?.email as string,
-                        password: credentials?.password as string,
-                    }
+                    let user: User | null = null;
+                    const { email, password } = await signInSchema.parseAsync(credentials);
 
                     /* GET User details */
-                    const user = await prisma.user.findUnique({
-                        where: { email: data.email },
-                        include: { role: true }
-                    });
+                    await getUser(email, password).then((data) => {
+                        return data ? user = data : null
+                    })
 
-                    if (user && !(await comparePassword({ plainPassword: data.password, hashPassword: `${user.password}` }))) {
-                        await logAuditAction('Error', 'auth/signin', { error: 'Invalid credentials' }, user?.id);
-                        return null
+                    if (!user) {
+                        throw new Error("Invalid credentials.")
                     }
 
-                    await logAuditAction('login', 'auth/signin', { user: `${user?.firstName} ${user?.lastName}` }, user?.id);
-
-                    const menu = user && await fetchModuleByRole(user.roleId).then((d) => d.json());
-
-                    return {
-                        id: user?.id,
-                        name: user && `${user?.firstName} ${user?.lastName}`,
-                        email: data.email,
-                        roleId: user?.roleId,
-                        permissions: user?.role?.permissions,
-                        modules: menu?.data
-                    } as User
+                    return user;
                 } catch (error) {
                     console.error("Error during authentication", error);
                     return null;
@@ -99,19 +82,22 @@ const authConfig: NextAuthConfig = {
                 where: { email: user.email as string }
             });
 
-            if (existingUser) {
-                await prisma.user.update({
-                    where: { email: user.email as string },
-                    data: {
-                        ip: await getIpAddress() ?? undefined
-                    }
-                })
+            if (!existingUser) {
+                return false
             }
+
+            await prisma.user.update({
+                where: { email: user.email as string },
+                data: {
+                    ip: await getIpAddress() ?? undefined
+                }
+            })
+
             return true;
         },
 
         authorized({ auth, request: { nextUrl } }) {
-            const isLoggedIn = !!auth?.user;
+            const isLoggedIn = !!auth;
             const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
             if (isOnDashboard) {
                 if (isLoggedIn) return true;

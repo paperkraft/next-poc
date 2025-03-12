@@ -129,7 +129,6 @@ export async function subscribeToPush() {
     }
 }
 
-
 export async function unsubscribeFromPush() {
     try {
         const registration = await navigator.serviceWorker.ready;
@@ -152,8 +151,7 @@ async function subscribeUser(subscription: PushSubscription) {
             body: JSON.stringify({ subscription }),
         });
 
-        const result = await response.json();
-        console.log('Subscription saved:', result);
+        await response.json();
         return { success: true }
     } catch (error) {
         console.error('Failed to save subscription:', error);

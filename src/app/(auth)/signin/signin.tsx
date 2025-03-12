@@ -1,6 +1,5 @@
 "use client";
 import Link from "next/link";
-import Script from "next/script";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
@@ -9,22 +8,12 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { useMounted } from "@/hooks/use-mounted";
 import { signIn } from "next-auth/react";
-import { RECAPTCHA_SITE_KEY } from "@/utils/constants";
 import { InputController } from "@/components/_form-controls/InputController";
-import Divider from "@/components/custom/divider";
 import { toast } from "sonner";
+import { getRecaptchaToken } from "@/app/action/auth.action";
+import { signInSchema } from "@/lib/zod";
+import Divider from "@/components/custom/divider";
 import ButtonContent from "@/components/custom/button-content";
-
-const signInSchema = z.object({
-  email: z
-    .string({ required_error: "Email is required" })
-    .min(1, "Email is required")
-    .email("Invalid email"),
-  password: z
-    .string({ required_error: "Password is required" })
-    .min(1, "Password is required")
-    .max(10, "Password must be less than 10 characters"),
-});
 
 type signInT = z.infer<typeof signInSchema>;
 
@@ -42,15 +31,13 @@ export default function SignInPage() {
 
   const onSubmit = async (data: signInT) => {
     setLoading(true);
+    const token = await getRecaptchaToken();
 
-    // get captch
-    const token = await new Promise<string>((resolve) => {
-      window.grecaptcha
-        .execute(RECAPTCHA_SITE_KEY as string, { action: "submit" })
-        .then(resolve);
-    });
-
-    // get user
+    if (!token) {
+      toast.error("reCAPTCHA validation failed.");
+      setLoading(false);
+      return;
+    }
 
     try {
       const response = await fetch("/api/user", {
@@ -78,14 +65,6 @@ export default function SignInPage() {
 
   return (
     <>
-      <Script
-        src={`https://www.google.com/recaptcha/api.js?render=${RECAPTCHA_SITE_KEY}`}
-        strategy="afterInteractive"
-        onLoad={() => {
-          console.log("reCAPTCHA loaded successfully");
-        }}
-      />
-
       <Form {...form}>
         <form id="form_submit" onSubmit={form.handleSubmit(onSubmit)} className="flex items-center justify-center py-12 p-4">
           <div className="mx-auto grid w-[350px] gap-6">

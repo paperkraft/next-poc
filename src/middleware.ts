@@ -1,12 +1,7 @@
 import { auth } from '@/auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { hasPermissions } from './lib/rbac';
-
-const ROUTE_PERMISSIONS: { [key: string]: number[] } = {
-    '/student': [1, 2, 20],
-};
-
-const publicURL = ["/signin", "/signup"];
+import { publicURL, ROUTE_PERMISSIONS } from './constants/routes';
 
 export async function middleware(req: NextRequest) {
     try {

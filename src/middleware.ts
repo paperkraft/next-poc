@@ -14,11 +14,11 @@ export async function middleware(req: NextRequest) {
             return NextResponse.next();
         }
 
-        // 3. Skip permission check if no specific permissions are required
+        // Skip permission check if no specific permissions are required
         const requiredPermissions = ROUTE_PERMISSIONS[currentPath];
         if (!requiredPermissions) return NextResponse.next();
 
-        // 4. Validate user permissions
+        // Validate user permissions
         const userPermissions = session?.user?.permissions ?? [];
         if (!hasPermissions(userPermissions, requiredPermissions)) {
             return new NextResponse('Forbidden: Access denied', { status: 403 });

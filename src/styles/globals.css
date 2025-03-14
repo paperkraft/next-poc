@@ -766,10 +766,10 @@ body {
 
 @keyframes progress {
   from {
-    transform: scaleX(0);
+    width: 0;
   }
   to {
-    transform: scaleX(1);
+    width: 1.5rem;
   }
 }
 

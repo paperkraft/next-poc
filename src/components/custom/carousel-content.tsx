@@ -78,7 +78,7 @@ export function CarouselPlugin() {
                 aria-label={`Go to slide ${index + 1}`}
               />
               {current === index && (
-                <div className="absolute animate-progress w-6 h-1.5 bg-primary rounded-full top-1/2"
+                <div className="absolute animate-progress top-1/2 bg-primary w-6 h-1.5 rounded-full"
                   style={{ animationDuration: `${autoplayDelay}ms` }}
                 />
               )}

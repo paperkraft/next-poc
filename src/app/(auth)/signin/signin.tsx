@@ -8,12 +8,12 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { useMounted } from "@/hooks/use-mounted";
 import { signIn } from "next-auth/react";
-import { InputController } from "@/components/_form-controls/InputController";
 import { toast } from "sonner";
 import { getRecaptchaToken } from "@/app/action/auth.action";
 import { signInSchema } from "@/lib/zod";
 import Divider from "@/components/custom/divider";
 import ButtonContent from "@/components/custom/button-content";
+import { FloatingInputController } from "@/components/_form-controls/floating-label/input-controller";
 
 type signInT = z.infer<typeof signInSchema>;
 
@@ -66,29 +66,32 @@ export default function SignInPage() {
   return (
     <>
       <Form {...form}>
-        <form id="form_submit" onSubmit={form.handleSubmit(onSubmit)} className="flex items-center justify-center py-10 p-4">
+        <form id="form_submit" onSubmit={form.handleSubmit(onSubmit)} className="flex items-center justify-center">
           <div className="mx-auto w-[350px] space-y-4">
-            <div className="space-y-2">
-              <h1 className="text-2xl font-semibold tracking-tight">Sign in</h1>
-              <p className="text-muted-foreground text-sm">
+
+            <div className="space-y-2 mb-6">
+              <h1 className="text-xl font-semibold tracking-tight">Sign In</h1>
+              <p className="text-sm text-muted-foreground">
                 Enter your email below to Sign in to your account
               </p>
             </div>
-            <div className="space-y-4">
-              <InputController name="email" label="Email" type="email" />
-              <InputController name="password" label="Password" type="password" />
+
+            <div className="space-y-5">
+              <FloatingInputController name="email" label="Email" type="email" />
+              <FloatingInputController name="password" label="Password" type="password" />
 
               <Button type="submit" className="w-full" disabled={loading}>
                 <ButtonContent status={loading} text="Signin" loadingText="Signing..." />
               </Button>
 
-              <Divider text="Or continue with" className="my-4" />
+              <Divider text="Or continue with" />
 
               <Button variant="outline" type="button" className="w-full" onClick={(e) => { e.preventDefault(); signIn("github") }}>
                 Sign in with GitHub
               </Button>
             </div>
-            <div className="mt-4 text-center text-sm">
+
+            <div className="text-center text-sm">
               Don&apos;t have an account?&nbsp;
               <Link href="/signup" className="underline">
                 Sign up

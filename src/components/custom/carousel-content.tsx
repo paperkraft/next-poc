@@ -41,7 +41,7 @@ export function CarouselPlugin() {
 
   return (
     <>
-      <div className="w-full p-4 py-6">
+      <div className="space-y-4">
         <Carousel
           opts={{ align: "start", loop: true }}
           plugins={[Autoplay({ delay: autoplayDelay })]}
@@ -65,11 +65,10 @@ export function CarouselPlugin() {
               </CarouselItem>
             ))}
           </CarouselContent>
-        </Carousel>
+        </Carousel> 
 
-        {/* Dot Navigation with Loading Indicator */}
 
-        <div className="flex justify-center gap-2 mt-4">
+        <div className="flex justify-center gap-2">
           {slides.map((_, index) => (
             <div key={index} className="relative rounded-full">
               <button
@@ -85,8 +84,6 @@ export function CarouselPlugin() {
             </div>
           ))}
         </div>
-
-
 
       </div>
     </>

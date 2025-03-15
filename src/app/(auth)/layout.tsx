@@ -1,3 +1,4 @@
+import AppLogo from "@/components/custom/app-initial";
 import { CarouselPlugin } from "@/components/custom/carousel-content";
 import ToggleButtons from "@/components/layout/ToggleButtons";
 import { Button } from "@/components/ui/button";
@@ -20,27 +21,26 @@ export default function AuthLayout({ children }: ChildProps) {
         <div className="w-full md:w-[60%] flex justify-center items-center h-screen">
           <div className="w-full lg:flex rounded-xl bg-card text-card-foreground md:border md:shadow-xl">
             {/* side image slider */}
-            <div className="hidden w-2/4 lg:flex items-center border-r overflow-hidden p-4">
-              <div className="w-full h-full">
-                
+            <div className="hidden w-2/4 lg:table-cell border-r overflow-hidden p-10 float-left">
+              <div className="text-center flex flex-col w-full h-full gap-4">
                 <CarouselPlugin />
 
-                <div className="mt-auto p-4 text-center">
-                  <div className="flex justify-center items-center gap-2 my-2">
-                    <div className="flex aspect-square size-8 items-center justify-center rounded-full bg-sidebar-primary text-sidebar-primary-foreground">
-                      <span className="text-xs">SV</span>
-                    </div>
-                    Demo App
+                <div className="space-y-4 mt-auto">
+
+                  <div className="flex justify-center items-center gap-2">
+                    <AppLogo />Demo App
                   </div>
-                  <p className="text-sm text-muted-foreground mb-6">
-                    © 2025, All Rights Reserved.
+
+                  <p className="text-xs text-muted-foreground">
+                    © {new Date().getFullYear().toString()}. All Rights Reserved.
                   </p>
-                  <ToggleButtons />
+
+                  {/* <ToggleButtons /> */}
                 </div>
               </div>
             </div>
             {/* form */}
-            <div className="w-full lg:w-3/4 relative">
+            <div className="w-full lg:w-3/4 relative table-cell overflow-hidden p-10 float-left">
               <div className="absolute top-5 right-5">
                 <Button variant={'ghost'} size={'sm'} className="group gap-0.5" asChild>
                   <Link href={'/'}>
@@ -55,10 +55,8 @@ export default function AuthLayout({ children }: ChildProps) {
         </div>
       </div>
 
-      <div className="w-full flex justify-center items-center absolute bottom-10">
-        <div className="w-full md:w-[60%] flex justify-center items-center bg-card text-card-foreground md:border md:shadow-xl rounded-xl p-4">
-          <p>Sannake.Vishal #SV</p>
-        </div>
+      <div className="w-full flex justify-center items-center absolute bottom-5">
+          <p className="text-muted-foreground text-sm"><span className="text-xs">Designed by:</span> Sannake.Vishal #SV</p>
       </div>
     </>
   );

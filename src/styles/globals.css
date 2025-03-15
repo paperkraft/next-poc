@@ -778,3 +778,12 @@ body {
   animation: progress linear forwards;
   will-change: clip-path;
 }
+
+@layer utilities {
+  input:-webkit-autofill {
+    background-color: theme('colors.background') !important;
+    -webkit-box-shadow: 0 0 0px 1000px theme('colors.background') inset !important;
+    box-shadow: 0 0 0px 1000px theme('colors.background') inset !important;
+    color: inherit !important;
+  }
+}

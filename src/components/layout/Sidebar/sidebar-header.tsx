@@ -4,6 +4,7 @@ import Link from "next/link"
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "../../ui/sidebar"
 import { cn } from "@/lib/utils";
 import { themeConfig } from "@/hooks/use-config";
+import AppLogo from "@/components/custom/app-initial";
 
 const SidebarHeaderContent = React.memo(() => {
     const [config] = themeConfig();
@@ -17,9 +18,7 @@ const SidebarHeaderContent = React.memo(() => {
                     )}
                 >
                     <Link href={'/dashboard'}>
-                        <div className="flex aspect-square size-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                            <span className="text-xs">SV</span>
-                        </div>
+                        <AppLogo/>
                         <span className="font-medium">Demo App</span>
                     </Link>
                 </SidebarMenuButton>

@@ -12,6 +12,7 @@ import { signUp } from "./signup";
 import { toast } from "sonner";
 import ButtonContent from "@/components/custom/button-content";
 import { OrganizationSchema } from "@/lib/zod";
+import { FloatingInputController } from "@/components/_form-controls/floating-label/input-controller";
 
 type orgType = z.infer<typeof OrganizationSchema>;
 
@@ -43,6 +44,8 @@ export default function OrganizationPage(signupData: signUp) {
                 setLoading(false);
                 toast.success("Please sign in");
                 router.push('/signin');
+            } else {
+                toast.error(res.message);
             }
         } catch (error) {
             console.error('sign-up', error)
@@ -56,32 +59,30 @@ export default function OrganizationPage(signupData: signUp) {
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="flex items-center justify-center py-10 p-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="flex items-center justify-center">
                 <div className="mx-auto w-[350px] space-y-4">
+
                     <div className="space-y-2">
-                        <h1 className="text-2xl font-semibold tracking-tight">Lets get started</h1>
+                        <h1 className="text-xl font-semibold tracking-tight">Lets get started</h1>
                         <p className="text-sm text-muted-foreground">Enter your organization information</p>
                     </div>
 
-                    <div className="space-y-4">
-                        <InputController
+                    <div className="space-y-5">
+                        <FloatingInputController
                             name="organization"
                             label="Organization Name"
-                            placeholder="Organization Name"
                             maxLength={40}
                         />
 
-                        <InputController
+                        <FloatingInputController
                             name="state"
                             label="State"
-                            placeholder="State"
                             maxLength={20}
                         />
 
-                        <InputController
+                        <FloatingInputController
                             name="city"
                             label="City"
-                            placeholder="City"
                             maxLength={20}
                         />
 
@@ -91,7 +92,7 @@ export default function OrganizationPage(signupData: signUp) {
 
                     </div>
 
-                    <p className="text-center text-sm text-muted-foreground">I accept the
+                    <p className="text-center text-sm text-muted-foreground">I accept the&nbsp;
                         <a className="underline underline-offset-4 hover:text-primary" href="#">Terms of Service</a> and&nbsp;
                         I'm authorized to accept for my organization
                     </p>

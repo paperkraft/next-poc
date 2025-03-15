@@ -6,11 +6,11 @@ import { Form } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod"
 import { useForm } from 'react-hook-form'
-import { InputController } from "@/components/_form-controls/InputController";
 import { useMounted } from "@/hooks/use-mounted";
 import OrganizationPage from "./organization";
 import ButtonContent from "@/components/custom/button-content";
 import { signUpSchema } from "@/lib/zod";
+import { FloatingInputController } from "@/components/_form-controls/floating-label/input-controller";
 
 export type signUp = z.infer<typeof signUpSchema>;
 
@@ -47,42 +47,39 @@ export default function SignUpPage() {
                     <OrganizationPage {...data} />
                 ) : (
                     <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="flex items-center justify-center py-10">
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="flex items-center justify-center">
                             <div className="mx-auto w-[350px] space-y-4">
+
                                 <div className="space-y-2">
-                                    <h1 className="text-2xl font-semibold tracking-tight">Sign up</h1>
+                                    <h1 className="text-xl font-semibold tracking-tight">Sign up</h1>
                                     <p className="text-sm text-muted-foreground">Enter your information to create an account</p>
                                 </div>
 
-                                <div className="space-y-4">
+                                <div className="space-y-5">
                                     <div className="flex gap-4">
-                                        <InputController
+                                        <FloatingInputController
                                             name="firstName"
                                             label="First Name"
-                                            placeholder="First Name"
                                             maxLength={10}
                                         />
 
-                                        <InputController
+                                        <FloatingInputController
                                             name="lastName"
                                             label="Last Name"
-                                            placeholder="Last Name"
                                             maxLength={20}
                                         />
                                     </div>
 
-                                    <InputController
+                                    <FloatingInputController
                                         name="email"
                                         label="Email"
-                                        placeholder="Email"
                                         type='email'
                                         maxLength={40}
                                     />
 
-                                    <InputController
+                                    <FloatingInputController
                                         name="password"
                                         label="Password"
-                                        placeholder="Password"
                                         type='password'
                                     />
 

@@ -73,13 +73,13 @@ export function CarouselPlugin() {
           {slides.map((_, index) => (
             <div key={index} className="relative rounded-full">
               <button
-                className={`rounded-full transition-all bg-gray-300 dark:bg-muted ${current === index ? "w-6 h-1.5" : "w-1.5 h-1.5"}`}
+                className={`rounded-full bg-gray-300 dark:bg-muted ${current === index ? "w-6 h-1.5" : "w-1.5 h-1.5"}`}
                 onClick={() => api?.scrollTo(index)}
                 aria-label={`Go to slide ${index + 1}`}
               />
               {current === index && (
-                <div className="absolute animate-progress top-1/2 bg-primary w-6 h-1.5 rounded-full"
-                  style={{ animationDuration: `${autoplayDelay}ms` }}
+                <div className="absolute top-1/2 bg-primary w-6 h-1.5 rounded-full animate-progress"
+                  style={{ animationDuration: `${autoplayDelay}ms`, animationTimingFunction: "ease-in-out", }}
                 />
               )}
             </div>

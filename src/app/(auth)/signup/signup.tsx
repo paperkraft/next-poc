@@ -11,6 +11,7 @@ import OrganizationPage from "./organization";
 import ButtonContent from "@/components/custom/button-content";
 import { signUpSchema } from "@/lib/zod";
 import { FloatingInputController } from "@/components/_form-controls/floating-label/input-controller";
+import ToggleButtons from "@/components/layout/ToggleButtons";
 
 export type signUp = z.infer<typeof signUpSchema>;
 
@@ -103,6 +104,7 @@ export default function SignUpPage() {
                     </Form>
                 )
             }
+            <ToggleButtons className="mt-8" />
         </>
     )
 }

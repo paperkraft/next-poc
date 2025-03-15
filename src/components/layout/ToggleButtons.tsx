@@ -5,12 +5,12 @@ import { useTheme } from "next-themes";
 import { useContext } from "react";
 import { ThemeContext } from "../../context/theme-provider";
 
-export default function ToggleButtons(){
+export default function ToggleButtons({className}:{className?:string}){
     const { setTheme } = useTheme();
     const context = useContext(ThemeContext);
 
     return(
-        <ToggleGroup type="single" size={'sm'} variant={'outline'} onValueChange={setTheme} defaultValue={context?.currentTheme}>
+        <ToggleGroup type="single" size={'sm'} variant={'outline'} onValueChange={setTheme} defaultValue={context?.currentTheme} className={className}>
             <ToggleGroupItem value="light" aria-label="light"><SunIcon className="h-4 w-4"/></ToggleGroupItem>
             <ToggleGroupItem value="dark" aria-label="dark"><MoonIcon className="h-4 w-4"/></ToggleGroupItem>
             <ToggleGroupItem value="system" aria-label="system"><MonitorIcon className="h-4 w-4"/></ToggleGroupItem>

@@ -18,10 +18,10 @@ export default function AuthLayout({ children }: ChildProps) {
       />
       
       <div className="flex h-screen justify-center bg-slate-50 dark:bg-sidebar-accent">
-        <div className="w-full md:w-[60%] flex justify-center items-center h-screen">
-          <div className="w-full lg:flex rounded-xl bg-card text-card-foreground md:border md:shadow-xl">
+        <div className="w-full flex justify-center items-center h-screen max-w-screen-md">
+          <div className="w-full lg:flex rounded-xl bg-card text-card-foreground md:border md:shadow-xl md:max-w-md lg:max-w-3xl">
             {/* side image slider */}
-            <div className="hidden w-2/4 lg:table-cell border-r overflow-hidden p-10 float-left">
+            <div className="hidden lg:w-2/4 lg:block border-r overflow-hidden p-10">
               <div className="text-center flex flex-col w-full h-full gap-4">
                 <CarouselPlugin />
 
@@ -35,12 +35,12 @@ export default function AuthLayout({ children }: ChildProps) {
                     © {new Date().getFullYear().toString()}. All Rights Reserved.
                   </p>
 
-                  {/* <ToggleButtons /> */}
+                 
                 </div>
               </div>
             </div>
             {/* form */}
-            <div className="w-full lg:w-3/4 relative table-cell overflow-hidden p-10 float-left">
+            <div className="w-full lg:w-3/4 relative overflow-hidden p-10">
               <div className="absolute top-5 right-5">
                 <Button variant={'ghost'} size={'sm'} className="group gap-0.5" asChild>
                   <Link href={'/'}>
@@ -49,6 +49,7 @@ export default function AuthLayout({ children }: ChildProps) {
                   </Link>
                 </Button>
               </div>
+
               {children}
             </div>
           </div>

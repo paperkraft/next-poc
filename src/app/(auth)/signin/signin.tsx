@@ -14,6 +14,7 @@ import { signInSchema } from "@/lib/zod";
 import Divider from "@/components/custom/divider";
 import ButtonContent from "@/components/custom/button-content";
 import { FloatingInputController } from "@/components/_form-controls/floating-label/input-controller";
+import ToggleButtons from "@/components/layout/ToggleButtons";
 
 type signInT = z.infer<typeof signInSchema>;
 
@@ -100,6 +101,8 @@ export default function SignInPage() {
           </div>
         </form>
       </Form>
+
+      <ToggleButtons className="mt-8" />
     </>
   );
 }

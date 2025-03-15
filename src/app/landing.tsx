@@ -24,7 +24,7 @@ export default function LandingPage() {
     return (
         <React.Fragment>
             <header className="sticky top-0">
-                <div className="flex shrink-0 items-center h-16 border-b bg-background max-w-[1920px] px-4">
+                <div className="flex shrink-0 items-center h-16 border-b bg-background px-4">
 
                     <div className="flex items-center gap-2 px-4">
                         <div className="flex aspect-square size-8 items-center justify-center rounded-full bg-sidebar-primary text-sidebar-primary-foreground">
@@ -41,21 +41,23 @@ export default function LandingPage() {
 
                 </div>
             </header>
-            <main>
-                <section className="h-[calc(100vh-64px)] py-20 bg-slate-50 dark:bg-sidebar-accent">
-                    <div className="flex flex-wrap md:flex-nowrap mx-auto w-[90%] max-w-screen-md md:max-w-screen-xl">
-                        <div className="py-8 md:pr-20 w-full md:w-[calc(100vw-390px)]">
-                            <div className="space-y-8 text-center md:text-left text-balance">
+            <main className="bg-slate-50 dark:bg-sidebar-accent">
+                <section className="h-[calc(100vh-64px)] py-20 overflow-y-auto">
+                    <div className="flex flex-wrap lg:flex-nowrap mx-auto w-[90%] max-w-screen-md md:max-w-screen-xl">
+                        <div className="py-8 lg:pr-20 w-full lg:w-[calc(100vw-390px)]">
+                            <div className="space-y-8 text-center lg:text-left text-balance">
                                 <h1 className="text-5xl leading-tight">All you need for managing your business online</h1>
                                 <p className="text-wrap text-xl">
                                     Run your entire business on Demo App with our unified cloud software,
                                     seamlessly migrate their academic delivery and administration online by complementing their traditional practices.
                                 </p>
-                                <Image src={'/landing_01.png'} className="aspect-auto mt-20" alt="team" width={500} height={400} />
+                                <div className="flex justify-center">
+                                    <Image src={'/landing_01.png'} className="aspect-auto" priority alt="team" width={500} height={300} />
+                                </div>
                             </div>
                         </div>
 
-                        <div className="p-8 bg-background border rounded-lg w-full md:max-w-[390px] mb-8 shadow-xl">
+                        <div className="p-8 bg-background border rounded-lg w-full lg:max-w-[390px] shadow-xl">
                             <h1 className="pb-4">App List</h1>
                             <div className="grid gap-3">
                                 {

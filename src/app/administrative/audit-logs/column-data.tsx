@@ -1,15 +1,37 @@
 "use client";
 import { ColumnDef } from "@tanstack/react-table";
-import { InfoIcon, MonitorIcon, SmartphoneIcon } from "lucide-react";
+import { InfoIcon, MonitorIcon, MoreHorizontalIcon, SmartphoneIcon } from "lucide-react";
 import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 interface createColumnsProps {
     setOpen: (value: boolean) => void;
     setDetails: (value: Record<string, string | undefined> | null) => void;
 }
+
+const parseJson = (value: string) => {
+    try {
+        return JSON.parse(value);
+    } catch {
+        return {};
+    }
+};
+
+const DeviceIcon = ({
+    device,
+}: {
+    device: string;
+}) => {
+    const isWindows = device.toLowerCase().includes("windows");
+    const Icon = isWindows ? MonitorIcon : SmartphoneIcon;
+    return (
+        <Icon className="size-4 mr-2" />
+    );
+};
 
 export const createColumns = ({ setOpen, setDetails }: createColumnsProps) => {
 
@@ -60,51 +82,57 @@ export const createColumns = ({ setOpen, setDetails }: createColumnsProps) => {
         },
         {
             accessorKey: "entity",
-            header: "Entity",
-        },
-        {
-            accessorKey: "details",
-            header: "Details",
             enableSorting: false,
-            cell: ({ row }) => {
-                const details = (() => {
-                    try {
-                        return JSON.parse(row.original.details);
-                    } catch {
-                        return {};
-                    }
-                })();
-                return (
-                    <InfoIcon className="size-4 hover:text-blue-500 cursor-pointer" onClick={() => { setOpen(true); setDetails(details); }} />
-                )
-            }
-        },
-        {
-            accessorKey: "device",
-            header: "Device",
-            enableSorting: false,
-            cell: ({ row }) => {
-                const device = (() => {
-                    try {
-                        return JSON.parse(row.original.device);
-                    } catch {
-                        return {};
-                    }
-                })();
-                return (
-                    <>
-                        {
-                            device.device?.toLowerCase()?.includes('windows')
-                                ? (<MonitorIcon className="size-4 hover:text-blue-500 cursor-pointer" onClick={() => { setOpen(true); setDetails(device); }} />)
-                                : (<SmartphoneIcon className="size-4 hover:text-blue-500 cursor-pointer" onClick={() => { setOpen(true); setDetails(device); }} />)
-                        }
-                    </>
-                )
-            }
+            header: () => <div className="hidden lg:table-cell">Entity</div>,
+            cell: ({ row }) => <span className="hidden lg:table-cell">{row.original.entity}</span>,
         },
         {
             accessorKey: "timestamp",
-            header: "Date and Time",
+            header: "Timestamp",
+            cell: ({ row }) => <p className="text-wrap w-24 lg:w-auto">{row.original.timestamp}</p>,
+        },
+        {
+            accessorKey: "info",
+            header: "Info",
+            enableSorting: false,
+            cell: ({ row }) => {
+                const data = row.original;
+                return (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="size-8 p-0">
+                                <span className="sr-only">Open menu</span>
+                                <MoreHorizontalIcon />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>View</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                                onClick={() => {
+                                    setOpen(true);
+                                    setDetails(parseJson(data.details));
+                                }}
+                                className="hover:text-blue-500 cursor-pointer"
+                            >
+                                <InfoIcon className="size-4 mr-2" />
+                                Details
+                            </DropdownMenuItem>
+
+                            <DropdownMenuItem 
+                                onClick={() => {
+                                    setOpen(true);
+                                    setDetails(parseJson(data.device));
+                                }}
+                                className="hover:text-blue-500 cursor-pointer"
+                            >
+                                <DeviceIcon device={data.device ?? ""}/>
+                                Device
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                );
+            }
         },
     ], [actionStyles, setOpen, setDetails]);
 

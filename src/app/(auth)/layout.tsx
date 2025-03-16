@@ -1,6 +1,5 @@
 import AppLogo from "@/components/custom/app-initial";
 import { CarouselPlugin } from "@/components/custom/carousel-content";
-import ToggleButtons from "@/components/layout/ToggleButtons";
 import { Button } from "@/components/ui/button";
 import { ChildProps } from "@/types";
 import { RECAPTCHA_SITE_KEY } from "@/utils/constants";

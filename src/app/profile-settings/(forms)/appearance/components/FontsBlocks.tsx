@@ -20,12 +20,13 @@ const RenderFonts = () => {
 
   return (
     <div className="space-y-1.5">
-      <div className="grid grid-cols-5 gap-2">
+      <div className="flex gap-2 overflow-x-auto">
         {filterOptions.map((item) => {
           return (
             <Button
               variant={"outline"}
               size="sm"
+              type="button"
               key={item.label}
               onClick={(e) => {
                 e.preventDefault();

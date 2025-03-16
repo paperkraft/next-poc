@@ -15,7 +15,7 @@ export const DetailsDialog = React.memo(({ open, setOpen, details }: DetailsDial
             <DialogContent aria-describedby="content" className={"overflow-y-scroll max-h-screen"}>
                 <DialogHeader>
                     <DialogTitle className="mb-4">Details</DialogTitle>
-                    <>
+                    <pre id="content" className="text-sm">
                         {details &&
                             Object.entries(details).map(([key, val], idx) => (
                                 <div key={idx} className="flex gap-2">
@@ -24,7 +24,7 @@ export const DetailsDialog = React.memo(({ open, setOpen, details }: DetailsDial
                                 </div>
                             ))
                         }
-                    </>
+                    </pre>
                 </DialogHeader>
             </DialogContent>
         </Dialog>
@@ -34,14 +34,14 @@ export const DetailsDialog = React.memo(({ open, setOpen, details }: DetailsDial
 const renderRecursive = (val: any) => {
     if (typeof val === 'object' && val !== null) {
         return (
-            <div className="pl-4">
+            <p className="pl-4">
                 {Object.entries(val).map(([nestedKey, nestedVal], idx) => (
                     <div key={idx} className="flex gap-2">
                         <p className="capitalize">{`${nestedKey}:`}</p>
                         {renderRecursive(nestedVal)}
                     </div>
                 ))}
-            </div>
+            </p>
         );
     } else {
         return <p>{val}</p>;

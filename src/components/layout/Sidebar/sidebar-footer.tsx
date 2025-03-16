@@ -40,17 +40,16 @@ const options = [
 const SidebarFooterContent = React.memo(() => {
     const { data } = useSession();
     const [config] = themeConfig();
-    const { isMobile } = useSidebar();
+    const { isMobile, toggleSidebar } = useSidebar();
     const user = data && data?.user;
     const initials = user && user?.name?.split(' ').map((word: any[]) => word[0]).join('').toUpperCase();
     const [isLoggingOut, setIsLoggingOut] = React.useState(false);
 
-
     const logout = async () => {
         setIsLoggingOut(true);
         try {
+            signOut({ redirect: false });
             await logAuditAction('logout', 'auth/signout', { user: `${user?.name}` }, user.id);
-            signOut({ redirect: true, redirectTo:'/signin' });
         } catch (error) {
             console.error("Logout failed", error);
         } finally {
@@ -64,7 +63,6 @@ const SidebarFooterContent = React.memo(() => {
             if (e.key === "q" && (e.metaKey || e.ctrlKey)) {
                 e.preventDefault();
                 logout();
-                // signOut({ redirect: true, redirectTo:'/signin' });
             }
         };
 
@@ -91,12 +89,18 @@ const SidebarFooterContent = React.memo(() => {
         )
     }
 
+    const handleClose = () => {
+        if (isMobile) {
+            toggleSidebar();
+        }
+    }
+
     return (
         <SidebarMenu>
             <SidebarMenuItem>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <SidebarMenuButton size="lg" 
+                        <SidebarMenuButton size="lg"
                             className={cn("data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus-within:!ring-primary p-0",
                                 (config.layout === "collapsed" && !isMobile) && "size-8"
                             )}
@@ -106,8 +110,8 @@ const SidebarFooterContent = React.memo(() => {
                         </SidebarMenuButton>
                     </DropdownMenuTrigger>
 
-                    <DropdownMenuContent 
-                        side={isMobile ? "bottom" : "right"} 
+                    <DropdownMenuContent
+                        side={isMobile ? "bottom" : "right"}
                         align="end"
                         sideOffset={4}
                         className={cn("w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg [&_svg]:size-4 [&_svg]:mr-2 mb-2")}
@@ -124,7 +128,7 @@ const SidebarFooterContent = React.memo(() => {
                             <DropdownMenuGroup>
                                 {
                                     options.map((item) => (
-                                        <DropdownMenuItem key={item.label} asChild className="cursor-pointer">
+                                        <DropdownMenuItem key={item.label} asChild className="cursor-pointer" onClick={handleClose}>
                                             <Link href={item.url} className="flex flex-1 items-center hover:!text-primary">
                                                 {item.icon && <item.icon />}{item.label}
                                             </Link>
@@ -135,7 +139,7 @@ const SidebarFooterContent = React.memo(() => {
 
                             <DropdownMenuSeparator />
 
-                            <DropdownMenuItem onClick={() => logout()} className="cursor-pointer hover:!text-primary">
+                            <DropdownMenuItem onClick={() => { logout(); handleClose() }} className="cursor-pointer hover:!text-primary">
                                 {isLoggingOut ? <span>Logging out...</span> : <><LogOutIcon /> Log out</>}
                             </DropdownMenuItem>
 

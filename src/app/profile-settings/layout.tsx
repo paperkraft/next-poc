@@ -30,7 +30,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
   return (
     <>
       <TitlePage title={t('title')} description={t('description')} />
-      <div className="flex flex-col space-y-8 lg:flex-row lg:space-x-12 lg:space-y-0 p-4">
+      <div className="flex flex-col space-y-8 lg:flex-row lg:space-x-12 lg:space-y-0 p-4 overflow-x-auto">
         <aside className="-mx-4 lg:w-1/5 overflow-x-auto px-1 pt-1">
           <SidebarNav items={sidebarNavItems} />
         </aside>

@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { memo, useEffect } from "react";
 import {
   BellIcon,
   PowerIcon,
@@ -22,9 +22,12 @@ import { Button } from "@/components/ui/button";
 import { signOut, useSession } from "next-auth/react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { ThemeWrapper } from "./theme-wrapper";
+import { useSidebar } from "../ui/sidebar";
 
 const UserAction = () => {
   const { data } = useSession();
+  const { isMobile, toggleSidebar } = useSidebar();
+  
   const user = data && data?.user;
   const initials = user && user?.name?.split(' ').map((word: any[]) => word[0]).join('').toUpperCase();
 
@@ -82,57 +85,62 @@ const UserAction = () => {
     },
   ]
 
+  const handleClose = () => {
+    if (isMobile) {
+      toggleSidebar();
+    }
+  }
+   
+
   return (
-    <React.Fragment>
-      <div className="flex items-center">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Avatar className="size-8 border p-0.5 rounded-lg cursor-pointer">
-              <AvatarImage src={user?.image} alt={user?.name} />
-              <AvatarFallback className="rounded-lg">{initials ?? "UN"}</AvatarFallback>
-            </Avatar>
-          </DropdownMenuTrigger>
+    <div className="flex items-center">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Avatar className="size-8 border p-0.5 rounded-lg cursor-pointer">
+            <AvatarImage src={user?.image} alt={user?.name} />
+            <AvatarFallback className="rounded-lg">{initials ?? "UN"}</AvatarFallback>
+          </Avatar>
+        </DropdownMenuTrigger>
 
-          <DropdownMenuContent align="start" className={cn("w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg mr-2")}>
-            <ThemeWrapper>
-              <DropdownMenuLabel className="p-0 font-normal">
-                <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                  <RenderUserInfo />
-                </div>
-              </DropdownMenuLabel>
+        <DropdownMenuContent align="start" className={cn("w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg mr-2")}>
+          <ThemeWrapper>
+            <DropdownMenuLabel className="p-0 font-normal">
+              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+                <RenderUserInfo />
+              </div>
+            </DropdownMenuLabel>
 
-              <DropdownMenuSeparator />
+            <DropdownMenuSeparator />
 
-              <DropdownMenuGroup className="space-y-1">
+            <DropdownMenuGroup className="space-y-1">
 
-                {
-                  options.map((item) => (
-                    <DropdownMenuItem key={item.label} asChild>
-                      <Link href={item.url} className="flex flex-1 items-center cursor-pointer hover:!text-primary">
-                        {item.icon && <item.icon className="size-4 mr-2" />}{item.label}
-                      </Link>
-                    </DropdownMenuItem>
-                  ))
-                }
+              {
+                options.map((item) => (
+                  <DropdownMenuItem key={item.label} asChild onClick={handleClose}>
+                    <Link href={item.url} className="flex flex-1 items-center cursor-pointer hover:!text-primary">
+                      {item.icon && <item.icon className="size-4 mr-2" />}{item.label}
+                    </Link>
+                  </DropdownMenuItem>
+                ))
+              }
 
-              </DropdownMenuGroup>
+            </DropdownMenuGroup>
 
-              <DropdownMenuSeparator />
+            <DropdownMenuSeparator />
 
-              <DropdownMenuItem className="flex text-sm hover:bg-accent text-primary" asChild>
-                <Button onClick={handleSignOut} variant={'ghost'} className="flex w-full px-2">
-                  <PowerIcon />Logout
-                  <DropdownMenuShortcut>Ctrl+q</DropdownMenuShortcut>
-                </Button>
-              </DropdownMenuItem>
-            </ThemeWrapper>
+            <DropdownMenuItem className="flex text-sm hover:bg-accent text-primary" asChild>
+              <Button onClick={handleSignOut} variant={'ghost'} className="flex w-full px-2">
+                <PowerIcon />Logout
+                <DropdownMenuShortcut>Ctrl+q</DropdownMenuShortcut>
+              </Button>
+            </DropdownMenuItem>
+          </ThemeWrapper>
 
 
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-    </React.Fragment>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 };
 
-export default UserAction;
+export default memo(UserAction);

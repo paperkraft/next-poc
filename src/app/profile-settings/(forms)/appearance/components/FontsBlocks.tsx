@@ -8,14 +8,14 @@ const fontOptions = [
   { label: "Roboto", value: "font-roboto" },
   { label: "Montserrat", value: "font-montserrat" },
   { label: "Inconsolata", value: "font-inconsolata" },
-  { label: "Sans Devanagari", value: "font-noto-sans" },
+  { label: "Sans Devanagari", value: "font-noto_sans" },
   { label: "Trio Devanagari", value: "font-trio" },
 ]
 
 const RenderFonts = () => {
   const [config, setConfig] = themeConfig();
-  const Devnagari = fontOptions.filter((x) => x.value === 'font-noto-sans' || x.value === 'font-trio');
-  const Other = fontOptions.filter(x => x.value !== 'font-noto-sans' && x.value !== 'font-trio');
+  const Devnagari = fontOptions.filter((x) => x.value === 'font-noto_sans' || x.value === 'font-trio');
+  const Other = fontOptions.filter(x => x.value !== 'font-noto_sans' && x.value !== 'font-trio');
   const filterOptions = config.lang === 'mr' || config.lang === 'hi' ? Devnagari : Other
 
   return (

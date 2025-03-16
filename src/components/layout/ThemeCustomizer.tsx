@@ -13,6 +13,7 @@ import { CheckIcon, Monitor, Moon, PaletteIcon, Repeat, Sun } from "lucide-react
 import { useTheme } from "next-themes";
 import { ThemeWrapper } from "@/components/layout/theme-wrapper";
 import { useSidebar } from "@/components/ui/sidebar";
+import { setUserLocale } from "@/services/locale";
 
 export default function ThemeCustomizer() {
     const mounted = useMounted();
@@ -28,10 +29,12 @@ export default function ThemeCustomizer() {
             radius: 0.5,
             layout: 'vertical',
             content: 'wide',
-            dual: false
+            dual: false,
+            lang: "en",
         });
         setMode('light');
         setOpen(true);
+        setUserLocale("en");
     };
 
     const handleThemeChange = (themeName: BaseColor['name']) => {

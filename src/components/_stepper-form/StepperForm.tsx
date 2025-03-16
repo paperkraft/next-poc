@@ -1,9 +1,9 @@
 "use client";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { FieldErrors, useForm, UseFormReturn } from "react-hook-form";
 import { Form } from "../ui/form";
 import { Button } from "../ui/button";
-import { MapPin, Phone, User } from "lucide-react";
+import { BriefcaseMedical, MapPin, Phone, User } from "lucide-react";
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import StepperIndicator from "./StepperIndicator";
@@ -13,14 +13,15 @@ import { createStore } from "./useStepperStore";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { debounce } from "@/utils";
+import dynamic from "next/dynamic";
 
-import StepOne from "./(forms)/step-one/page";
-import StepTwo from "./(forms)/step-two/page";
-import StepThree from "./(forms)/step-three/page";
-import StepFour from "./(forms)/step-four/page";
+const StepOne = dynamic(() => import("./(forms)/step-one/page"), { loading: () => <p>Loading...</p> });
+const StepTwo = dynamic(() => import("./(forms)/step-two/page"), { loading: () => <p>Loading...</p> });
+const StepThree = dynamic(() => import("./(forms)/step-three/page"), { loading: () => <p>Loading...</p> });
+const StepFour = dynamic(() => import("./(forms)/step-four/page"), { loading: () => <p>Loading...</p> });
 
 const stepComponents = [StepOne, StepTwo, StepThree, StepFour];
-const stepIcons = [<User />, <MapPin />, <Phone />];
+const stepIcons = [<User />, <MapPin />, <Phone />, <BriefcaseMedical />];
 
 const profileFormSchema = z.object({
     firstName: z.string().min(1, "First Name is required"),
@@ -43,7 +44,8 @@ const profileFormSchema = z.object({
     }),
 
     emergencyContacts: z.array(z.object({
-        contact: z.string().min(1, "Contact is required"),
+        name: z.string().min(1, "Name is required"),
+        phone: z.string().min(1, "Phone is required"),
     })).optional(),
 });
 
@@ -73,7 +75,7 @@ export default function StepperForm() {
     const form = useForm<StepperFormValues>({
         resolver: zodResolver(profileFormSchema),
         shouldUnregister: false,
-        mode: 'onSubmit',
+        mode: 'onChange',
         defaultValues: {
             firstName: formData.firstName || "",
             middleName: formData.middleName || "",
@@ -95,7 +97,7 @@ export default function StepperForm() {
             mobile: formData.mobile || "",
             alternateMobile: formData.alternateMobile || "",
 
-            emergencyContacts: formData.emergencyContacts || [{ contact: "" }],
+            emergencyContacts: formData.emergencyContacts || [{ name: "", phone: "" }],
         },
     });
 
@@ -145,9 +147,9 @@ export default function StepperForm() {
         prevValues.current = null;
         resetForm();
         form.reset();
-        
+
         const promise = () => new Promise((resolve) => setTimeout(() => resolve({ name: 'Form submitted successfully!' }), 2000));
-        
+
         toast.promise(promise, {
             loading: 'Loading...',
             success: () => {
@@ -207,14 +209,28 @@ const getNestedError = (errors: NestedErrors, fieldPath: string): { message?: st
 const handleError = (form: UseFormReturn<StepperFormValues>, errors: FieldErrors<StepperFormValues>, activeStep: number) => {
 
     let firstErrorMessage: string | undefined;
-    const currentStepFields = stepFields[activeStep] ?? Object.keys(errors)
+    const currentStepFields = stepFields[activeStep] ?? Object.keys(errors);
 
-    const dynamicFields = currentStepFields.flatMap((field) =>
-        field === "emergencyContacts"
-            ? (form.getValues("emergencyContacts") || []).map(
-                (_, index) => `emergencyContacts.${index}.contact`
-            )
-            : field
+    // Dynamically collect all possible field paths (including nested arrays)
+    const collectFieldPaths = (fields: any, parentPath = ""): string[] => {
+        return Object.entries(fields).flatMap(([key, value]) => {
+            const path = parentPath ? `${parentPath}.${key}` : key;
+            if (Array.isArray(value)) {
+                // Handle arrays: Traverse each index recursively
+                return value.flatMap((_, index) =>
+                    collectFieldPaths(value[index] ?? {}, `${path}.${index}`)
+                );
+            } else if (typeof value === "object" && value !== null) {
+                // Recurse nested objects
+                return collectFieldPaths(value, path);
+            }
+            return path; // Return the final path for scalar values
+        });
+    };
+
+    // Collect all dynamic fields in the current step
+    const dynamicFields = collectFieldPaths(form.getValues(), "").filter((field) =>
+        currentStepFields.some((stepField) => field.startsWith(stepField))
     );
 
     for (const key of dynamicFields) {
@@ -229,4 +245,3 @@ const handleError = (form: UseFormReturn<StepperFormValues>, errors: FieldErrors
         toast.error(firstErrorMessage);
     }
 }
-

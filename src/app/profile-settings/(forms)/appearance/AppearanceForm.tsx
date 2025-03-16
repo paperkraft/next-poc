@@ -46,13 +46,7 @@ export function AppearanceForm() {
   })
 
   function onSubmit(data: AppearanceFormValues) {
-    toast("You submitted the following values:", {
-      description: (
-        <pre className="mt-2 w-[295px] md:w-[324px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-    });
+    toast.success("Appearance settings updated successfully.");
   }
 
   const mode = ["light", "dark", "system"];

@@ -8,7 +8,12 @@ import AppLogo from "@/components/custom/app-initial";
 
 const SidebarHeaderContent = React.memo(() => {
     const [config] = themeConfig();
-    const { isMobile } = useSidebar();
+    const { isMobile, toggleSidebar } = useSidebar();
+
+    const handleClose = () => { 
+        if (isMobile) toggleSidebar();
+    }
+    
     return (
         <SidebarMenu>
             <SidebarMenuItem>
@@ -16,6 +21,7 @@ const SidebarHeaderContent = React.memo(() => {
                     className={cn("data-[state=open]:bg-accent data-[state=open]:text-accent-foreground p-0", 
                         (config.layout === "collapsed" && !isMobile) && "size-8"
                     )}
+                    onClick={handleClose}
                 >
                     <Link href={'/dashboard'}>
                         <AppLogo/>

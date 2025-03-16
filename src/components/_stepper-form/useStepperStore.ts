@@ -10,19 +10,6 @@ interface StepperState {
     resetForm: () => void;  
 }
 
-// export const useStepperStore = create<StepperState>()(
-//     persist(
-//         (set) => ({
-//             activeStep: 1,
-//             setActiveStep: (step) => set({ activeStep: step }),
-//             formData: {},
-//             updateFormData: (data) => set((state) => ({ formData: { ...state.formData, ...data } })),
-//             resetForm: () => set({ formData: {} }),
-//         }),
-//         { name: "stepper-form" }
-//     )
-// );
-
 export const createStore = (storageKey: string) => {
     return create<StepperState>()(
         persist(

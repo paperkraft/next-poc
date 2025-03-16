@@ -41,7 +41,7 @@ export const noto_sans = Noto_Sans_Devanagari({
   subsets:["devanagari"],
   display:"swap",
   weight:["400", "500", "600", "700"],
-  variable:"--font-noto-sans"
+  variable:"--font-noto_sans"
 });
 
 export const trio = Tiro_Devanagari_Marathi({

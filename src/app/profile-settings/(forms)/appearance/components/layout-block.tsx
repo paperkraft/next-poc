@@ -27,7 +27,7 @@ export default function LayoutBlock() {
 
     return (
         <>
-            <div className="flex gap-4">
+            <div className="flex gap-4 overflow-x-auto">
                 <div className="flex flex-col items-center gap-2">
                     <Button variant={"outline"} asChild className={cn("w-24 h-16 p-1", { "border-2 border-primary": config.layout === "vertical" })} onClick={() => handleLayoutChange('vertical')}>
                         <svg width="104" height="66" viewBox="0 0 104 66" fill="none" xmlns="http://www.w3.org/2000/svg">

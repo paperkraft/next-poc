@@ -7,10 +7,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { useNotifications } from '@/context/notification-context';
+import React from 'react';
 
 const BellNotifications = () => {
+    const [open, setOpen] = React.useState(false);
     const { notifications, updateNotifications, count, setUnreadCount } = useNotifications();
-    // console.log('Bell', notifications);
 
     const handleMarkAsRead = async (notificationIds?: string) => {
         const idsToMark = notificationIds ? [notificationIds] : notifications.filter((n) => !n.read).map((n) => n.id);
@@ -30,6 +31,7 @@ const BellNotifications = () => {
                 // Update global state and count
                 updateNotifications(updatedNotifications);
                 setUnreadCount(updatedNotifications?.length);
+                setOpen(false);
             }
         } catch (error) {
             console.error('Error in marking notifications as read', error);
@@ -37,7 +39,7 @@ const BellNotifications = () => {
     };
 
     return (
-        <DropdownMenu>
+        <DropdownMenu open={open} onOpenChange={(isOpen) => setOpen(isOpen)}>
             <DropdownMenuTrigger asChild>
                 <Button variant={'ghost'} className='size-8 block relative' autoFocus={false}>
                     <BellIcon className='-translate-x-1/2 block !size-5' />
@@ -53,7 +55,7 @@ const BellNotifications = () => {
             <DropdownMenuContent align='end' className='min-w-64 max-w-72 shadow-lg'>
                 <DropdownMenuLabel className='p-2 text-lg font-normal flex items-center'>
                     <p className='ml-1'>Notifications</p>
-                    <Button variant='ghost' size="icon" className='text-muted-foreground ml-auto' asChild>
+                    <Button variant='ghost' size="icon" className='text-muted-foreground ml-auto' asChild onClick={() => setOpen(false)}>
                         <Link href={'/profile-settings/notifications'}>
                             <SettingsIcon className='size-5' />
                         </Link>
@@ -62,7 +64,7 @@ const BellNotifications = () => {
 
                 <DropdownMenuSeparator />
 
-                <ScrollArea className={cn({ "h-80": notifications.length > 0 })}>
+                <ScrollArea className={cn({ "h-80 p-2": notifications.length > 0 })}>
                     {notifications.length > 0 ? (
                         notifications.map((notification) => (
                             <DropdownMenuItem key={notification.id}>
@@ -73,7 +75,7 @@ const BellNotifications = () => {
                                             <div className='ml-auto shrink-0 flex flex-col items-end justify-between'>
                                                 <div className='bg-blue-500 rounded-full size-2 shrink-0'></div>
                                                 <X className='size-5 text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-red-500'
-                                                    onClick={() => handleMarkAsRead(notification.id)}
+                                                    onClick={() => { handleMarkAsRead(notification.id); setOpen(false) }}
                                                 />
                                             </div>
                                         </div>
@@ -92,7 +94,7 @@ const BellNotifications = () => {
                         <DropdownMenuItem>
                             <div className='w-full text-center h-80 text-muted-foreground flex flex-col justify-center'>
                                 <div className='flex justify-center'>
-                                    <BellOffIcon className='size-8'/>
+                                    <BellOffIcon className='size-8' />
                                 </div>
                                 <p>We'll notify you</p>
                                 <p>when something arives</p>
@@ -111,7 +113,7 @@ const BellNotifications = () => {
                                 <small className='flex items-center cursor-pointer text-muted-foreground hover:text-blue-600' onClick={() => handleMarkAsRead()}>
                                     <CheckCheck className='size-4 mr-1' /> Mark all as read
                                 </small>
-                                <Link href='/notifications' className='ml-auto text-muted-foreground hover:text-blue-600 text-xs' onClick={()=>{}}>
+                                <Link href='/notifications' className='ml-auto text-muted-foreground hover:text-blue-600 text-xs' onClick={() => setOpen(false)}>
                                     View all
                                 </Link>
                             </div>

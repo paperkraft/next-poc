@@ -22,12 +22,9 @@ import { Button } from "@/components/ui/button";
 import { signOut, useSession } from "next-auth/react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { ThemeWrapper } from "./theme-wrapper";
-import { useSidebar } from "../ui/sidebar";
 
 const UserAction = () => {
   const { data } = useSession();
-  const { isMobile, toggleSidebar } = useSidebar();
-  
   const user = data && data?.user;
   const initials = user && user?.name?.split(' ').map((word: any[]) => word[0]).join('').toUpperCase();
 
@@ -85,13 +82,6 @@ const UserAction = () => {
     },
   ]
 
-  const handleClose = () => {
-    if (isMobile) {
-      toggleSidebar();
-    }
-  }
-   
-
   return (
     <div className="flex items-center">
       <DropdownMenu>
@@ -116,7 +106,7 @@ const UserAction = () => {
 
               {
                 options.map((item) => (
-                  <DropdownMenuItem key={item.label} asChild onClick={handleClose}>
+                  <DropdownMenuItem key={item.label} asChild>
                     <Link href={item.url} className="flex flex-1 items-center cursor-pointer hover:!text-primary">
                       {item.icon && <item.icon className="size-4 mr-2" />}{item.label}
                     </Link>

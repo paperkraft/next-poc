@@ -19,6 +19,13 @@ const fontMap: Record<string, () => Promise<{ variable: string }>> = {
     trio: () => import("@/lib/fonts").then((m) => m.trio),
 };
 
+const themeColors: Record<string, string> = {
+    light: "#ffffff",
+    dark: "#121212",
+    blue: "#1e3a8a",
+    green: "#10b981",
+};
+
 export function ThemeWrapper({ defaultTheme, children, className }: ThemeWrapperProps) {
     const [config] = themeConfig();
     const theme = defaultTheme || config.theme;
@@ -34,6 +41,22 @@ export function ThemeWrapper({ defaultTheme, children, className }: ThemeWrapper
         };
         loadFont();
     }, [config.font]);
+
+    // Update PWA theme color dynamically
+    React.useEffect(() => {
+        const themeColor = themeColors[theme] || "#ffffff";
+        const metaThemeColor = document.querySelector("meta[name='theme-color']");
+
+        if (metaThemeColor) {
+            metaThemeColor.setAttribute("content", themeColor);
+        } else {
+            const meta = document.createElement("meta");
+            meta.name = "theme-color";
+            meta.content = themeColor;
+            document.head.appendChild(meta);
+        }
+    }, [theme]);
+
 
     return (
         <div

@@ -35,13 +35,13 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
                 </Sidebar>
             }
 
-            {config.layout === "collapsed" && !isMobile &&
+            {(config.layout === "collapsed" || config.layout === "dual-menu") && !isMobile &&
                 <CollapseMenus />
             }
 
             <SidebarInset>
                 <Header />
-                <div className={cn("grid grid-rows p-4 gap-4 w-full", { "max-w-5xl mx-auto": config.content === 'compact' })}>
+                <div className={cn("grid grid-rows p-4 gap-4 w-full", { "container": config.content === 'compact' })}>
                     {children}
                 </div>
             </SidebarInset>

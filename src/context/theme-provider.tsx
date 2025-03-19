@@ -3,6 +3,7 @@ import { createContext, useEffect, useState } from "react";
 import { ThemeProvider as NextThemesProvider } from "next-themes"
 import { AppProgressBar as ProgressBar } from 'next-nprogress-bar';
 import { useMounted } from "@/hooks/use-mounted";
+import { ThemeWrapper } from "@/components/layout/theme-wrapper";
 
 export type ThemeProps = {
     toggleTheme: () => void;
@@ -30,22 +31,24 @@ const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     return (
 
         <ThemeContext.Provider value={{ toggleTheme, currentTheme }}>
-            <NextThemesProvider
-                attribute="class"
-                defaultTheme={"system"}
-                enableSystem
-                disableTransitionOnChange
-            >
-                <>
-                    {isMounted && children}
-                    <ProgressBar
-                        height="4px"
-                        color="rgb(26 139 244)"
-                        options={{ showSpinner: false }}
-                        shallowRouting
-                    />
-                </>
-            </NextThemesProvider>
+            <ThemeWrapper>
+                <NextThemesProvider
+                    attribute="class"
+                    defaultTheme={"system"}
+                    enableSystem
+                    disableTransitionOnChange
+                >
+                    <>
+                        {isMounted && children}
+                        <ProgressBar
+                            height="4px"
+                            color="rgb(26 139 244)"
+                            options={{ showSpinner: false }}
+                            shallowRouting
+                        />
+                    </>
+                </NextThemesProvider>
+            </ThemeWrapper>
         </ThemeContext.Provider>
     )
 }

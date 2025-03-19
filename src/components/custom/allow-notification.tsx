@@ -25,13 +25,15 @@ export default function AllowNotification() {
                 updateViaCache: 'none',
             });
 
+            if (registration.waiting) {
+                registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+            }
+
             const sub = await registration.pushManager.getSubscription();
-            setSubscription(sub);
 
             if (sub && checkSubscription(sub)) {
-                return
+                setSubscription(sub);
             } else {
-                console.log('Update');
                 setSubscription(null);
             }
         } catch (error) {
@@ -158,8 +160,15 @@ async function subscribeUser(subscription: PushSubscription) {
     }
 }
 
-function checkSubscription(current: PushSubscription): Boolean {
-    const storedSubscription = localStorage.getItem("push-subscription")
-    if (!storedSubscription) return false;
-    return current.endpoint === JSON.parse(storedSubscription).endpoint;
+function checkSubscription(current: PushSubscription): boolean {
+    try {
+        const storedSubscription = localStorage.getItem("push-subscription");
+        if (!storedSubscription) return false;
+
+        const parsedSubscription: PushSubscriptionJSON = JSON.parse(storedSubscription);
+        return current.endpoint === parsedSubscription.endpoint;
+    } catch (error) {
+        console.error('Error checking subscription:', error);
+        return false;
+    }
 }

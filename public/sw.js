@@ -1,5 +1,6 @@
 self.addEventListener('install', () => {
     console.info('Service Worker installed.');
+    self.skipWaiting();
 });
 
 const sendDeliveryReportAction = () => {
@@ -16,9 +17,7 @@ const sendDeliveryReportAction = () => {
 };
 
 self.addEventListener('push', function (event) {
-    if (!event.data) {
-        return;
-    }
+    if (!event.data) return console.warn('Push event received but no data.');
 
     const payload = event.data.json();
     const { body, icon, image, badge, url, title } = payload;

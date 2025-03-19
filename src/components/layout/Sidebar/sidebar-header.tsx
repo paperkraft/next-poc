@@ -9,22 +9,23 @@ import AppLogo from "@/components/custom/app-initial";
 const SidebarHeaderContent = React.memo(() => {
     const [config] = themeConfig();
     const { isMobile, toggleSidebar } = useSidebar();
+    const isDual = (config.layout === "collapsed" || config.layout === "dual-menu") && !isMobile
 
-    const handleClose = () => { 
+    const handleClose = () => {
         if (isMobile) toggleSidebar();
     }
-    
+
     return (
         <SidebarMenu>
             <SidebarMenuItem>
-                <SidebarMenuButton asChild size="lg" 
-                    className={cn("data-[state=open]:bg-accent data-[state=open]:text-accent-foreground p-0", 
-                        (config.layout === "collapsed" && !isMobile) && "size-8"
+                <SidebarMenuButton asChild size="lg"
+                    className={cn("data-[state=open]:bg-accent data-[state=open]:text-accent-foreground p-0",
+                        isDual && "size-8"
                     )}
                     onClick={handleClose}
                 >
                     <Link href={'/dashboard'}>
-                        <AppLogo/>
+                        <AppLogo />
                         <span className="font-medium">Demo App</span>
                     </Link>
                 </SidebarMenuButton>

@@ -26,6 +26,7 @@ const CollapseMenus = React.memo(() => {
     const [query, setQuery] = React.useState<string>('');
     const debouncedQuery = useDebounce(query, 300);
     const isSearching = query.length > 0;
+    const isDual = config.layout === "dual-menu";
 
     const [title, setTitle] = React.useState<string>('');
     const [submenus, setSubmenus] = React.useState<submenuType[]>([]);
@@ -41,12 +42,12 @@ const CollapseMenus = React.memo(() => {
         if (activeSubmenus) {
             setTitle(activeSubmenus.title);
             setSubmenus(activeSubmenus.submenu);
-            if (config.dual || config.layout === 'vertical'){
+            if (config.layout === 'vertical' || config.layout === 'dual-menu') {
                 setOpen(true);
             } else {
                 setOpen(false);
             }
-        } else if (path === '/dashboard' && config.layout !== 'vertical') {
+        } else if (path === '/dashboard' && config.layout !== 'vertical' && config.layout !== 'dual-menu') {
             setOpen(false);
         } else {
             setOpen(false);
@@ -80,7 +81,7 @@ const CollapseMenus = React.memo(() => {
                                 </SidebarGroupLabel>
                                 <SidebarMenu>
                                     {group.map((item, index) => (
-                                        <RenderCollapseMenus key={index} item={item} active={setTitle} submenu={setSubmenus} dropdown={!config.dual}/>
+                                        <RenderCollapseMenus key={index} item={item} active={setTitle} submenu={setSubmenus} dropdown={!isDual}/>
                                     ))}
                                 </SidebarMenu>
                             </SidebarGroup>

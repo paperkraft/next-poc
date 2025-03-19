@@ -6,7 +6,6 @@ import { useSession } from "next-auth/react";
 import { useMounted } from "@/hooks/use-mounted";
 import { SidebarProvider } from "../ui/sidebar";
 import { NotificationsProvider } from "@/context/notification-context";
-import { ThemeWrapper } from "./theme-wrapper";
 import { publicURL } from "@/constants/routes";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -29,15 +28,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   if (status === "authenticated") {
     return (
-      <ThemeWrapper>
-        <SidebarProvider>
-          <NotificationsProvider>
-            <AppSidebar>
-              {children}
-            </AppSidebar>
-          </NotificationsProvider>
-        </SidebarProvider>
-      </ThemeWrapper>
+      <SidebarProvider>
+        <NotificationsProvider>
+          <AppSidebar>
+            {children}
+          </AppSidebar>
+        </NotificationsProvider>
+      </SidebarProvider>
     )
   }
 }

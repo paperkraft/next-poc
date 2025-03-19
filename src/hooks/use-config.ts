@@ -14,19 +14,19 @@ type UserConfig = {
 } | null;
 
 export type LayoutType = {
-    layout: "vertical" | "horizontal" | "collapsed"
+    layout: "vertical" | "horizontal" | "collapsed" | "dual-menu"
+    content: "wide" | "compact"
 }
 
 export type ThemeConfig = {
-    lang: "en" | "hi" | "mr" | string
-    style: Style["name"]
-    font: string
-    mode: string
-    layout: LayoutType | string
-    content: string
-    theme:  BaseColor["name"]
-    radius: number
-    dual: boolean
+    lang: "en" | "hi" | "mr" | string;
+    style: Style["name"];
+    font: string;
+    mode: string;
+    layout: LayoutType["layout"];
+    content: LayoutType["content"] | string;
+    theme:  BaseColor["name"];
+    radius: number;
 }
 
 const themeAtom = atomWithStorage<ThemeConfig>("theme-config", {
@@ -38,7 +38,6 @@ const themeAtom = atomWithStorage<ThemeConfig>("theme-config", {
     layout: "vertical",
     content: "wide",
     radius: 0.5,
-    dual: false
 })
 
 const userAtom = atomWithStorage<UserConfig>("user", null)

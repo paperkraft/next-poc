@@ -18,6 +18,8 @@ interface MenuItem {
 const DropdownMenu = ({ items }: { items: MenuItem[] }) => {
     const [openPaths, setOpenPaths] = useState<string[]>([]);
     const timeouts = useRef<Record<string, NodeJS.Timeout | null>>({});
+    const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
 
     const openMenu = (path: string) => {
         if (timeouts.current[path]) {
@@ -46,6 +48,15 @@ const DropdownMenu = ({ items }: { items: MenuItem[] }) => {
 
     const isPathOpen = (currentPath: string) => openPaths.includes(currentPath);
 
+    const getMenuPosition = (level: number, path: string) => {
+        if (level === 0 || !itemRefs.current[path]) return "left-0 mt-2";
+
+        const rect = itemRefs.current[path]!.getBoundingClientRect();
+        const isOverflowing = rect.right + 240 > window.innerWidth;
+
+        return isOverflowing ? "right-full top-0 mr-2" : "left-full top-0 ml-2";
+    };
+
     const renderMenuItems = (menuItems: MenuItem[], path = "", level: number = 0) => {
         return menuItems.map((item, index) => {
             const currentPath = `${path}-${index}`;
@@ -57,6 +68,7 @@ const DropdownMenu = ({ items }: { items: MenuItem[] }) => {
                     className="relative text-sm"
                     onMouseEnter={() => handleMouseEnter(currentPath)}
                     onMouseLeave={() => handleMouseLeave(currentPath)}
+                    ref={(el) => { itemRefs.current[currentPath] = el }}
                 >
                     <button
                         onClick={() => handleClick(currentPath)}
@@ -64,12 +76,12 @@ const DropdownMenu = ({ items }: { items: MenuItem[] }) => {
                     >
                         {item.url ? (
                             <Link href={item.url} className="flex gap-2 [&>svg]:size-4 items-center w-full">
-                                {item.icon ? <item.icon /> : level !== 0 && <DotIcon/>}
+                                {item.icon ? <item.icon /> : level !== 0 && <DotIcon />}
                                 <span>{item.title}</span>
                             </Link>
                         ) : (
                             <div className="flex gap-2 [&>svg]:size-5 w-full">
-                                {item.icon ? <item.icon /> : level !== 0 &&  <DotIcon/>}
+                                {item.icon ? <item.icon /> : level !== 0 && <DotIcon />}
                                 <span>{item.title}</span>
                             </div>
                         )}
@@ -84,7 +96,7 @@ const DropdownMenu = ({ items }: { items: MenuItem[] }) => {
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: 10 }}
                                     transition={{ duration: 0.2 }}
-                                    className={`absolute min-w-56 bg-background shadow-lg border rounded-lg p-1 ${level > 0 ? "left-full top-0 ml-2" : "mt-2 left-0"}`}
+                                    className={`absolute min-w-56 bg-background shadow-lg border rounded-lg p-1  ${getMenuPosition(level, currentPath)}`}
                                 >
                                     {renderMenuItems(item.submenu, currentPath, level + 1)}
                                 </motion.div>
@@ -101,7 +113,7 @@ const DropdownMenu = ({ items }: { items: MenuItem[] }) => {
 
 function Navbar() {
 
-    const { data, status } = useSession();
+    const { data } = useSession();
     const formattedMenus = React.useMemo(() => data?.user?.modules ? mapMenu(data.user.modules) : [], [data?.user?.modules]);
     const groupedMenus = React.useMemo(() => Object.values(_.groupBy(formattedMenus, "label")), [formattedMenus]);
     const menuItems = transformMenuData(groupedMenus);

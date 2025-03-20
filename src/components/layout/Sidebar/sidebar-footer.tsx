@@ -41,14 +41,17 @@ const SidebarFooterContent = React.memo(() => {
     const { data } = useSession();
     const [config] = themeConfig();
     const { isMobile, toggleSidebar } = useSidebar();
+    const [isLoggingOut, setIsLoggingOut] = React.useState(false);
+
+    const isDual = (config.layout === "collapsed" || config.layout === "dual-menu") && !isMobile
+
     const user = data && data?.user;
     const initials = user && user?.name?.split(' ').map((word: any[]) => word[0]).join('').toUpperCase();
-    const [isLoggingOut, setIsLoggingOut] = React.useState(false);
 
     const logout = async () => {
         setIsLoggingOut(true);
         try {
-            signOut({ redirect: false });
+            await signOut({ redirect: false });
             await logAuditAction('logout', 'auth/signout', { user: `${user?.name}` }, user.id);
         } catch (error) {
             console.error("Logout failed", error);
@@ -73,7 +76,7 @@ const SidebarFooterContent = React.memo(() => {
     const RenderUserInfo = () => {
         return (
             <>
-                <Avatar className={cn("border p-0.5 rounded-lg", (config.layout === "collapsed" && !isMobile) && "size-8")}>
+                <Avatar className={cn("border p-0.5 rounded-lg", isDual && "size-8")}>
                     <AvatarImage src={user?.image} alt={user?.name} />
                     <AvatarFallback className="rounded-lg">{initials ?? "UN"}</AvatarFallback>
                 </Avatar>
@@ -102,7 +105,7 @@ const SidebarFooterContent = React.memo(() => {
                     <DropdownMenuTrigger asChild>
                         <SidebarMenuButton size="lg"
                             className={cn("data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus-within:!ring-primary p-0",
-                                (config.layout === "collapsed" && !isMobile) && "size-8"
+                                isDual && "size-8"
                             )}
                         >
                             <RenderUserInfo />

@@ -1,65 +1,21 @@
 "use client";
 
-import { useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import Link from "next/link";
-import { ChevronDown, ChevronRight } from "lucide-react";
-
-const menuItems = [
-    {
-        label: "Home",
-        href: "/",
-    },
-    {
-        label: "Services",
-        subMenu: [
-            { label: "Web Development", href: "/services/web-development" },
-            
-            {
-                label: "More",
-                subMenu: [
-                    { label: "SEO", href: "/services/seo" },
-                    {
-                        label: "Marketing",
-                        subMenu: [
-                            { label: "Sample One", href: "/services/marketing/1" },
-                            { label: "Sample Two", href: "/services/marketing/2" },
-                        ],
-                    },
-                    {
-                        label: "More",
-                        subMenu: [
-                            { label: "SEO", href: "/services/seo" },
-                            {
-                                label: "Marketing",
-                                subMenu: [
-                                    { label: "Sample One", href: "/services/marketing/1" },
-                                    { label: "Sample Two", href: "/services/marketing/2" },
-                                ],
-                            },
-                        ],
-                    },
-                ],
-            },
-            { label: "Mobile Development", href: "/services/mobile-development" },
-        ],
-    },
-    {
-        label: "About Us",
-        href: "/about",
-    },
-    {
-        label: "Contact",
-        href: "/contact",
-    },
-];
-
+import { ChevronDown, ChevronRight, DotIcon } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { mapMenu, transformMenuData } from "./Sidebar/helper";
+import _ from "lodash";
+import { useSession } from "next-auth/react";
+import { cn } from "@/lib/utils";
 interface MenuItem {
-    label: string;
-    href?: string;
-    subMenu?: MenuItem[];
+    title: string;
+    url?: string;
+    icon?: React.ComponentType;
+    submenu?: MenuItem[];
 }
 
-const DropdownMenu = ({ items }: { items: typeof menuItems }) => {
+const DropdownMenu = ({ items }: { items: MenuItem[] }) => {
     const [openPaths, setOpenPaths] = useState<string[]>([]);
     const timeouts = useRef<Record<string, NodeJS.Timeout | null>>({});
 
@@ -74,16 +30,11 @@ const DropdownMenu = ({ items }: { items: typeof menuItems }) => {
     const closeMenu = (path: string) => {
         timeouts.current[path] = setTimeout(() => {
             setOpenPaths((prev) => prev.filter((p) => !p.startsWith(path)));
-        }, 200);
+        }, 1);
     };
 
-    const handleMouseEnter = (path: string) => {
-        openMenu(path);
-    };
-
-    const handleMouseLeave = (path: string) => {
-        closeMenu(path);
-    };
+    const handleMouseEnter = (path: string) => openMenu(path);
+    const handleMouseLeave = (path: string) => closeMenu(path);
 
     const handleClick = (path: string) => {
         if (openPaths.includes(path)) {
@@ -103,43 +54,63 @@ const DropdownMenu = ({ items }: { items: typeof menuItems }) => {
             return (
                 <div
                     key={currentPath}
-                    className="relative"
+                    className="relative text-sm"
                     onMouseEnter={() => handleMouseEnter(currentPath)}
                     onMouseLeave={() => handleMouseLeave(currentPath)}
                 >
                     <button
                         onClick={() => handleClick(currentPath)}
-                        className="w-full flex justify-between items-center gap-1 p-2 hover:bg-primary-foreground rounded"
+                        className={cn("w-full flex justify-between items-center gap-1 p-2 hover:bg-muted rounded hover:text-primary", level == 0 && "py-3")}
                     >
-                        {item.href ? (
-                            <Link href={item.href}>{item.label}</Link>
+                        {item.url ? (
+                            <Link href={item.url} className="flex gap-2 [&>svg]:size-4 items-center w-full">
+                                {item.icon ? <item.icon /> : level !== 0 && <DotIcon/>}
+                                <span>{item.title}</span>
+                            </Link>
                         ) : (
-                            <span>{item.label}</span>
+                            <div className="flex gap-2 [&>svg]:size-5 w-full">
+                                {item.icon ? <item.icon /> : level !== 0 &&  <DotIcon/>}
+                                <span>{item.title}</span>
+                            </div>
                         )}
-                        {item.subMenu && (level === 0 ? <ChevronDown size={16} /> : <ChevronRight size={16} />)}
+                        {item.submenu && (level === 0 ? <ChevronDown size={16} /> : <ChevronRight size={16} />)}
                     </button>
 
-                    {item.subMenu && isOpen && (
-                        <div
-                            className={`absolute mt-2 w-48 bg-background shadow-lg border rounded-lg p-2 ${level > 0 ? "left-full top-0 ml-3" : "left-0"}`}
-                        >
-                            {renderMenuItems(item.subMenu, currentPath, level + 1)}
-                        </div>
+                    {item.submenu && (
+                        <AnimatePresence>
+                            {isOpen && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 10 }}
+                                    transition={{ duration: 0.2 }}
+                                    className={`absolute min-w-56 bg-background shadow-lg border rounded-lg p-1 ${level > 0 ? "left-full top-0 ml-2" : "mt-2 left-0"}`}
+                                >
+                                    {renderMenuItems(item.submenu, currentPath, level + 1)}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     )}
                 </div>
             );
         });
     };
 
-    return <nav className="flex space-x-8">{renderMenuItems(items)}</nav>;
+    return <nav className="flex space-x-6">{renderMenuItems(items)}</nav>;
 };
 
+function Navbar() {
 
+    const { data, status } = useSession();
+    const formattedMenus = React.useMemo(() => data?.user?.modules ? mapMenu(data.user.modules) : [], [data?.user?.modules]);
+    const groupedMenus = React.useMemo(() => Object.values(_.groupBy(formattedMenus, "label")), [formattedMenus]);
+    const menuItems = transformMenuData(groupedMenus);
 
-export default function Navbar() {
     return (
         <div className="container mx-auto flex items-center">
             <DropdownMenu items={menuItems} />
         </div>
     );
 }
+
+export default React.memo(Navbar);

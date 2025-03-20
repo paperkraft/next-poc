@@ -10,6 +10,13 @@ type inputType = {
     subModules: inputType[];
 };
 
+interface MenuItem {
+    title: string;
+    url?: string;
+    icon?: React.ComponentType;
+    submenu?: MenuItem[];
+}
+
 export type submenuType = {
     title: string;
     url: string;
@@ -133,4 +140,47 @@ export function searchSubmenu(submenu: submenuType[], query: string): boolean {
             item.title.toLowerCase().includes(query) ||
             (item.submenu && searchSubmenu(item.submenu, query))
     );
+}
+
+
+
+export const cleanSubMenu = (submenu: submenuType[]): MenuItem[] => {
+    return submenu.map((item) => {
+        const cleanedItem: MenuItem = {
+            title: item.title,
+            url: item.url !== "#" ? item.url : undefined,
+        };
+
+        if (item.submenu && item.submenu.length) {
+            cleanedItem.submenu = cleanSubMenu(item.submenu);
+        }
+
+        return cleanedItem;
+    });
+};
+
+export const transformMenuData = (data: menuType[][]): MenuItem[] => {
+    const grouped: Record<string, MenuItem> = {};
+
+    data.flat().forEach((item) => {
+        const groupLabel = item.label;
+
+        if (!grouped[groupLabel]) {
+            grouped[groupLabel] = {
+                title: groupLabel,
+                submenu: [],
+            };
+        }
+
+        const subMenuItem: MenuItem = {
+            title: item.title,
+            icon: item.icon,
+            url: item.url !== "#" ? item.url : undefined,
+            submenu: item.submenu && item.submenu.length ? cleanSubMenu(item.submenu) : undefined,
+        };
+
+        grouped[groupLabel].submenu?.push(subMenuItem);
+    });
+
+    return Object.values(grouped);
 }

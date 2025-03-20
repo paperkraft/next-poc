@@ -6,7 +6,6 @@ import { FormDescription, FormItem, Form, FormLabel } from "@/components/ui/form
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { themeConfig } from "@/hooks/use-config"
-import { layoutBlock, RenderBlocks, themeBlocks } from "./components/Blocks"
 import React from "react"
 import RenderColors from "./components/ColorBlocks"
 import RenderRadius from "./components/RadiusBlocks"

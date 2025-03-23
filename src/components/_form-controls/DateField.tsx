@@ -19,6 +19,7 @@ interface DateFieldProps {
 }
 
 export const DateField: React.FC<DateFieldProps> = ({ value, label, onChange, ...rest }) => {
+  const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState<string>(value ? format(value, "dd-MM-yyyy") : "");
   const datePattern = /^(\d{2})-(\d{2})-(\d{4})$/;
 
@@ -34,6 +35,8 @@ export const DateField: React.FC<DateFieldProps> = ({ value, label, onChange, ..
       }
     } catch (error) {
       console.error("Error handling date change:", error);
+    } finally {
+      setOpen(false)
     }
   };
 
@@ -69,7 +72,7 @@ export const DateField: React.FC<DateFieldProps> = ({ value, label, onChange, ..
   };
 
   return (
-    <Popover>
+    <Popover modal={false} open={open}>
       <div className="relative">
         <Input
           id={label}
@@ -88,6 +91,7 @@ export const DateField: React.FC<DateFieldProps> = ({ value, label, onChange, ..
               "size-7 absolute right-1 top-1/2 -translate-y-1/2 px-1.5 cursor-pointer opacity-50 hover:opacity-100",
               rest.disabled && "text-muted-foreground"
             )}
+            onClick={() => setOpen(true)}
           />
         </PopoverTrigger>
       </div>

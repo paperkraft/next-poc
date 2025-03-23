@@ -21,6 +21,7 @@ interface DateFieldProps {
 }
 
 export const FloatingDateField: React.FC<DateFieldProps> = ({ value, label, onChange, ...rest }) => {
+  const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState<string>(value ? format(value, "dd-MM-yyyy") : "");
   const datePattern = /^(\d{2})-(\d{2})-(\d{4})$/;
 
@@ -36,6 +37,8 @@ export const FloatingDateField: React.FC<DateFieldProps> = ({ value, label, onCh
       }
     } catch (error) {
       console.error("Error handling date change:", error);
+    } finally {
+      setOpen(false);
     }
   };
 
@@ -103,7 +106,7 @@ export const FloatingDateField: React.FC<DateFieldProps> = ({ value, label, onCh
   };
 
   return (
-    <Popover modal={false}>
+    <Popover modal={false} open={open}>
       <div className="relative">
         <Input
           id={rest.name}
@@ -129,12 +132,13 @@ export const FloatingDateField: React.FC<DateFieldProps> = ({ value, label, onCh
           {label}
         </Label>
         <PopoverTrigger asChild disabled={rest.disabled}>
-            <CalendarIcon aria-label="Open Calendar"
-              className={cn(
-                "size-7 absolute right-1 top-1/2 -translate-y-1/2 p-1.5 cursor-pointer opacity-60 hover:opacity-100",
-                rest.disabled && "text-muted-foreground"
-              )}
-            />
+          <CalendarIcon aria-label="Open Calendar"
+            className={cn(
+              "size-7 absolute right-1 top-1/2 -translate-y-1/2 p-1.5 cursor-pointer opacity-60 hover:opacity-100",
+              rest.disabled && "text-muted-foreground"
+            )}
+            onClick={() => setOpen(true)}
+          />
         </PopoverTrigger>
       </div>
 

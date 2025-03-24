@@ -36,7 +36,7 @@ const themeAtom = atomWithStorage<ThemeConfig>("theme-config", {
     theme: "zinc",
     mode: "system",
     layout: "vertical",
-    content: "wide",
+    content: "compact",
     radius: 0.5,
 })
 

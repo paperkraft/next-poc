@@ -46,7 +46,7 @@ export default function ThemeCustomizer() {
             theme: "zinc",
             radius: 0.5,
             layout: 'vertical',
-            content: 'wide',
+            content: 'compact',
             lang: "en",
         });
         setMode('light');

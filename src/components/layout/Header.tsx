@@ -14,6 +14,7 @@ import UserAction from './UserAction';
 import ThemeConfig from '@/components/layout/ThemeCustomizer';
 import Navbar from './navbar';
 import AppLogo from '../custom/app-initial';
+import { cn } from '@/lib/utils';
 
 export function CustomTrigger() {
     const { toggleSidebar } = useSidebar();
@@ -23,39 +24,44 @@ export function CustomTrigger() {
 const Header: React.FC = React.memo(() => {
     const mounted = useMounted();
     const isMobile = useIsMobile();
-    const [theme] = themeConfig();
+    const [config] = themeConfig();
 
     if (!mounted) return null;
 
     return (
         //w-full transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12
-        <header className="flex sticky top-0 bg-background h-16 shrink-0 items-center gap-2 border-b px-4 z-50">
-            <div className="flex items-center gap-2 w-full">
+        <>
+            <header className="flex sticky top-0 bg-background h-16 shrink-0 items-center gap-2 border-b px-4 z-50">
+                <div className={cn("flex items-center gap-2 w-full",
+                    { "container mx-auto border-b-0 px-8": config.content === 'compact' },
+                )}>
 
-                {(isMobile || theme.layout === "vertical") && (
-                    <>
-                        <CustomTrigger />
-                        <Separator orientation="vertical" className="mr-2 h-4" />
-                    </>
-                )}
-                {!isMobile && theme.layout !== "horizontal" && <HeaderBreadcrumb />}
-                {!isMobile && theme.layout === "horizontal" && 
-                    <>
-                        <AppLogo/>
-                        <Navbar />
-                    </>
-                }
+                    {(isMobile || config.layout === "vertical") && (
+                        <>
+                            <CustomTrigger />
+                            <Separator orientation="vertical" className="mr-2 h-4" />
+                        </>
+                    )}
+                    {!isMobile && config.layout !== "horizontal" && <HeaderBreadcrumb />}
+                    {!isMobile && config.layout === "horizontal" && <AppLogo />}
 
-                <div className='ml-auto'>
-                    <div className='flex gap-2'>
-                        {!isMobile && <ThemeConfig />}
-                        {!isMobile && <LocaleSwitcher />}
-                        <BellNotifications />
-                        {theme.layout === "horizontal" && <UserAction />}
+                    <div className='ml-auto'>
+                        <div className='flex gap-2'>
+                            {!isMobile && <ThemeConfig />}
+                            {!isMobile && <LocaleSwitcher />}
+                            <BellNotifications />
+                            {config.layout === "horizontal" && <UserAction />}
+                        </div>
                     </div>
                 </div>
-            </div>
-        </header>
+            </header>
+            {
+                !isMobile && config.layout === "horizontal" &&
+                <div className="border-b py-1">
+                    <Navbar />
+                </div>
+            }
+        </>
     );
 });
 

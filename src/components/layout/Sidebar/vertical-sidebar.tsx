@@ -60,7 +60,7 @@ const VerticalMenus = React.memo(() => {
     }, [debouncedQuery, groupedMenus, searchSubmenu]);
 
     return (
-        <SidebarContent>
+        <SidebarContent className="gap-0">
             <SidebarGroup className="sticky top-0 z-40 bg-sidebar">
                 <SidebarGroupContent className="relative">
                     <SidebarInput

@@ -6,6 +6,7 @@ import { ArrowLeft, Plus } from "lucide-react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { Guard } from "./permission-guard"
+import { useMounted } from "@/hooks/use-mounted"
 
 type Props = {
     title: string
@@ -18,9 +19,11 @@ type Props = {
 }
 
 const TitlePage = memo(({ title, description, children, createPage, listPage, viewPage, moduleId }: Props) => {
+    const mounted = useMounted();
     const path = usePathname();
     const route = useRouter();
     return (
+        mounted &&
         <div className="flex flex-col gap-4">
             <div className="flex items-center">
                 <div className="space-y-0.5">

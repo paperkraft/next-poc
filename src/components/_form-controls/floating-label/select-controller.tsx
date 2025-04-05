@@ -1,5 +1,4 @@
-import { FloatingLabel, FloatingLabelInput } from "@/components/ui/floating-input";
-import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { FormDescription, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
@@ -33,7 +32,7 @@ export const FloatingSelectController = <T extends FieldValues>({ options, name,
             render={({ field }) => (
                 <FormItem className={cn("w-full", rest?.className)}>
                     <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value} disabled={rest?.disabled}>
-                        <SelectTrigger className="relative" id={name}>
+                        <SelectTrigger className="relative" id={name} ref={field.ref}>
                             <Label
                                 htmlFor={name}
                                 className={cn(

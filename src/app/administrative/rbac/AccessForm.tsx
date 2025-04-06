@@ -212,7 +212,6 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
   };
 
   return (
-    <WithPermission permissionBit={15}>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <SelectController name={"userId"} label={"Role"} options={roleOptions} className="max-w-md" />
@@ -258,6 +257,5 @@ export default function AccessPage({ roles, modules }: IAccessProps) {
           </div>
         </form>
       </Form>
-    </WithPermission>
   );
 }

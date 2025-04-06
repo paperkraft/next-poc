@@ -1,5 +1,5 @@
-import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -7,120 +7,121 @@ const salt = await bcrypt.genSalt(10);
 const hash = await bcrypt.hash("123123", salt);
 
 async function main() {
-  // Step 1: Create some Roles
+  console.log('🌱 Seeding started...');
 
-  console.log('Creating roles')
+  // // 1. Permissions (bitmask values)
+  // const permissions = [
+  //   { name: 'view', bitmask: 1 },
+  //   { name: 'create', bitmask: 2 },
+  //   { name: 'edit', bitmask: 4 },
+  //   { name: 'delete', bitmask: 8 },
+  // ];
 
-  const adminRole = await prisma.role.create({
-    data: {
-      name: 'admin',
-      permissions: 15,
-    },
-  });
+  // for (const p of permissions) {
+  //   await prisma.permission.upsert({
+  //     where: { name: p.name },
+  //     update: {},
+  //     create: p,
+  //   });
+  // }
 
-  await prisma.role.create({
-    data: {
-      name: 'guest',
-      permissions: 1,
-    },
-  });
+  // // 2. Roles
+  // const roles = ['super-admin', 'organization-admin', 'editor', 'viewer'];
 
-  // Step 2: Create some Permissions
-  console.log('Creating some Permissions')
-  await prisma.permission.createMany({
-    data:[
-      {
-        name: 'Read',
-        bitmask: 1,
+  // for (const role of roles) {
+  //   await prisma.role.upsert({
+  //     where: { name: role },
+  //     update: {},
+  //     create: { name: role },
+  //   });
+  // }
+
+  // // 3. Groups
+  // const dashboardGroup = await prisma.group.upsert({
+  //   where: { name: 'Dashboard' },
+  //   update: {},
+  //   create: { name: 'Dashboard' },
+  // });
+
+  // // 4. Modules (nested structure)
+  // const dashboardModule = await prisma.module.upsert({
+  //   where: { name: 'Main Dashboard' },
+  //   update: {},
+  //   create: {
+  //     name: 'Main Dashboard',
+  //     path: '/dashboard',
+  //     groupId: dashboardGroup.id,
+  //   },
+  // });
+
+  // const analyticsModule = await prisma.module.upsert({
+  //   where: { name: 'Analytics' },
+  //   update: {},
+  //   create: {
+  //     name: 'Analytics',
+  //     path: '/dashboard/analytics',
+  //     parentId: dashboardModule.id,
+  //   },
+  // });
+
+  // 5. Assign RolePermissions (super-admin gets full access)
+  const superAdmin = await prisma.role.findUnique({ where: { name: 'super-admin' } });
+  
+  if (superAdmin) {
+    await prisma.rolePermission.upsert({
+      where: { roleId_moduleId: { roleId: superAdmin.id, moduleId: '67f2849eb06677abf077f8f5' } },
+      update: {},
+      create: {
+        roleId: superAdmin.id,
+        moduleId: '67f2849eb06677abf077f8f5',
+        permissionBits: 15,
       },
-      {
-        name: 'Write',
-        bitmask: 2,
+    });
+
+    await prisma.rolePermission.upsert({
+      where: { roleId_moduleId: { roleId: superAdmin.id, moduleId: '67f28539b06677abf077f8f7' } },
+      update: {},
+      create: {
+        roleId: superAdmin.id,
+        moduleId: '67f28539b06677abf077f8f7',
+        permissionBits: 15,
       },
-      {
-        name: 'Update',
-        bitmask: 3,
+    });
+
+    await prisma.rolePermission.upsert({
+      where: { roleId_moduleId: { roleId: superAdmin.id, moduleId: '67f28572b06677abf077f8fa' } },
+      update: {},
+      create: {
+        roleId: superAdmin.id,
+        moduleId: '67f28572b06677abf077f8fa',
+        permissionBits: 15,
       },
-      {
-        name: 'Delete',
-        bitmask: 4,
-      },
-    ]
-  });
+    });
+  }
 
-  // Create groups
+  // // 6. Create a sample user
+  // await prisma.user.upsert({
+  //   where: { email: 'admin@example.com' },
+  //   update: {},
+  //   create: {
+  //     email: 'admin@example.com',
+  //     password: hash,
+  //     username: 'admin',
+  //     firstName: 'Super',
+  //     lastName: 'Admin',
+  //     roleId: superAdmin.id,
+  //   },
+  // });
 
-  await prisma.group.createMany({
-    data: [
-      { name: "Home" },
-      { name: "Master" },
-      { name: "Global Master" },
-      { name: "Module" },
-      { name: "Picture" },
-      { name: "Uncategorized" },
-      { name: "Administrative" },
-    ]
-  });
-  // Fetch the groups to get their IDs since createMany doesn't return created records
-  const groupList = await prisma.group.findMany();
- 
-  // Step 3: Create some Modules
-  console.log('Creating some Modules')
-  const adminModule = await prisma.module.create({
-    data: {
-      groupId: groupList[0].id,
-      name: 'Dashboard',
-      path:'/dashboard'
-    },
-  });
-
-  await prisma.module.createMany({
-    data: [
-      { name: "Settings", groupId: groupList[0].id },
-      { name: "Gallery", groupId: groupList[4].id },
-      { name: "Role", groupId: groupList[1].id },
-      { name: "Groups", groupId: groupList[1].id },
-      { name: "Module", groupId: groupList[1].id },
-      { name: "Academics", groupId: groupList[3].id },
-      { name: "Student", groupId: groupList[3].id },
-    ]
-  });
-
-  // Step 4: Create some ModulePermissions
-  console.log('Creating some ModulePermissions')
-  await prisma.modulePermission.create({
-    data: {
-      roleId: adminRole.id,
-      moduleId: adminModule.id,
-      permissions: 15, // Full permissions
-    },
-  });
-
-  // Step 5: Create some Users
-  console.log('Creating some Users')
-  await prisma.user.create({
-    data: {
-      firstName: 'Vishal',
-      lastName: 'Sannake',
-      username: 'vishal',
-      email: 'vishal.sannake@akronsystems.com',
-      password: hash,
-      phone: '8888812345',
-      organization: 'SV Design',
-      state: 'Maharashtra',
-      city: 'Kolhapur',
-      roleId: adminRole.id,
-    },
-  });
-
-  console.log('Data seeding completed!');
+  console.log('✅ Seeding completed.');
 }
 
 main()
   .catch((e) => {
-    console.error(e);
+    console.error('❌ Seeding failed:', e);
     process.exit(1);
   })
   .finally(async () => {
     await prisma.$disconnect();
   });
+

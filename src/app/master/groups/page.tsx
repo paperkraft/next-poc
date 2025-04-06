@@ -17,9 +17,9 @@ export default async function GroupPage() {
     const rolePermissions = +session?.user?.permissions;
     const permission = hasPermission(rolePermissions, 8);
   
-    if (!permission) {
-      return <AccessDenied />;
-    }
+    // if (!permission) {
+    //   return <AccessDenied />;
+    // }
     
     return (
       <>

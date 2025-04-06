@@ -15,9 +15,9 @@ export default async function Page({ params }: { params: { id: string } }) {
   const rolePermissions = +session?.user?.permissions;
   const permission = hasPermission(rolePermissions, 8);
 
-  if (!permission) {
-    return <AccessDenied />;
-  }
+  // if (!permission) {
+  //   return <AccessDenied />;
+  // }
 
   try {
     const module = await fetchUniqueModule(id).then((d)=>d.json());

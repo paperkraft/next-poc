@@ -27,29 +27,48 @@ export const getRecaptchaToken = async (): Promise<string | null> => {
 export const getUser = async (email: string, password: string) => {
     const user = await prisma.user.findFirst({
         where: { email },
-        include: { role: true }
+        include: {
+            role: {
+                include: {
+                    permissions: {
+                        include: {
+                            module: true
+                        }
+                    }
+                }
+            }
+        }
     });
 
     if (!user) {
-        return null
-    }
-
-    const hasPwd = await verifyPassword({ plainPassword: password, hashPassword: `${user?.password}` });
-
-    if (user && !hasPwd) {
-        await logAuditAction('Error', 'auth/signin', { error: 'Invalid credentials' }, user?.id);
         return null;
     }
 
-    await logAuditAction('login', 'auth/signin', { user: `${user?.firstName} ${user?.lastName}` }, user?.id);
-    const menus = await fetchModuleByRole(user.roleId).then((d) => d.json());
+    const hasPwd = await verifyPassword({
+        plainPassword: password,
+        hashPassword: user.password ?? ""
+    });
+
+    if (!hasPwd) {
+        await logAuditAction("Error", "auth/signin", { error: "Invalid credentials" }, user.id);
+        return null;
+    }
+
+    await logAuditAction("login", "auth/signin", { user: `${user.firstName} ${user.lastName}` }, user.id);
+
+    // Fetch ABAC modules using the role ID
+    const moduleResponse = await fetchModuleByRole(user.roleId);
+    const modulesResult = await moduleResponse.json();
 
     return {
-        id: user?.id,
-        name: user && `${user?.firstName} ${user?.lastName}`,
-        email: email,
-        roleId: user?.roleId,
-        permissions: user?.role?.permissions,
-        modules: menus?.data
+        id: user.id,
+        name: `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim(),
+        email: user.email,
+        roleId: user.roleId,
+        permissions: user.role.permissions.map((p) => ({
+            moduleId: p.moduleId,
+            permissionBits: p.permissionBits
+        })),
+        modules: modulesResult.data
     };
 };

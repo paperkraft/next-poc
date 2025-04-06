@@ -5,6 +5,7 @@ import SomethingWentWrong from "@/components/custom/somthing-wrong";
 import AccessPage from "./AccessForm";
 import { fetchRoles } from "@/app/action/role.action";
 import { fetchModules } from "@/app/action/module.action";
+import RolePermissionsPage from "./ModulePermissionTable";
 
 export const metadata: Metadata = {
     title: "Access Control",
@@ -19,6 +20,10 @@ export default async function RBAC() {
     const roles = await fetchRoles().then((d) => d.json());
     const isRoles = roles && roles.success
     const hasRoles = isRoles && roles?.data?.length > 0;
+
+ 
+
+    return <RolePermissionsPage />;
 
     return (
         <div className="space-y-4 p-2">

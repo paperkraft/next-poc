@@ -113,8 +113,6 @@ export default function StepperForm() {
         [updateFormData]
     );
 
-    console.log("DOB raw input", form.watch("dob"));
-
     useEffect(() => {
         const subscription = form.watch((values) => {
             const filteredData = {

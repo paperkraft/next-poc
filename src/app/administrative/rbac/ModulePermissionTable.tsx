@@ -6,26 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import axios from "axios";
-
-const PERMISSION_MAP = {
-    read: 1 << 0,
-    write: 1 << 1,
-    update: 1 << 2,
-    delete: 1 << 3,
-};
-
-interface Role {
-    id: string;
-    name: string;
-}
-
-interface Module {
-    id: string;
-    name: string;
-    parentId: string | null;
-    subModules: Module[];
-    permissions: number;
-}
+import { PERMISSIONS } from "@/types/permissions";
+import { Module, Role } from "@/types/permissions";
 
 export default function RolePermissionManager() {
     const [roles, setRoles] = useState<Role[]>([]);
@@ -41,15 +23,13 @@ export default function RolePermissionManager() {
         if (!selectedRole) return;
         axios.get(`/api/modules?roleId=${selectedRole}`).then((res) => {
             const moduleData = res.data as Module[];
-
-            console.log("Module Data:", moduleData); // Debugging line
             setModules(moduleData);
 
             const defaultValues: { [key: string]: boolean } = {};
 
             const fillValues = (mod: Module) => {
-                for (const key in PERMISSION_MAP) {
-                    defaultValues[`${mod.id}_${key}`] = Boolean(mod.permissions & PERMISSION_MAP[key as keyof typeof PERMISSION_MAP]);
+                for (const key in PERMISSIONS) {
+                    defaultValues[`${mod.id}_${key}`] = Boolean(mod.permissions & PERMISSIONS[key as keyof typeof PERMISSIONS]);
                 }
                 mod.subModules.forEach(fillValues);
             };
@@ -61,9 +41,9 @@ export default function RolePermissionManager() {
     const buildPayload = (mods: Module[]): any[] => {
         return mods.map((mod) => {
             let permissionBits = 0;
-            for (const key in PERMISSION_MAP) {
+            for (const key in PERMISSIONS) {
                 if (watch(`${mod.id}_${key}`)) {
-                    permissionBits |= PERMISSION_MAP[key as keyof typeof PERMISSION_MAP];
+                    permissionBits |= PERMISSIONS[key as keyof typeof PERMISSIONS];
                 }
             }
             return {
@@ -88,19 +68,19 @@ export default function RolePermissionManager() {
                     <td className={`pl-${level * 4} py-2`}>
                         {mod.name}
                     </td>
-                    
+
                     <td className="text-center">
                         <Checkbox
-                            checked={Object.keys(PERMISSION_MAP).every((perm) => watch(`${mod.id}_${perm}`))}
+                            checked={Object.keys(PERMISSIONS).every((perm) => watch(`${mod.id}_${perm}`))}
                             onCheckedChange={(val) => {
-                                Object.keys(PERMISSION_MAP).forEach((perm) => {
+                                Object.keys(PERMISSIONS).forEach((perm) => {
                                     setValue(`${mod.id}_${perm}`, Boolean(val));
                                 });
 
                                 if (!val) {
                                     const clearChildren = (m: Module) => {
                                         m.subModules.forEach((sub) => {
-                                            Object.keys(PERMISSION_MAP).forEach((perm) => {
+                                            Object.keys(PERMISSIONS).forEach((perm) => {
                                                 setValue(`${sub.id}_${perm}`, false);
                                             });
                                             clearChildren(sub);
@@ -112,7 +92,7 @@ export default function RolePermissionManager() {
                         />
                     </td>
 
-                    {Object.keys(PERMISSION_MAP).map((perm) => (
+                    {Object.keys(PERMISSIONS).map((perm) => (
                         <td key={perm} className="text-center">
                             <Controller
                                 name={`${mod.id}_${perm}`}
@@ -151,7 +131,7 @@ export default function RolePermissionManager() {
                                     // Disable checkbox if parent is not checked
                                     let disabled = false;
                                     if (mod.parentId) {
-                                        const parentChecked = Object.keys(PERMISSION_MAP).some((p) => watch(`${mod.parentId}_${p}`));
+                                        const parentChecked = Object.keys(PERMISSIONS).some((p) => watch(`${mod.parentId}_${p}`));
                                         disabled = !parentChecked;
                                     }
 
@@ -195,7 +175,7 @@ export default function RolePermissionManager() {
                         <tr className="bg-gray-100">
                             <th className="text-left p-2">Module</th>
                             <th className="text-center capitalize">Check All</th>
-                            {Object.keys(PERMISSION_MAP).map((perm) => (
+                            {Object.keys(PERMISSIONS).map((perm) => (
                                 <th key={perm} className="text-center capitalize">{perm}</th>
                             ))}
                         </tr>

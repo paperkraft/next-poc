@@ -18,7 +18,7 @@ export async function fetchRoles() {
     } catch (error) {
         console.error("Error fetching roles:", error);
         return NextResponse.json(
-            { success: false, message: 'Error fetching roles' },
+            { success: false, message: 'Error fetching roles', data: [] },
             { status: 500 }
         );
     }

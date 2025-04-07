@@ -9,15 +9,15 @@ export const PERMISSIONS: Record<PermissionKey, number> = {
   delete: 1 << 3,
 }
 
-export interface Role {
+export interface IRole {
   id: string;
   name: string;
 }
-export interface Module {
+export interface IModule {
   id: string;
   name: string;
   parentId: string | null;
-  subModules: Module[];
+  subModules: IModule[];
   permissions: number;
 }
 

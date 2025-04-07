@@ -1,33 +1,46 @@
 'use client';
 
-import { useEffect, useState } from "react";
-import { useForm, Controller } from "react-hook-form";
+import React, { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import axios from "axios";
 import { PERMISSIONS } from "@/types/permissions";
-import { Module, Role } from "@/types/permissions";
+import { IModule, IRole } from "@/types/permissions";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { PermissionRow } from "./PermissionRow";
+import { toast } from "sonner";
+import { filterModulesByName } from "./helper";
+import { useDebounce } from "@/hooks/use-debounce";
 
-export default function RolePermissionManager() {
-    const [roles, setRoles] = useState<Role[]>([]);
-    const [modules, setModules] = useState<Module[]>([]);
+export default function RolePermissionManager({ roles }: { roles: IRole[] }) {
+    const [modules, setModules] = useState<IModule[]>([]);
     const [selectedRole, setSelectedRole] = useState<string>("");
     const { control, handleSubmit, reset, watch, setValue } = useForm<{ [key: string]: boolean }>({});
+    const [loading, setLoading] = useState(false);
+
+    const [search, setSearch] = useState("");
+    const [openModules, setOpenModules] = useState<string[]>([]);
+    const openSet = new Set<string>();
+
+    const debouncedSearch = useDebounce(search, 300);
+    const filteredModules = filterModulesByName(modules, debouncedSearch, openSet);
 
     useEffect(() => {
-        axios.get("/api/roles").then((res) => setRoles(res.data));
-    }, []);
+        setOpenModules(Array.from(openSet));
+    }, [debouncedSearch]);
 
     useEffect(() => {
         if (!selectedRole) return;
+        setLoading(true);
+
         axios.get(`/api/modules?roleId=${selectedRole}`).then((res) => {
-            const moduleData = res.data as Module[];
+            const moduleData = res.data as IModule[];
             setModules(moduleData);
 
             const defaultValues: { [key: string]: boolean } = {};
 
-            const fillValues = (mod: Module) => {
+            const fillValues = (mod: IModule) => {
                 for (const key in PERMISSIONS) {
                     defaultValues[`${mod.id}_${key}`] = Boolean(mod.permissions & PERMISSIONS[key as keyof typeof PERMISSIONS]);
                 }
@@ -35,10 +48,12 @@ export default function RolePermissionManager() {
             };
             moduleData.forEach(fillValues);
             reset(defaultValues);
+            setLoading(false);
         });
+
     }, [selectedRole, reset]);
 
-    const buildPayload = (mods: Module[]): any[] => {
+    const buildPayload = (mods: IModule[]): any[] => {
         return mods.map((mod) => {
             let permissionBits = 0;
             for (const key in PERMISSIONS) {
@@ -57,104 +72,11 @@ export default function RolePermissionManager() {
     const onSubmit = async () => {
         const payload = buildPayload(modules);
         await axios.post("/api/role-permissions", { roleId: selectedRole, modules: payload });
-        alert("Permissions updated!");
-    };
-
-    const renderModule = (mod: Module, level = 0,): JSX.Element => {
-
-        return (
-            <>
-                <tr className={`border-t ${level > 0 ? 'bg-gray-50' : ''}`}>
-                    <td className={`pl-${level * 4} py-2`}>
-                        {mod.name}
-                    </td>
-
-                    <td className="text-center">
-                        <Checkbox
-                            checked={Object.keys(PERMISSIONS).every((perm) => watch(`${mod.id}_${perm}`))}
-                            onCheckedChange={(val) => {
-                                Object.keys(PERMISSIONS).forEach((perm) => {
-                                    setValue(`${mod.id}_${perm}`, Boolean(val));
-                                });
-
-                                if (!val) {
-                                    const clearChildren = (m: Module) => {
-                                        m.subModules.forEach((sub) => {
-                                            Object.keys(PERMISSIONS).forEach((perm) => {
-                                                setValue(`${sub.id}_${perm}`, false);
-                                            });
-                                            clearChildren(sub);
-                                        });
-                                    };
-                                    clearChildren(mod);
-                                }
-                            }}
-                        />
-                    </td>
-
-                    {Object.keys(PERMISSIONS).map((perm) => (
-                        <td key={perm} className="text-center">
-                            <Controller
-                                name={`${mod.id}_${perm}`}
-                                control={control}
-                                render={({ field }) => {
-                                    const isChecked = field.value;
-
-                                    const handleChange = (val: boolean) => {
-                                        field.onChange(val);
-
-                                        const updateChildren = (m: Module, value: boolean) => {
-                                            m.subModules.forEach((sub) => {
-                                                setValue(`${sub.id}_${perm}`, value);
-                                                updateChildren(sub, value);
-                                            });
-                                        };
-
-                                        const updateParent = (current: Module, parentModules: Module[]) => {
-                                            const parent = parentModules.find((pm) => pm.id === current.parentId);
-                                            if (!parent) return;
-
-                                            const hasAnyChildWithPermission = parent.subModules.some((sub) => watch(`${sub.id}_${perm}`));
-                                            setValue(`${parent.id}_${perm}`, hasAnyChildWithPermission);
-                                            updateParent(parent, parentModules);
-                                        };
-
-                                        if (!val) {
-                                            // If parent is unchecked, uncheck children
-                                            updateChildren(mod, false);
-                                        } else {
-                                            // Parent checked, allow children to be enabled
-                                            updateParent(mod, modules);
-                                        }
-                                    };
-
-                                    // Disable checkbox if parent is not checked
-                                    let disabled = false;
-                                    if (mod.parentId) {
-                                        const parentChecked = Object.keys(PERMISSIONS).some((p) => watch(`${mod.parentId}_${p}`));
-                                        disabled = !parentChecked;
-                                    }
-
-                                    return (
-                                        <Checkbox
-                                            checked={isChecked}
-                                            disabled={disabled}
-                                            onCheckedChange={handleChange}
-                                        />
-                                    )
-                                }}
-                            />
-                        </td>
-                    ))}
-                </tr>
-
-                {mod.subModules.map((sub) => renderModule(sub, level + 1))}
-            </>
-        );
+        toast.success("Permissions updated!");
     };
 
     return (
-        <div className="p-4 space-y-4">
+        <div className="space-y-4">
             <div className="flex items-center gap-4">
                 <Select value={selectedRole} onValueChange={setSelectedRole}>
                     <SelectTrigger>
@@ -169,21 +91,55 @@ export default function RolePermissionManager() {
                 <Button onClick={handleSubmit(onSubmit)} disabled={!selectedRole}>Save</Button>
             </div>
 
-            {modules.length > 0 && (
-                <table className="w-full border mt-4">
-                    <thead>
-                        <tr className="bg-gray-100">
-                            <th className="text-left p-2">Module</th>
-                            <th className="text-center capitalize">Check All</th>
-                            {Object.keys(PERMISSIONS).map((perm) => (
-                                <th key={perm} className="text-center capitalize">{perm}</th>
+            {loading && <p className="text-gray-500">Loading...</p>}
+
+            {!loading && modules.length > 0 && (
+                <>
+                    <input
+                        type="text"
+                        placeholder="Search modules..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="px-3 py-2 border rounded-md w-full max-w-md text-sm"
+                    />
+
+                    <Table className="w-full border">
+                        <TableHeader className="bg-gray-50 dark:bg-gray-800">
+                            <TableRow>
+                                <TableHead className="text-left p-2">Module</TableHead>
+                                <TableHead className="text-center capitalize">Check All</TableHead>
+                                {Object.keys(PERMISSIONS).map((perm) => (
+                                    <TableHead key={perm} className="text-center capitalize">{perm}</TableHead>
+                                ))}
+                            </TableRow>
+                        </TableHeader>
+
+                        <TableBody>
+                            {filteredModules.map((mod) => (
+                                <PermissionRow
+                                    key={mod.id}
+                                    mod={mod}
+                                    level={0}
+                                    modules={modules}
+                                    control={control}
+                                    watch={watch}
+                                    setValue={setValue}
+                                    openModules={openModules}
+                                    setOpenModules={setOpenModules}
+                                    debouncedSearch={debouncedSearch}
+                                />
                             ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {modules.map((mod) => renderModule(mod))}
-                    </tbody>
-                </table>
+
+                            {filteredModules.length === 0 && (
+                                <TableRow className="border-t">
+                                    <TableCell colSpan={Object.keys(PERMISSIONS).length + 2} className="text-center py-4 text-gray-500">
+                                        No modules found for "{debouncedSearch}"
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                </>
             )}
         </div>
     );

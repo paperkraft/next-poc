@@ -67,6 +67,7 @@ const authConfig: NextAuthConfig = {
             }
 
             if (trigger === "update" && session) {
+                // Fetch the menu based on the roleId from the session
                 const menu = await fetchModuleByRole(session.roleId).then((d) => d.json());
                 const updateSession = { ...session, modules: menu.data }
                 token = { ...token, user: updateSession }

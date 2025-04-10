@@ -132,7 +132,7 @@ export async function fetchModuleByRole(roleId: string) {
                         children: true,
                     },
                 },
-            },
+            }
         });
 
         const formattedModules = RoleModules(roleModules);

@@ -11,7 +11,9 @@ export async function GET(req: Request) {
 
   // Fetch all modules and role permissions
   const [modules, rolePermissions] = await Promise.all([
-    prisma.module.findMany(),
+    prisma.module.findMany({
+      include: { group: true }
+    }),
     prisma.rolePermission.findMany({
       where: { roleId },
     }),
@@ -29,6 +31,9 @@ export async function GET(req: Request) {
       id: mod.id,
       name: mod.name,
       parentId: mod.parentId,
+      groupId: mod.group?.id,
+      groupName: mod.group?.name,
+      position: mod.group?.position,
       permissions: permissionMap.get(mod.id) || 0,
       subModules: [],
     });

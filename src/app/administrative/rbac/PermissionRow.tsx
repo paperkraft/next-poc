@@ -9,7 +9,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PERMISSIONS } from "@/types/permissions";
-import fuzzysort from "fuzzysort";
+import { highlightMatch } from "@/lib/highlight-text";
 
 type Props = {
     mod: IModule;
@@ -137,22 +137,4 @@ export const PermissionRow: React.FC<Props> = ({ mod, level, modules, control, w
             </>
         </Collapsible>
     );
-};
-
-const highlightMatch = (text: string, query: string) => {
-    if (!query) return text;
-    const result = fuzzysort.single(query, text);
-    if (!result) return text;
-
-    return result.target
-        .split("")
-        .map((char, i) =>
-            result.indexes.includes(i) ? (
-                <span key={i} className="font-bold text-primary">
-                    {char}
-                </span>
-            ) : (
-                char
-            )
-        );
 };

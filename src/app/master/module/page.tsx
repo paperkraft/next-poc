@@ -17,10 +17,6 @@ export default async function ModuleMasterPage() {
     const rolePermissions = +session?.user?.permissions;
     const permission = hasPermission(rolePermissions, 8);
   
-    // if (!permission) {
-    //   return <AccessDenied />;
-    // }
-
     return (
       <div className="space-y-2">
         <TitlePage title="Module List" description="List of all module and submodule" listPage moduleId={moduleId} />

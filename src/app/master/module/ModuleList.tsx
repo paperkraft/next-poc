@@ -22,6 +22,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { IModule } from "@/app/_Interface/Module";
 import { DataTable } from "@/components/_data-table/data-table";
 import { ModuleMasterColumns } from "./module-list-column";
+import { groupModules } from "@/app/administrative/rbac/helper";
 
 interface ModuleMasterProps {
     data: IModule[];

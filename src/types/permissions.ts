@@ -1,6 +1,4 @@
-// types/permissions.ts
 export type PermissionKey = 'read' | 'write' | 'update' | 'delete';
-
 
 export const PERMISSIONS: Record<PermissionKey, number> = {
   read: 1 << 0,
@@ -17,14 +15,21 @@ export interface IModule {
   id: string;
   name: string;
   parentId: string | null;
-  subModules: IModule[];
+  groupId: string;
+  groupName: string;
   permissions: number;
+  subModules: IModule[];
+  position: number;
 }
 
-export interface ModuleWithChildren {
-  id: string;
-  name: string;
-  parentId: string | null;
-  children: ModuleWithChildren[];
-  permissions?: number; // from RolePermission
+export interface IGroupedModule {
+  groupId: string;
+  groupName: string;
+  modules: IModule[];
+}
+
+export interface PermissionPayload {
+  moduleId: string;
+  permissions: number;
+  subModules: PermissionPayload[];
 }

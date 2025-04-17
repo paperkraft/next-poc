@@ -7,6 +7,7 @@ import { fetchModules } from "@/app/action/module.action";
 import SomethingWentWrong from "@/components/custom/somthing-wrong";
 import { hasPermission } from "@/lib/rbac";
 import AccessDenied from "@/components/custom/access-denied";
+import ModuleTreeEditor from "./dnd/ModuleTreeEditor";
 
 export default async function ModuleMasterPage() {
   try {
@@ -24,6 +25,7 @@ export default async function ModuleMasterPage() {
           ? response.data.length === 0
             ? <NoRecordPage text="module" />
             : <ModuleMasterList data={response.data} moduleId={moduleId as string} />
+            // : <ModuleTreeEditor initialModules={response.data} />
           : <SomethingWentWrong message={response.message} />
         }
       </div>

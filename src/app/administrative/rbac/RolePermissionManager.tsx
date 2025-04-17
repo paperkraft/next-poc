@@ -46,7 +46,9 @@ export default function RolePermissionManager({ roles }: { roles: IRole[] }) {
 
         axios.get(`/api/modules?roleId=${selectedRole}`).then((res) => {
             const moduleData = res.data as IModule[];
-            setGroupedModules(groupModules(moduleData));
+            const sortedModules = moduleData && moduleData.sort((a, b) => a.position - b.position);
+            setGroupedModules(groupModules(sortedModules));
+            console.log(groupModules(sortedModules));
 
             // Reset the form with default values based on permissions
             const defaultValues: { [key: string]: boolean } = {};
@@ -121,7 +123,7 @@ export default function RolePermissionManager({ roles }: { roles: IRole[] }) {
 
             {loading && <p className="text-gray-500">Loading...</p>}
 
-            {!loading && groupModules.length > 0 && (
+            {!loading && groupedModules.length > 0 && (
                 <>
                     <div className="relative mb-4 flex items-center w-full max-w-md">
                         <Input

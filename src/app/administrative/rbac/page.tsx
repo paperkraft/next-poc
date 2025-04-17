@@ -2,9 +2,8 @@ import { Metadata } from "next";
 import TitlePage from "@/components/custom/page-heading";
 import NoRecordPage from "@/components/custom/no-record";
 import SomethingWentWrong from "@/components/custom/somthing-wrong";
-import AccessPage from "./AccessForm";
 import { fetchRoles } from "@/app/action/role.action";
-import RolePermissionsPage from "./ModulePermissionTable";
+import RolePermissionsPage from "./RolePermissionManager";
 
 export const metadata: Metadata = {
     title: "Access Control",

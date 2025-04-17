@@ -13,6 +13,8 @@ model Role {
   name        String           @unique
   users       User[]
   permissions RolePermission[]
+  isDeleted   Boolean          @default(false)
+  description String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -46,14 +48,15 @@ model Permission {
 
 // Modular structure (with self-referencing for hierarchy)
 model Module {
-  id       String   @id @default(auto()) @map("_id") @db.ObjectId
-  name     String   @unique
-  path     String?
-  parentId String?  @db.ObjectId
-  parent   Module?  @relation("ModuleParent", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  children Module[] @relation("ModuleParent")
-  groupId  String?  @db.ObjectId
-  group    Group?   @relation(fields: [groupId], references: [id])
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String   @unique
+  path      String?
+  parentId  String?  @db.ObjectId
+  parent    Module?  @relation("ModuleParent", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children  Module[] @relation("ModuleParent")
+  groupId   String?  @db.ObjectId
+  group     Group?   @relation(fields: [groupId], references: [id])
+  isDeleted Boolean  @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -69,6 +72,8 @@ model User {
   role         Role           @relation(fields: [roleId], references: [id])
   auditLog     AuditLog[]
   subscription Subscription[]
+  isDeleted Boolean @default(false)
+  isActive  Boolean @default(true)
 
   // Optional fields
   firstName    String?
@@ -91,6 +96,8 @@ model Group {
   name     String   @unique
   position Int      @default(999) // <- Add this for ordering
   modules  Module[]
+  isDeleted Boolean @default(false)
+
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

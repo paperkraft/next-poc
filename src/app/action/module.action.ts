@@ -1,34 +1,45 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
+
+interface childModule {
+    id: string;
+    name: string;
+    path: string | null;
+}
 interface IModule {
     id: string;
     name: string;
     path: string | null;
-    group?: string;
-    parentId: string | null;
-    permissions: number;
-    subModules: IModule[];
+    groupId: string | null;
+    children: childModule[];
+    // parentId: string | null;
+    // groupName: string | null;
+    // position: number | null;
+    // subModules: IModule[];
 }
 
 export async function fetchModules() {
     try {
         const allModules = await prisma.module.findMany({
             include: {
+                children: true,
+                parent: true,
                 group: true,
             },
         });
 
         // Map for fast lookup
-        const moduleMap = new Map<string, IModule>();
+        const moduleMap = new Map<string, any>();
 
         allModules.forEach((mod) => {
             moduleMap.set(mod.id, {
                 id: mod.id,
                 name: mod.name,
-                path: mod.path,
-                group: mod.group?.name,
+                path: mod?.path,
                 parentId: mod.parentId,
-                permissions: 0, // No role tied here; permissions default to 0
+                groupId: mod.groupId,
+                groupName: mod.group?.name,
+                position: mod.group?.position,
                 subModules: [],
             });
         });
@@ -67,6 +78,20 @@ export async function fetchUniqueModule(id: string) {
         const module = await prisma.module.findUnique({
             where: { id },
             include: {
+                children:{
+                    select:{
+                        id: true,
+                        name: true,
+                        path: true,
+                        children: {
+                            select: {
+                                id: true,
+                                name: true,
+                                path: true,
+                            }
+                        },
+                    }
+                },
                 group: true,
             },
         });
@@ -78,30 +103,40 @@ export async function fetchUniqueModule(id: string) {
             );
         }
 
-        const subModules = await prisma.module.findMany({
-            where: { parentId: module.id },
-            include: {
-                group: true,
-            },
-        });
+        const finalModule = {
+            id: module.id,
+            name: module.name,
+            path: module.path,
+            parentId: module.parentId,
+            groupId: module.groupId,
+            children: module.children,
+        }
 
-        const formatModule = (mod: any): IModule => ({
-            id: mod.id,
-            name: mod.name,
-            path: mod.path,
-            group: mod.group?.id,
-            parentId: mod.parentId,
-            permissions: 0, // Permissions not included in this scope
-            subModules: [],
-        });
+        // const subModules = await prisma.module.findMany({
+        //     where: { parentId: module.id },
+        //     include: {
+        //         group: true,
+        //     },
+        // });
 
-        const formattedModule: IModule = {
-            ...formatModule(module),
-            subModules: subModules.map(formatModule),
-        };
+        // const formatModule = (mod: any): IModule => ({
+        //     id: mod.id,
+        //     name: mod.name,
+        //     path: mod.path,
+        //     groupId: mod.groupId,
+        //     parentId: mod.parentId,
+        //     groupName: mod.group?.name,
+        //     position: mod.group?.position,
+        //     subModules: [],
+        // });
+
+        // const formattedModule: IModule = {
+        //     ...formatModule(module),
+        //     children: subModules.map(formatModule),
+        // };
 
         return NextResponse.json(
-            { success: true, message: "Success", data: formattedModule },
+            { success: true, message: "Success", data: finalModule },
             { status: 200 }
         );
     } catch (error) {

@@ -8,6 +8,7 @@ import { IGroup } from "@/app/_Interface/Group";
 import { auth } from "@/auth";
 import { hasPermission } from "@/lib/rbac";
 import AccessDenied from "@/components/custom/access-denied";
+import AddModuleForm from "./AddModuleForm";
 
 export default async function AddModulePage() {
   try {
@@ -28,7 +29,8 @@ export default async function AddModulePage() {
         <TitlePage title="Create Module" description="Define a new module" createPage />
         {moduleResponse.success && groupsResponse.success
           ? moduleResponse.data.length > 0 && groupsResponse.data.length > 0
-            ? <AddModule modules={moduleResponse.data} groups={groupOptions} />
+            // ? <AddModule modules={moduleResponse.data} groups={groupOptions} />
+            ? <AddModuleForm groups={groupOptions}/>
             : <NoRecordPage text={moduleResponse.data.length > 0 ? "group" : "module"} />
           : <SomethingWentWrong message={moduleResponse.success ? groupsResponse.message : moduleResponse.message} />
         }

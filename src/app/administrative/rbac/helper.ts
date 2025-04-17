@@ -83,7 +83,6 @@ export const groupModules = (modules: IModule[]): IGroupedModule[] => {
 
         groupMap.get(mod.groupId)!.modules.push(mod);
     }
-
     return Array.from(groupMap.values()).map((group) => ({
         ...group,
         modules: group.modules.sort((a, b) => a.position - b.position),

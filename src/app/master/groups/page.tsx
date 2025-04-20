@@ -1,43 +1,63 @@
-import { auth } from "@/auth";
-import TitlePage from "@/components/custom/page-heading";
-import NoRecordPage from "@/components/custom/no-record";
-import SomethingWentWrong from "@/components/custom/somthing-wrong";
-import { findModuleId } from "@/utils/helper";
-import { fetchGroups } from "@/app/action/group.action";
-import GroupMasterList from "./GroupMasterList";
-import { hasPermission } from "@/lib/rbac";
-import AccessDenied from "@/components/custom/access-denied";
+import { getAllGroups } from '@/app/action/group.action';
+import AccessDenied from '@/components/custom/access-denied';
+import NoRecordPage from '@/components/custom/no-record';
+import TitlePage from '@/components/custom/page-heading';
+import SomethingWentWrong from '@/components/custom/somthing-wrong';
+import { can } from '@/lib/abac/checkPermissions';
+import { getSessionModules } from '@/lib/abac/sessionModules';
+import { findModuleId } from '@/utils/helper';
+
+import GroupMasterList from './GroupMasterList';
+
+export const dynamic = 'force-dynamic'; // Force dynamic rendering for this route
+export const revalidate = 10; // Disable revalidation for this route
 
 export default async function GroupPage() {
   try {
-    const session = await auth();
-    const moduleId = session && findModuleId(session?.user?.modules, "Groups");
-    const response = await fetchGroups().then((d) => d.json());
 
-    const rolePermissions = +session?.user?.permissions;
-    const permission = hasPermission(rolePermissions, 8);
-  
-    // if (!permission) {
-    //   return <AccessDenied />;
-    // }
-    
+    const { session, modules } = await getSessionModules();
+
+    if (!session) return <AccessDenied />;
+
+    const hasPermission = can({
+      name: "Groups",
+      action: "READ",
+      modules,
+    });
+
+    if (!hasPermission) return <AccessDenied />;
+
+    const moduleId = findModuleId(modules, "Groups");
+    const res = await getAllGroups();
+
     return (
       <>
-        <TitlePage title="Groups" description="List of all groups, basically to catagorized menu" listPage moduleId={moduleId} />
-        {response.success
-          ? response.data.length === 0
-            ? <NoRecordPage text="group" />
-            : <GroupMasterList data={response.data} moduleId={moduleId as string} />
-          : <SomethingWentWrong message={response.message} />
-        }
+        <TitlePage
+          title="Groups"
+          description="Manage groups used to categorize modules in the sidebar."
+          listPage
+        />
+
+        {!res.success && <SomethingWentWrong message={res.message} />}
+
+        {res.success && res.data && res.data.length > 0 ? (
+          <GroupMasterList data={res.data} moduleId={moduleId} />
+        ) : (
+          <NoRecordPage text="group" />
+        )}
       </>
     );
   } catch (error) {
+    console.error("GroupPage error:", error);
     return (
       <>
-        <TitlePage title="Groups" description="List of all groups, basically to catagorized menu" listPage />
+        <TitlePage
+          title="Groups"
+          description="Manage groups used to categorize modules in the sidebar."
+          listPage
+        />
         <SomethingWentWrong message="An unexpected error occurred." />
       </>
-    )
+    );
   }
 }

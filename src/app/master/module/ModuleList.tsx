@@ -29,12 +29,12 @@ interface ModuleMasterProps {
     moduleId?: string
 }
 
-const ModuleMasterList = memo(({ data, moduleId }: ModuleMasterProps) => {
+const ModuleMasterList = ({ data, moduleId }: ModuleMasterProps) => {
     const [toggle, setToggle] = useState(false);
     const { columns } = ModuleMasterColumns();
 
     const groupedModules = data && groupModules(data.sort((a, b) => a.position - b.position));
-    const moduleData = data && data.sort((a, b) => a.position - b.position).map((item) => item)
+    const moduleData = data && data.sort((a, b) => a.position - b.position).map((item) => item);
 
     return (
         <>
@@ -97,7 +97,7 @@ const ModuleMasterList = memo(({ data, moduleId }: ModuleMasterProps) => {
             </div>
         </>
     );
-})
+};
 
 const Tree = memo(({ data, level }: { data: IModule, level: number }) => {
     const path = usePathname();
@@ -134,6 +134,5 @@ const Tree = memo(({ data, level }: { data: IModule, level: number }) => {
 })
 
 Tree.displayName = 'Tree';
-ModuleMasterList.displayName = 'ModuleMasterList';
 
 export default ModuleMasterList;

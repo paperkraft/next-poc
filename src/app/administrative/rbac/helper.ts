@@ -22,7 +22,6 @@ export const filterModulesByName = (mods: IModule[], query: string, openSet = ne
         .filter((mod): mod is IModule => mod !== null);
 };
 
-
 export function filterGroupedModules(
     groups: IGroupedModule[],
     search: string,

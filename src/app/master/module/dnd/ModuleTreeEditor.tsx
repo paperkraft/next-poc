@@ -55,7 +55,6 @@ export default function ModuleList({ name }: { name: string }) {
                             name={`${name}.${index}`}
                             index={index}
                             remove={() => remove(index)}
-                            depth = {0} // Assuming depth is 0 for top-level modules
                         />
                     ))}
                 </div>

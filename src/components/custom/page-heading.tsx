@@ -1,12 +1,14 @@
 'use client'
-import { Separator } from "@/components/ui/separator"
-import { memo, ReactNode } from "react"
-import { Button } from "../ui/button"
-import { ArrowLeft, Plus } from "lucide-react"
-import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
-import { Guard } from "./permission-guard"
-import { useMounted } from "@/hooks/use-mounted"
+import { ArrowLeft, Plus } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import { memo, ReactNode } from 'react';
+
+import { Separator } from '@/components/ui/separator';
+import { useMounted } from '@/hooks/use-mounted';
+
+import { PermissionGuard } from '../PermissionGuard';
+import { Button } from '../ui/button';
 
 type Props = {
     title: string
@@ -15,10 +17,9 @@ type Props = {
     listPage?: boolean
     createPage?: boolean
     viewPage?: boolean
-    moduleId?: string | null
 }
 
-const TitlePage = memo(({ title, description, children, createPage, listPage, viewPage, moduleId }: Props) => {
+const TitlePage = memo(({ title, description, children, createPage, listPage, viewPage }: Props) => {
     const mounted = useMounted();
     const path = usePathname();
     const route = useRouter();
@@ -32,15 +33,15 @@ const TitlePage = memo(({ title, description, children, createPage, listPage, vi
                 </div>
 
                 <div className="ml-auto flex gap-2">
-                    {listPage && moduleId && (
+                    {listPage && (
                         <div>
-                            <Guard permissionBit={4} moduleId={moduleId}>
+                            <PermissionGuard action="WRITE" path={path}>
                                 <Button className="size-7" variant={"outline"} size={"sm"} asChild>
                                     <Link href={`${path}/add`}>
                                         <Plus className="size-5" />
                                     </Link>
                                 </Button>
-                            </Guard>
+                            </PermissionGuard>
                         </div>
                     )}
 

@@ -1,34 +1,53 @@
 'use client';
 
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { IGroupedModule, PermissionPayload, PERMISSIONS } from "@/types/permissions";
-import { useForm } from "react-hook-form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { IModule, IRole } from "@/types/permissions";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PermissionRow } from "./PermissionRow";
-import { toast } from "sonner";
-import { filterGroupedModules, groupModules, } from "./helper";
-import { useDebounce } from "@/hooks/use-debounce";
-import { Input } from "@/components/ui/input";
-import { X } from "lucide-react";
+import axios from 'axios';
+import { X } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+    Select, SelectContent, SelectItem, SelectTrigger, SelectValue
+} from '@/components/ui/select';
+import {
+    Table, TableBody, TableCell, TableHead, TableHeader, TableRow
+} from '@/components/ui/table';
+import { useDebounce } from '@/hooks/use-debounce';
+import {
+    IGroupedModule, IModule, IRole, PermissionAction, PermissionPayload, PERMISSIONS
+} from '@/types/permissions';
+
+import { filterGroupedModules, groupModules } from './helper';
+import { PermissionRow } from './PermissionRow';
+
+type FormValues = { [key: string]: boolean };
 
 export default function RolePermissionManager({ roles }: { roles: IRole[] }) {
 
     const [search, setSearch] = useState("");
-    const [loading, setLoading] = useState(false);
-    const [openModules, setOpenModules] = useState<string[]>([]);
     const [selectedRole, setSelectedRole] = useState<string>("");
     const [groupedModules, setGroupedModules] = useState<IGroupedModule[]>([]);
+    const [openModules, setOpenModules] = useState<string[]>([]);
+    const [loading, setLoading] = useState(false);
 
-    const { control, handleSubmit, reset, watch, setValue } = useForm<{ [key: string]: boolean }>({});
 
-    const openSet = new Set<string>();
-
+    const { control, handleSubmit, reset, watch, setValue } = useForm<FormValues>({});
     const debouncedSearch = useDebounce(search, 300);
-    const filteredGroups = filterGroupedModules(groupedModules, debouncedSearch, openSet);
+
+    const permissionKeys = useMemo(
+        () => Object.keys(PERMISSIONS) as PermissionAction[],
+        []
+    );
+
+    const openSet = useMemo(() => new Set<string>(), []);
+
+
+    const filteredGroups = useMemo(
+        () => filterGroupedModules(groupedModules, debouncedSearch, openSet),
+        [groupedModules, debouncedSearch]
+    );
 
     const handleReset = () => {
         setSearch("");
@@ -42,42 +61,54 @@ export default function RolePermissionManager({ roles }: { roles: IRole[] }) {
 
     useEffect(() => {
         if (!selectedRole) return;
-        setLoading(true);
 
-        axios.get(`/api/modules?roleId=${selectedRole}`).then((res) => {
-            const moduleData = res.data as IModule[];
-            const sortedModules = moduleData && moduleData.sort((a, b) => a.position - b.position);
-            setGroupedModules(groupModules(sortedModules));
-            console.log(groupModules(sortedModules));
+        const fetchRoleModules = async () => {
+            setLoading(true);
 
-            // Reset the form with default values based on permissions
-            const defaultValues: { [key: string]: boolean } = {};
+            try {
+                const { data } = await axios.get(`/api/modules?roleId=${selectedRole}`);
+                const sorted = data.sort((a: IModule, b: IModule) => a.position - b.position);
+                const grouped = groupModules(sorted);
+                setGroupedModules(grouped);
 
-            const fillValues = (mod: IModule) => {
-                for (const key in PERMISSIONS) {
-                    defaultValues[`${mod.id}_${key}`] = Boolean(mod.permissions & PERMISSIONS[key as keyof typeof PERMISSIONS]);
-                }
-                mod.subModules.forEach(fillValues);
-            };
+                const defaultValues: FormValues = {};
 
-            moduleData.forEach(fillValues);
-            reset(defaultValues);
+                const populateDefaults = (mod: IModule) => {
+                    permissionKeys.forEach((key) => {
+                        defaultValues[`${mod.id}_${key}`] =
+                            Boolean(mod.permissions & PERMISSIONS[key]);
+                    });
+                    mod.subModules.forEach(populateDefaults);
+                };
 
-        }).finally(() => {
-            setLoading(false);
-        })
+                sorted.forEach(populateDefaults);
+                reset(defaultValues);
 
-    }, [selectedRole, reset]);
+            } catch (error) {
+                console.error("Error fetching modules:", error);
+                toast.error("Failed to fetch modules.");
+            } finally {
+                setLoading(false);
+            }
+
+        }
+
+        fetchRoleModules();
+
+    }, [selectedRole, permissionKeys, reset]);
 
     const buildPayload = (groups: IGroupedModule[]): PermissionPayload[] => {
         const mapModule = (mod: IModule): PermissionPayload => {
-            let permissionBits = 0;
+            // let permissionBits = 0;
+            // for (const key in PERMISSIONS) {
+            //     if (watch(`${mod.id}_${key}`)) {
+            //         permissionBits |= PERMISSIONS[key as keyof typeof PERMISSIONS];
+            //     }
+            // }
 
-            for (const key in PERMISSIONS) {
-                if (watch(`${mod.id}_${key}`)) {
-                    permissionBits |= PERMISSIONS[key as keyof typeof PERMISSIONS];
-                }
-            }
+            const permissionBits = permissionKeys.reduce((acc, key) => {
+                return watch(`${mod.id}_${key}`) ? acc | PERMISSIONS[key] : acc;
+            }, 0);
 
             return {
                 moduleId: mod.id,
@@ -90,19 +121,26 @@ export default function RolePermissionManager({ roles }: { roles: IRole[] }) {
     };
 
     const onSubmit = async () => {
+        if (!selectedRole) return;
         setLoading(true);
-        const payload = buildPayload(groupedModules);
-        await axios.post("/api/role-permissions", { roleId: selectedRole, modules: payload })
-            .then((res) => {
-                if (res.data.success) {
-                    toast.success("Permissions updated successfully!");
-                } else {
-                    toast.error("Failed to update permissions.");
-                }
-            }).finally(() => {
-                setLoading(false);
-                handleReset();
-            })
+        try {
+            const payload = buildPayload(groupedModules);
+            const { data } = await axios.post("/api/role-permissions", {
+                roleId: selectedRole,
+                modules: payload,
+            });
+
+            data.success
+                ? toast.success("Permissions updated successfully!")
+                : toast.error("Failed to update permissions.");
+
+        } catch (error) {
+            toast.error("An error occurred while saving.");
+        }
+        finally {
+            setLoading(false);
+            handleReset();
+        }
     };
 
     return (
@@ -110,7 +148,7 @@ export default function RolePermissionManager({ roles }: { roles: IRole[] }) {
             <div className="flex items-center gap-4">
                 <Select value={selectedRole} onValueChange={setSelectedRole}>
                     <SelectTrigger>
-                        <SelectValue placeholder={"Select"} />
+                        <SelectValue placeholder={"Select a role"} />
                     </SelectTrigger>
                     <SelectContent>
                         {roles.map((role) => (
@@ -140,7 +178,7 @@ export default function RolePermissionManager({ roles }: { roles: IRole[] }) {
                             <TableRow>
                                 <TableHead className="text-left p-2">Module</TableHead>
                                 <TableHead className="text-center capitalize">All</TableHead>
-                                {Object.keys(PERMISSIONS).map((perm) => (
+                                {permissionKeys.map((perm) => (
                                     <TableHead key={perm} className="text-center capitalize">{perm}</TableHead>
                                 ))}
                             </TableRow>
@@ -150,7 +188,7 @@ export default function RolePermissionManager({ roles }: { roles: IRole[] }) {
 
                             {filteredGroups.length === 0 && (
                                 <TableRow className="border-t">
-                                    <TableCell colSpan={Object.keys(PERMISSIONS).length + 2} className="text-center py-4 text-gray-500">
+                                    <TableCell colSpan={permissionKeys.length + 2} className="text-center py-4 text-gray-500">
                                         No modules found for "{debouncedSearch}"
                                     </TableCell>
                                 </TableRow>
@@ -160,7 +198,7 @@ export default function RolePermissionManager({ roles }: { roles: IRole[] }) {
                             {filteredGroups.map((group, idx) => (
                                 <React.Fragment key={group.groupName}>
                                     <TableRow className="bg-muted">
-                                        <TableCell colSpan={Object.keys(PERMISSIONS).length + 2} className="font-semibold text-md">
+                                        <TableCell colSpan={permissionKeys.length + 2} className="font-semibold text-md">
                                             {group.groupName}
                                         </TableCell>
                                     </TableRow>

@@ -1,22 +1,33 @@
-import TitlePage from "@/components/custom/page-heading";
-import GroupForm from "./GroupForm";
-import { hasPermission } from "@/lib/rbac";
-import AccessDenied from "@/components/custom/access-denied";
-import { auth } from "@/auth";
+import AccessDenied from '@/components/custom/access-denied';
+import TitlePage from '@/components/custom/page-heading';
+import { can } from '@/lib/abac/checkPermissions';
+import { getSessionModules } from '@/lib/abac/sessionModules';
 
-export default async function Page() {
-  const session = await auth();
-  const rolePermissions = +session?.user?.permissions;
-  const permission = hasPermission(rolePermissions, 8);
+import CreateGroupForm from './CreateGroupForm';
 
-  // if (!permission) {
-  //   return <AccessDenied />;
-  // }
-  
+export const dynamic = 'force-dynamic'; // Force dynamic rendering for this route
+
+export default async function CreateGroup() {
+  const { session, modules } = await getSessionModules();
+
+  if (!session) {
+    return <AccessDenied />;
+  }
+
+  const hasPermission = can({
+    name: "Groups",
+    action: "WRITE",
+    modules,
+  });
+
+  if (!hasPermission) {
+    return <AccessDenied />;
+  }
+
   return (
     <div className="space-y-4 p-2">
       <TitlePage title="Create Group" description="Define a new group" createPage />
-      <GroupForm />
+      <CreateGroupForm />
     </div>
   );
 }

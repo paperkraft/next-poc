@@ -1,15 +1,15 @@
 'use client';
 
-import React from "react";
-import { Controller, UseFormSetValue, UseFormWatch } from "react-hook-form";
-import { IModule } from "@/types/permissions";
-import { Checkbox } from "@/components/ui/checkbox";
-import { TableRow, TableCell } from "@/components/ui/table";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronRight } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { PERMISSIONS } from "@/types/permissions";
-import { highlightMatch } from "@/lib/highlight-text";
+import { ChevronRight } from 'lucide-react';
+import React, { useEffect, useRef } from 'react';
+import { Controller, UseFormSetValue, UseFormWatch } from 'react-hook-form';
+
+import { Checkbox } from '@/components/ui/checkbox';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { TableCell, TableRow } from '@/components/ui/table';
+import { highlightMatch } from '@/lib/highlight-text';
+import { cn } from '@/lib/utils';
+import { IModule, PERMISSIONS } from '@/types/permissions';
 
 type Props = {
     mod: IModule;
@@ -24,6 +24,7 @@ type Props = {
 };
 
 export const PermissionRow: React.FC<Props> = ({ mod, level, modules, control, watch, setValue, openModules, setOpenModules, debouncedSearch }) => {
+
     const permissionKeys = Object.keys(PERMISSIONS) as (keyof typeof PERMISSIONS)[];
     const hasSubModules = mod?.subModules?.length > 0;
 

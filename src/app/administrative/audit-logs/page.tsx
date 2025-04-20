@@ -1,15 +1,17 @@
-import { Metadata } from "next";
-import TitlePage from "@/components/custom/page-heading";
-import { fetchAuditLogs } from "../../action/audit.action";
-import { auth } from "@/auth";
-import { hasPermission } from "@/lib/rbac";
-import AccessDenied from "@/components/custom/access-denied";
-import AuditLogTable from "./AuditLogTable";
-import { findModuleId } from "@/utils/helper";
-import SomethingWentWrong from "@/components/custom/somthing-wrong";
-import NoRecordPage from "@/components/custom/no-record";
-import { Suspense } from "react";
-import Loading from "@/app/loading";
+import { Metadata } from 'next';
+import { Suspense } from 'react';
+
+import Loading from '@/app/loading';
+import { auth } from '@/auth';
+import AccessDenied from '@/components/custom/access-denied';
+import NoRecordPage from '@/components/custom/no-record';
+import TitlePage from '@/components/custom/page-heading';
+import SomethingWentWrong from '@/components/custom/somthing-wrong';
+import { canAll } from '@/lib/abac/checkPermissions';
+import { findModuleId } from '@/utils/helper';
+
+import { fetchAuditLogs } from '../../action/audit.action';
+import AuditLogTable from './AuditLogTable';
 
 export const metadata: Metadata = {
     title: "Audit-log",
@@ -26,10 +28,15 @@ export default function AuditLog() {
 
 async function AuditLogContent() {
     const session = await auth();
-    const hasAccess = session && hasPermission(+session?.user?.permissions, 15);
     const moduleId = session && findModuleId(session?.user?.modules, "Audit Logs");
 
-    if (!hasAccess) {
+    const canAccessAll = canAll({
+        action: "ALL",
+        name: "Audit Logs",
+        modules: session?.user?.modules,
+    });
+
+    if (!canAccessAll) {
         return (<AccessDenied />)
     }
 

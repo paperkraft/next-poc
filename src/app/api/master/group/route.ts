@@ -1,13 +1,15 @@
+import { createGroup, deleteGroup } from "@/app/action/group.action";
 import { logAuditAction } from "@/lib/audit-log";
 import prisma from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
-export async function GET(){
+export async function GET() {
     try {
         const data = await prisma.group.findMany({
-            select:{
-                id:true,
-                name:true
+            select: {
+                id: true,
+                name: true
             }
         });
         return NextResponse.json(
@@ -23,14 +25,20 @@ export async function GET(){
 export async function POST(request: Request) {
     const { name } = await request.json();
     try {
+        if (!name) {
+            return NextResponse.json(
+                { success: false, message: 'Group name is required' },
+                { status: 400 }
+            );
+        }
 
         const exist = await prisma.group.findFirst({
-            where:{ name }
+            where: { name }
         });
 
-        if(exist){
+        if (exist) {
             return NextResponse.json(
-                { success: false, message: 'Group already exist', data:exist },
+                { success: false, message: 'Group already exist', data: exist },
                 { status: 200 }
             );
         }
@@ -48,7 +56,7 @@ export async function POST(request: Request) {
     } catch (error) {
         await logAuditAction('Error', 'master/groups', { error: "Error creating group" });
         return NextResponse.json(
-            { success: false, message: 'Error in creating group' }, 
+            { success: false, message: 'Error in creating group' },
             { status: 400 }
         );
     }
@@ -65,10 +73,25 @@ export async function DELETE(request: Request) {
     }
 
     try {
+        // Check if any group is assigned to a module
+        const groupsWithModules = await prisma.group.findMany({
+            where: {
+                id: { in: ids },
+                modules: { some: {} },  // Check if the group has any associated modules
+            }
+        });
+
+        if (groupsWithModules.length > 0) {
+            return NextResponse.json(
+                { success: false, message: "Cannot delete group, it's assigned to one or more modules" },
+                { status: 400 }
+            );
+        }
+
         const existingRecords = await prisma.group.findMany({
             where: { id: { in: ids } }
         });
-        
+
         if (existingRecords.length !== ids.length) {
             return NextResponse.json({ success: false, message: 'Some records were not found' }, { status: 404 });
         }
@@ -78,6 +101,8 @@ export async function DELETE(request: Request) {
         });
 
         await logAuditAction('Delete', 'master/groups', { data: existingRecords });
+
+        revalidatePath('/master/groups');
 
         return NextResponse.json(
             { success: true, message: "Group deleted", data: record },

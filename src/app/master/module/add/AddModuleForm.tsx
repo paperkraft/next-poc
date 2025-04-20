@@ -8,6 +8,7 @@ import { RecursiveModuleForm } from '../[id]/RecursiveModules';
 import { FloatingSelectController } from '@/components/_form-controls/floating-label/select-controller';
 import { IOption } from '@/app/_Interface/Module';
 import { toast } from 'sonner';
+import ModuleList from '../dnd/ModuleTreeEditor';
 
 export interface ModuleFormData {
     name: string;

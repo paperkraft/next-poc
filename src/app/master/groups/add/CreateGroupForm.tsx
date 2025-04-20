@@ -1,14 +1,16 @@
 'use client';
-import { Form } from "@/components/ui/form";
-import { InputController } from "@/components/_form-controls/InputController";
-import { Button } from "@/components/ui/button";
-import { useForm } from "react-hook-form";
-import * as z from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { useState } from "react";
-import ButtonContent from "@/components/custom/button-content";
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import * as z from 'zod';
+
+import { InputController } from '@/components/_form-controls/InputController';
+import ButtonContent from '@/components/custom/button-content';
+import { Button } from '@/components/ui/button';
+import { Form } from '@/components/ui/form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { createGroup } from '@/app/action/group.action';
 
 const groupSchema = z.object({
     name: z.string().trim().min(1, { message: "Enter group" }),
@@ -16,7 +18,7 @@ const groupSchema = z.object({
 
 type FormValues = z.infer<typeof groupSchema>;
 
-export default function GroupForm() {
+export default function CreateGroupForm() {
 
     const router = useRouter();
     const [loading, setLoading] = useState(false);
@@ -31,14 +33,20 @@ export default function GroupForm() {
     const onSubmit = async (data: FormValues) => {
         setLoading(true);
         try {
-            const res = await fetch('/api/master/group', {
+            const response = await fetch('/api/master/group', {
                 method: "POST",
                 body: JSON.stringify(data)
-            }).then((d) => d.json());
-    
+            });
+
+            if (!response.ok) {
+                toast.error("Failed to create group");
+            }
+
+            const res = await response.json();
+
             if (res.success) {
                 toast.success(res.message);
-                router.push('.')
+                router.push('.');
             } else {
                 toast.error(res.message);
             }
@@ -56,9 +64,9 @@ export default function GroupForm() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 p-2">
                 <InputController
                     name="name"
-                    label="Name"
-                    placeholder="Enter group"
-                    description="This group will get added."
+                    label="Group Name"
+                    placeholder="Enter group name"
+                    description="This group will be added to the system."
                     reset
                 />
 
@@ -67,7 +75,7 @@ export default function GroupForm() {
                         Reset
                     </Button>
                     <Button type="submit" disabled={loading}>
-                        <ButtonContent status={loading} text={"Create"}/>
+                        <ButtonContent status={loading} text={"Create"} />
                     </Button>
                 </div>
             </form>

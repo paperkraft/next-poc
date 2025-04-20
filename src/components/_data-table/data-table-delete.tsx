@@ -1,12 +1,12 @@
 'use client'
-import { Loader, Trash2 } from "lucide-react";
-import { Button } from "../ui/button";
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog"
 import { Table } from "@tanstack/react-table";
-import { toast } from "sonner";
-import { useState } from "react";
+import { Loader, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
 import { ThemeWrapper } from "../layout/theme-wrapper";
+import { Button } from "../ui/button";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 
 interface DeleteToolbarProps<TData> {
     table: Table<TData>;
@@ -19,23 +19,25 @@ export default function DeleteRecordDialog<TData>({ table, deleteRecord }: Delet
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
+    const selectedRows = table.getFilteredSelectedRowModel().rows as any[];
+    const selectedIds = selectedRows.map((row: any) => row.original.id);
+    const selectedCount = selectedRows.length;
+    const selectedName = selectedCount === 1 ? selectedRows[0].original?.name  : null;
+
     const onDelete = async () => {
-        const selectedIds = table.getFilteredSelectedRowModel().rows.map((row: any) => row.original.id);
+
         if (!selectedIds.length) {
             toast.error("No records selected for deletion.");
             return;
         }
-        setLoading(true);
 
         try {
+            setLoading(true);
             await deleteRecord?.(selectedIds);
-            toast.success(`Successfully deleted ${selectedIds.length} record(s).`);
-            setOpen(false);
         } catch (error) {
             console.error("Deletion failed:", error);
-            toast.error("Failed to delete the selected records. Please try again.");
-            setOpen(false);
         } finally {
+            setOpen(false);
             setLoading(false);
             table.toggleAllRowsSelected(false);
             router.refresh();
@@ -56,14 +58,22 @@ export default function DeleteRecordDialog<TData>({ table, deleteRecord }: Delet
                     Delete ({table.getFilteredSelectedRowModel().rows.length})
                 </Button>
             </DialogTrigger>
+            
             <DialogContent>
                 <ThemeWrapper>
                     <DialogHeader>
                         <DialogTitle>Are you absolutely sure?</DialogTitle>
                         <DialogDescription>
-                            This action cannot be undone. This will permanently delete your{" "}
-                            <span className="font-medium">{table.getFilteredSelectedRowModel().rows.length}</span>
-                            {table.getFilteredSelectedRowModel().rows.length === 1 ? " record" : " records"} from our servers.
+                            This action cannot be undone. This will permanently delete your&nbsp;
+                            {selectedCount === 1 ? (
+                                <span className="font-medium">"{selectedName}"</span>
+                            ) : (
+                                <>
+                                    <span className="font-medium">{selectedCount}</span>&nbsp;
+                                    records
+                                </>
+                            )}
+                            &nbsp;from our servers.
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter className="gap-2 sm:space-x-0">

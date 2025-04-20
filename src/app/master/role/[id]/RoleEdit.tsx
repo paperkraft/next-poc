@@ -4,7 +4,7 @@ import { InputController } from "@/components/_form-controls/InputController";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import TitlePage from "@/components/custom/page-heading";
 import { Edit, Trash2 } from "lucide-react";
 import {
@@ -18,9 +18,9 @@ import { useState } from "react";
 import DialogBox from "@/components/custom/dialog-box";
 import { toast } from "sonner";
 import useModuleIdByName from "@/hooks/use-module-id";
-import { Guard } from "@/components/custom/permission-guard";
 import { SwitchButton } from "@/components/_form-controls/SwitchButton";
 import ButtonContent from "@/components/custom/button-content";
+import { PermissionGuard } from "@/components/PermissionGuard";
 
 type Role = {
   id: string;
@@ -36,7 +36,7 @@ type Bitmask = {
 export default function RoleEdit({ data }: { data: Role }) {
   const { id } = data
   const router = useRouter();
-  const moduleId = useModuleIdByName("Role") as string;
+  const path = usePathname();
 
   const permissions = reverseBitmask(data.permissions);
 
@@ -113,16 +113,16 @@ export default function RoleEdit({ data }: { data: Role }) {
         <TitlePage title="Role" description={show ? "Update role and permissions" : "View role and permissions"} viewPage>
           {!show && (
             <>
-              <Guard permissionBit={2} moduleId={moduleId}>
+              <PermissionGuard action="UPDATE" path={path}>
                 <Button className="size-7" variant={"outline"} size={"sm"} onClick={() => setShow(true)}>
                   <Edit className="size-5" />
                 </Button>
-              </Guard>
-              <Guard permissionBit={8} moduleId={moduleId}>
+              </PermissionGuard>
+              <PermissionGuard action="DELETE" path={path}>
                 <Button className="size-7" variant={"outline"} size={"sm"} onClick={() => setOpen(true)}>
                   <Trash2 className="size-5 text-red-500" />
                 </Button>
-              </Guard>
+              </PermissionGuard>
             </>
           )}
         </TitlePage>
@@ -170,7 +170,7 @@ export default function RoleEdit({ data }: { data: Role }) {
                   Cancel
                 </Button>
                 <Button type="submit" disabled={loading}>
-                    <ButtonContent status={loading} text={"Update"}/>
+                  <ButtonContent status={loading} text={"Update"} />
                 </Button>
               </div>
             </form>

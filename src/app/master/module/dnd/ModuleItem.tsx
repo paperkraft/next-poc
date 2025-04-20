@@ -7,13 +7,13 @@ export default function ModuleItem({
     id,
     name,
     index,
-    depth,
+    depth = 0,
     remove,
 }: {
     id: string;
     name: string;
     index: number;
-    depth: number;
+    depth?: number;
     remove: () => void;
 }) {
     const {
@@ -34,6 +34,8 @@ export default function ModuleItem({
         control,
         name: `${name}.children`,
     });
+
+    const isMaxDepthReached = depth >= 1;
 
     return (
         <div
@@ -61,7 +63,8 @@ export default function ModuleItem({
                     <Trash className="w-4 h-4 text-red-500" />
                 </button>
                 {
-                    depth <= 0 && // Only show the add button if there are no children
+                    // depth <= 0 && // Only show the add button if there are no children
+                    !isMaxDepthReached &&
                     <button
                         type="button"
                         onClick={() => append({ name: "", path: "", children: [] })}

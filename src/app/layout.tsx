@@ -33,7 +33,7 @@ export default async function RootLayout({ children }: ChildProps) {
               <AppLayout>
                 {children}
               </AppLayout>
-              <Toaster richColors position="top-center"/>
+              <Toaster richColors position="top-center" />
             </ThemeProvider>
           </NextIntlClientProvider>
         </NextAuthProvider>

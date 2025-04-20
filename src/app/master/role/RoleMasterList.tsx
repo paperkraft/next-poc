@@ -6,10 +6,9 @@ import { RoleMasterColumns } from "./role-column-data";
 
 interface RoleMasterProps {
   data: IRole[];
-  moduleId?: string;
 }
 
-const RoleMasterList = memo(({ data, moduleId }: RoleMasterProps) => {
+const RoleMasterList = memo(({ data }: RoleMasterProps) => {
   const { columns } = RoleMasterColumns();
 
   const deleteRecord = async (ids: string | string[]) => {
@@ -29,7 +28,6 @@ const RoleMasterList = memo(({ data, moduleId }: RoleMasterProps) => {
         columns={columns}
         data={data}
         deleteRecord={deleteRecord}
-        moduleId={moduleId}
         pageSize={10}
       />
     </>

@@ -39,7 +39,16 @@ interface GlobalFilterState {
     value: any;
 }
 
-export function DataTable<TData extends { subModules?: TData[] }, TValue>({ columns, data, toolbar, pageSize, getRowCanExpand, isLoading = false, deleteRecord, moduleId }: DataTableProps<TData, TValue>) {
+export function DataTable<TData extends { subModules?: TData[] }, TValue>({
+    columns,
+    data,
+    toolbar,
+    pageSize,
+    getRowCanExpand,
+    isLoading = false,
+    deleteRecord,
+    moduleId
+}: DataTableProps<TData, TValue>) {
 
     const [sorting, setSorting] = useState<SortingState>([]);
     const [globalFilter, setGlobalFilter] = useState<GlobalFilterState | undefined>();
@@ -110,7 +119,13 @@ export function DataTable<TData extends { subModules?: TData[] }, TValue>({ colu
                 <div className="flex items-center justify-center h-64">Loading...</div>
             ) : (
                 <>
-                    <DataTableToolbar table={table} deleteRecord={deleteRecord} moduleId={moduleId} toolbar={toolbar} />
+                    <DataTableToolbar
+                        table={table}
+                        deleteRecord={deleteRecord}
+                        moduleId={moduleId}
+                        toolbar={toolbar}
+                    />
+
                     <Table>
                         <TableHeader>
                             {table.getHeaderGroups().map((headerGroup) => (
@@ -216,6 +231,7 @@ export function DataTable<TData extends { subModules?: TData[] }, TValue>({ colu
                                 ))}
                         </TableBody>
                     </Table>
+
                     {pageSize && <DataTablePagination table={table} />}
                 </>
             )}

@@ -8,7 +8,7 @@ import { DataTableSearch } from "./data-table-search"
 import { DataTableDensity } from "./data-table-density"
 import { DataTableExport } from "./data-table-export"
 import { DataTableViewColumn } from "./data-table-view-column"
-import { Guard } from "../custom/permission-guard"
+import { PermissionGuard } from "../PermissionGuard"
 
 const ALLOWED_TOOLBARS = ["export", "density", "columns"] as const;
 export type ToolbarOptions = (typeof ALLOWED_TOOLBARS)[number];
@@ -29,9 +29,9 @@ export function DataTableToolbar<TData>({ table, deleteRecord, moduleId, toolbar
             <DataTableSearch table={table} />
             <div className="hidden md:flex items-center gap-2">
                 {isSelected && moduleId &&
-                    <Guard permissionBit={8} moduleId={moduleId}>
+                    <PermissionGuard action="DELETE" moduleId={moduleId}>
                         <DeleteRecordDialog table={table} deleteRecord={deleteRecord} />
-                    </Guard>
+                    </PermissionGuard>
                 }
                 {toolbar.includes("export") && <DataTableExport table={table} />}
                 {toolbar.includes("density") && <DataTableDensity table={table} />}

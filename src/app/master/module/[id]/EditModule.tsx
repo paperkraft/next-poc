@@ -11,12 +11,11 @@ import React, { useCallback, useState } from "react";
 import { toast } from "sonner";
 import DialogBox from "@/components/custom/dialog-box";
 import useModuleIdByName from "@/hooks/use-module-id";
-import { Guard } from "@/components/custom/permission-guard";
 import { IModule, IOption } from "@/app/_Interface/Module";
 import ButtonContent from "@/components/custom/button-content";
 import { FloatingInputController } from "@/components/_form-controls/floating-label/input-controller";
 import { FloatingSelectController } from "@/components/_form-controls/floating-label/select-controller";
-import ModuleList from "../dnd/ModuleTreeEditor";
+import { RecursiveModuleForm } from "./RecursiveModules";
 
 export type ModuleFormData = {
   id?: string;
@@ -104,9 +103,9 @@ export default function EditModule({ id, moduleData, groupOptions }: PageProps) 
   const handleDelete = async (id: string) => {
     try {
       setLoading(true);
-      const res = await fetch("/api/master/module/", {
+      const res = await fetch(`/api/master/module/${id}`, {
         method: "DELETE",
-        body: JSON.stringify({ id }),
+        // body: JSON.stringify({ id }),
       }).then((d) => d.json());
 
       if (res.success) {
@@ -180,7 +179,8 @@ export default function EditModule({ id, moduleData, groupOptions }: PageProps) 
 
 
             {/* <RecursiveModuleForm /> */}
-            <ModuleList name="children" />
+            {/* <ModuleList name="children" /> */}
+            <RecursiveModuleForm nestPath="children" />
 
             {show && (
               <div className="flex justify-end my-4 gap-2">

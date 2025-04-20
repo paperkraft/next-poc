@@ -1,11 +1,17 @@
 export type PermissionKey = 'read' | 'write' | 'update' | 'delete';
+ 
+export const PERMISSIONS = {
+  READ: 1 << 0,
+  WRITE: 1 << 1,
+  UPDATE: 1 << 2,
+  DELETE: 1 << 3,
+} as const;
 
-export const PERMISSIONS: Record<PermissionKey, number> = {
-  read: 1 << 0,
-  write: 1 << 1,
-  update: 1 << 2,
-  delete: 1 << 3,
-}
+export type PermissionAction = keyof typeof PERMISSIONS;
+export const ALL_PERMISSIONS: PermissionAction[] = Object.keys(PERMISSIONS) as PermissionAction[];
+
+type SpecialAction = "ALL" | "ANY";
+export type ActionParam = PermissionAction | PermissionAction[] | SpecialAction;
 
 export interface IRole {
   id: string;
@@ -14,6 +20,7 @@ export interface IRole {
 export interface IModule {
   id: string;
   name: string;
+  path: string | null;
   parentId: string | null;
   groupId: string;
   groupName: string;
@@ -21,13 +28,11 @@ export interface IModule {
   subModules: IModule[];
   position: number;
 }
-
 export interface IGroupedModule {
   groupId: string;
   groupName: string;
   modules: IModule[];
 }
-
 export interface PermissionPayload {
   moduleId: string;
   permissions: number;

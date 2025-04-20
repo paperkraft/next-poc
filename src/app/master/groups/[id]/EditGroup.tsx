@@ -5,16 +5,16 @@ import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import TitlePage from "@/components/custom/page-heading";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { Edit, Trash2 } from "lucide-react";
 import DialogBox from "@/components/custom/dialog-box";
 import useModuleIdByName from "@/hooks/use-module-id";
-import { Guard } from "@/components/custom/permission-guard";
 import { IGroup } from "@/app/_Interface/Group";
 import ButtonContent from "@/components/custom/button-content";
+import { PermissionGuard } from "@/components/PermissionGuard";
 
 const groupSchema = z.object({
     name: z.string().trim().min(1, { message: "Enter group" }),
@@ -25,7 +25,7 @@ type FormValues = z.infer<typeof groupSchema>;
 export default function EditGroup({ data }: { data: IGroup }) {
     const id = data.id
     const router = useRouter();
-    const moduleId = useModuleIdByName("Groups") as string;
+    const path = usePathname();
 
     const [open, setOpen] = useState(false);
     const [show, setShow] = useState(false);
@@ -95,16 +95,16 @@ export default function EditGroup({ data }: { data: IGroup }) {
                 <TitlePage title="Group" description={show ? "Modifcation" : "Overview"} viewPage>
                     {!show && (
                         <>
-                            <Guard permissionBit={2} moduleId={moduleId}>
+                            <PermissionGuard action="WRITE" path={path}>
                                 <Button className="size-7" variant={"outline"} size={"sm"} onClick={() => setShow(true)}>
                                     <Edit className="size-5" />
                                 </Button>
-                            </Guard>
-                            <Guard permissionBit={8} moduleId={moduleId}>
+                            </PermissionGuard>
+                            <PermissionGuard action="DELETE" path={path}>
                                 <Button className="size-7" variant={"outline"} size={"sm"} onClick={() => setOpen(true)}>
                                     <Trash2 className="size-5 text-red-500" />
                                 </Button>
-                            </Guard>
+                            </PermissionGuard>
                         </>
                     )}
                 </TitlePage>

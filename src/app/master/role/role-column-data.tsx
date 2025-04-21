@@ -37,14 +37,16 @@ export const RoleMasterColumns = () => {
       header: "Role",
     },
     {
-      accessorKey: "permissions",
-      header: "Permisisions",
-    },
-    {
       accessorKey: "view",
-      header:() => null,
-      cell: ({row}) => (
-        <Link href={`${path}/${row.original.id}`} className="opacity-0 group-hover:opacity-100 hover:text-blue-500 block size-4"><Eye className="size-4" /></Link>
+      header: () => null,
+      cell: ({ row }) => (
+        <Link
+          title="View"
+          href={`${path}/${row.original.id}`}
+          className="opacity-0 group-hover:opacity-100 hover:text-blue-500 block size-4"
+        >
+          <Eye size={16} aria-label="View"/>
+        </Link>
       ),
       enableSorting: false,
     }

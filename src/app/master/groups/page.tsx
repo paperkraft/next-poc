@@ -14,7 +14,6 @@ export const revalidate = 10; // Disable revalidation for this route
 
 export default async function GroupPage() {
   try {
-
     const { session, modules } = await getSessionModules();
 
     if (!session) return <AccessDenied />;
@@ -28,7 +27,7 @@ export default async function GroupPage() {
     if (!hasPermission) return <AccessDenied />;
 
     const moduleId = findModuleId(modules, "Groups");
-    const res = await getAllGroups();
+    const response = await getAllGroups();
 
     return (
       <>
@@ -38,13 +37,12 @@ export default async function GroupPage() {
           listPage
         />
 
-        {!res.success && <SomethingWentWrong message={res.message} />}
-
-        {res.success && res.data && res.data.length > 0 ? (
-          <GroupMasterList data={res.data} moduleId={moduleId} />
-        ) : (
-          <NoRecordPage text="group" />
-        )}
+        {response.success
+          ? response?.data && response?.data?.length === 0
+            ? <NoRecordPage text="role" />
+            : response.data && <GroupMasterList data={response.data} moduleId={moduleId} />
+          : <SomethingWentWrong message={response.message} />
+        }
       </>
     );
   } catch (error) {

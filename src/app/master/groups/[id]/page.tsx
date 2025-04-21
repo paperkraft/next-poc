@@ -1,12 +1,11 @@
 import { getGroupById } from '@/app/action/group.action';
-import { auth } from '@/auth';
 import AccessDenied from '@/components/custom/access-denied';
+import NoRecordPage from '@/components/custom/no-record';
 import SomethingWentWrong from '@/components/custom/somthing-wrong';
 import { can } from '@/lib/abac/checkPermissions';
+import { getSessionModules } from '@/lib/abac/sessionModules';
 
 import EditGroup from './EditGroup';
-import NoRecordPage from '@/components/custom/no-record';
-import { getSessionModules } from '@/lib/abac/sessionModules';
 
 export default async function Page({ params }: { params: { id: string } }) {
   const { id } = params;

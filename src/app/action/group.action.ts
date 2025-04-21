@@ -18,6 +18,7 @@ export async function getAllGroups(): Promise<FetchGroupsResponse> {
         return {
             success: false,
             message: "Error fetching groups",
+            data: [],
         };
     }
 }

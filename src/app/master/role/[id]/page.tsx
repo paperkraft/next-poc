@@ -1,19 +1,44 @@
-import RoleEdit from "./RoleEdit";
-import { fetchUniqueRoles } from "@/app/action/role.action";
-import AccessDenied from "@/components/custom/access-denied";
-import SomethingWentWrong from "@/components/custom/somthing-wrong";
-import { PermissionGuard } from "@/components/PermissionGuard";
+import { fetchUniqueRoles } from '@/app/action/role.action';
+import AccessDenied from '@/components/custom/access-denied';
+import NoRecordPage from '@/components/custom/no-record';
+import SomethingWentWrong from '@/components/custom/somthing-wrong';
+import { can } from '@/lib/abac/checkPermissions';
+import { getSessionModules } from '@/lib/abac/sessionModules';
+
+import RoleForm from '../RoleForm';
 
 export default async function Page({ params }: { params: { id: string } }) {
   const { id } = params;
-  const role = await fetchUniqueRoles(id).then((d) => d.json());
-  const isRole = role && role.success
 
-  return (isRole ? (
-    <PermissionGuard name="Role" action="READ" fallback={<AccessDenied />}>
-      <RoleEdit data={role.data} />
-    </PermissionGuard>
-  ) : (
-    <SomethingWentWrong message={role.message} />
-  ));
+  try {
+    const { session, modules } = await getSessionModules();
+
+    if (!session) {
+      return <AccessDenied />;
+    }
+
+    const hasPermission = can({
+      name: "Role",
+      action: "READ",
+      modules,
+    });
+
+    if (!hasPermission) {
+      return <AccessDenied />;
+    }
+
+    const response = await fetchUniqueRoles(id);
+
+    return (
+      response.success
+        ? response.data && Object.entries(response.data).length > 0
+          ? <RoleForm data={response.data} />
+          : <NoRecordPage text="role" />
+        : <SomethingWentWrong message={response.message} />
+    )
+
+  } catch (error) {
+    console.error("Error fetching session:", error);
+    return <SomethingWentWrong message="An unexpected error occurred." />;
+  }
 }

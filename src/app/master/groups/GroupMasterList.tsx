@@ -7,7 +7,6 @@ import { useMounted } from '@/hooks/use-mounted';
 import { GroupListProps } from '@/types/group';
 
 import { GroupsMasterColumns } from './groups-column-data';
-import { deleteGroup } from '@/app/action/group.action';
 import { FetchResponse } from '@/types';
 
 const GroupMasterList = ({ data, moduleId }: GroupListProps) => {

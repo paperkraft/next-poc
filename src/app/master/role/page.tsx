@@ -1,3 +1,5 @@
+import { Metadata } from 'next';
+
 import { fetchRoles } from '@/app/action/role.action';
 import AccessDenied from '@/components/custom/access-denied';
 import NoRecordPage from '@/components/custom/no-record';
@@ -9,11 +11,18 @@ import { findModuleId } from '@/utils/helper';
 
 import RoleList from './RoleMasterList';
 
-export const dynamic = 'force-dynamic'; // Force dynamic rendering for this route
-export const revalidate = 10; // Disable revalidation for this route
+export const dynamic = 'force-dynamic';
+export const revalidate = 10;
+
+export const metadata: Metadata = {
+  title: "Role",
+  description: "Define role",
+};
 
 export default async function RoleMasterPage() {
+
   try {
+
     const { session, modules } = await getSessionModules();
 
     if (!session) return <AccessDenied />;
@@ -37,12 +46,13 @@ export default async function RoleMasterPage() {
           listPage
         />
 
-        {response.success
-          ? response?.data?.length === 0
-            ? <NoRecordPage text="role" />
-            : response.data && <RoleList data={response.data} moduleId={moduleId} />
-          : <SomethingWentWrong message={response.message} />
-        }
+        {response.success ? (
+          response.data && response?.data?.length > 0
+            ? <RoleList data={response.data} moduleId={moduleId} />
+            : <NoRecordPage text="role" />
+        ) : (
+          <SomethingWentWrong message={response.message} />
+        )}
       </>
     );
   } catch (error) {

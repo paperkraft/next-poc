@@ -1,25 +1,25 @@
-import EditModule from "./EditModule";
 import { fetchUniqueModule } from "@/app/action/module.action";
-import { fetchGroups } from "@/app/action/group.action";
+import { getAllGroups } from "@/app/action/group.action";
 import SomethingWentWrong from "@/components/custom/somthing-wrong";
 import TitlePage from "@/components/custom/page-heading";
 import { IGroup } from "@/app/_Interface/Group";
-import ModuleTreeEditor from "../dnd/ModuleTreeEditor";
+import ModuleForm from "../ModuleForm";
 
 export default async function Page({ params }: { params: { id: string } }) {
   const { id } = params;
 
   try {
     const module = await fetchUniqueModule(id).then((d) => d.json());
-    const isModule = module && module.success
+    const groups = await getAllGroups();
 
-    const groups = await fetchGroups().then((d) => d.json());
+    const isModule = module && module.success
     const isGroup = groups && groups.success
+
+    const modules = module.data || [];
     const groupOptions = isGroup && groups?.data?.map((item: IGroup) => ({ label: item.name, value: item.id }));
 
-    return (isModule && isGroup ? (
-      <EditModule moduleData={module.data} groupOptions={groupOptions} id={id} />
-      
+    return (isModule && isGroup && groupOptions ? (
+      <ModuleForm groupOptions={groupOptions} id={id} modules={modules} />
     ) : (
       <SomethingWentWrong message={isModule ? groups.message : module.message} />
     ));

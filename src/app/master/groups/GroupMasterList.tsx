@@ -3,15 +3,14 @@
 import { toast } from 'sonner';
 
 import { DataTable } from '@/components/_data-table/data-table';
-import { useMounted } from '@/hooks/use-mounted';
+import { FetchResponse } from '@/types';
 import { GroupListProps } from '@/types/group';
 
 import { GroupsMasterColumns } from './groups-column-data';
-import { FetchResponse } from '@/types';
 
 const GroupMasterList = ({ data, moduleId }: GroupListProps) => {
+
   const { columns } = GroupsMasterColumns();
-  const mounted = useMounted();
 
   const deleteRecord = async (id: string | string[]) => {
     const ids = Array.isArray(id) ? id : [id];
@@ -36,16 +35,13 @@ const GroupMasterList = ({ data, moduleId }: GroupListProps) => {
   }
 
   return (
-    mounted &&
-    <>
-      <DataTable
-        columns={columns}
-        data={data}
-        deleteRecord={deleteRecord}
-        moduleId={moduleId}
-        pageSize={10}
-      />
-    </>
+    <DataTable
+      columns={columns}
+      data={data}
+      deleteRecord={deleteRecord}
+      moduleId={moduleId}
+      pageSize={10}
+    />
   );
 }
 

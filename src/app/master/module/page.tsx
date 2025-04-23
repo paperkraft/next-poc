@@ -1,31 +1,36 @@
-import TitlePage from "@/components/custom/page-heading";
-import ModuleMasterList from "./ModuleList";
-import NoRecordPage from "@/components/custom/no-record";
-import { auth } from "@/auth";
-import { findModuleId } from "@/utils/helper";
-import { fetchModules } from "@/app/action/module.action";
-import SomethingWentWrong from "@/components/custom/somthing-wrong";
-import { hasPermission } from "@/lib/rbac";
-import AccessDenied from "@/components/custom/access-denied";
-import ModuleTreeEditor from "./dnd/ModuleTreeEditor";
+import AccessDenied from '@/components/custom/access-denied';
+import NoRecordPage from '@/components/custom/no-record';
+import TitlePage from '@/components/custom/page-heading';
+import SomethingWentWrong from '@/components/custom/somthing-wrong';
+import { can } from '@/lib/abac/checkPermissions';
+import { getSessionModules } from '@/lib/abac/sessionModules';
+import { findModuleId } from '@/utils/helper';
+
+import ModuleMasterList from './ModuleList';
+import { fetchModules } from '@/app/action/module.action';
 
 export default async function ModuleMasterPage() {
   try {
-    const session = await auth();
-    const moduleId = session && findModuleId(session?.user?.modules, "Module");
-    const response = await fetchModules().then((d) => d.json());
+    const { session, modules } = await getSessionModules();
+    if (!session) return <AccessDenied />;
 
-    const rolePermissions = +session?.user?.permissions;
-    const permission = hasPermission(rolePermissions, 8);
+    const hasPermission = can({
+      name: "Module",
+      action: "READ",
+      modules,
+    });
+    if (!hasPermission) return <AccessDenied />;
+
+    const moduleId = findModuleId(modules, "Module");
+    const response = await fetchModules().then((res) => res.json());
   
     return (
       <div className="space-y-2">
-        <TitlePage title="Module List" description="List of all module and submodule" listPage moduleId={moduleId} />
+        <TitlePage title="Module List" description="List of all module and submodule" listPage />
         {response.success
           ? response.data.length === 0
             ? <NoRecordPage text="module" />
             : <ModuleMasterList data={response.data} moduleId={moduleId as string} />
-            // : <ModuleTreeEditor initialModules={response.data} />
           : <SomethingWentWrong message={response.message} />
         }
       </div>

@@ -1,3 +1,5 @@
+import { Metadata } from 'next';
+
 import { getAllGroups } from '@/app/action/group.action';
 import AccessDenied from '@/components/custom/access-denied';
 import NoRecordPage from '@/components/custom/no-record';
@@ -9,8 +11,13 @@ import { findModuleId } from '@/utils/helper';
 
 import GroupMasterList from './GroupMasterList';
 
-export const dynamic = 'force-dynamic'; // Force dynamic rendering for this route
-export const revalidate = 10; // Disable revalidation for this route
+export const dynamic = 'force-dynamic';
+export const revalidate = 10;
+
+export const metadata: Metadata = {
+  title: "Group",
+  description: "Manage groups",
+};
 
 export default async function GroupPage() {
   try {

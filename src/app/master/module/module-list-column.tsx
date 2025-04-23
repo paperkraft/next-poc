@@ -1,5 +1,6 @@
 "use client";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useMounted } from "@/hooks/use-mounted";
 import { cn } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
 import { ChevronDownIcon, ChevronRightIcon, Eye } from "lucide-react";
@@ -15,6 +16,8 @@ interface ModuleData {
 }
 
 export const ModuleMasterColumns = () => {
+    
+    const mounted = useMounted();
     const path = usePathname();
 
     const columns: ColumnDef<ModuleData>[] = useMemo(() => [
@@ -79,5 +82,5 @@ export const ModuleMasterColumns = () => {
         }
     ], [path]);
 
-    return { columns };
+    return mounted ? { columns } : { columns: [] };
 };

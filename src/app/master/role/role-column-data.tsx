@@ -1,12 +1,16 @@
 "use client";
-import { Checkbox } from "@/components/ui/checkbox";
-import { ColumnDef } from "@tanstack/react-table";
-import { Eye } from "lucide-react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useMemo } from "react";
+import { Eye } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useMemo } from 'react';
+
+import { Checkbox } from '@/components/ui/checkbox';
+import { useMounted } from '@/hooks/use-mounted';
+import { ColumnDef } from '@tanstack/react-table';
 
 export const RoleMasterColumns = () => {
+
+  const mounted = useMounted();
   const path = usePathname();
 
   const columns: ColumnDef<any>[] = useMemo(() => [
@@ -45,12 +49,12 @@ export const RoleMasterColumns = () => {
           href={`${path}/${row.original.id}`}
           className="opacity-0 group-hover:opacity-100 hover:text-blue-500 block size-4"
         >
-          <Eye size={16} aria-label="View"/>
+          <Eye size={16} aria-label="View" />
         </Link>
       ),
       enableSorting: false,
     }
   ], []);
 
-  return { columns };
+  return mounted ? { columns } : { columns: [] };
 };

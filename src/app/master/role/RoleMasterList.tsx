@@ -3,14 +3,13 @@
 import { toast } from 'sonner';
 
 import { DataTable } from '@/components/_data-table/data-table';
-import { useMounted } from '@/hooks/use-mounted';
 import { RoleListProps } from '@/types/role';
 
 import { RoleMasterColumns } from './role-column-data';
 
 const RoleMasterList = ({ data, moduleId }: RoleListProps) => {
+
   const { columns } = RoleMasterColumns();
-  const mounted = useMounted();
 
   const deleteRecord = async (id: string | string[]) => {
     const ids = Array.isArray(id) ? id : [id];
@@ -37,16 +36,13 @@ const RoleMasterList = ({ data, moduleId }: RoleListProps) => {
   }
 
   return (
-    mounted &&
-    <>
-      <DataTable
-        columns={columns}
-        data={data}
-        deleteRecord={deleteRecord}
-        moduleId={moduleId}
-        pageSize={10}
-      />
-    </>
+    <DataTable
+      columns={columns}
+      data={data}
+      deleteRecord={deleteRecord}
+      moduleId={moduleId}
+      pageSize={10}
+    />
   );
 };
 

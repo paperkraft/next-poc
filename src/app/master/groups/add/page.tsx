@@ -1,33 +1,18 @@
-import AccessDenied from '@/components/custom/access-denied';
-import TitlePage from '@/components/custom/page-heading';
-import { can } from '@/lib/abac/checkPermissions';
-import { getSessionModules } from '@/lib/abac/sessionModules';
+import { Metadata } from 'next';
 
-import CreateGroupForm from './CreateGroupForm';
+import { PermissionGuard } from '@/components/PermissionGuard';
 
-export const dynamic = 'force-dynamic'; // Force dynamic rendering for this route
+import GroupForm from '../GroupForm';
+
+export const metadata: Metadata = {
+  title: "Create Group",
+  description: "Define a new group",
+};
 
 export default async function CreateGroup() {
-  const { session, modules } = await getSessionModules();
-
-  if (!session) {
-    return <AccessDenied />;
-  }
-
-  const hasPermission = can({
-    name: "Groups",
-    action: "WRITE",
-    modules,
-  });
-
-  if (!hasPermission) {
-    return <AccessDenied />;
-  }
-
   return (
-    <div className="space-y-4 p-2">
-      <TitlePage title="Create Group" description="Define a new group" createPage />
-      <CreateGroupForm />
-    </div>
+    <PermissionGuard name="Role" action="WRITE">
+      <GroupForm  />
+    </PermissionGuard>
   );
 }

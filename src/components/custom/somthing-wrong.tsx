@@ -10,7 +10,7 @@ export default function SomethingWentWrong({ message }: { message: string }) {
             <div className="max-w-md space-y-2 text-center justify-items-center text-red-500 dark:text-red-700">
                 <FileWarningIcon className="size-10" />
                 <h3 className="text-lg font-semibold">{`Something went wrong`}</h3>
-                <p className="text-sm">{`${message}`}</p>
+                <p className="text-sm truncate max-w-sm">{`${message}`}</p>
                 <p className="text-sm"> {`Please try again later.`}</p>
             </div>
         </div>

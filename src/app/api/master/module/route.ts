@@ -94,10 +94,12 @@ export async function DELETE(req: Request) {
     if (!id) {
       return NextResponse.json({ success: false, message: "Module ID is required" }, { status: 400 });
     }
+
     await prisma.$transaction([
       prisma.rolePermission.deleteMany({
         where: { moduleId: id },
       }),
+    
       prisma.module.delete({
         where: { id: id },
       }),
@@ -116,10 +118,9 @@ export async function DELETE(req: Request) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-
     const created = await createModuleRecursive(body);
 
-    return NextResponse.json({ success: true, data: created });
+    return NextResponse.json({ success: true, message: "Module created successfully", data: created });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ success: false, message: 'Failed to create module' }, { status: 500 });

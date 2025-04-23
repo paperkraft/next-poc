@@ -1,3 +1,5 @@
+import { Metadata } from 'next';
+
 import { fetchUniqueRoles } from '@/app/action/role.action';
 import AccessDenied from '@/components/custom/access-denied';
 import NoRecordPage from '@/components/custom/no-record';
@@ -6,6 +8,11 @@ import { can } from '@/lib/abac/checkPermissions';
 import { getSessionModules } from '@/lib/abac/sessionModules';
 
 import RoleForm from '../RoleForm';
+
+export const metadata: Metadata = {
+  title: "View Role",
+  description: "View or update role",
+};
 
 export default async function Page({ params }: { params: { id: string } }) {
   const { id } = params;

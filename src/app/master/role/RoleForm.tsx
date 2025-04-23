@@ -1,25 +1,26 @@
 "use client";
+import { Edit, Trash2 } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import * as z from 'zod';
 
 import { InputController } from '@/components/_form-controls/InputController';
-import { Button } from '@/components/ui/button';
-import { Form } from '@/components/ui/form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useState } from 'react';
+import ButtonContent from '@/components/custom/button-content';
 import DialogBox from '@/components/custom/dialog-box';
 import TitlePage from '@/components/custom/page-heading';
 import { PermissionGuard } from '@/components/PermissionGuard';
-import { Edit, Trash2 } from 'lucide-react';
-import ButtonContent from '@/components/custom/button-content';
+import { Button } from '@/components/ui/button';
+import { Form } from '@/components/ui/form';
+import { useMounted } from '@/hooks/use-mounted';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 export const roleFormSchema = z.object({
   name: z.string({
-    required_error: "Role is required.",
+    required_error: "Name is required.",
   }).min(1, {
-    message: "Role is required.",
+    message: "Name is required.",
   }),
 });
 
@@ -35,6 +36,7 @@ export default function RoleForm({ data }: { data?: Role }) {
   const { id } = data || { id: "" };
   const router = useRouter();
   const path = usePathname();
+  const mounted = useMounted();
 
   const [show, setShow] = useState(false);
   const [open, setOpen] = useState(false);
@@ -62,7 +64,6 @@ export default function RoleForm({ data }: { data?: Role }) {
     const isEdit = !!id;
     const method = isEdit ? "PUT" : "POST";
     const url = isEdit ? `/api/master/role/${id}` : "/api/master/role";
-    const successMessage = isEdit ? "Role updated" : "Role created";
     const failureMessage = isEdit ? "Failed to update role" : "Failed to create role";
 
 
@@ -84,10 +85,10 @@ export default function RoleForm({ data }: { data?: Role }) {
       const result = await res.json();
 
       if (result.success) {
-        toast.success(successMessage);
+        toast.success(result.message);
         router.push('.');
       } else {
-        toast.error(failureMessage);
+        toast.error(result.message);
       }
 
     } catch (error) {
@@ -148,6 +149,7 @@ export default function RoleForm({ data }: { data?: Role }) {
   const title = id ? "Role" : "Create Role";
 
   return (
+    mounted &&
     <>
       {/* Title and Action Buttons */}
       <TitlePage title={title} description={pageDesc} viewPage={!!id} createPage={!id}>
@@ -160,7 +162,7 @@ export default function RoleForm({ data }: { data?: Role }) {
             </PermissionGuard>
             <PermissionGuard action="DELETE" path={path}>
               <Button className="size-7" variant={"outline"} size={"sm"} onClick={() => setOpen(true)}>
-                <Trash2 className="size-5 text-red-500" />
+                <Trash2 className="size-5 text-destructive" />
               </Button>
             </PermissionGuard>
           </>
@@ -187,7 +189,7 @@ export default function RoleForm({ data }: { data?: Role }) {
               </Button>
 
               <Button type="submit" disabled={loading}>
-                <ButtonContent status={loading} text={id ? "Update" : "Submit"} />
+                <ButtonContent status={loading} text={id ? "Update" : "Create"} />
               </Button>
             </div>
           )}
@@ -197,7 +199,7 @@ export default function RoleForm({ data }: { data?: Role }) {
       {/* Delete Confirmation Modal */}
       {open && (
         <DialogBox open={open} title={"Delete Confirmation"} preventClose setClose={() => setOpen(false)}>
-          <p>Are you sure you want to delete the role <strong>{data?.name}</strong>? This action cannot be undone.</p>
+          <p>Are you sure? Do you want to delete the role <strong>{data?.name}</strong>? This action cannot be undone.</p>
           <div className="flex justify-end">
             <Button onClick={() => handleDelete(id as string)} variant={'destructive'}>Confirm</Button>
           </div>

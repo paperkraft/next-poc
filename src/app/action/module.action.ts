@@ -1,19 +1,6 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
-interface childModule {
-    id: string;
-    name: string;
-    path: string | null;
-}
-interface IModule {
-    id: string;
-    name: string;
-    path: string | null;
-    groupId: string | null;
-    children: childModule[];
-}
-
 export async function fetchModules() {
     try {
         const allModules = await prisma.module.findMany({
@@ -122,6 +109,7 @@ export async function fetchUniqueModule(id: string) {
     }
 }
 
+// used in session and auth.
 export async function fetchModuleByRole(roleId: string) {
 
     if (!roleId) {
@@ -185,7 +173,6 @@ interface RoleModulesProps {
     permissions: number;
     subModules: RoleModulesProps[];
 }
-
 
 function RoleModules(data: RolePermissionWithModule[]): RoleModulesProps[] {
     const moduleMap = new Map<string, RoleModulesProps>();

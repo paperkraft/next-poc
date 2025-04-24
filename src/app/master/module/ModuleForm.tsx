@@ -13,7 +13,7 @@ import { useEffect, useState } from 'react';
 import ButtonContent from '@/components/custom/button-content';
 import TitlePage from '@/components/custom/page-heading';
 import { PermissionGuard } from '@/components/PermissionGuard';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Loader, Trash2 } from 'lucide-react';
 import { RecursiveModuleForm } from './RecursiveModules';
 import { Form } from '@/components/ui/form';
 import DialogBox from '@/components/custom/dialog-box';
@@ -49,9 +49,9 @@ export default function ModuleForm({ id, modules, groupOptions }: PageProps) {
 
     const isEdit = !!id;
 
+    const mounted = useMounted();
     const router = useRouter();
     const path = usePathname();
-    const mounted = useMounted();
 
     const [show, setShow] = useState(false);
     const [open, setOpen] = useState(false);
@@ -118,21 +118,25 @@ export default function ModuleForm({ id, modules, groupOptions }: PageProps) {
 
     const handleDelete = async (id: string) => {
         try {
-            const res = await fetch(`/api/master/module/`, {
+            setLoading(true);
+            const res = await fetch(`/api/master/module/${id}`, {
                 method: "DELETE",
-                body: JSON.stringify({ id }),
-            }).then((d) => d.json());
+                headers: { 'Content-Type': 'application/json' }
+            })
 
             if (!res.ok) {
-                toast.error(res.message || "Failed to delete module");
+                const error = await res.json();
+                toast.error(error.message);
                 return;
             }
 
-            if (res.success) {
-                toast.success(res.message);
+            const result = await res.json();
+
+            if (result.success) {
+                toast.success(result.message);
                 router.replace('.');
             } else {
-                toast.error(res.message || 'Failed to delete module');
+                toast.error(result.message);
             }
 
         } catch (error) {
@@ -141,6 +145,7 @@ export default function ModuleForm({ id, modules, groupOptions }: PageProps) {
         } finally {
             router.refresh();
             setOpen(false);
+            setLoading(false);
         }
     };
 
@@ -243,21 +248,24 @@ export default function ModuleForm({ id, modules, groupOptions }: PageProps) {
                     setClose={() => setOpen(false)}
                 >
                     <p>Are you sure? Do you want to delete the module&nbsp;
-                        <strong>{modules?.name}</strong>?<br/>
+                        <strong>{modules?.name}</strong>?<br />
                         This action cannot be undone.
                     </p>
 
                     <div className="flex justify-end gap-2">
                         <Button
+                            aria-label="Delete selected module"
                             variant={'destructive'}
+                            disabled={loading}
                             onClick={() => handleDelete(id as string)}
                         >
-                            Confirm
+                            {loading && <Loader className="size-4 animate-spin" />}
+                            {loading ? "Deleting" : "Confirm"}
                         </Button>
-                        <Button 
+                        <Button
                             type='button'
                             variant={'outline'}
-                            onClick={()=> setOpen(false)}>
+                            onClick={() => setOpen(false)}>
                             Cancel
                         </Button>
                     </div>

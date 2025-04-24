@@ -12,10 +12,6 @@ interface IModule {
     path: string | null;
     groupId: string | null;
     children: childModule[];
-    // parentId: string | null;
-    // groupName: string | null;
-    // position: number | null;
-    // subModules: IModule[];
 }
 
 export async function fetchModules() {
@@ -26,6 +22,7 @@ export async function fetchModules() {
                 parent: true,
                 group: true,
             },
+            where: { isDeleted: false }
         });
 
         // Map for fast lookup
@@ -78,8 +75,8 @@ export async function fetchUniqueModule(id: string) {
         const module = await prisma.module.findUnique({
             where: { id },
             include: {
-                children:{
-                    select:{
+                children: {
+                    select: {
                         id: true,
                         name: true,
                         path: true,
@@ -111,29 +108,6 @@ export async function fetchUniqueModule(id: string) {
             groupId: module.groupId,
             children: module.children,
         }
-
-        // const subModules = await prisma.module.findMany({
-        //     where: { parentId: module.id },
-        //     include: {
-        //         group: true,
-        //     },
-        // });
-
-        // const formatModule = (mod: any): IModule => ({
-        //     id: mod.id,
-        //     name: mod.name,
-        //     path: mod.path,
-        //     groupId: mod.groupId,
-        //     parentId: mod.parentId,
-        //     groupName: mod.group?.name,
-        //     position: mod.group?.position,
-        //     subModules: [],
-        // });
-
-        // const formattedModule: IModule = {
-        //     ...formatModule(module),
-        //     children: subModules.map(formatModule),
-        // };
 
         return NextResponse.json(
             { success: true, message: "Success", data: finalModule },

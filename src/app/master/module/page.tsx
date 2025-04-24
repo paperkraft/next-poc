@@ -19,6 +19,7 @@ export default async function ModuleMasterPage() {
       action: "READ",
       modules,
     });
+    
     if (!hasPermission) return <AccessDenied />;
 
     const moduleId = findModuleId(modules, "Module");
@@ -28,9 +29,9 @@ export default async function ModuleMasterPage() {
       <div className="space-y-2">
         <TitlePage title="Module List" description="List of all module and submodule" listPage />
         {response.success
-          ? response.data.length === 0
-            ? <NoRecordPage text="module" />
-            : <ModuleMasterList data={response.data} moduleId={moduleId as string} />
+          ? response.data.length > 0
+            ? <ModuleMasterList data={response.data} moduleId={moduleId as string} />
+            : <NoRecordPage text="module" />
           : <SomethingWentWrong message={response.message} />
         }
       </div>

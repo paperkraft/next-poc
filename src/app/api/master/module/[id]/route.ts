@@ -1,6 +1,5 @@
-import { logAuditAction } from '@/lib/audit-log';
 import prisma from '@/lib/prisma';
-import { Prisma } from '@prisma/client';
+import { revalidatePath } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 
 interface Params {
@@ -55,17 +54,15 @@ export async function PUT(req: NextRequest, { params }: Params) {
         const body = await req.json();
         const { name, path, groupId, children = [] } = body;
 
-        const url = path && path.startsWith('/') ? path : path.startsWith('#') ? undefined : `/${path}`;
+        const url = path === "" ? undefined : path.startsWith('/') ? path : path.startsWith('#') ? undefined : `/${path}`;
 
         // Step 1: Update parent module
-        const updatedModule = await prisma.module.update({
+        await prisma.module.update({
             where: { id: params.id },
-            data: { name, path: url, groupId: groupId ? groupId : undefined },
+            data: { name, path: url, groupId: groupId ? groupId : undefined, isDeleted: false },
         });
 
         // Step 2: Recursive handler to sync children
-
-
         await syncChildren(children, params.id);
 
         return NextResponse.json({ success: true, message: 'Module and children updated successfully' });
@@ -78,16 +75,33 @@ export async function DELETE(req: NextRequest, { params }: Params) {
     const { id } = params;
 
     if (!id) {
-        return NextResponse.json({ success: false, message: 'Module ID is required' }, { status: 400 });
+        return NextResponse.json({
+            success: false,
+            message: 'Module ID is required'
+        }, { status: 400 });
     }
 
     try {
         // Collect all IDs in the hierarchy
         await deleteModuleAndDescendants(id);
 
+        revalidatePath('/master/module');
+
         return NextResponse.json({ success: true, message: "Module and children deleted" });
-    } catch (err) {
+    } catch (err: any) {
         console.error('Delete module error:', err);
+        // If custom error thrown from the delete function
+        if (err?.code === 'ASSIGNED_MODULE') {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: err.message,
+                    assigned: err.assigned,
+                },
+                { status: 400 }
+            );
+        }
+
         return NextResponse.json({ success: false, message: 'Failed to delete module' }, { status: 500 });
     }
 }
@@ -118,7 +132,7 @@ async function syncChildren(children: ModuleInput[], parentId: string, depth: nu
     // 2. Prepare all updates/creates in parallel
     await Promise.all(
         children.map(async (child) => {
-            const childUrl = child.path && child.path?.startsWith('/') ? child.path : child.path?.startsWith('#') ? undefined : `/${child.path}`;
+            const childUrl = child.path === "" ? "#" : child.path?.startsWith('/') ? child.path : child.path?.startsWith('#') ? undefined : `/${child.path}`;
             const groupId = child.groupId || undefined;
 
             if (depth > maxDepth) {
@@ -134,6 +148,7 @@ async function syncChildren(children: ModuleInput[], parentId: string, depth: nu
                         path: childUrl,
                         groupId,
                         parentId,
+                        isDeleted: false
                     },
                 });
 
@@ -164,6 +179,33 @@ async function syncChildren(children: ModuleInput[], parentId: string, depth: nu
 
 // Delete removed children and all its nested children
 async function deleteModuleAndDescendants(moduleId: string) {
+
+    const assigned = await prisma.rolePermission.findMany({
+        where: { moduleId },
+        select: {
+            moduleId: true,
+            module: { select: { name: true } },
+            role: { select: { name: true } },
+        },
+    });
+
+    if (assigned.length > 0) {
+        const grouped = assigned.reduce<Record<string, string[]>>((acc, curr) => {
+            const moduleName = curr.module.name || 'Unknown';
+            const roleName = curr.role.name || 'Unknown';
+            if (!acc[moduleName]) acc[moduleName] = [];
+            acc[moduleName].push(roleName);
+            return acc;
+        }, {});
+
+        throw {
+            code: 'ASSIGNED_MODULE',
+            message: 'Cannot delete assigned module.',
+            assigned: grouped,
+        };
+    }
+
+    // Delete children recursively
     const childModules = await prisma.module.findMany({
         where: { parentId: moduleId },
         select: { id: true },
@@ -171,6 +213,7 @@ async function deleteModuleAndDescendants(moduleId: string) {
 
     await Promise.all(childModules.map((c) => deleteModuleAndDescendants(c.id)));
 
+    // Delete this module
     await prisma.module.delete({ where: { id: moduleId } });
 }
 

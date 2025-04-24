@@ -59,6 +59,7 @@ export function RecursiveModuleForm({
                                     label={depth === 0 ? 'Submodule' : `Child Submodule`}
                                     aria-label="Submodule name"
                                     readOnly={readOnly}
+                                    type='text'
                                 />
                             </div>
 

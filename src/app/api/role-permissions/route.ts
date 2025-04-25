@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth, unstable_update } from '@/auth';
 import prisma from '@/lib/prisma';
+import { logAuditAction } from '@/lib/audit-log';
 
 type Payload = {
   roleId: string;
@@ -69,11 +70,13 @@ export async function POST(req: NextRequest) {
   }
 
   // Step 4: Execute
-  await prisma.$transaction([...upserts, ...deletes]);
+  const data = await prisma.$transaction([...upserts, ...deletes]);
 
   // Step 5: Update session
   const session = await auth();
   await unstable_update({ ...session?.user });
+
+  await logAuditAction('Upsert', 'RBAC', { data: data });
 
   return NextResponse.json({ success: true });
 }

@@ -68,7 +68,7 @@ export const createColumns = ({ setOpen, setDetails }: createColumnsProps) => {
             ),
         },
         {
-            accessorKey: "user",
+            accessorKey: "name",
             header: "User",
         },
         {

@@ -2,12 +2,12 @@ import { Metadata } from 'next';
 import { Suspense } from 'react';
 
 import Loading from '@/app/loading';
-import { auth } from '@/auth';
 import AccessDenied from '@/components/custom/access-denied';
 import NoRecordPage from '@/components/custom/no-record';
 import TitlePage from '@/components/custom/page-heading';
 import SomethingWentWrong from '@/components/custom/somthing-wrong';
-import { canAll } from '@/lib/abac/checkPermissions';
+import { can } from '@/lib/abac/checkPermissions';
+import { getSessionModules } from '@/lib/abac/sessionModules';
 import { findModuleId } from '@/utils/helper';
 
 import { fetchAuditLogs } from '../../action/audit.action';
@@ -27,30 +27,50 @@ export default function AuditLog() {
 }
 
 async function AuditLogContent() {
-    const session = await auth();
-    const moduleId = session && findModuleId(session?.user?.modules, "Audit Logs");
 
-    const canAccessAll = canAll({
-        action: "ALL",
-        name: "Audit Logs",
-        modules: session?.user?.modules,
-    });
+    try {
+        const { session, modules } = await getSessionModules();
+        if (!session) return <AccessDenied />;
 
-    if (!canAccessAll) {
-        return (<AccessDenied />)
+        const hasPermission = can({
+            action: "READ",
+            name: "Audit Logs",
+            modules,
+        });
+
+        if (!hasPermission) return <AccessDenied />;
+        const moduleId = findModuleId(modules, "Audit Logs");
+        const { success, data, message } = await fetchAuditLogs().then((res) => res.json());
+        return (
+            <>
+                <TitlePage
+                    title="Audit Log"
+                    description="Audit log for user activities"
+                />
+
+                {success ?
+                    data.length > 0
+                        ? <AuditLogTable data={data} moduleId={moduleId} />
+                        : <NoRecordPage text="audit logs" />
+                    : <SomethingWentWrong message={message} />
+                }
+            </>
+        );
+
+    } catch (error) {
+        return (
+            <>
+                <TitlePage
+                    title="Audit Log"
+                    description="Audit log for user activities"
+                />
+            </>
+        )
     }
 
-    const { success, data, message } = await fetchAuditLogs().then((res) => res.json());
 
-    return (
-        <>
-            <TitlePage title="Audit Log" description="Audit log for user activities" />
-            {success ?
-                data.length === 0
-                    ? <NoRecordPage text="audit logs" />
-                    : <AuditLogTable data={data} moduleId={moduleId as string} />
-                : <SomethingWentWrong message={message} />
-            }
-        </>
-    );
+
+
+
+
 }

@@ -69,6 +69,8 @@ export async function createGroup(name: string): Promise<FetchGroupResponse> {
             data: { name },
         });
 
+        await logAuditAction('Create', 'master/groups', { data: group });
+
         return {
             success: true,
             message: "Group created successfully",
@@ -89,6 +91,8 @@ export async function updateGroup(id: string, name: string): Promise<FetchGroupR
             where: { id },
             data: { name },
         });
+
+        await logAuditAction('Update', 'master/groups', { data: group });
 
         return {
             success: true,

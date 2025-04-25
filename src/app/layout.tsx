@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { ChildProps } from "@/types";
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
+import { GlobalAuthGuard } from "@/context/auth-guard";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -31,7 +32,9 @@ export default async function RootLayout({ children }: ChildProps) {
           <NextIntlClientProvider messages={messages}>
             <ThemeProvider>
               <AppLayout>
-                {children}
+                <GlobalAuthGuard>
+                  {children}
+                </GlobalAuthGuard>
               </AppLayout>
               <Toaster richColors position="top-center" />
             </ThemeProvider>

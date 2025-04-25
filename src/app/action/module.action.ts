@@ -164,7 +164,7 @@ interface RolePermissionWithModule {
     };
 }
 
-interface RoleModulesProps {
+export interface RoleModulesProps {
     id: string;
     name: string;
     path: string | null;

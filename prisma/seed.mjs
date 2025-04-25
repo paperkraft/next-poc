@@ -10,6 +10,7 @@ async function main() {
   console.log("🌱 Seeding started...");
 
   // 1. Permissions (bitmask values)
+  console.log("🔐 Seeding permissions...");
   const permissions = [
     { name: "view", bitmask: 1 },
     { name: "create", bitmask: 2 },
@@ -24,8 +25,11 @@ async function main() {
       create: p,
     });
   }
+  console.log("✅ Permissions seeded.");
+
 
   // 2. Roles
+  console.log("🎭 Seeding roles...");
   const roles = ["super-admin", "organization-admin", "guest"];
 
   for (const role of roles) {
@@ -37,6 +41,7 @@ async function main() {
   }
 
   // 3. Groups
+  console.log("📦 Seeding groups...");
   const groups = [
     { name: "Home", position: 1 },
     { name: "Master", position: 2 },
@@ -45,13 +50,16 @@ async function main() {
 
   for (const group of groups) {
     await prisma.group.upsert({
-      where: { name: group },
+      where: { name: group.name },
       update: { position: group.position },
       create: group,
     });
   }
+  console.log("✅ Groups seeded.");
 
-  // 4. Modules (nested structure)
+
+  // 4. Modules
+  console.log("📁 Seeding modules...");
   const modules = [
     { name: "Dashboard", path: "/dashboard", group: "Home" },
     { name: "Module", path: "/master/module", group: "Master" },
@@ -64,6 +72,8 @@ async function main() {
       group: "Administrative",
     },
   ];
+  console.log("✅ Modules seeded.");
+
 
   // Fetch all groups with their IDs
   const allGroups = await prisma.group.findMany();
@@ -82,35 +92,52 @@ async function main() {
       },
     });
   }
-
+  
   // 5. Assign RolePermissions (super-admin gets full access)
   const superAdmin = await prisma.role.findUnique({
     where: { name: "super-admin" },
   });
-
+  
+  const guestRole = await prisma.role.findUnique({
+    where: { name: "guest" },
+  });
+  
+  
+  console.log("🔧 Assigning role permissions...");
   if (superAdmin) {
     const allModules = await prisma.module.findMany();
 
     for (const mod of allModules) {
-      await prisma.rolePermission.upsert({
-        where: {
-          roleId_moduleId: {
-            roleId: superAdmin.id,
-            moduleId: mod.id,
-            permissionBits: 15,
-          },
-        },
-        update: {},
-        create: {
+      await prisma.rolePermission.create({
+        data: {
           roleId: superAdmin.id,
           moduleId: mod.id,
           permissionBits: 15,
         },
       });
     }
+    console.log("✅ Super-admin permissions assigned.");
   }
 
-  // // 6. Create a sample user
+  if (guestRole) {
+    const dashboardModule = await prisma.module.findUnique({
+      where: { name: "Dashboard" },
+    });
+
+    if (dashboardModule) {
+      await prisma.rolePermission.create({
+        data: {
+          roleId: guestRole.id,
+          moduleId: dashboardModule.id,
+          permissionBits: 1,
+        },
+      });
+    }
+    console.log("✅ Guest permissions assigned.");
+  }
+
+  // 6. Create users
+  console.log("👤 Creating users...");
   await prisma.user.upsert({
     where: { email: "admin@email.com" },
     update: {},
@@ -124,7 +151,22 @@ async function main() {
     },
   });
 
-  console.log("✅ Seeding completed.");
+  // Regular user
+  await prisma.user.upsert({
+    where: { email: "user@email.com" },
+    update: {},
+    create: {
+      email: "user@email.com",
+      password: hash,
+      username: "user",
+      firstName: "Normal",
+      lastName: "User",
+      roleId: guestRole?.id,
+    },
+  });
+
+  console.log("✅ Users created.");
+  console.log("🌱 Seeding completed.");
 }
 
 main()

@@ -1,43 +1,51 @@
-import { auth } from '@/auth';
-import { NextRequest, NextResponse } from 'next/server';
-import { hasPermissions } from './lib/rbac';
-import { publicURL, ROUTE_PERMISSIONS } from './constants/routes';
 import { Session } from 'next-auth';
+import { NextRequest, NextResponse } from 'next/server';
+
+import { auth } from '@/auth';
+
+import { privatePaths, publicPaths } from './constants/routes';
+import { Module } from './types/module';
+import { findModuleByPath } from './utils/findModuleByPath';
+import { logAccessDenied } from './utils/log';
 
 export async function middleware(req: NextRequest) {
-    try {
-        const currentPath = req?.nextUrl?.pathname;
-        const session: Session | null = await auth();
+    const currentPath = req.nextUrl.pathname;
 
-        // Skip session check for public URLs
-        if (publicURL.includes(currentPath)) {
-            return NextResponse.next();
-        }
-
-        // Skip permission check if no specific permissions are required
-        const requiredPermissions = ROUTE_PERMISSIONS[currentPath];
-        if (!requiredPermissions) return NextResponse.next();
-
-        // Validate user permissions
-        const userPermissions = session?.user?.permissions ?? [];
-        if (!hasPermissions(userPermissions, requiredPermissions)) {
-            return new NextResponse('Forbidden: Access denied', { status: 403 });
-        }
-
+    // Always allow public paths
+    if (currentPath === '/' || publicPaths.some((p) => currentPath.startsWith(p))) {
         return NextResponse.next();
-
-    } catch (error) {
-        console.error('Middleware error:', {
-            path: req.nextUrl.pathname,
-            error,
-        });
-
-        return new NextResponse('Internal Server Error', { status: 500 });
     }
+
+    const session: Session | null = await auth();
+
+    // If not authenticated, redirect to login
+    if (!session) {
+        const loginUrl = new URL('/login', req.url);
+        loginUrl.searchParams.set('callbackUrl', req.url); // optional: redirect back after login
+        return NextResponse.redirect(loginUrl);
+    }
+
+    // Allow private paths if authenticated
+    if (privatePaths.some((p) => currentPath.startsWith(p))) {
+        return NextResponse.next();
+    }
+
+    // Now check modules
+    const modules = session.user.modules as Module[] | undefined;
+    const matched = modules ? findModuleByPath(modules, currentPath) : null;
+
+    if (!matched) {
+        logAccessDenied(session, currentPath);
+        // Redirect to access denied page
+        const accessDeniedUrl = new URL('/access-denied', req.url);
+        return NextResponse.redirect(accessDeniedUrl);
+    }
+
+    return NextResponse.next();
 }
 
 export const config = {
     matcher: [
-        "/((?!_next/static|_next/image|favicon.ico|api).*)",
+        "/((?!_next/static|_next/image|favicon.ico|sw.js|manifest.webmanifest|api|images|icons).*)",
     ],
 };

@@ -7,8 +7,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function Home() {
-  const { status } = useSession();
   const route = useRouter();
+  const { status } = useSession();
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {

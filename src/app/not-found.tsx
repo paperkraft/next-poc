@@ -20,7 +20,7 @@ export default async function NotFound() {
           <div className="flex flex-col items-center gap-1">
               <h6 className="text-2xl font-semibold">Not Found</h6>
               <p className="text-muted-foreground text-sm">The page you are looking does not exist</p>
-              <Image src={"/not-found.svg"} height={250} width={250} alt="Not-Found" priority className="mb-3" />
+              <Image src={"/not-found.svg"} height={250} width={250} alt="Not-Found" className="mb-3" />
 
               <div>
                   <Button asChild>

@@ -52,11 +52,12 @@ const SidebarFooterContent = React.memo(() => {
         setIsLoggingOut(true);
         try {
             await signOut({ redirect: false });
-            await logAuditAction('logout', 'auth/signout', { user: `${user?.name}` }, user.id);
+            await logAuditAction('logout', 'auth/signout', { data: { user: `${user?.name}` } }, user.id);
         } catch (error) {
             console.error("Logout failed", error);
         } finally {
             setIsLoggingOut(false);
+            handleClose();
         }
     }
 
@@ -99,58 +100,62 @@ const SidebarFooterContent = React.memo(() => {
     }
 
     return (
-        <SidebarMenu>
-            <SidebarMenuItem>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <SidebarMenuButton size="lg"
-                            className={cn("data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus-within:!ring-primary p-0",
-                                isDual && "size-8"
-                            )}
+        <>
+            <SidebarMenu>
+                <SidebarMenuItem>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <SidebarMenuButton size="lg"
+                                className={cn("data-[state=open]:bg-accent data-[state=open]:text-accent-foreground focus-within:!ring-primary p-0",
+                                    isDual && "size-8"
+                                )}
+                            >
+                                <RenderUserInfo />
+                                <EllipsisVerticalIcon className="ml-auto size-4" />
+                            </SidebarMenuButton>
+                        </DropdownMenuTrigger>
+
+                        <DropdownMenuContent
+                            side={isMobile ? "bottom" : "right"}
+                            align="end"
+                            sideOffset={4}
+                            className={cn("w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg [&_svg]:size-4 [&_svg]:mr-2 mb-2")}
                         >
-                            <RenderUserInfo />
-                            <EllipsisVerticalIcon className="ml-auto size-4" />
-                        </SidebarMenuButton>
-                    </DropdownMenuTrigger>
+                            <ThemeWrapper>
+                                <DropdownMenuLabel className="p-0 font-normal">
+                                    <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+                                        <RenderUserInfo />
+                                    </div>
+                                </DropdownMenuLabel>
 
-                    <DropdownMenuContent
-                        side={isMobile ? "bottom" : "right"}
-                        align="end"
-                        sideOffset={4}
-                        className={cn("w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg [&_svg]:size-4 [&_svg]:mr-2 mb-2")}
-                    >
-                        <ThemeWrapper>
-                            <DropdownMenuLabel className="p-0 font-normal">
-                                <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                                    <RenderUserInfo />
-                                </div>
-                            </DropdownMenuLabel>
+                                <DropdownMenuSeparator />
 
-                            <DropdownMenuSeparator />
+                                <DropdownMenuGroup>
+                                    {
+                                        options.map((item) => (
+                                            <DropdownMenuItem key={item.label} asChild className="cursor-pointer" onClick={handleClose}>
+                                                <Link href={item.url} className="flex flex-1 items-center hover:!text-primary">
+                                                    {item.icon && <item.icon />}{item.label}
+                                                </Link>
+                                            </DropdownMenuItem>
+                                        ))
+                                    }
+                                </DropdownMenuGroup>
 
-                            <DropdownMenuGroup>
-                                {
-                                    options.map((item) => (
-                                        <DropdownMenuItem key={item.label} asChild className="cursor-pointer" onClick={handleClose}>
-                                            <Link href={item.url} className="flex flex-1 items-center hover:!text-primary">
-                                                {item.icon && <item.icon />}{item.label}
-                                            </Link>
-                                        </DropdownMenuItem>
-                                    ))
-                                }
-                            </DropdownMenuGroup>
+                                <DropdownMenuSeparator />
 
-                            <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={logout} className="cursor-pointer hover:!text-primary">
+                                    {isLoggingOut ? <span>Logging out...</span> : <><LogOutIcon /> Log out</>}
+                                </DropdownMenuItem>
 
-                            <DropdownMenuItem onClick={() => { logout(); handleClose() }} className="cursor-pointer hover:!text-primary">
-                                {isLoggingOut ? <span>Logging out...</span> : <><LogOutIcon /> Log out</>}
-                            </DropdownMenuItem>
+                            </ThemeWrapper>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </SidebarMenuItem>
+            </SidebarMenu>
 
-                        </ThemeWrapper>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </SidebarMenuItem>
-        </SidebarMenu>
+            
+        </>
     )
 });
 

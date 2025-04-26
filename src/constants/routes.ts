@@ -1,4 +1,12 @@
-export const publicURL = ['/signin', '/signup', '/forgot-password', '/access-denied'];
-export const ROUTE_PERMISSIONS: { [key: string]: number[] } = {
-    '/test': [15],
-};
+export const publicPaths = [
+    '/signin',
+    '/signup',
+    '/forgot-password',
+    '/access-denied'
+];
+
+export const privatePaths = [
+    '/profile',
+    '/settings',
+    '/notifications',
+];

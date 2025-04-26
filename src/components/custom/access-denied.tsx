@@ -8,7 +8,7 @@ export default function AccessDenied() {
     const router = useRouter();
     return (
         mounted &&
-        <div className="flex flex-col gap-2 items-center justify-center p-6 bg-accent rounded-md h-[80vh]">
+        <div className={"flex flex-col gap-2 items-center justify-center p-6 bg-accent rounded-md h-screen"}>
             <div className="max-w-md space-y-4 text-center">
                 <h1 className="text-xl font-semibold tracking-tight sm:text-4xl">Access Denied</h1>
                 <p className="text-muted-foreground">

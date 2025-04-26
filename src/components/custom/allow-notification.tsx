@@ -5,11 +5,13 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircleIcon, X } from 'lucide-react';
 import { urlBase64ToUint8Array } from '@/utils';
 import Link from 'next/link';
+import { useMounted } from '@/hooks/use-mounted';
 
 export default function AllowNotification() {
     const [isSupported, setIsSupported] = useState(false)
     const [subscription, setSubscription] = useState<PushSubscription | null>(null);
     const [notificationDenied, setNotificationDenied] = useState(false);
+    const mounted = useMounted();
 
     useEffect(() => {
         if ('serviceWorker' in navigator && 'PushManager' in window) {
@@ -83,7 +85,7 @@ export default function AllowNotification() {
 
     return (
         <>
-            {notificationDenied && (
+            {notificationDenied && mounted && (
                 <Alert variant="default" className='bg-yellow-50 border border-yellow-300 text-yellow-900 dark:bg-yellow-50/5 dark:border-accent dark:text-yellow-600'>
                     <AlertCircleIcon className="size-4 !text-inherit" />
                     <AlertTitle className='flex'>
@@ -100,7 +102,7 @@ export default function AllowNotification() {
                 </Alert>
             )}
 
-            {!subscription && !notificationDenied && (
+            {!subscription && !notificationDenied && mounted && (
                 <>
                     <Alert variant="default" className='bg-yellow-50 border border-yellow-300 text-yellow-900 dark:bg-yellow-50/5 dark:border-accent dark:text-yellow-600'>
                         <AlertCircleIcon className="size-4 !text-inherit" />

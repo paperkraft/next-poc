@@ -1,22 +1,28 @@
 'use client';
 
-import { useForm } from 'react-hook-form';
-import { Button } from '@/components/ui/button';
-import { FloatingInputController } from '@/components/_form-controls/floating-label/input-controller';
+import { Edit, Loader, Trash2 } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
-import { FloatingSelectController } from '@/components/_form-controls/floating-label/select-controller';
-import { IOption, IModule } from '@/app/_Interface/Module';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import * as z from 'zod';
-import { useMounted } from '@/hooks/use-mounted';
-import { useEffect, useState } from 'react';
+
+import { IModule, IOption } from '@/app/_Interface/Module';
+import {
+    FloatingInputController
+} from '@/components/_form-controls/floating-label/input-controller';
+import {
+    FloatingSelectController
+} from '@/components/_form-controls/floating-label/select-controller';
 import ButtonContent from '@/components/custom/button-content';
+import DialogBox from '@/components/custom/dialog-box';
 import TitlePage from '@/components/custom/page-heading';
 import { PermissionGuard } from '@/components/PermissionGuard';
-import { Edit, Loader, Trash2 } from 'lucide-react';
-import { RecursiveModuleForm } from './RecursiveModules';
+import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
-import DialogBox from '@/components/custom/dialog-box';
+import { useMounted } from '@/hooks/use-mounted';
+
+import { RecursiveModuleForm } from './RecursiveModules';
 
 export type ModuleFormData = {
     id?: string;
@@ -84,12 +90,27 @@ export default function ModuleForm({ id, modules, groupOptions }: PageProps) {
         const url = isEdit ? `/api/master/module/${id}` : `/api/master/module`;
         const failureMessage = isEdit ? "Failed to update module" : "Failed to create module";
 
+        const path = isEdit
+            ? data.path
+            : data.path === ""
+                ? undefined
+                : data.path?.startsWith('/')
+                    ? data.path
+                    : data.path?.startsWith('#')
+                        ? undefined
+                        : `/${data.path}`
+
+        const final = {
+            ...data,
+            path
+        }
+
         try {
             setLoading(true);
 
             const res = await fetch(url, {
                 method,
-                body: JSON.stringify(data),
+                body: JSON.stringify(final),
             });
 
             if (!res.ok) {

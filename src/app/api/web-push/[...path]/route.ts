@@ -28,7 +28,7 @@ export async function POST(request: Request) {
 
 // Handle setting the subscription
 async function handleSetSubscription(request: Request) {
-
+    
     try {
         const session = await auth();
         const userId: string = session?.user?.id;

@@ -3,34 +3,56 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { auth } from '@/auth';
 
-import { privatePaths, publicPaths } from './constants/routes';
 import { Module } from './types/module';
 import { findModuleByPath } from './utils/findModuleByPath';
 import { logAccessDenied } from './utils/log';
+import { getPathAccess } from './utils/accessPath';
 
 export async function middleware(req: NextRequest) {
     const currentPath = req.nextUrl.pathname;
+    const response = NextResponse.next();
+    response.headers.set('x-current-path', req.nextUrl.pathname);
 
-    // Always allow public paths
-    if (currentPath === '/' || publicPaths.some((p) => currentPath.startsWith(p))) {
-        return NextResponse.next();
+    const pathAccess = getPathAccess(currentPath);
+
+    // Static asset or API, ignore
+    if (pathAccess === 'ignored') {
+        return response; 
+    }
+    
+    let session: Session | null = null;
+
+    // Always allow static/public assets
+    if (pathAccess === 'auth-public') {
+        session = await auth();
+        if (session) {
+            const dashboardUrl = new URL('/dashboard', req.url);
+            return NextResponse.redirect(dashboardUrl);
+        }
+        return response;
     }
 
-    const session: Session | null = await auth();
+    if (pathAccess === 'public') {
+        // Always allow public pages like landing page `/`
+        return response;
+    }
+
+    // Not public path — must check auth
+    session = await auth();
 
     // If not authenticated, redirect to login
     if (!session) {
-        const loginUrl = new URL('/login', req.url);
+        const loginUrl = new URL('/signin', req.url);
         loginUrl.searchParams.set('callbackUrl', req.url); // optional: redirect back after login
         return NextResponse.redirect(loginUrl);
     }
 
     // Allow private paths if authenticated
-    if (privatePaths.some((p) => currentPath.startsWith(p))) {
-        return NextResponse.next();
+    if (pathAccess === 'private') {
+        return response;
     }
 
-    // Now check modules
+    //  Check module permissions
     const modules = session.user.modules as Module[] | undefined;
     const matched = modules ? findModuleByPath(modules, currentPath) : null;
 
@@ -41,7 +63,7 @@ export async function middleware(req: NextRequest) {
         return NextResponse.redirect(accessDeniedUrl);
     }
 
-    return NextResponse.next();
+    return response;
 }
 
 export const config = {

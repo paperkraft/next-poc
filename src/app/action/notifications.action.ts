@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma"
 import { handleError, handleNoId, handleSuccess } from "./response.action"
 import { NextResponse } from "next/server"
+import { auth } from "@/auth"
 
 export const getAllNotifications = async (userId: string) => {
     try {
@@ -50,5 +51,44 @@ export const getUnreadNotifications = async (userId: string) => {
 
     } catch (error) {
         return await handleError("Error fetching notifications", error)
+    }
+}
+
+export async function subscribeUser(subscription: object, topic?: string) {
+    try {
+        const session = await auth();
+        const userId: string = session?.user?.id;
+
+        const subscriptionString = JSON.stringify(subscription);
+
+        // Check if the user already has a subscription using JSON comparison
+        const existingSubscription = await prisma.subscription.findFirst({
+            where: {
+                userId,
+                subscription: {
+                    equals: subscriptionString,
+                },
+            },
+        });
+
+        if (existingSubscription) {
+            return NextResponse.json(
+                { success: true, message: 'Subscription already exists' },
+                { status: 200 }
+            );
+        }
+
+        // Store the new subscription in the database
+        await prisma.subscription.create({
+            data: {
+                userId,
+                subscription: subscriptionString,
+                topic: topic ?? "user"
+            },
+        });
+
+        return { success: true, message: 'Subscription saved successfully' }
+    } catch (error) {
+        return { success: false, message: 'Failed to set subscription' }
     }
 }

@@ -9,10 +9,11 @@ import { useTranslations } from "next-intl"
 import { SwitchButton } from "@/components/_form-controls/SwitchButton"
 import { Separator } from "@/components/ui/separator"
 import { useEffect, useState } from "react"
-import { subscribeToPush } from "@/components/custom/allow-notification"
+// import { subscribeToPush } from "@/components/custom/allow-notification"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { sendWebPushNotification } from "@/push"
 import { useSession } from "next-auth/react"
+// import { useNotifications } from "@/context/notification-context"
 
 const notificationsFormSchema = z.object({
   allow_notify: z.boolean().optional(),
@@ -56,11 +57,11 @@ export function NotificationsForm() {
     toast.success("Notifications setting updated")
 
     if (data.allow_notify) {
-      subscribeToPush();
+      // requestPermission();
       setTimeout(() => {
-        sendWebPushNotification({ userId, message: "Welcome" });
+        // sendWebPushNotification({ userId, message: "Welcome" });
         router.replace(path);
-      },3000)
+      }, 3000)
     }
   }
 

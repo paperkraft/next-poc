@@ -1,8 +1,8 @@
 "use client";
 
-import { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-
+import { usePushSubscription } from "@/hooks/use-push-subscription";
 export interface INotifications {
     id: string;
     message: string;
@@ -18,6 +18,15 @@ interface NotificationsContextType {
     count: number;
     updateNotifications: (newNotifications: INotifications[]) => void;
     setUnreadCount: (newCount: number) => void;
+
+    // Push Notifications
+    loading: boolean;
+    subscription: PushSubscription | null;
+    permissionDenied: boolean;
+    subscribe: () => void;
+    unsubscribe: () => void;
+    requestPermission: () => void;
+
 }
 
 const NotificationsContext = createContext<NotificationsContextType | undefined>(undefined);
@@ -27,11 +36,22 @@ export const NotificationsProvider: React.FC<{ children: ReactNode }> = ({ child
     const [notifications, setNotifications] = useState<INotifications[]>([]);
     const [count, setUnreadCount] = useState<number>(0);
 
+    const {
+        loading,
+        subscription,
+        permissionDenied,
+        subscribe,
+        unsubscribe,
+        requestPermission,
+    } = usePushSubscription();
+
     useEffect(() => {
         if (!session) return;
+
+        // Event source for notifications
         const eventSource = new EventSource('/api/notifications/stream');
-        
-        const handleNewMessage = (event: MessageEvent) => {
+
+        eventSource.onmessage = (event: MessageEvent) => {
             try {
                 const newNotifications: INotifications[] = JSON.parse(event.data);
                 setNotifications(newNotifications);
@@ -40,8 +60,6 @@ export const NotificationsProvider: React.FC<{ children: ReactNode }> = ({ child
                 console.error('Error parsing SSE message:', error);
             }
         };
-
-        eventSource.onmessage = handleNewMessage;
 
         eventSource.onerror = () => {
             console.error('SSE connection failed');
@@ -52,7 +70,6 @@ export const NotificationsProvider: React.FC<{ children: ReactNode }> = ({ child
             eventSource.close();
         };
     }, [session]);
-
 
     // Function to handle updates when notifications are updated from the API
     const updateNotifications = (newNotifications: INotifications[]) => {
@@ -65,6 +82,14 @@ export const NotificationsProvider: React.FC<{ children: ReactNode }> = ({ child
         count,
         updateNotifications,
         setUnreadCount,
+
+        // Push Notifications
+        loading,
+        subscription,
+        permissionDenied,
+        subscribe,
+        unsubscribe,
+        requestPermission,
     };
 
     return (
@@ -82,3 +107,5 @@ export const useNotifications = () => {
     }
     return context;
 };
+
+

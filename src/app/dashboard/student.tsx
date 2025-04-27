@@ -8,11 +8,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useSession } from "next-auth/react";
 import { Badge } from "@/components/ui/badge";
+import { useMounted } from "@/hooks/use-mounted";
 
 export default function Student() {
     const [showBanner, setShowBanner] = useState(true);
+    const mounted = useMounted();
 
     return (
+        mounted &&
         <section className="flex-1 p-4 md:p-6 overflow-auto">
             {showBanner && <UpgradeBanner onClose={() => setShowBanner(false)} />}
             <DashboardHeader />

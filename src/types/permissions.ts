@@ -20,8 +20,8 @@ export interface IRole {
 export interface IModule {
   id: string;
   name: string;
-  path: string | null;
-  parentId: string | null;
+  path?: string;
+  parentId?: string;
   groupId: string;
   groupName: string;
   permissions: number;

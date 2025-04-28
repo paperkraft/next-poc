@@ -13,6 +13,8 @@ import { useEffect, useState } from "react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { sendWebPushNotification } from "@/push"
 import { useSession } from "next-auth/react"
+import { usePushSubscription } from "@/hooks/use-push-subscription"
+import { useNotifications } from "@/context/notification-context"
 // import { useNotifications } from "@/context/notification-context"
 
 const notificationsFormSchema = z.object({
@@ -38,7 +40,6 @@ export function NotificationsForm() {
   const params = useSearchParams().get('sub');
   const { data } = useSession();
   const userId = data?.user?.id;
-
 
   const t = useTranslations('setting');
 
@@ -75,6 +76,7 @@ export function NotificationsForm() {
           </div>
         </div>
         <Separator />
+       
         <div>
           <h3 className="mb-4 text-lg font-medium">{t('notifications.form.email_notify')}</h3>
           <div className="space-y-4">

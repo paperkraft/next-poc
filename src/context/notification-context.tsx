@@ -20,10 +20,11 @@ interface NotificationsContextType {
     setUnreadCount: (newCount: number) => void;
 
     // Push Notifications
+    topics: string[];
     loading: boolean;
     subscription: PushSubscription | null;
     permissionDenied: boolean;
-    subscribe: () => void;
+    subscribe: (topic: string) => Promise<void>;
     unsubscribe: () => void;
     requestPermission: () => void;
 
@@ -37,6 +38,7 @@ export const NotificationsProvider: React.FC<{ children: ReactNode }> = ({ child
     const [count, setUnreadCount] = useState<number>(0);
 
     const {
+        topics,
         loading,
         subscription,
         permissionDenied,
@@ -84,6 +86,7 @@ export const NotificationsProvider: React.FC<{ children: ReactNode }> = ({ child
         setUnreadCount,
 
         // Push Notifications
+        topics,
         loading,
         subscription,
         permissionDenied,

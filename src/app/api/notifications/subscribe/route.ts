@@ -11,7 +11,10 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
         }
 
-        const { subscription, topic } = await req.json();
+        const { subscription, topics } = await req.json();
+
+        console.log('topics');
+        
 
         const endpoint: string | undefined = subscription?.endpoint;
 
@@ -29,7 +32,9 @@ export async function POST(req: NextRequest) {
                 where: { id: existing.id },
                 data: {
                     subscription,
-                    topic: topic ?? existing.topic,
+                    topics:{
+                        set: Array.from(new Set([...existing.topics, ...topics]))
+                    }
                 },
             });
 
@@ -42,7 +47,7 @@ export async function POST(req: NextRequest) {
                 userId,
                 subscription,
                 endpoint,
-                topic
+                topics
             },
         });
 

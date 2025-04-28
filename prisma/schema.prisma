@@ -125,12 +125,12 @@ model Notification {
 }
 
 model Subscription {
-  id           String  @id @default(auto()) @map("_id") @db.ObjectId
-  userId       String  @db.ObjectId
-  endpoint     String  @unique
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String   @db.ObjectId
+  endpoint     String   @unique
   subscription Json
-  topic        String?
-  user         User    @relation(fields: [userId], references: [id])
+  topics       String[]
+  user         User     @relation(fields: [userId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

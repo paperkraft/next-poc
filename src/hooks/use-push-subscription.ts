@@ -9,6 +9,8 @@ export function usePushSubscription() {
     const [loading, setLoading] = useState(false);
     const [permissionDenied, setPermissionDenied] = useState(false);
 
+    const [topics, setTopics] = useState<string[]>([]);
+
     const isSubscribing = useRef(false);
     const hasLoaded = useRef(false);
     const { data: session, status } = useSession();
@@ -68,14 +70,14 @@ export function usePushSubscription() {
         loadSubscription();
     }, [status]);
 
-    const sendSubscriptionToBackend = useCallback(async (sub: PushSubscription, topic?: string) => {
+    const sendSubscriptionToBackend = useCallback(async (sub: PushSubscription, topic?: string | string[]) => {
 
         const response = await fetch("/api/notifications/subscribe", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 subscription: sub.toJSON(),
-                topic: topic ?? "system"
+                topics: topic
             }),
         });
 
@@ -87,16 +89,24 @@ export function usePushSubscription() {
     const deleteSubscriptionFromBackend = useCallback(async (endpoint: string) => {
         await fetch("/api/notifications/subscribe", {
             method: "DELETE",
-            headers: {
-                "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ endpoint }),
         });
 
     }, []);
 
-    const subscribe = useCallback(async (topic?: string) => {
+    const updateTopic = useCallback(async (endpoint: string, topic: string, action: "subscribe" | "unsubscribe") => {
+        await fetch("/api/notifications/topics", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ endpoint, topic, action }),
+        });
+    }, [])
 
+
+    const subscribe = useCallback(async (topic: string) => {
+
+        if (!currentUserId) return;
         if (subscription || isSubscribing.current) return;
         isSubscribing.current = true;
 
@@ -110,12 +120,20 @@ export function usePushSubscription() {
             }
 
             setSubscription(newSubscription);
-            await sendSubscriptionToBackend(newSubscription, topic);
+
+            // const updatedTopics = [...new Set([...topics, ...(Array.isArray(topic) ? topic : [topic])])];
+            const updatedTopics = [...new Set([...topics, topic])];
+            setTopics(updatedTopics);
+
+            await sendSubscriptionToBackend(newSubscription, updatedTopics);
 
             // Save locally
             localStorage.setItem(
                 key,
-                JSON.stringify({ endpoint: newSubscription.endpoint, userId: currentUserId })
+                JSON.stringify({
+                    endpoint: newSubscription.endpoint,
+                    userId: currentUserId
+                })
             );
 
         } catch (error) {
@@ -126,17 +144,28 @@ export function usePushSubscription() {
         }
     }, [sendSubscriptionToBackend]);
 
-    const unsubscribe = useCallback(async () => {
+    const unsubscribe = useCallback(async (topicToRemove?: string) => {
+        if (!currentUserId) return;
+
+        const updatedTopics = topics.filter(t => t !== topicToRemove);
+
+        console.log('updatedTopics', updatedTopics);
+
         try {
             setLoading(true);
             const key = getLocalStorageKey(currentUserId);
-
             if (subscription) {
-                await unsubscribeFromPushNotifications();
-                await deleteSubscriptionFromBackend(subscription.endpoint);
-                localStorage.removeItem(key);
-                setSubscription(null);
+                if (updatedTopics.length === 0) {
+                    // No topics left, fully unsubscribe
+                    await unsubscribeFromPushNotifications();
+                    await deleteSubscriptionFromBackend(subscription.endpoint);
+                    localStorage.removeItem(key);
+                    setSubscription(null);
+                } else {
+                    await sendSubscriptionToBackend(subscription!, updatedTopics);
+                }
             }
+            setTopics(updatedTopics);
         } catch (error) {
             console.error("Failed to unsubscribe from push notifications", error);
         } finally {
@@ -153,7 +182,7 @@ export function usePushSubscription() {
 
                 if (permission === 'granted') {
                     setPermissionDenied(false);
-                    await subscribe();
+                    await subscribe("system");
                 } else {
                     setPermissionDenied(true);
                 }
@@ -165,11 +194,13 @@ export function usePushSubscription() {
     }, [subscribe]);
 
     return {
+        topics,
         loading,
         permissionDenied,
         subscription,
         requestPermission,
         subscribe,
         unsubscribe,
+        updateTopic
     };
 }

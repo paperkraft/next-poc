@@ -59,7 +59,7 @@ async function handleSetSubscription(request: Request) {
             data: {
                 userId,
                 subscription: subscriptionString,
-                topic: "user"
+                topics: ["user"]
             },
         });
 
@@ -123,11 +123,11 @@ async function handleSendPush(request: Request) {
 
 // Handle sending notification to topic
 async function handleSendToTopic(request: Request) {
-    const { topic, ...data } = await request.json();
+    const { topics, ...data } = await request.json();
     const message = data?.body;
 
     try {
-        if (!topic || !message) {
+        if (!topics || !message) {
             return NextResponse.json(
                 { success: false, error: { message: 'Missing topic or message details' } },
                 { status: 400 }
@@ -136,7 +136,7 @@ async function handleSendToTopic(request: Request) {
 
         // Fetch all subscriptions for users in the given group
         const subscriptionData = await prisma.subscription.findMany({
-            where: { topic },
+            where: { topics },
         });
 
         if (!subscriptionData.length) {

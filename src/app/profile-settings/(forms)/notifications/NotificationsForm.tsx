@@ -1,23 +1,21 @@
 "use client"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
-import { Button } from "@/components/ui/button"
-import { Form } from "@/components/ui/form"
-import { toast } from "sonner"
-import { useTranslations } from "next-intl"
-import { SwitchButton } from "@/components/_form-controls/SwitchButton"
-import { Separator } from "@/components/ui/separator"
-import { useEffect, useState } from "react"
-// import { subscribeToPush } from "@/components/custom/allow-notification"
-import { usePathname, useRouter, useSearchParams } from "next/navigation"
-import { sendWebPushNotification } from "@/push"
-import { useSession } from "next-auth/react"
-import { usePushSubscription } from "@/hooks/use-push-subscription"
-import { useNotifications } from "@/context/notification-context"
-import TopicManagement from "./TopicManagement"
-import { Switch } from "@/components/ui/switch"
-// import { useNotifications } from "@/context/notification-context"
+import { useTranslations } from 'next-intl';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { z } from 'zod';
+
+import { SwitchButton } from '@/components/_form-controls/SwitchButton';
+import { Button } from '@/components/ui/button';
+import { Form } from '@/components/ui/form';
+import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
+import { availableTopics } from '@/constants';
+import { useNotifications } from '@/context/notification-context';
+import { zodResolver } from '@hookform/resolvers/zod';
+
+import TopicManagement from './TopicManagement';
 
 const notificationsFormSchema = z.object({
   allow_notify: z.boolean().optional(),
@@ -36,18 +34,13 @@ const defaultValues: Partial<NotificationsFormValues> = {
   security_emails: true,
 }
 
-const availableTopics = [
-  { label: "System", topic: "system", desc: "Systems notifcations" },
-  { label: "Security", topic: "security", desc: "Receive notifcation about your account activity and security." },
-  { label: "Promotions", topic: "promotions", desc: "Receive notifcation about new features, and more." },
-];
 
 export function NotificationsForm() {
   const router = useRouter();
   const path = usePathname();
   const params = useSearchParams().get('sub');
   const t = useTranslations('setting');
-  const { subscription, unsubscribe } = useNotifications();
+  const { subscription, unsubscribe, requestPermission } = useNotifications();
 
   const form = useForm<NotificationsFormValues>({
     resolver: zodResolver(notificationsFormSchema),
@@ -81,7 +74,7 @@ export function NotificationsForm() {
             <p className="font-medium">{t('notifications.form.allow_notify')}</p>
             <Switch
               checked={!!subscription}
-              onCheckedChange={unsubscribe}
+              onCheckedChange={(b) => b ? requestPermission() : unsubscribe()}
             />
             <span className="text-xs text-muted-foreground">
               {t('notifications.form.allow_notify_desc')}
@@ -113,8 +106,6 @@ export function NotificationsForm() {
           <Button type="submit">{t('notifications.form.btn')}</Button>
         </form>
       </Form>
-
-
     </>
   )
 }

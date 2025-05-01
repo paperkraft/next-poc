@@ -9,13 +9,11 @@ export const metadata: Metadata = {
 };
 
 export default async function PushNotification() {
-  const topics = ["system", "security", "promotions"];
   const users =  await getAllUser();
-  
   return (
     <>
       <TitlePage title={"Push Notifications"} description={"Manage notifications and subscription"} />
-      <SendNotificationForm topics={topics} users={users?.data ?? []} />
+      <SendNotificationForm users={users?.data ?? []} />
     </>
   );
 }

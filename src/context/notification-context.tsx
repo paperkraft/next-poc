@@ -133,6 +133,6 @@ async function getCurrentSubscriptionTopics(endpoint: string) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({endpoint})
     });
-    const data = await response.json();
-    return data.topics || [];
+    const result = await response.json();
+    return result.data || [];
 }

@@ -15,15 +15,15 @@ import {
 import { toast } from "sonner";
 import { useMounted } from "@/hooks/use-mounted";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { availableTopics } from "@/constants";
 
 type Props = {
-    topics: string[];
     users: { id: string; name: string }[];
 };
 
 type Mode = "topics" | "user";
 
-export default function SendNotificationForm({ topics, users }: Props) {
+export default function SendNotificationForm({ users }: Props) {
     const [mode, setMode] = useState<Mode>("topics");
     const [title, setTitle] = useState("");
     const [message, setMessage] = useState("");
@@ -57,10 +57,6 @@ export default function SendNotificationForm({ topics, users }: Props) {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),
             });
-
-            const data = await res.json();
-
-            console.log('res', data);
 
             if (res.ok) {
                 toast.success("Notification sent successfully.");
@@ -122,15 +118,15 @@ export default function SendNotificationForm({ topics, users }: Props) {
 
             {mode === "topics" && (
                 <div>
-                    <Label>Topic (optional)</Label>
+                    <Label>Topic</Label>
                     <Select value={selectedTopic} onValueChange={setSelectedTopic}>
                         <SelectTrigger>
                             <SelectValue placeholder="Select topic" />
                         </SelectTrigger>
                         <SelectContent>
-                            {topics.map((topic) => (
-                                <SelectItem key={topic} value={topic}>
-                                    {topic}
+                            {availableTopics.map((item) => (
+                                <SelectItem key={item.topic} value={item.topic}>
+                                    {item.label}
                                 </SelectItem>
                             ))}
                         </SelectContent>
@@ -140,7 +136,7 @@ export default function SendNotificationForm({ topics, users }: Props) {
 
             {mode === "user" && (
                 <div>
-                    <Label>User (optional)</Label>
+                    <Label>User</Label>
                     <Select value={selectedUserId} onValueChange={setSelectedUserId}>
                         <SelectTrigger>
                             <SelectValue placeholder="Select user" />

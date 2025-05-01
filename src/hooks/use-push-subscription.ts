@@ -177,8 +177,6 @@ export function usePushSubscription() {
         if ('Notification' in window) {
             try {
                 const permission = await Notification.requestPermission();
-                console.log('permission', permission);
-
                 if (permission === 'granted') {
                     setPermissionDenied(false);
                     await subscribe("system");

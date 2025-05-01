@@ -1,8 +1,8 @@
 "use client";
 
+import { useSession } from "next-auth/react";
 import { useState, useCallback, useEffect, useRef } from "react";
 import { cleanUpOldSubscriptions, subscribeToPushNotifications, unsubscribeFromPushNotifications } from "@/utils/push";
-import { useSession } from "next-auth/react";
 
 export function usePushSubscription() {
     const [subscription, setSubscription] = useState<PushSubscription | null>(null);
@@ -13,24 +13,25 @@ export function usePushSubscription() {
 
     const isSubscribing = useRef(false);
     const hasLoaded = useRef(false);
+    
     const { data: session, status } = useSession();
 
     const currentUserId = session?.user?.id;
     const getLocalStorageKey = (currentUserId: string) => `pushSubscription_${currentUserId}`;
     // cleanUpOldSubscriptions(currentUserId); // To clear old user keys
 
-    // Load existing subscription from browser
+    //SECTION - Load existing subscription from browser
     useEffect(() => {
-        if (hasLoaded.current) return;
+        if (hasLoaded.current || status !== 'authenticated' || !currentUserId) return;
         hasLoaded.current = true;
-
-        if (status === 'loading') return;
 
         const loadSubscription = async () => {
 
-            setLoading(true);
+            try {
+                setLoading(true);
 
-            if ("serviceWorker" in navigator && "PushManager" in window) {
+                if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
+
                 const registration = await navigator.serviceWorker.ready;
                 const existing = await registration.pushManager.getSubscription();
 
@@ -40,7 +41,6 @@ export function usePushSubscription() {
                 // Check if notifications are allowed
                 if (Notification.permission === "granted") {
                     if (existing) {
-
                         const isSameUser = localData?.userId === currentUserId;
                         const isSameEndpoint = localData?.endpoint === existing.endpoint;
 
@@ -50,7 +50,6 @@ export function usePushSubscription() {
                             // Doesn't match
                             await unsubscribe();
                         }
-
                     } else {
                         // If no subscription exists
                         setSubscription(null);
@@ -62,17 +61,20 @@ export function usePushSubscription() {
                     // If permission is not yet determined, we can request it
                     await requestPermission();
                 }
-            }
 
-            setLoading(false);
+            } catch (error) {
+                console.error("Error loading push subscription:", error);
+            } finally {
+                setLoading(false);
+            }
         };
 
         loadSubscription();
-    }, [status]);
+    }, [status, currentUserId]);
 
+    //SECTION - Send subscription to backend
     const sendSubscriptionToBackend = useCallback(async (sub: PushSubscription, topic?: string | string[]) => {
-
-        const response = await fetch("/api/notifications/subscribe", {
+        await fetch("/api/notifications/subscribe", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -80,39 +82,27 @@ export function usePushSubscription() {
                 topics: topic
             }),
         });
-
-        if (!response.ok) {
-            console.error("Failed to send subscription to backend");
-        }
     }, []);
 
+    //SECTION - Delete subscription from backend
     const deleteSubscriptionFromBackend = useCallback(async (endpoint: string) => {
         await fetch("/api/notifications/subscribe", {
             method: "DELETE",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ endpoint }),
         });
-
     }, []);
 
-    const updateTopic = useCallback(async (endpoint: string, topic: string, action: "subscribe" | "unsubscribe") => {
-        await fetch("/api/notifications/topics", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ endpoint, topic, action }),
-        });
-    }, [])
-
-
+    //SECTION - Subscribe for push notification
     const subscribe = useCallback(async (topic: string) => {
 
-        if (!currentUserId) return;
-        if (subscription || isSubscribing.current) return;
+        if (!currentUserId || subscription || isSubscribing.current) return;
+
         isSubscribing.current = true;
+        setLoading(true);
+        const key = getLocalStorageKey(currentUserId);
 
         try {
-            setLoading(true);
-            const key = getLocalStorageKey(currentUserId);
 
             const newSubscription = await subscribeToPushNotifications();
             if (!newSubscription?.endpoint) {
@@ -142,18 +132,18 @@ export function usePushSubscription() {
             setLoading(false);
             isSubscribing.current = false;
         }
-    }, [sendSubscriptionToBackend]);
+    }, [currentUserId, subscription, topics, sendSubscriptionToBackend]);
 
+    //SECTION - Unsubscribe for push notification
     const unsubscribe = useCallback(async (topicToRemove?: string) => {
         if (!currentUserId) return;
 
         const updatedTopics = topics.filter(t => t !== topicToRemove);
+        const key = getLocalStorageKey(currentUserId);
 
-        console.log('updatedTopics', updatedTopics);
+        setLoading(true);
 
         try {
-            setLoading(true);
-            const key = getLocalStorageKey(currentUserId);
             if (subscription) {
                 if (updatedTopics.length === 0) {
                     // No topics left, fully unsubscribe
@@ -171,9 +161,18 @@ export function usePushSubscription() {
         } finally {
             setLoading(false);
         }
-    }, [subscription, deleteSubscriptionFromBackend]);
+    }, [currentUserId, topics, subscription, deleteSubscriptionFromBackend, sendSubscriptionToBackend]);
 
-    // Function to request notification permission from the user
+    //SECTION - Update topic in subscription
+    const updateTopic = useCallback(async (endpoint: string, topic: string, action: "subscribe" | "unsubscribe") => {
+        await fetch("/api/notifications/topics", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ endpoint, topic, action }),
+        });
+    }, []);
+
+    //SECTION - Request notification permission
     const requestPermission = useCallback(async () => {
         if ('Notification' in window) {
             try {
@@ -187,12 +186,13 @@ export function usePushSubscription() {
                     setPermissionDenied(true);
                 }
             } catch (error) {
-                console.error('Error requesting notification permission:', error);
+                console.error('Permission error:', error);
                 setPermissionDenied(true);
             }
         }
     }, [subscribe]);
 
+    //SECTION - Export state and functions
     return {
         topics,
         loading,

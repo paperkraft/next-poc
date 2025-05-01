@@ -1,9 +1,12 @@
 'use server'
 
-import prisma from "@/lib/prisma"
-import { handleError, handleNoId, handleSuccess } from "./response.action"
-import { NextResponse } from "next/server"
-import { auth } from "@/auth"
+import { NextResponse } from 'next/server';
+
+import notificationEmitter from '@/lib/event-emitter';
+import prisma from '@/lib/prisma';
+import { sendWebPushNotification } from '@/lib/web-push';
+
+import { handleError, handleNoId, handleSuccess } from './response.action';
 
 export const getAllNotifications = async (userId: string) => {
     try {
@@ -54,41 +57,71 @@ export const getUnreadNotifications = async (userId: string) => {
     }
 }
 
-export async function subscribeUser(subscription: object, topic?: string) {
-    try {
-        const session = await auth();
-        const userId: string = session?.user?.id;
+type SendNotificationInput = { topics?: string[]; userId?: string; title: string; message: string }
 
-        const subscriptionString = JSON.stringify(subscription);
+export async function sendNotification(input: SendNotificationInput) {
 
-        // Check if the user already has a subscription using JSON comparison
-        const existingSubscription = await prisma.subscription.findFirst({
-            where: {
-                userId,
-                subscription: {
-                    equals: subscriptionString,
-                },
-            },
-        });
-
-        if (existingSubscription) {
-            return NextResponse.json(
-                { success: true, message: 'Subscription already exists' },
-                { status: 200 }
-            );
-        }
-
-        // Store the new subscription in the database
-        await prisma.subscription.create({
-            data: {
-                userId,
-                subscription: subscriptionString,
-                topic: topic ?? "user"
-            },
-        });
-
-        return { success: true, message: 'Subscription saved successfully' }
-    } catch (error) {
-        return { success: false, message: 'Failed to set subscription' }
+    if ((!input.topics && !input.userId)) {
+        return { success: false, message: " Topic or UserId is required" }
     }
+
+    let userIds: string[] = [];
+
+    console.log('input', input);
+
+    if (input.topics) {
+        // Send to all users subscribed to the topic
+        const subscriptions = await prisma.subscription.findMany({
+            where: { topics: { hasSome: input.topics } },
+            select: { userId: true },
+        });
+
+        userIds = Array.from(new Set(subscriptions.map((s) => s.userId)));
+    } else if (input.userId) {
+        userIds = [input.userId];
+    }
+
+    const notifications = userIds.map((userId) => ({
+        title: input.title,
+        message: input.message,
+        topic: input.topics ? input.topics.join(",") : undefined,
+        userId: userId,
+        status: "sent",
+    }));
+
+    const newNotification = await prisma.notification.createMany({ data: notifications });
+
+    //SECTION - Emitter new notificaiton
+    notificationEmitter.emit('newNotification', newNotification)
+
+    //SECTION - Push notification
+    const subscriptions = await prisma.subscription.findMany({
+        where: { userId: { in: userIds } },
+    });
+
+    if (subscriptions.length === 0) {
+        return { success: false, message: "No subscriptions found" };
+    }
+
+    for (const sub of subscriptions) {
+        try {
+            await sendWebPushNotification({
+                subscription: sub.subscription,
+                title: input.title,
+                body: input.message,
+            });
+        } catch (error: any) {
+            console.error("Push failed", error);
+            // Optional: remove dead subscriptions
+
+            if (error.statusCode === 410 || error.statusCode === 404) {
+                console.log(`Deleting expired subscription: ${sub.id}`);
+                await prisma.subscription.delete({
+                    where: { id: sub.id }
+                });
+            }
+        }
+    }
+
+    return { success: true, count: userIds.length };
 }

@@ -15,6 +15,8 @@ import { sendWebPushNotification } from "@/push"
 import { useSession } from "next-auth/react"
 import { usePushSubscription } from "@/hooks/use-push-subscription"
 import { useNotifications } from "@/context/notification-context"
+import TopicManagement from "./TopicManagement"
+import { Switch } from "@/components/ui/switch"
 // import { useNotifications } from "@/context/notification-context"
 
 const notificationsFormSchema = z.object({
@@ -34,14 +36,18 @@ const defaultValues: Partial<NotificationsFormValues> = {
   security_emails: true,
 }
 
+const availableTopics = [
+  { label: "System", topic: "system", desc: "Systems notifcations" },
+  { label: "Security", topic: "security", desc: "Receive notifcation about your account activity and security." },
+  { label: "Promotions", topic: "promotions", desc: "Receive notifcation about new features, and more." },
+];
+
 export function NotificationsForm() {
   const router = useRouter();
   const path = usePathname();
   const params = useSearchParams().get('sub');
-  const { data } = useSession();
-  const userId = data?.user?.id;
-
   const t = useTranslations('setting');
+  const { subscription, unsubscribe } = useNotifications();
 
   const form = useForm<NotificationsFormValues>({
     resolver: zodResolver(notificationsFormSchema),
@@ -67,26 +73,48 @@ export function NotificationsForm() {
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+    <>
+      <div className="space-y-4">
         <div>
           <h3 className="mb-4 text-lg font-medium">{t('notifications.form.app_notify')}</h3>
-          <div className="space-y-4">
-            <SwitchButton name="allow_notify" label={t('notifications.form.allow_notify')} description={t('notifications.form.allow_notify_desc')} />
+          <div className="flex flex-col gap-2">
+            <p className="font-medium">{t('notifications.form.allow_notify')}</p>
+            <Switch
+              checked={!!subscription}
+              onCheckedChange={unsubscribe}
+            />
+            <span className="text-xs text-muted-foreground">
+              {t('notifications.form.allow_notify_desc')}
+            </span>
           </div>
         </div>
         <Separator />
-       
-        <div>
-          <h3 className="mb-4 text-lg font-medium">{t('notifications.form.email_notify')}</h3>
-          <div className="space-y-4">
-            <SwitchButton name="communication_emails" label={t('notifications.form.comm_email')} description={t('notifications.form.comm_email_desc')} />
-            <SwitchButton name="marketing_emails" label={t('notifications.form.market_email')} description={t('notifications.form.market_email_desc')} />
-            <SwitchButton name="security_emails" label={t('notifications.form.security_email')} description={t('notifications.form.security_email_desc')} disabled />
+        <TopicManagement availableTopics={availableTopics} />
+      </div>
+
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 hidden">
+          <div>
+            <h3 className="mb-4 text-lg font-medium">{t('notifications.form.app_notify')}</h3>
+            <div className="space-y-4">
+              <SwitchButton name="allow_notify" label={t('notifications.form.allow_notify')} description={t('notifications.form.allow_notify_desc')} />
+            </div>
           </div>
-        </div>
-        <Button type="submit">{t('notifications.form.btn')}</Button>
-      </form>
-    </Form>
+          <Separator />
+
+          <div>
+            <h3 className="mb-4 text-lg font-medium">{t('notifications.form.email_notify')}</h3>
+            <div className="space-y-4">
+              <SwitchButton name="communication_emails" label={t('notifications.form.comm_email')} description={t('notifications.form.comm_email_desc')} />
+              <SwitchButton name="marketing_emails" label={t('notifications.form.market_email')} description={t('notifications.form.market_email_desc')} />
+              <SwitchButton name="security_emails" label={t('notifications.form.security_email')} description={t('notifications.form.security_email_desc')} disabled />
+            </div>
+          </div>
+          <Button type="submit">{t('notifications.form.btn')}</Button>
+        </form>
+      </Form>
+
+
+    </>
   )
 }

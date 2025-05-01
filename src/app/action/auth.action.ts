@@ -26,7 +26,7 @@ export const getRecaptchaToken = async (): Promise<string | null> => {
 
 export const getUser = async (email: string, password: string) => {
     const user = await prisma.user.findFirst({
-        where: { email }
+        where: { email },
     });
 
     if (!user) {
@@ -57,3 +57,30 @@ export const getUser = async (email: string, password: string) => {
         modules: modulesResult.data
     };
 };
+
+export const getAllUser = async () => {
+
+    try {
+        const users = await prisma.user.findMany({
+            select: {
+                id: true,
+                firstName: true,
+                lastName: true
+            }
+        });
+
+        const allUser = users.map((u) => {
+            return {
+                id: u.id,
+                name: u?.firstName ?? "" + u?.lastName
+            }
+        });
+
+        return {
+            success: true,
+            data: allUser
+        }
+    } catch (error) {
+        console.log(error);
+    }
+}

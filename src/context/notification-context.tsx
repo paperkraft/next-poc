@@ -16,18 +16,19 @@ export interface INotifications {
 interface NotificationsContextType {
     notifications: INotifications[];
     count: number;
+    subscribedTopics: string[];
     updateNotifications: (newNotifications: INotifications[]) => void;
     setUnreadCount: (newCount: number) => void;
+    setSubscribedTopics: Dispatch<SetStateAction<string[]>>;
 
     // Push Notifications
-    topics: string[];
     loading: boolean;
     subscription: PushSubscription | null;
     permissionDenied: boolean;
     subscribe: (topic: string) => Promise<void>;
     unsubscribe: () => void;
+    updateTopic: (endpoint: string, topic: string, action: "subscribe" | "unsubscribe") => void;
     requestPermission: () => void;
-
 }
 
 const NotificationsContext = createContext<NotificationsContextType | undefined>(undefined);
@@ -35,15 +36,17 @@ const NotificationsContext = createContext<NotificationsContextType | undefined>
 export const NotificationsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const { data: session } = useSession();
     const [notifications, setNotifications] = useState<INotifications[]>([]);
-    const [count, setUnreadCount] = useState<number>(0);
+    const [count, setUnreadCount] = useState<number>(-1);
+
+    const [subscribedTopics, setSubscribedTopics] = useState<string[]>([]);
 
     const {
-        topics,
         loading,
         subscription,
         permissionDenied,
         subscribe,
         unsubscribe,
+        updateTopic,
         requestPermission,
     } = usePushSubscription();
 
@@ -73,6 +76,16 @@ export const NotificationsProvider: React.FC<{ children: ReactNode }> = ({ child
         };
     }, [session]);
 
+    useEffect(() => {
+        if (!session || !subscription) return;
+        async function fetchTopics() {
+            const endpoint = subscription?.endpoint;
+            const currentTopics = await getCurrentSubscriptionTopics(endpoint as string);
+            setSubscribedTopics(currentTopics);
+        }
+        fetchTopics();
+    }, [session, subscription]);
+
     // Function to handle updates when notifications are updated from the API
     const updateNotifications = (newNotifications: INotifications[]) => {
         setNotifications(newNotifications);
@@ -80,18 +93,21 @@ export const NotificationsProvider: React.FC<{ children: ReactNode }> = ({ child
     };
 
     const value = {
-        notifications,
         count,
-        updateNotifications,
+        notifications,
+        subscribedTopics,
         setUnreadCount,
+        setSubscribedTopics,
+        updateNotifications,
 
         // Push Notifications
-        topics,
+
         loading,
         subscription,
         permissionDenied,
         subscribe,
         unsubscribe,
+        updateTopic,
         requestPermission,
     };
 
@@ -111,4 +127,12 @@ export const useNotifications = () => {
     return context;
 };
 
-
+async function getCurrentSubscriptionTopics(endpoint: string) {
+    const response = await fetch(`/api/notifications/topics/endpoint`,{
+        method:"POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({endpoint})
+    });
+    const data = await response.json();
+    return data.topics || [];
+}

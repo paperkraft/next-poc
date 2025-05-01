@@ -5,6 +5,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { useNotifications } from '@/context/notification-context';
 import { useState } from 'react';
+import { useMounted } from '@/hooks/use-mounted';
 
 export default function AllowNotification() {
 
@@ -17,7 +18,8 @@ export default function AllowNotification() {
     } = useNotifications();
 
     const [showAlert, setShowAlert] = useState(true);
- 
+
+    const mounted = useMounted();
 
     if (loading) return null; // Avoid rendering while loading
     if (!showAlert) return null;
@@ -25,7 +27,7 @@ export default function AllowNotification() {
     // If notifications were denied by the user
     if (permissionDenied) {
         return (
-            
+            mounted &&
             <Alert variant="default" className='bg-yellow-50 border border-yellow-300 text-yellow-900 dark:bg-yellow-50/5 dark:border-accent dark:text-yellow-600'>
                 <AlertCircleIcon className="size-4 !text-inherit" />
                 <AlertTitle className='flex'>
@@ -46,7 +48,7 @@ export default function AllowNotification() {
     // If the user is not subscribed to notifications
     if (!subscription) {
         return (
-            
+            mounted &&
             <Alert variant="default" className='bg-yellow-50 border border-yellow-300 text-yellow-900 dark:bg-yellow-50/5 dark:border-accent dark:text-yellow-600'>
                 <AlertCircleIcon className="size-4 !text-inherit" />
                 <AlertTitle className='flex'>
@@ -63,6 +65,7 @@ export default function AllowNotification() {
 
     // If the user is subscribed to notifications
     return (
+        mounted &&
         <Alert variant="default" className='bg-yellow-50 border border-yellow-300 text-yellow-900 dark:bg-yellow-50/5 dark:border-accent dark:text-yellow-600'>
             <AlertCircleIcon className="size-4 !text-inherit" />
             <AlertTitle className='flex'>
@@ -71,7 +74,7 @@ export default function AllowNotification() {
             </AlertTitle>
             <AlertDescription>
                 You have successfully subscribed to push notifications.
-                <button onClick={unsubscribe} className="text-red-500 hover:text-red-700">Unsubscribe</button>
+                <button onClick={() => unsubscribe()} className="text-red-500 hover:text-red-700">Unsubscribe</button>
             </AlertDescription>
         </Alert>
     );

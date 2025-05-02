@@ -17,7 +17,7 @@ const TopicManagement: React.FC<TopicManagementProps> = ({ availableTopics }) =>
   const t = useTranslations('setting');
   const { subscription, subscribedTopics, updateTopic, setSubscribedTopics } = useNotifications();
   const endpoint = subscription?.endpoint;
-  
+
   // Handle subscribe/unsubscribe actions
   const handleTopicToggle = async (topic: string) => {
     if (!endpoint) return;

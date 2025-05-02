@@ -1,8 +1,12 @@
-import { FormDescription, FormField, FormItem, FormMessage } from "@/components/ui/form";
-import { HTMLAttributes } from "react"
-import { FieldValues, Path, PathValue, useFormContext } from "react-hook-form"
-import { isDate } from "date-fns";
-import { FloatingDateField } from "./FloatingDateField";
+'use client';
+
+import { isDate } from 'date-fns';
+import { HTMLAttributes } from 'react';
+import { FieldValues, Path, PathValue, useFormContext } from 'react-hook-form';
+
+import { FormDescription, FormField, FormItem, FormMessage } from '@/components/ui/form';
+
+import { FloatingDateField } from './FloatingDateField';
 
 interface IInputControllerProps<T extends FieldValues>
     extends HTMLAttributes<HTMLInputElement> {

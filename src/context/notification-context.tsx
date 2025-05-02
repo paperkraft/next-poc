@@ -77,14 +77,14 @@ export const NotificationsProvider: React.FC<{ children: ReactNode }> = ({ child
     }, [session]);
 
     useEffect(() => {
-        if (!session || !subscription) return;
+        if (!subscription) return;
         async function fetchTopics() {
             const endpoint = subscription?.endpoint;
             const currentTopics = await getCurrentSubscriptionTopics(endpoint as string);
             setSubscribedTopics(currentTopics);
         }
         fetchTopics();
-    }, [session, subscription]);
+    }, [subscription]);
 
     // Function to handle updates when notifications are updated from the API
     const updateNotifications = (newNotifications: INotifications[]) => {
@@ -128,10 +128,12 @@ export const useNotifications = () => {
 };
 
 async function getCurrentSubscriptionTopics(endpoint: string) {
-    const response = await fetch(`/api/notifications/topics/endpoint`,{
-        method:"POST",
+    if (!endpoint) return [];
+
+    const response = await fetch(`/api/notifications/topics/endpoint`, {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({endpoint})
+        body: JSON.stringify({ endpoint })
     });
     const result = await response.json();
     return result.data || [];

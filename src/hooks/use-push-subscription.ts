@@ -3,6 +3,7 @@
 import { useSession } from "next-auth/react";
 import { useState, useCallback, useEffect, useRef } from "react";
 import { cleanUpOldSubscriptions, subscribeToPushNotifications, unsubscribeFromPushNotifications } from "@/utils/push";
+import { toast } from "sonner";
 
 export function usePushSubscription() {
     const [subscription, setSubscription] = useState<PushSubscription | null>(null);
@@ -13,7 +14,7 @@ export function usePushSubscription() {
 
     const isSubscribing = useRef(false);
     const hasLoaded = useRef(false);
-    
+
     const { data: session, status } = useSession();
 
     const currentUserId = session?.user?.id;
@@ -117,6 +118,18 @@ export function usePushSubscription() {
 
             await sendSubscriptionToBackend(newSubscription, updatedTopics);
 
+            toast.success('Subscribed successfully');
+
+            await fetch("/api/notifications/send", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    title: `Welcome ${session?.user?.name}`,
+                    message: "You have subscribe successfully",
+                    userId: session?.user?.id
+                })
+            });
+
             // Save locally
             localStorage.setItem(
                 key,
@@ -128,6 +141,7 @@ export function usePushSubscription() {
 
         } catch (error) {
             console.error("Subscription error:", error);
+            toast.error('Failed to subscribe')
         } finally {
             setLoading(false);
             isSubscribing.current = false;
@@ -156,8 +170,10 @@ export function usePushSubscription() {
                 }
             }
             setTopics(updatedTopics);
+            toast.success('Unsubscribed successfully');
         } catch (error) {
             console.error("Failed to unsubscribe from push notifications", error);
+            toast.error('Failed to unsubscribe')
         } finally {
             setLoading(false);
         }

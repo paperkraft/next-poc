@@ -1,61 +1,43 @@
 'use client';
 
-import { X } from 'lucide-react';
 import { HTMLAttributes } from 'react';
-import { Control, FieldValues, Path, PathValue, useFormContext } from 'react-hook-form';
+import { FieldValues, Path, PathValue, useFormContext } from 'react-hook-form';
 
 import { FormDescription, FormField, FormItem, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 
-interface IInputControllerProps<T extends FieldValues>
+interface ITextareaControllerProps<T extends FieldValues>
     extends HTMLAttributes<HTMLInputElement> {
-    control?: Control<T>;
     name: Path<T>;
     label: string;
     description?: string;
+    placeholder?: string;
     defaultValue?: PathValue<T, Path<T>> | undefined;
-    maxLength?: number;
-    minLength?: number;
+    rows?: number;
     disabled?: boolean;
     readOnly?: boolean;
-    reset?: boolean;
-    required?: boolean;
-    type?: "password" | "email" | "number" | "text";
-    resetClick?: () => void;
 }
 
-export const FloatingInputController = <T extends FieldValues>({ name, label, reset, ...rest }: IInputControllerProps<T>) => {
+export const FloatingTextareaController = <T extends FieldValues>({ name, label, ...rest }: ITextareaControllerProps<T>) => {
     const form = useFormContext();
     return (
         <FormField
             control={form.control}
             name={name}
-            disabled={rest?.disabled}
-            rules={{ required: rest?.required ? `${label} is required` : undefined }}
             render={({ field }) => (
                 <FormItem className="w-full">
                     <div className="relative">
-                        <Input
+                        <Textarea
                             {...field}
-                            className="peer"
+                            id={name}
                             ref={field.ref}
                             placeholder=" "
-                            id={name}
-                            type={rest.type === 'number' ? 'text' : rest?.type ?? 'text'}
-                            disabled={rest?.disabled}
+                            className="resize-none peer"
                             readOnly={rest?.readOnly}
-                            onChange={(e) => {
-                                const value = rest.type === undefined
-                                    ? e.target.value.replace(/[^a-zA-Z\s]/g, '').trimStart()
-                                    : rest.type === 'number'
-                                        ? e.target.value.replace(/[^0-9]/g, '').trimStart()
-                                        : e.target.value
-                                field.onChange(value)
-                            }}
-                            minLength={rest?.minLength}
-                            maxLength={rest?.maxLength}
+                            disabled={rest?.disabled}
+                            rows={rest?.rows}
                         />
                         <Label
                             className={cn(
@@ -68,8 +50,6 @@ export const FloatingInputController = <T extends FieldValues>({ name, label, re
                         >
                             {label}
                         </Label>
-                        {reset && field.value && <X onClick={() => form.resetField(name)}
-                            className={cn("opacity-50 hover:opacity-100 size-7 absolute right-1 top-1/2 -translate-y-1/2 px-1.5 font-normal cursor-pointer")} />}
                     </div>
                     {rest?.description && <FormDescription>{rest?.description}</FormDescription>}
                     <FormMessage />

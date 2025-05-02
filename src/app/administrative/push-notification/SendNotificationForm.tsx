@@ -1,53 +1,63 @@
 "use client";
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import {
-    Select,
-    SelectTrigger,
-    SelectValue,
-    SelectContent,
-    SelectItem,
-} from "@/components/ui/select";
-import { toast } from "sonner";
-import { useMounted } from "@/hooks/use-mounted";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { availableTopics } from "@/constants";
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 
-type Props = {
+import {
+    FloatingInputController
+} from '@/components/_form-controls/floating-label/input-controller';
+import {
+    FloatingSelectController
+} from '@/components/_form-controls/floating-label/select-controller';
+import {
+    FloatingTextareaController
+} from '@/components/_form-controls/floating-label/textarea-controller';
+import { RadioButton } from '@/components/_form-controls/radio-button';
+import { Button } from '@/components/ui/button';
+import { Form } from '@/components/ui/form';
+import { availableTopics } from '@/constants';
+import { useMounted } from '@/hooks/use-mounted';
+import { ISendNotificationForm, SendNotificationFormSchema } from '@/types/notifications';
+import { zodResolver } from '@hookform/resolvers/zod';
+
+type FormProps = {
     users: { id: string; name: string }[];
 };
 
-type Mode = "topics" | "user";
-
-export default function SendNotificationForm({ users }: Props) {
-    const [mode, setMode] = useState<Mode>("topics");
-    const [title, setTitle] = useState("");
-    const [message, setMessage] = useState("");
-    const [selectedTopic, setSelectedTopic] = useState<string | undefined>();
-    const [selectedUserId, setSelectedUserId] = useState<string | undefined>();
-    const [loading, setLoading] = useState(false);
+export default function SendNotificationForm({ users }: FormProps) {
 
     const mounted = useMounted();
+    const [loading, setLoading] = useState(false);
 
-    const sendNotification = async () => {
-        if (!title || !message) {
-            toast.error("Title and message are required.");
-            return;
+    const form = useForm<ISendNotificationForm>({
+        resolver: zodResolver(SendNotificationFormSchema),
+        defaultValues: {
+            mode: "topics",
+            title: "",
+            message: "",
+            topics: "",
+            userId: ""
         }
+    })
 
-        if (!selectedTopic && !selectedUserId) {
-            toast.error("Select either a topic or a user to send the notification.");
-            return;
-        }
+    const onSubmit = async (data: ISendNotificationForm) => {
 
-        const payload =
-            mode === "topics"
-                ? { topics: [selectedTopic], title, message }
-                : { userId: selectedUserId, title, message };
+        const { mode, ...rest } = data;
+
+        const payload = mode === "topics"
+            ? {
+                mode,
+                title: rest.title,
+                message: rest.message,
+                topics: [rest.topics],
+            }
+            : {
+                mode,
+                title: rest.title,
+                message: rest.message,
+                userId: rest.userId,
+            }
 
         setLoading(true);
 
@@ -58,103 +68,84 @@ export default function SendNotificationForm({ users }: Props) {
                 body: JSON.stringify(payload),
             });
 
-            if (res.ok) {
-                toast.success("Notification sent successfully.");
-                setTitle("");
-                setMessage("");
-                setSelectedTopic(undefined);
-                setSelectedUserId(undefined);
+            const result = await res.json();
+
+            if (!res.ok) {
+                toast.error(result?.message || "Failed to send.");
             } else {
-                const data = await res.json();
-                toast.error(data?.error || "Failed to send.");
+                toast.success(result.message);
             }
-        } catch (err) {
+        } catch (error) {
             toast.error("Something went wrong.");
         } finally {
             setLoading(false);
+            form.reset();
+            form.setValue("topics", "");
+            form.setValue("userId", "");
+
         }
-    };
+    }
 
     if (!mounted) return null;
 
     return (
-        <div className="max-w-md space-y-4">
+        <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="max-w-md space-y-4">
 
-            <div className="space-y-2">
-                <Label>Mode</Label>
-                <RadioGroup
-                    defaultValue={mode}
-                    onValueChange={(value) => setMode(value as Mode)}
-                    className="flex space-x-4"
-                >
-                    <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="topics" id="topics" />
-                        <Label htmlFor="topics">By Topics</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="user" id="user" />
-                        <Label htmlFor="user">To User</Label>
-                    </div>
-                </RadioGroup>
-            </div>
-
-            <div>
-                <Label>Title</Label>
-                <Input
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Enter title"
+                <RadioButton
+                    name='mode'
+                    label='Mode'
+                    options={[
+                        { label: "By Topics", value: "topics" },
+                        { label: "To User", value: "user" },
+                    ]}
                 />
-            </div>
 
-            <div>
-                <Label>Message</Label>
-                <Textarea
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    placeholder="Enter message"
+                <FloatingInputController
+                    name='title'
+                    label='Title'
+                    reset
                 />
-            </div>
 
-            {mode === "topics" && (
-                <div>
-                    <Label>Topic</Label>
-                    <Select value={selectedTopic} onValueChange={setSelectedTopic}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select topic" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {availableTopics.map((item) => (
-                                <SelectItem key={item.topic} value={item.topic}>
-                                    {item.label}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-            )}
+                <FloatingTextareaController
+                    name='message'
+                    label='Message'
+                />
 
-            {mode === "user" && (
-                <div>
-                    <Label>User</Label>
-                    <Select value={selectedUserId} onValueChange={setSelectedUserId}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select user" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {users.map((user) => (
-                                <SelectItem key={user.id} value={user.id}>
-                                    {user.name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-            )}
+                {form.watch('mode') === "topics" && (
+                    <FloatingSelectController
+                        name='topics'
+                        label='Topics'
+                        options={
+                            availableTopics.map((item) => {
+                                return {
+                                    label: item.label,
+                                    value: item.topic
+                                }
+                            })
+                        }
+                    />
+                )}
 
-            <Button onClick={sendNotification} disabled={loading}>
-                {loading ? "Sending..." : "Send Notification"}
-            </Button>
-        </div>
+                {form.watch('mode') === "user" && (
+                    <FloatingSelectController
+                        name='userId'
+                        label='Users'
+                        options={
+                            users.map((item) => {
+                                return {
+                                    label: item.name,
+                                    value: item.id
+                                }
+                            })
+                        }
+                    />
+                )}
+
+                <Button disabled={loading}>
+                    {loading ? "Sending..." : "Send Notification"}
+                </Button>
+            </form>
+        </Form>
     );
 }

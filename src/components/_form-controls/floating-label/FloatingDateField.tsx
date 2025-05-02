@@ -1,11 +1,14 @@
-import { Calendar } from "@/components/ui/calendar";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import { format, parse } from "date-fns";
-import { CalendarIcon } from "lucide-react";
-import { ChangeEvent, forwardRef, useState } from "react";
+'use client';
+
+import { format, parse } from 'date-fns';
+import { CalendarIcon } from 'lucide-react';
+import { ChangeEvent, forwardRef, useState } from 'react';
+
+import { Calendar } from '@/components/ui/calendar';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
 interface DateFieldProps {
   name: string;

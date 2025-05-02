@@ -67,8 +67,6 @@ export async function sendNotification(input: SendNotificationInput) {
 
     let userIds: string[] = [];
 
-    console.log('input', input);
-
     if (input.topics) {
         // Send to all users subscribed to the topic
         const subscriptions = await prisma.subscription.findMany({

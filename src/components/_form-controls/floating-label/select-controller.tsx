@@ -1,9 +1,14 @@
-import { FormDescription, FormField, FormItem, FormMessage } from "@/components/ui/form";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
-import { HTMLAttributes } from "react"
-import { FieldValues, Path, PathValue, useFormContext } from "react-hook-form"
+'use client';
+
+import { HTMLAttributes } from 'react';
+import { FieldValues, Path, PathValue, useFormContext } from 'react-hook-form';
+
+import { FormDescription, FormField, FormItem, FormMessage } from '@/components/ui/form';
+import { Label } from '@/components/ui/label';
+import {
+    Select, SelectContent, SelectItem, SelectTrigger, SelectValue
+} from '@/components/ui/select';
+import { cn } from '@/lib/utils';
 
 interface Options {
     label: string;

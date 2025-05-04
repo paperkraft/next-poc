@@ -14,9 +14,10 @@ export const PRIVATE_PATHS = [
 ];
 
 export const MODULE_PATH_PREFIXES = [
-    '/dashboard',
-    '/ui',
     '/home',
     '/master',
     '/administrative',
+    '/dashboard',
+    '/gallery',
+    '/ui',
 ];

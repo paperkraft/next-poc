@@ -1,14 +1,13 @@
 import { Session } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
 
-import { auth } from './auth';
-import { getPathAccess } from './utils/accessPath';
-import { findModuleByPath } from './utils/findModuleByPath';
-import { logAccessDenied } from './utils/log';
+import { auth } from '@/auth';
+import { Module } from '@/types/module';
+import { getPathAccess } from '@/utils/accessPath';
+import { findModuleByPath } from '@/utils/findModuleByPath';
+import { logAccessDenied } from '@/utils/log';
 
-import type { Module } from './types/module';
-
-export async function middleware(req: NextRequest) {
+export async function handleRequest(req: NextRequest): Promise<NextResponse> {
     try {
         const currentPath = req.nextUrl.pathname;
         const response = NextResponse.next();
@@ -76,7 +75,3 @@ export async function middleware(req: NextRequest) {
         return new NextResponse('Internal Server Error', { status: 500 });
     }
 }
-
-export const config = {
-    matcher: ['/((?!api|_next/static|_next/image|favicon.ico|sw.js|manifest.webmanifest).*)'],
-};

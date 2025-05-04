@@ -8,17 +8,17 @@ const slides = [
   {
     title: "Title One",
     description: "Lorem ipsum dolor sit amet experience one-tap access consectetur elit.",
-    image: "/landing_01.png",
+    image: "/landing.png",
   },
   {
     title: "Title Two",
     description: "Lorem ipsum dolor consectetur sit experience one-tap access dolor amet.",
-    image: "/landing_01.png",
+    image: "/landing.png",
   },
   {
     title: "Title Three",
     description: "Lorem ipsum dolor consectetur sit experience one-tap access dolor amet.",
-    image: "/landing_01.png",
+    image: "/landing.png",
   }
 ];
 

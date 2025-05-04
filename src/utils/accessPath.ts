@@ -1,25 +1,31 @@
-export function getPathAccess(pathname: string) {
-    if (pathname === '/') return 'public';
+import { normalizePath } from "./findModuleByPath";
+
+export type PathAccessType = 'ignored' | 'auth-public' | 'public' | 'private';
+
+export function getPathAccess(pathname: string): PathAccessType {
+    const normalized = normalizePath(pathname);
+
+    if (normalized === '/') return 'public';
 
     if (
-        pathname === '/' ||
-        pathname.startsWith('/signin') ||
-        pathname.startsWith('/signup') ||
-        pathname.startsWith('/forgot-password')
+        normalized === '/' ||
+        normalized.startsWith('/signin') ||
+        normalized.startsWith('/signup') ||
+        normalized.startsWith('/forgot-password')
     ) {
         return 'auth-public';
     }
 
     if (
-        pathname.startsWith('/api') ||
-        pathname.startsWith('/sw.js') ||
-        pathname.startsWith('/_next/image') ||
-        pathname.startsWith('/images') ||
-        pathname.startsWith('/favicon.ico') ||
-        pathname.startsWith('/web-app-manifest') ||
-        pathname.startsWith('/manifest.webmanifest')
+        normalized.startsWith('/api') ||
+        normalized.startsWith('/sw.js') ||
+        normalized.startsWith('/_next') ||
+        normalized.startsWith('/images') ||
+        normalized.startsWith('/favicon.ico') ||
+        normalized.startsWith('/manifest.webmanifest')
+        // normalized.startsWith('/web-app-manifest') ||
     ) {
-        return 'ignored'; // Don't handle in middleware
+        return 'ignored';
     }
 
     // Eveything else is private

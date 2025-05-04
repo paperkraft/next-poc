@@ -1,10 +1,11 @@
-import React from "react";
-import { Metadata } from "next";
-import { auth } from "@/auth";
-import Image from "next/image";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { Metadata } from 'next';
+import Image from 'next/image';
+import Link from 'next/link';
+import React from 'react';
+
+import { auth } from '@/auth';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = {
   title: "Not Found",
@@ -13,7 +14,6 @@ export const metadata: Metadata = {
 
 export default async function NotFound() {
   const session = await auth();
-
   return (
     <React.Fragment>
       <div className={cn("flex items-center justify-center h-[calc(100svh-100px)]", {"h-screen": !session})}>
@@ -21,7 +21,6 @@ export default async function NotFound() {
               <h6 className="text-2xl font-semibold">Not Found</h6>
               <p className="text-muted-foreground text-sm">The page you are looking does not exist</p>
               <Image src={"/not-found.svg"} height={250} width={250} alt="Not-Found" className="mb-3" />
-
               <div>
                   <Button asChild>
                     <Link href={'/dashboard'}>Dashboard</Link> 

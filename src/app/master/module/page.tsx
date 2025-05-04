@@ -35,7 +35,7 @@ export default async function ModuleMasterPage() {
         <TitlePage title="Module List" description="List of all module and submodule" listPage />
         {response.success
           ? response.data.length > 0
-            ? <ModuleMasterList data={response.data} moduleId={moduleId as string} />
+            ? <ModuleMasterList data={response.data} moduleId={moduleId} />
             : <NoRecordPage text="module" />
           : <SomethingWentWrong message={response.message} />
         }

@@ -1,6 +1,6 @@
 import { Module } from '@/types/module';
 
-function normalizePath(p: string): string {
+export function normalizePath(p: string): string {
   return p.trim().replace(/\s+/g, '').replace(/\/+$/, ''); // remove trailing slashes & spaces
 }
 
@@ -9,7 +9,7 @@ function pathToRegex(path: string): RegExp {
   return new RegExp(`^${pattern}(\\/.*)?$`);
 }
 
-export function findModuleByPath(modules: Module[], pathname: string): Module | null {
+export function findModuleByPathOld(modules: Module[], pathname: string): Module | null {
   const cleanPath = normalizePath(pathname);
   let match: Module | null = null;
 
@@ -32,4 +32,36 @@ export function findModuleByPath(modules: Module[], pathname: string): Module | 
 
   recurse(modules);
   return match;
+}
+
+/**
+ * Recursively finds a module by matching the given path.
+ * Supports exact or startsWith match (fallback).
+ */
+export function findModuleByPath(
+  modules: Module[],
+  pathname: string
+): Module | null {
+  const targetPath = normalizePath(pathname);
+  for (const module of modules) {
+    // Exact match
+    if (module.path === targetPath) return module;
+
+    // Recursively check children
+    if (module.subModules && module.subModules.length > 0) {
+      const found = findModuleByPath(module.subModules, targetPath);
+      if (found) return found;
+    }
+
+    // Loose match fallback (if no exact match and target path starts with module path)
+    if (
+      targetPath !== '/' &&
+      module.path !== '/' &&
+      targetPath.startsWith(module.path + '/')
+    ) {
+      return module;
+    }
+  }
+
+  return null;
 }

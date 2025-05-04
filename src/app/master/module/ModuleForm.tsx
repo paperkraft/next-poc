@@ -191,16 +191,31 @@ export default function ModuleForm({ id, modules, groupOptions }: PageProps) {
     return (
         mounted &&
         <>
-            <TitlePage title={title} description={pageDesc} viewPage={!!id} createPage={!id}>
+            <TitlePage
+                title={title}
+                description={pageDesc}
+                viewPage={!!id}
+                createPage={!id}
+            >
                 {!show && id && (
                     <>
                         <PermissionGuard action="UPDATE" path={path}>
-                            <Button className="size-7" variant={"outline"} size={"sm"} onClick={() => setShow(true)}>
+                            <Button
+                                className="size-7"
+                                variant={"outline"}
+                                size={"sm"}
+                                onClick={() => setShow(true)}
+                            >
                                 <Edit className="size-5" />
                             </Button>
                         </PermissionGuard>
                         <PermissionGuard action="DELETE" path={path}>
-                            <Button className="size-7" variant={"outline"} size={"sm"} onClick={() => setOpen(true)}>
+                            <Button
+                                className="size-7"
+                                variant={"outline"}
+                                size={"sm"}
+                                onClick={() => setOpen(true)}
+                            >
                                 <Trash2 className="size-5 text-destructive" />
                             </Button>
                         </PermissionGuard>
@@ -237,7 +252,9 @@ export default function ModuleForm({ id, modules, groupOptions }: PageProps) {
 
                     <div>
                         <h1 className="text-sm font-semibold">SubModules</h1>
-                        <p className="text-sm text-gray-500">"Submodules are optional; they are used to create a hierarchy of modules."</p>
+                        <p className="text-sm text-gray-500">
+                            "Submodules are optional; they are used to create a hierarchy of modules."
+                        </p>
                     </div>
 
                     <p className="text-sm text-muted-foreground">
@@ -245,16 +262,31 @@ export default function ModuleForm({ id, modules, groupOptions }: PageProps) {
                         {`${form.watch('name')}`}
                     </p>
 
-                    <RecursiveModuleForm nestPath="children" readOnly={readOnly} isEdit={isEdit} show={show} />
+                    <RecursiveModuleForm
+                        nestPath="children"
+                        readOnly={readOnly}
+                        isEdit={isEdit}
+                        show={show}
+                    />
 
                     {((show && id) || (!id)) && (
                         <div className="flex justify-end my-4 gap-2">
-                            <Button type="button" variant={"outline"} onClick={() => router.back()}>
+                            <Button
+                                type="button"
+                                variant={"outline"}
+                                onClick={() => router.back()}
+                            >
                                 Cancel
                             </Button>
 
-                            <Button type="submit" disabled={loading}>
-                                <ButtonContent status={loading} text={id ? "Update" : "Create"} />
+                            <Button
+                                type="submit"
+                                disabled={loading}
+                            >
+                                <ButtonContent
+                                    status={loading}
+                                    text={id ? "Update" : "Create"}
+                                />
                             </Button>
                         </div>
                     )}

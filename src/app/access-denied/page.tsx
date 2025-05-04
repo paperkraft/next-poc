@@ -1,9 +1,11 @@
-import AccessDenied from "@/components/custom/access-denied";
+import { auth } from '@/auth';
+import AccessDenied from '@/components/custom/access-denied';
 
-export default function Page() {
+export default async function Page() {
+    const session = await auth();
     return (
         <>
-            <AccessDenied />
+            <AccessDenied session={session}/>
         </>
     );
 }

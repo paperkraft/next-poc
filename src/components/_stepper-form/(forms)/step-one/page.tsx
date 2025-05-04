@@ -28,7 +28,7 @@ export default function StepOne() {
                 <FloatingInputController name="middleName" label={"Middle Name"} reset />
                 <FloatingInputController name="lastName" label={"Last Name"} reset />
 
-                <FloatingDateController name="dob" label={"Date of Birth"} disableFuture/>
+                <FloatingDateController name="dob" label={"Date of Birth"} />
                 <FloatingSelectController name="gender" label={"Gender"} options={genderOptions} />
                 <FloatingSelectController name="bloodGroup" label={"Blood Group"} options={bloodGroupOptions} />
             </div>

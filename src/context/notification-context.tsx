@@ -1,8 +1,8 @@
 "use client";
 
-import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useEffect, useState } from "react";
+import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { usePushSubscription } from "@/hooks/use-push-subscription";
+
 export interface INotifications {
     id: string;
     message: string;
@@ -16,19 +16,8 @@ export interface INotifications {
 interface NotificationsContextType {
     notifications: INotifications[];
     count: number;
-    subscribedTopics: string[];
     updateNotifications: (newNotifications: INotifications[]) => void;
     setUnreadCount: (newCount: number) => void;
-    setSubscribedTopics: Dispatch<SetStateAction<string[]>>;
-
-    // Push Notifications
-    loading: boolean;
-    subscription: PushSubscription | null;
-    permissionDenied: boolean;
-    subscribe: (topic: string) => Promise<void>;
-    unsubscribe: () => void;
-    updateTopic: (endpoint: string, topic: string, action: "subscribe" | "unsubscribe") => void;
-    requestPermission: () => void;
 }
 
 const NotificationsContext = createContext<NotificationsContextType | undefined>(undefined);
@@ -36,27 +25,13 @@ const NotificationsContext = createContext<NotificationsContextType | undefined>
 export const NotificationsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const { data: session } = useSession();
     const [notifications, setNotifications] = useState<INotifications[]>([]);
-    const [count, setUnreadCount] = useState<number>(-1);
-
-    const [subscribedTopics, setSubscribedTopics] = useState<string[]>([]);
-
-    const {
-        loading,
-        subscription,
-        permissionDenied,
-        subscribe,
-        unsubscribe,
-        updateTopic,
-        requestPermission,
-    } = usePushSubscription();
+    const [count, setUnreadCount] = useState<number>(0);
 
     useEffect(() => {
         if (!session) return;
-
-        // Event source for notifications
         const eventSource = new EventSource('/api/notifications/stream');
-
-        eventSource.onmessage = (event: MessageEvent) => {
+        
+        const handleNewMessage = (event: MessageEvent) => {
             try {
                 const newNotifications: INotifications[] = JSON.parse(event.data);
                 setNotifications(newNotifications);
@@ -65,6 +40,8 @@ export const NotificationsProvider: React.FC<{ children: ReactNode }> = ({ child
                 console.error('Error parsing SSE message:', error);
             }
         };
+
+        eventSource.onmessage = handleNewMessage;
 
         eventSource.onerror = () => {
             console.error('SSE connection failed');
@@ -76,15 +53,6 @@ export const NotificationsProvider: React.FC<{ children: ReactNode }> = ({ child
         };
     }, [session]);
 
-    useEffect(() => {
-        if (!subscription) return;
-        async function fetchTopics() {
-            const endpoint = subscription?.endpoint;
-            const currentTopics = await getCurrentSubscriptionTopics(endpoint as string);
-            setSubscribedTopics(currentTopics);
-        }
-        fetchTopics();
-    }, [subscription]);
 
     // Function to handle updates when notifications are updated from the API
     const updateNotifications = (newNotifications: INotifications[]) => {
@@ -93,22 +61,10 @@ export const NotificationsProvider: React.FC<{ children: ReactNode }> = ({ child
     };
 
     const value = {
-        count,
         notifications,
-        subscribedTopics,
-        setUnreadCount,
-        setSubscribedTopics,
+        count,
         updateNotifications,
-
-        // Push Notifications
-
-        loading,
-        subscription,
-        permissionDenied,
-        subscribe,
-        unsubscribe,
-        updateTopic,
-        requestPermission,
+        setUnreadCount,
     };
 
     return (
@@ -126,15 +82,3 @@ export const useNotifications = () => {
     }
     return context;
 };
-
-async function getCurrentSubscriptionTopics(endpoint: string) {
-    if (!endpoint) return [];
-
-    const response = await fetch(`/api/notifications/topics/endpoint`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ endpoint })
-    });
-    const result = await response.json();
-    return result.data || [];
-}

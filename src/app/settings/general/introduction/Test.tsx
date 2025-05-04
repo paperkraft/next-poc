@@ -1,6 +1,6 @@
 'use client'
 
-import { PermissionGuard } from "@/components/PermissionGuard";
+import { Guard } from "@/components/custom/permission-guard";
 import { Button } from "@/components/ui/button";
 import useModuleIdByName from "@/hooks/use-module-id";
 import { useMounted } from "@/hooks/use-mounted";
@@ -12,20 +12,22 @@ export default function TestPage() {
     return (
         mounted &&
         <>
-            <div className="flex gap-2">
-                <PermissionGuard action="READ" moduleId={moduleId}>
-                    <Button>View</Button>
-                </PermissionGuard>
-                <PermissionGuard action="UPDATE" moduleId={moduleId}>
-                    <Button>Edit</Button>
-                </PermissionGuard>
-                <PermissionGuard action="WRITE" moduleId={moduleId}>
-                    <Button>Create</Button>
-                </PermissionGuard>
-                <PermissionGuard action="DELETE" moduleId={moduleId}>
-                    <Button>Delete</Button>
-                </PermissionGuard>
-            </div>
+            <Guard permissionBit={1} moduleId={moduleId}>
+                <div className="flex gap-2">
+                    <Guard permissionBit={1} moduleId={moduleId}>
+                        <Button>View</Button>
+                    </Guard>
+                    <Guard permissionBit={2} moduleId={moduleId}>
+                        <Button>Edit</Button>
+                    </Guard>
+                    <Guard permissionBit={4} moduleId={moduleId}>
+                        <Button>Create</Button>
+                    </Guard>
+                    <Guard permissionBit={8} moduleId={moduleId}>
+                        <Button>Delete</Button>
+                    </Guard>
+                </div>
+            </Guard>
         </>
     );
 }

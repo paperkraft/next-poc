@@ -45,7 +45,7 @@ export const DateController = <T extends FieldValues>({ name, label, ...rest }: 
                             toYear={rest?.toYear}
                         />
                     </FormControl>
-                    {rest?.description && <FormDescription>{rest?.description}</FormDescription>}
+                    <FormDescription>{rest?.description}</FormDescription>
                     <FormMessage />
                 </FormItem>
             )}

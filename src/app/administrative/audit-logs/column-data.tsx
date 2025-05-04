@@ -68,7 +68,7 @@ export const createColumns = ({ setOpen, setDetails }: createColumnsProps) => {
             ),
         },
         {
-            accessorKey: "name",
+            accessorKey: "user",
             header: "User",
         },
         {
@@ -100,12 +100,14 @@ export const createColumns = ({ setOpen, setDetails }: createColumnsProps) => {
                 return (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="size-5 p-0">
+                            <Button variant="ghost" className="size-8 p-0">
                                 <span className="sr-only">Open menu</span>
-                                <MoreHorizontalIcon size={16}/>
+                                <MoreHorizontalIcon />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>View</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
                             <DropdownMenuItem 
                                 onClick={() => {
                                     setOpen(true);

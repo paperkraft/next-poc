@@ -1,19 +1,22 @@
-import { Metadata } from 'next';
+import TitlePage from "@/components/custom/page-heading";
+import GroupForm from "./GroupForm";
+import { hasPermission } from "@/lib/rbac";
+import AccessDenied from "@/components/custom/access-denied";
+import { auth } from "@/auth";
 
-import { PermissionGuard } from '@/components/PermissionGuard';
+export default async function Page() {
+  const session = await auth();
+  const rolePermissions = +session?.user?.permissions;
+  const permission = hasPermission(rolePermissions, 8);
 
-import GroupForm from '../GroupForm';
-import AccessDenied from '@/components/custom/access-denied';
-
-export const metadata: Metadata = {
-  title: "Create Group",
-  description: "Define a new group",
-};
-
-export default async function CreateGroup() {
+  if (!permission) {
+    return <AccessDenied />;
+  }
+  
   return (
-    <PermissionGuard name="Groups" action="WRITE" fallback={<AccessDenied/>}>
-      <GroupForm  />
-    </PermissionGuard>
+    <div className="space-y-4 p-2">
+      <TitlePage title="Create Group" description="Define a new group" createPage />
+      <GroupForm />
+    </div>
   );
 }

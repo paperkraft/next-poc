@@ -75,7 +75,7 @@ export default function LandingPage() {
                             </div>
                             <div className="flex items-center justify-center">
                                 <Image
-                                    src="/landing.png"
+                                    src="/landing_01.png"
                                     width={550}
                                     height={550}
                                     alt="Hero Image"

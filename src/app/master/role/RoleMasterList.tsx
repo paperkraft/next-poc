@@ -1,49 +1,40 @@
 "use client";
+import { memo } from "react";
+import { IRole } from "@/app/_Interface/Role";
+import { DataTable } from "@/components/_data-table/data-table";
+import { RoleMasterColumns } from "./role-column-data";
 
-import { toast } from 'sonner';
+interface RoleMasterProps {
+  data: IRole[];
+  moduleId?: string;
+}
 
-import { DataTable } from '@/components/_data-table/data-table';
-import { RoleListProps } from '@/types/role';
-
-import { RoleMasterColumns } from './role-column-data';
-
-const RoleMasterList = ({ data, moduleId }: RoleListProps) => {
-
+const RoleMasterList = memo(({ data, moduleId }: RoleMasterProps) => {
   const { columns } = RoleMasterColumns();
 
-  const deleteRecord = async (id: string | string[]) => {
-    const ids = Array.isArray(id) ? id : [id];
-
+  const deleteRecord = async (ids: string | string[]) => {
     try {
-      const res = await fetch("/api/master/role", {
+      await fetch("/api/master/role", {
         method: "DELETE",
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ids }),
-      });
-
-      const result = await res.json();
-
-      if (res.ok) {
-        toast.success("Role deleted successfully");
-      } else {
-        toast.error(result.message);
-      }
-
+      })
     } catch (error) {
-      console.error("Error deleting role", error);
-      toast.error("Error deleting role");
+      console.error(error);
     }
   }
 
   return (
-    <DataTable
-      columns={columns}
-      data={data}
-      deleteRecord={deleteRecord}
-      moduleId={moduleId}
-      pageSize={10}
-    />
+    <>
+      <DataTable
+        columns={columns}
+        data={data}
+        deleteRecord={deleteRecord}
+        moduleId={moduleId}
+        pageSize={10}
+      />
+    </>
   );
-};
+});
 
+RoleMasterList.displayName = "RoleMasterList";
 export default RoleMasterList;

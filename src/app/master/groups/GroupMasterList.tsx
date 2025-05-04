@@ -1,48 +1,40 @@
 "use client";
+import { memo } from "react";
+import { IGroup } from "@/app/_Interface/Group";
+import { DataTable } from "@/components/_data-table/data-table";
+import { GroupsMasterColumns } from "./groups-column-data";
 
-import { toast } from 'sonner';
+interface GroupListProps {
+  data: IGroup[];
+  moduleId?: string
+}
 
-import { DataTable } from '@/components/_data-table/data-table';
-import { FetchResponse } from '@/types';
-import { GroupListProps } from '@/types/group';
-
-import { GroupsMasterColumns } from './groups-column-data';
-
-const GroupMasterList = ({ data, moduleId }: GroupListProps) => {
-
+const GroupMasterList = memo(({ data, moduleId }: GroupListProps) => {
   const { columns } = GroupsMasterColumns();
 
-  const deleteRecord = async (id: string | string[]) => {
-    const ids = Array.isArray(id) ? id : [id];
+  const deleteRecord = async (ids: string | string[]) => {
     try {
-      const response = await fetch("/api/master/group", {
+      await fetch("/api/master/group", {
         method: "DELETE",
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ids }),
-      });
-
-      const result: FetchResponse = await response.json();
-      if (response.ok) {
-        toast.success("Group deleted successfully");
-      } else {
-        toast.error(result.message);
-      }
-
+      })
     } catch (error) {
-      console.error("Error deleting group:", error);
-      toast.error("Error deleting group");
+      console.error(error);
     }
   }
 
   return (
-    <DataTable
-      columns={columns}
-      data={data}
-      deleteRecord={deleteRecord}
-      moduleId={moduleId}
-      pageSize={10}
-    />
+    <>
+      <DataTable
+        columns={columns}
+        data={data}
+        deleteRecord={deleteRecord}
+        moduleId={moduleId}
+        pageSize={10}
+      />
+    </>
   );
-}
+})
 
-export default GroupMasterList;
+GroupMasterList.displayName = "GroupMasterList";
+export default GroupMasterList

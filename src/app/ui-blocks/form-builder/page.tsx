@@ -1,6 +1,5 @@
-import { Metadata } from 'next';
-
-import FormBuilder from '@/components/_form-builder';
+import FormBuilder from "@/components/_form-builder";
+import { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Form Builder",
@@ -8,7 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return (
-    <FormBuilder />
-  );
+  return (<FormBuilder />);
 }

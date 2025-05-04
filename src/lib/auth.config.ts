@@ -23,7 +23,7 @@ const authConfig: NextAuthConfig = {
                     let user: User | null = null;
                     const { email, password } = await signInSchema.parseAsync(credentials);
 
-                    // GET User details
+                    /* GET User details */
                     await getUser(email, password).then((data) => {
                         return data ? user = data : null
                     })
@@ -67,7 +67,6 @@ const authConfig: NextAuthConfig = {
             }
 
             if (trigger === "update" && session) {
-                // Fetch menu based on roleId from session
                 const menu = await fetchModuleByRole(session.roleId).then((d) => d.json());
                 const updateSession = { ...session, modules: menu.data }
                 token = { ...token, user: updateSession }
@@ -97,20 +96,16 @@ const authConfig: NextAuthConfig = {
             return true;
         },
 
-        async redirect({ url, baseUrl }) {
-
-            // Check if the callbackUrl exists in the URL
-            const urlObj  = new URL(url);
-
-            // If the callbackUrl is present, return it as the redirect destination
-            if (urlObj .searchParams.has('callbackUrl')) {
-                const callbackUrl = urlObj.searchParams.get('callbackUrl')!;
-                console.log('callbackUrl', callbackUrl);
-                
-                return callbackUrl; // Redirect to the original requested URL (callbackUrl)
+        authorized({ auth, request: { nextUrl } }) {
+            const isLoggedIn = !!auth;
+            const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
+            if (isOnDashboard) {
+                if (isLoggedIn) return true;
+                return false;
+            } else if (isLoggedIn) {
+                return Response.redirect(new URL('/dashboard', nextUrl));
             }
-            // If no callbackUrl exists, redirect to the dashboard
-            return `${baseUrl}/dashboard`;
+            return true;
         },
     },
 

@@ -27,60 +27,29 @@ export const getRecaptchaToken = async (): Promise<string | null> => {
 export const getUser = async (email: string, password: string) => {
     const user = await prisma.user.findFirst({
         where: { email },
+        include: { role: true }
     });
 
     if (!user) {
+        return null
+    }
+
+    const hasPwd = await verifyPassword({ plainPassword: password, hashPassword: `${user?.password}` });
+
+    if (user && !hasPwd) {
+        await logAuditAction('Error', 'auth/signin', { error: 'Invalid credentials' }, user?.id);
         return null;
     }
 
-    const hasPwd = await verifyPassword({
-        plainPassword: password,
-        hashPassword: user.password ?? ""
-    });
-
-    if (!hasPwd) {
-        await logAuditAction("Error", "auth/signin", { data: { error: "Invalid credentials" } });
-        return null;
-    }
-
-    await logAuditAction("login", "auth/signin", { data: `${user.firstName} ${user.lastName}` }, user.id);
-
-    // Fetch ABAC modules using the role ID
-    const moduleResponse = await fetchModuleByRole(user.roleId);
-    const modulesResult = await moduleResponse.json();
+    await logAuditAction('login', 'auth/signin', { user: `${user?.firstName} ${user?.lastName}` }, user?.id);
+    const menus = await fetchModuleByRole(user.roleId).then((d) => d.json());
 
     return {
-        id: user.id,
-        name: `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim(),
-        email: user.email,
-        roleId: user.roleId,
-        modules: modulesResult.data
+        id: user?.id,
+        name: user && `${user?.firstName} ${user?.lastName}`,
+        email: email,
+        roleId: user?.roleId,
+        permissions: user?.role?.permissions,
+        modules: menus?.data
     };
 };
-
-export const getAllUser = async () => {
-
-    try {
-        const users = await prisma.user.findMany({
-            select: {
-                id: true,
-                firstName: true,
-                lastName: true
-            }
-        });
-
-        const allUser = users.map((u) => {
-            return {
-                id: u.id,
-                name: u?.firstName ?? "" + u?.lastName
-            }
-        });
-
-        return {
-            success: true,
-            data: allUser
-        }
-    } catch (error) {
-        console.log(error);
-    }
-}

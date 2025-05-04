@@ -1,22 +1,4 @@
-export const PUBLIC_PATHS = [
-    '/',
-    '/signin',
-    '/signup',
-    '/forgot-password',
-    '/access-denied'
-];
-
-export const PRIVATE_PATHS = [
-    '/profile',
-    '/settings',
-    '/notifications',
-    '/access-denied'
-];
-
-export const MODULE_PATH_PREFIXES = [
-    '/dashboard',
-    '/ui',
-    '/home',
-    '/master',
-    '/administrative',
-];
+export const publicURL = ['/signin', '/signup', '/forgot-password'];
+export const ROUTE_PERMISSIONS: { [key: string]: number[] } = {
+    '/test': [15],
+};

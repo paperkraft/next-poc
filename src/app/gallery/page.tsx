@@ -2,45 +2,30 @@ import { Metadata } from "next";
 import TitlePage from "@/components/custom/page-heading";
 import Link from "next/link";
 import Image from "next/image";
-import SomethingWentWrong from "@/components/custom/somthing-wrong";
-import { getImages } from "@/lib/getImage";
 
 export const metadata: Metadata = {
     title: "Gallery",
-    description: "Intercept",
+    description: "Intersecpt",
 };
 
-// Gallery Component
-export default async function Gallery() {
-    const images = await getImages();
+export default async function Page() {
 
-    if (!images) {
-        return <SomethingWentWrong message="Failed to fetch images" />;
-    }
+    const images = await fetch('https://jsonplaceholder.typicode.com/photos')
+      .then(response => response.json())
+      .then(data => data.slice(0, 5))
 
-    return (
+    return(
         <>
-            <TitlePage title="Gallery" description="Browse through the latest images" />
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4 p-4">
+            <TitlePage title="Gallery" description="description" />
+            <div className="grid grid-cols-5 gap-4 p-4">
                 {images.map((item:any) => (
-                    <Link
-                        key={item.id}
-                        href={`/gallery/${item.id}`}
-                        className="flex flex-col items-center justify-center border p-6"
-                    >
-                        <Image
-                            src={item.url}
-                            height={150}
-                            width={150}
-                            alt={`Image ${item.id}`}
-                            className="rounded-md aspect-square"
-                        />
-                        <p className="text-muted-foreground text-sm py-2 truncate w-40">
-                            {item.title || "No Title"}
-                        </p>
+                    <Link href={`/gallery/photos/${item.id}`} passHref key={item.id} className='flex flex-col items-center justify-center'>
+                        <Image src={item.thumbnailUrl} height={150} width={150} alt={`${item.id}`} className='rounded-md aspect-square'/>
+                        <p className="text-muted-foreground text-sm py-2">Image {item.id}</p>
                     </Link>
                 ))}
             </div>
+            
         </>
-    );
+    ) 
 }

@@ -5,7 +5,6 @@ import { getFormattedDateTime } from "@/utils";
 import { DataTable } from "@/components/_data-table/data-table";
 import { DetailsDialog } from "./view-details";
 import { createColumns } from "./column-data";
-import { toast } from "sonner";
 interface AuditLogTableProp {
     data: {
         id: String,
@@ -29,7 +28,7 @@ const AuditLogTable = ({ data, moduleId }: AuditLogTableProp) => {
     const final = React.useMemo(() =>
         data?.map((item) => ({
             id: item.id,
-            name: `${item.user.firstName} ${item.user.lastName}`,
+            user: `${item.user.firstName} ${item.user.lastName}`,
             action: item.action.toLowerCase(),
             entity: item.entity,
             details: JSON.stringify(item.details, null, 2),
@@ -39,27 +38,14 @@ const AuditLogTable = ({ data, moduleId }: AuditLogTableProp) => {
         [data]
     );
 
-    const deleteRecord = async (id: string | string[]) => {
-        const ids = Array.isArray(id) ? id : [id];
-
+    const deleteRecord = async (ids: string | string[]) => {
         try {
-            const res = await fetch('/api/audit-log', {
+            await fetch('/api/audit-log', {
                 method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ids }),
             });
-
-            const result = await res.json();
-
-            if (res.ok) {
-                toast.success("Log deleted successfully");
-            } else {
-                toast.error(result.message);
-            }
-
         } catch (error) {
             console.error(error);
-            toast.error("Error deleting log");
         }
     }
 

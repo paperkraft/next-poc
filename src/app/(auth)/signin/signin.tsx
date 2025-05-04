@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -21,7 +21,6 @@ type signInT = z.infer<typeof signInSchema>;
 export default function SignInPage() {
   const mounted = useMounted();
   const [loading, setLoading] = useState(false);
-  const [callbackUrl, setCallbackUrl] = useState<string | null>(null);
 
   const form = useForm<signInT>({
     resolver: zodResolver(signInSchema),
@@ -30,15 +29,6 @@ export default function SignInPage() {
       password: "",
     },
   });
-
-  // Check if there's a callbackUrl in the query string
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const callback = urlParams.get("callbackUrl");
-    if (callback) {
-      setCallbackUrl(decodeURIComponent(callback));
-    }
-  }, []);
 
   const onSubmit = async (data: signInT) => {
     setLoading(true);
@@ -58,8 +48,7 @@ export default function SignInPage() {
       }).then((res) => res.json());
 
       if (response.success) {
-        // Redirect to the callbackUrl if it exists, otherwise redirect to the dashboard
-        window.location.href = callbackUrl || "/dashboard";
+        window.location.href = "/dashboard";
       }
 
       if (response.type === "CredentialsSignin" || response.code === "credentials") {

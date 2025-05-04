@@ -1,16 +1,12 @@
 "use client";
-import { Eye } from 'lucide-react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useMemo } from 'react';
-
-import { Checkbox } from '@/components/ui/checkbox';
-import { useMounted } from '@/hooks/use-mounted';
-import { ColumnDef } from '@tanstack/react-table';
+import { Checkbox } from "@/components/ui/checkbox";
+import { ColumnDef } from "@tanstack/react-table";
+import { Eye } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useMemo } from "react";
 
 export const RoleMasterColumns = () => {
-
-  const mounted = useMounted();
   const path = usePathname();
 
   const columns: ColumnDef<any>[] = useMemo(() => [
@@ -41,20 +37,18 @@ export const RoleMasterColumns = () => {
       header: "Role",
     },
     {
+      accessorKey: "permissions",
+      header: "Permisisions",
+    },
+    {
       accessorKey: "view",
-      header: () => null,
-      cell: ({ row }) => (
-        <Link
-          title="View"
-          href={`${path}/${row.original.id}`}
-          className="opacity-0 group-hover:opacity-100 hover:text-blue-500 block size-4"
-        >
-          <Eye size={16} aria-label="View" />
-        </Link>
+      header:() => null,
+      cell: ({row}) => (
+        <Link href={`${path}/${row.original.id}`} className="opacity-0 group-hover:opacity-100 hover:text-blue-500 block size-4"><Eye className="size-4" /></Link>
       ),
       enableSorting: false,
     }
   ], []);
 
-  return mounted ? { columns } : { columns: [] };
+  return { columns };
 };

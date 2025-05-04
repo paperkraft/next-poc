@@ -4,7 +4,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import { format, parse } from "date-fns";
 import { CalendarIcon } from "lucide-react";
-import { ChangeEvent, forwardRef, useState } from "react";
+import { ChangeEvent, useState } from "react";
 
 interface DateFieldProps {
   name: string;
@@ -16,11 +16,9 @@ interface DateFieldProps {
   floatingLabel?: boolean;
   fromYear?: number;
   toYear?: number;
-  disableFuture?: boolean;
 }
 
-export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
-  ({ value, label, onChange, ...rest }, ref) => {
+export const DateField: React.FC<DateFieldProps> = ({ value, label, onChange, ...rest }) => {
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState<string>(value ? format(value, "dd-MM-yyyy") : "");
   const datePattern = /^(\d{2})-(\d{2})-(\d{4})$/;
@@ -46,57 +44,23 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
     try {
       let value = e.target.value.replace(/[^0-9]/g, "").slice(0, 8);
 
-      // Extract DD, MM, YYYY
-      let day = value.slice(0, 2);
-      let month = value.slice(2, 4);
-      let year = value.slice(4, 8);
-
-      // Ensure DD starts with 1, 2, or 3 and is within 01-31
-      if (day.length === 2) {
-        if (!["0", "1", "2", "3"].includes(day[0]) || parseInt(day, 10) < 1 || parseInt(day, 10) > 31) {
-          const last = day[1] === "0" ? "1" : day[1]
-          day = "0" + last;
+      // Ensure the year starts with 1 or 2
+      if (value.length > 4) {
+        let year = value.slice(4, 8);
+        if (year.length > 0 && !["1", "2"].includes(year[0])) {
+          year = "2" + year.slice(1);
         }
+        value = value.slice(0, 4) + year;
       }
 
-      // Ensure MM starts with 0 or 1 and is within 01-12
-      if (month.length === 2) {
-        if (!["0", "1"].includes(month[0]) || parseInt(month, 10) < 1 || parseInt(month, 10) > 12) {
-          const last = month[1] === "0" ? "1" : month[1]
-          month = "0" + last;
-        }
-      }
+      let formattedValue = value.replace(/^(\d{2})(\d{0,2})(\d{0,4})$/, (_, d, m, y) => {
+        return [d, m, y].filter(Boolean).join("-");
+      });
 
-      // Ensure the year starts with 1 or 2 (valid for 1000–2999)
-      if (year.length > 0 && !["1", "2"].includes(year[0])) {
-        year = "2" + year.slice(1);
-      }
-
-      let formattedValue = [day, month, year].filter(Boolean).join("-");
       setInputValue(formattedValue);
 
-      if (day.length === 2 && month.length === 2 && year.length === 4) {
+      if (datePattern.test(formattedValue)) {
         const parsedDate = parse(formattedValue, "dd-MM-yyyy", new Date());
-
-        if (rest.disableFuture && parsedDate > new Date()) {
-          onChange(null);
-          return;
-        }
-
-        const isLeapYear = (y: number) => (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
-
-        // Max days in each month
-        const maxDaysInMonth: { [key: number]: number } = {
-          1: 31, 2: isLeapYear(parsedDate.getFullYear()) ? 29 : 28, 3: 31, 4: 30, 5: 31, 6: 30,
-          7: 31, 8: 31, 9: 30, 10: 31, 11: 30, 12: 31,
-        };
-
-        // Auto-fix invalid dates
-        if (parsedDate.getDate() > maxDaysInMonth[parsedDate.getMonth() + 1]) {
-          day = maxDaysInMonth[parsedDate.getMonth() + 1].toString().padStart(2, "0");
-          formattedValue = [day, month, year].join("-");
-          setInputValue(formattedValue);
-        }
         onChange(parsedDate);
       } else {
         onChange(null);
@@ -108,11 +72,10 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
   };
 
   return (
-    <Popover modal={false} open={open} onOpenChange={setOpen}>
+    <Popover modal={false} open={open}>
       <div className="relative">
         <Input
-          ref={ref}
-          id={rest.name}
+          id={label}
           placeholder="DD-MM-YYYY"
           value={inputValue}
           onChange={handleInputChange}
@@ -143,4 +106,4 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
       </PopoverContent>
     </Popover>
   );
-});
+};

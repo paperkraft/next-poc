@@ -1,37 +1,71 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { logAuditAction } from "@/lib/audit-log";
+import prisma from "@/lib/prisma";
+import { NextRequest, NextResponse } from "next/server";
 
-import { logAuditAction } from '@/lib/audit-log';
-import prisma from '@/lib/prisma';
-
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
     const { id } = params;
 
     if (!id) {
         return NextResponse.json(
-            { success: false, message: "Role Id is required" },
+            { success: false, message: "Role ID is required" },
             { status: 400 }
         );
     }
 
     try {
-        const { name } = await request.json();
-
-        if (!name) {
+        const role = await prisma.role.findUnique({
+            where: { id: id },
+            select: {
+                id: true,
+                name: true,
+                permissions: true,
+            }
+        });
+        if (!role) {
             return NextResponse.json(
-                { success: false, message: "Name is required" },
+                { success: false, message: "Role not found" },
+                { status: 404 }
+            );
+        }
+        return NextResponse.json(
+            { success: true, data: role }, 
+            { status: 200 });
+    } catch (error) {
+        console.error(error);
+        return NextResponse.json(
+            { success: false, message: 'Error fetching role' }, 
+            { status: 500 });
+    }
+}
+
+export async function PUT(request: Request) {
+    const url = new URL(request.url);
+    const id = url.pathname.split("/").pop();
+    if (!id) {
+        return NextResponse.json(
+            { success: false, message: "Role ID is required" },
+            { status: 400 }
+        );
+    }
+
+    try {
+        const { name, permissions } = await request.json();
+
+        if (!name || permissions === undefined) {
+            return NextResponse.json(
+                { success: false, message: "Name and permissions are required" },
                 { status: 400 }
             );
         }
 
-        const data = await prisma.role.update({
+        const updatedRole = await prisma.role.update({
             where: { id },
-            data: { name }
+            data: { name, permissions }
         });
-
-        await logAuditAction('Update', 'master/role', { data: data });
-
+        
+        await logAuditAction('Update', 'master/role', { data:updatedRole });
         return NextResponse.json(
-            { success: true, message: "Role updated", data: data },
+            { success: true, message: "Role updated", data: updatedRole },
             { status: 200 }
         );
     } catch (error) {
@@ -39,46 +73,6 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         await logAuditAction('Error', 'master/role', { error: 'Failed to update role' });
         return NextResponse.json(
             { success: false, message: "Error updating role" },
-            { status: 500 }
-        );
-    }
-}
-
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-    const { id } = params;
-
-    if (!id) {
-        return NextResponse.json(
-            { success: false, message: "Role Id is required" },
-            { status: 400 }
-        );
-    }
-
-    try {
-        const data = await prisma.role.findUnique({
-            where: { id: id },
-            select: {
-                id: true,
-                name: true
-            }
-        });
-
-        if (!data) {
-            return NextResponse.json(
-                { success: false, message: "Not found", data: null },
-                { status: 404 }
-            );
-        }
-
-        return NextResponse.json(
-            { success: true, message: 'Success', data },
-            { status: 200 }
-        );
-
-    } catch (error) {
-        console.error(error);
-        return NextResponse.json(
-            { success: false, message: 'Error fetching role' },
             { status: 500 }
         );
     }

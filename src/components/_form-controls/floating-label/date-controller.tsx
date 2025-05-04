@@ -1,12 +1,9 @@
-'use client';
-
-import { isDate } from 'date-fns';
-import { HTMLAttributes } from 'react';
-import { FieldValues, Path, PathValue, useFormContext } from 'react-hook-form';
-
-import { FormDescription, FormField, FormItem, FormMessage } from '@/components/ui/form';
-
-import { FloatingDateField } from './FloatingDateField';
+import { FormDescription, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { HTMLAttributes } from "react"
+import { FieldValues, Path, PathValue, useFormContext } from "react-hook-form"
+import { DateField } from "../DateField";
+import { isDate } from "date-fns";
+import { FloatingDateField } from "./FloatingDateField";
 
 interface IInputControllerProps<T extends FieldValues>
     extends HTMLAttributes<HTMLInputElement> {
@@ -20,7 +17,6 @@ interface IInputControllerProps<T extends FieldValues>
     readOnly?: boolean;
     fromYear?: number;
     toYear?: number;
-    disableFuture?: boolean;
 }
 
 export const FloatingDateController = <T extends FieldValues>({ name, label, ...rest }: IInputControllerProps<T>) => {
@@ -32,7 +28,6 @@ export const FloatingDateController = <T extends FieldValues>({ name, label, ...
             render={({ field }) => (
                 <FormItem className="w-full">
                     <FloatingDateField
-                        ref={field.ref}
                         name={name}
                         label={label}
                         value={field.value ? new Date(field.value) : null}
@@ -48,7 +43,6 @@ export const FloatingDateController = <T extends FieldValues>({ name, label, ...
                         readOnly={rest?.readOnly}
                         fromYear={rest?.fromYear}
                         toYear={rest?.toYear}
-                        disableFuture={rest?.disableFuture}
                     />
                     {rest?.description && <FormDescription>{rest?.description}</FormDescription>}
                     <FormMessage />

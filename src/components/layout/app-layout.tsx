@@ -6,13 +6,13 @@ import { useSession } from "next-auth/react";
 import { useMounted } from "@/hooks/use-mounted";
 import { SidebarProvider } from "../ui/sidebar";
 import { NotificationsProvider } from "@/context/notification-context";
-import { PUBLIC_PATHS } from "@/constants/routes";
+import { publicURL } from "@/constants/routes";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const route = useRouter();
   const mounted = useMounted();
   const pathname = usePathname();
-  const isPublicURL = PUBLIC_PATHS.includes(pathname);
+  const isPublicURL = publicURL.includes(pathname);
   const { status } = useSession({
     required: true,
     onUnauthenticated() {

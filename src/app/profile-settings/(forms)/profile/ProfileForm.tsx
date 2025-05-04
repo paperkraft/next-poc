@@ -1,16 +1,15 @@
 "use client"
-import { useSession } from 'next-auth/react';
-import { useTranslations } from 'next-intl';
-import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
-import { z } from 'zod';
-
-import { InputController } from '@/components/_form-controls/InputController';
-import { Button } from '@/components/ui/button';
-import { Form } from '@/components/ui/form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useMounted } from '@/hooks/use-mounted';
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
+import { Button } from "@/components/ui/button"
+import { Form } from "@/components/ui/form"
+import { InputController } from "@/components/_form-controls/InputController"
+import { TextareaController } from "@/components/_form-controls/TextareaController"
+import { useTranslations } from "next-intl"
+import { useEffect } from "react"
+import { useSession } from "next-auth/react"
+import { toast } from "sonner"
 
 const profileFormSchema = z.object({
   firstName: z.string({ required_error: "First Name is required" })
@@ -31,15 +30,10 @@ const profileFormSchema = z.object({
 type ProfileFormValues = z.infer<typeof profileFormSchema>
 
 const defaultValues: Partial<ProfileFormValues> = {
-  firstName: "",
-  lastName: "",
   username: "",
-  email: "",
 }
 
 export function ProfileForm() {
-  const mounted = useMounted();
-
   const t = useTranslations('setting');
 
   const { data: session } = useSession();
@@ -82,8 +76,6 @@ export function ProfileForm() {
       toast.error("Failed to update profile");
     }
   }
-
-  if(!mounted) return null;
 
   return (
     <Form {...form}>

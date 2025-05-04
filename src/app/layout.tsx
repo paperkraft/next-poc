@@ -25,7 +25,7 @@ export default async function RootLayout({ children }: ChildProps) {
   const messages = await getMessages();
 
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning={true}>
       <body className={cn(inter.className)}>
         <NextAuthProvider>
           <NextIntlClientProvider messages={messages}>
@@ -33,7 +33,7 @@ export default async function RootLayout({ children }: ChildProps) {
               <AppLayout>
                 {children}
               </AppLayout>
-              <Toaster richColors position="top-center" />
+              <Toaster richColors position="top-center"/>
             </ThemeProvider>
           </NextIntlClientProvider>
         </NextAuthProvider>

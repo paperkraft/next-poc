@@ -1,16 +1,12 @@
 "use client";
-import { Eye } from 'lucide-react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useMemo } from 'react';
-
-import { Checkbox } from '@/components/ui/checkbox';
-import { useMounted } from '@/hooks/use-mounted';
-import { ColumnDef } from '@tanstack/react-table';
+import { Checkbox } from "@/components/ui/checkbox";
+import { ColumnDef } from "@tanstack/react-table";
+import { Eye } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useMemo } from "react";
 
 export const GroupsMasterColumns = () => {
-  
-  const mounted = useMounted();
   const path = usePathname();
 
   const columns: ColumnDef<any>[] = useMemo(() => [
@@ -50,5 +46,5 @@ export const GroupsMasterColumns = () => {
     }
   ], []);
 
-  return mounted ? { columns } : { columns: [] };
+  return { columns };
 };

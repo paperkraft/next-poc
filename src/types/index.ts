@@ -46,8 +46,3 @@ export type ImgProps = {
     url: string,
     thumbnailUrl: string
 }
-
-export type FetchResponse = {
-    success: boolean;
-    message: string;
-};

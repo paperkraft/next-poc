@@ -31,10 +31,9 @@ const Header: React.FC = React.memo(() => {
     return (
         //w-full transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12
         <>
-            <header className="flex sticky top-0 bg-background h-16 shrink-0 items-center gap-2 border-b z-50 transition-[width,height] ease-linear">
+            <header className="flex sticky top-0 bg-background h-16 shrink-0 items-center gap-2 border-b px-4 z-50">
                 <div className={cn("flex items-center gap-2 w-full",
-                    { "container mx-auto border-b-0": config.content === 'compact' },
-                    { "px-4": config.content === 'wide' },
+                    { "container mx-auto border-b-0 px-8": config.content === 'compact' },
                 )}>
 
                     {(isMobile || config.layout === "vertical") && (

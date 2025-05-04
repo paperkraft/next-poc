@@ -33,8 +33,9 @@ self.addEventListener('push', function (event) {
     };
 
     event.waitUntil(
-        self.registration.showNotification(notificationTitle, notificationOptions)
-        .then(() =>  sendDeliveryReportAction()),
+        self.registration.showNotification(notificationTitle, notificationOptions).then(() => {
+            sendDeliveryReportAction();
+        }),
     );
 });
 

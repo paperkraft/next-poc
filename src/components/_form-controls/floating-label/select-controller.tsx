@@ -1,14 +1,10 @@
-'use client';
-
-import { HTMLAttributes } from 'react';
-import { FieldValues, Path, PathValue, useFormContext } from 'react-hook-form';
-
-import { FormDescription, FormField, FormItem, FormMessage } from '@/components/ui/form';
-import { Label } from '@/components/ui/label';
-import {
-    Select, SelectContent, SelectItem, SelectTrigger, SelectValue
-} from '@/components/ui/select';
-import { cn } from '@/lib/utils';
+import { FloatingLabel, FloatingLabelInput } from "@/components/ui/floating-input";
+import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
+import { HTMLAttributes } from "react"
+import { FieldValues, Path, PathValue, useFormContext } from "react-hook-form"
 
 interface Options {
     label: string;
@@ -37,7 +33,7 @@ export const FloatingSelectController = <T extends FieldValues>({ options, name,
             render={({ field }) => (
                 <FormItem className={cn("w-full", rest?.className)}>
                     <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value} disabled={rest?.disabled}>
-                        <SelectTrigger className="relative" id={name} ref={field.ref}>
+                        <SelectTrigger className="relative" id={name}>
                             <Label
                                 htmlFor={name}
                                 className={cn(

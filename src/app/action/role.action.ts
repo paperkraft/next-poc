@@ -1,51 +1,50 @@
-import prisma from '@/lib/prisma';
-import { FetchRoleResponse, FetchRolesResponse } from '@/types/role';
+import prisma from "@/lib/prisma";
+import { NextResponse } from "next/server";
 
-export async function fetchRoles(): Promise<FetchRolesResponse> {
+export async function fetchRoles() {
     try {
         const roles = await prisma.role.findMany({
             select: {
                 id: true,
                 name: true,
+                permissions: true,
             },
         });
-
-        return {
-            success: true,
-            message: 'Success',
-            data: roles
-        }
+        
+        return NextResponse.json(
+            { success: true, message: 'Success', data: roles },
+            { status: 200 }
+        );
     } catch (error) {
         console.error("Error fetching roles:", error);
-        return {
-            success: false,
-            message: "Error fetching roles",
-            data: [],
-        };
+        return NextResponse.json(
+            { success: false, message: 'Error fetching roles' },
+            { status: 500 }
+        );
     }
 }
 
 
-export async function fetchUniqueRoles(id: string): Promise<FetchRoleResponse> {
+export async function fetchUniqueRoles(id: string) {
     try {
         const role = await prisma.role.findUnique({
             where: { id: id },
             select: {
                 id: true,
                 name: true,
+                permissions: true,
             },
         });
 
-        return {
-            success: true,
-            message: 'Success',
-            data: role
-        }
+        return NextResponse.json(
+            { success: true, message: 'Success', data: role },
+            { status: 200 }
+        );
     } catch (error) {
         console.error("Error fetching role:", error);
-        return {
-            success: false,
-            message: 'Error fetching role'
-        }
+        return NextResponse.json(
+            { success: false, message: 'Error fetching role' },
+            { status: 500 }
+        );
     }
 }

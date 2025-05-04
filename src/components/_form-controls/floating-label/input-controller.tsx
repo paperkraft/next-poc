@@ -1,13 +1,10 @@
-'use client';
-
-import { X } from 'lucide-react';
-import { HTMLAttributes } from 'react';
-import { Control, FieldValues, Path, PathValue, useFormContext } from 'react-hook-form';
-
-import { FormDescription, FormField, FormItem, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { cn } from '@/lib/utils';
+import { FormDescription, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
+import { X } from "lucide-react";
+import { HTMLAttributes } from "react"
+import { Control, FieldValues, Path, PathValue, useFormContext } from "react-hook-form"
 
 interface IInputControllerProps<T extends FieldValues>
     extends HTMLAttributes<HTMLInputElement> {

@@ -1,8 +1,7 @@
 "use client";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useMounted } from "@/hooks/use-mounted";
 import { cn } from "@/lib/utils";
-import { ColumnDef } from "@tanstack/react-table";
+import { ColumnDef, RowData } from "@tanstack/react-table";
 import { ChevronDownIcon, ChevronRightIcon, Eye } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -11,13 +10,11 @@ import { useMemo } from "react";
 interface ModuleData {
     id: string;
     name: string;
-    groupName?: string;
+    group?: string;
     subModules?: ModuleData[];
 }
 
 export const ModuleMasterColumns = () => {
-    
-    const mounted = useMounted();
     const path = usePathname();
 
     const columns: ColumnDef<ModuleData>[] = useMemo(() => [
@@ -59,15 +56,11 @@ export const ModuleMasterColumns = () => {
             }
         },
         {
-            accessorKey: "groupName",
+            accessorKey: "group",
             header: "Group",
-            cell: ({ row }) => {
-                const { groupName } = row.original;
-                return <span className="text-sm text-gray-500">{groupName}</span>;
-            }
         },
         {
-            id: "view",
+            id:"view",
             header: () => null,
             cell: ({ row }) => (
                 <Link
@@ -82,5 +75,5 @@ export const ModuleMasterColumns = () => {
         }
     ], [path]);
 
-    return mounted ? { columns } : { columns: [] };
+    return { columns };
 };

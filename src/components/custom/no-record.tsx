@@ -1,3 +1,4 @@
+'use client'
 import { FileX2 } from "lucide-react";
 
 export default function NoRecordPage({ text }: { text: string }) {

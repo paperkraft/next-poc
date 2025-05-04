@@ -101,7 +101,7 @@ export default function ThemeCustomizer() {
                 <SheetTrigger asChild>
                     <Button variant={'ghost'} size="icon"><PaletteIcon className='!size-[18px]' /></Button>
                 </SheetTrigger>
-                <SheetContent className="p-4 [&>button:first-child]:hidden">
+                <SheetContent className="h-[calc(100vh-32px)] p-4 [&>button:first-child]:hidden m-4 rounded-lg">
                     <ThemeWrapper>
                         <SheetHeader>
                             <SheetTitle asChild className="text-md font-normal">

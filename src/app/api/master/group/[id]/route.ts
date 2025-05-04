@@ -1,13 +1,14 @@
-import { logAuditAction } from "@/lib/audit-log";
-import prisma from "@/lib/prisma";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server';
+
+import { logAuditAction } from '@/lib/audit-log';
+import prisma from '@/lib/prisma';
 
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
     const { id } = params;
 
     if (!id) {
         return NextResponse.json(
-            { success: false, message: "Role ID is required" },
+            { success: false, message: "Group Id is required" },
             { status: 400 }
         );
     }
@@ -45,9 +46,10 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
     const { id } = params;
+
     if (!id) {
         return NextResponse.json(
-            { success: false, message: "Role ID is required" },
+            { success: false, message: "Group Id is required" },
             { status: 400 }
         );
     }
@@ -55,7 +57,10 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     try {
         const data = await prisma.group.findUnique({
             where: { id: id },
-            select: { id: true, name: true },
+            select: { 
+                id: true, 
+                name: true 
+            }
         });
 
         if (!data) {

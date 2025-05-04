@@ -1,123 +1,149 @@
 import { fetchModules } from "@/app/action/module.action";
-import { logAuditAction } from "@/lib/audit-log";
 import prisma from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET() {
-
   return fetchModules();
-  // try {
-  //   const result = await fetchModules().then((d) => d.json());
-  //   return NextResponse.json(
-  //     { success: true, message: 'Success', data: result.data },
-  //     { status: 200 }
-  //   );
-  // } catch (error) {
-  //   console.error(error)
-  //   return NextResponse.json({ success: false, message: 'Failed to fetch' }, { status: 500 });
-  // }
 }
 
-export async function PUT(req: Request) {
-  const data = await req.json();
-  const hasSubmodule = data && data?.subModules?.length;
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const created = await createModuleRecursive(body);
 
-  const updateSubmodules = (subModule: any) => {
-    return subModule.map((subModule: any) => ({
-      where: { id: subModule.id },
+    return NextResponse.json({ success: true, message: "Module created successfully", data: created });
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ success: false, message: 'Failed to create module' }, { status: 500 });
+  }
+}
+
+async function createModuleRecursive(data: any, parentId?: string, depth: number = 0): Promise<any> {
+  const { name, path, groupId, children = [] } = data;
+
+  if (depth > 2) {
+    throw new Error(`Cannot create module deeper than 2 levels (got level ${depth}).`);
+  }
+
+  try {
+    const module = await prisma.module.create({
       data: {
-        name: subModule.name,
-        path: subModule.path,
-        subModules: subModule.subModules.length ? {
-          update: updateSubmodules(subModule.subModules)
-        } : undefined,
+        name,
+        path,
+        groupId,
+        parentId,
       },
-    }));
-  };
+    });
 
-  const final = hasSubmodule
-    ? {
-      name: data.name,
-      path: data.path,
-      groupId: data.group,
-      subModules: {
-        update: updateSubmodules(data.subModules),
+    const createdChildren = [];
+
+    for (const child of children) {
+      try {
+        const createdChild = await createModuleRecursive(child, module.id, depth + 1);
+        createdChildren.push(createdChild);
+      } catch (childErr) {
+        console.error('Failed to create child module:', childErr);
       }
     }
-    : {
-      name: data.name,
-      path: data.path,
-      groupId: data.group
-    }
 
-  if (!data?.id) {
+    return {
+      ...module,
+      children: createdChildren,
+    };
+  } catch (err) {
+    console.error('Failed to create module:', { name, path, parentId, error: err });
+    throw err; // Let the parent handle the failure if needed
+  }
+}
+
+export async function DELETE(request: Request) {
+  const { ids } = await request.json();
+
+  if (!ids || !Array.isArray(ids)) {
     return NextResponse.json(
-      { success: false, message: "Module ID is required" },
+      { success: false, message: "Module Id is required" },
       { status: 400 }
     );
   }
 
   try {
-    await prisma.module.update({
-      where: { id: data.id },
-      data: final
+
+    // Step 1: Check if any module has children
+    // const modulesWithChildren = await prisma.module.findMany({
+    //   where: {
+    //     id: { in: ids },
+    //     children: { some: { isDeleted: false } }, // Only check active children
+    //   },
+    //   select: {
+    //     id: true,
+    //     name: true,
+    //   },
+    // });
+
+    // if (modulesWithChildren.length > 0) {
+    //   return NextResponse.json(
+    //     {
+    //       success: false,
+    //       message: "Cannot delete modules that have active child modules.",
+    //       modules: modulesWithChildren.map((m) => m.name),
+    //     },
+    //     { status: 400 }
+    //   );
+    // }
+
+    // Step 2: Check if any module is assigned to roles
+    const assigned = await prisma.rolePermission.findMany({
+      where: {
+        moduleId: { in: ids },
+      },
+      select: {
+        moduleId: true,
+        module: { select: { name: true } },
+        role: { select: { name: true } },
+      },
     });
-    await logAuditAction('Update', 'master/module', { data: final });
-    return NextResponse.json({ success: true, message: 'Success' }, { status: 200 });
 
-  } catch (error) {
-    console.error(error)
-    await logAuditAction('Error', 'master/module', { error: 'Failed to update module' });
-    return NextResponse.json({ success: false, message: 'Failed to update' }, { status: 500 });
-  }
-}
+    if (assigned.length > 0) {
+      const grouped = assigned.reduce<Record<string, string[]>>((acc, curr) => {
+        const moduleName = curr.module.name || 'Unknown';
+        const roleName = curr.role.name || 'Unknown';
+        if (!acc[moduleName]) acc[moduleName] = [];
+        acc[moduleName].push(roleName);
+        return acc;
+      }, {});
 
-export async function POST(req: Request) {
-  const { name, path, parentId, groupId } = await req.json();
-  try {
-    const data = await prisma.module.create({
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Cannot delete assigned modules.",
+          assigned: grouped,
+        },
+        { status: 400 }
+      );
+    }
+
+    // Step 3: Soft delete (mark as isDeleted: true)
+    const data = await prisma.module.updateMany({
+      where: {
+        id: { in: ids },
+      },
       data: {
-        name: name,
-        path: path ?? '#',
-        parentId: parentId ? parentId : undefined,
-        groupId: parentId ? undefined : groupId
-      }
+        isDeleted: true,
+      },
     });
 
-    await logAuditAction('Create', 'master/module', { data });
+    revalidatePath('/master/module');
+
     return NextResponse.json(
-      { success: true, message: 'Module created', data },
+      { success: true, message: "Module deleted", data },
       { status: 200 }
     );
-
-  } catch (error) {
-    console.error(error)
-    await logAuditAction('Error', 'master/module', { error: 'Failed to create module' });
-    return NextResponse.json({ success: false, message: 'Failed to create module' }, { status: 500 });
-  }
-}
-
-export async function DELETE(req: Request) {
-  const { id } = await req.json();
-  try {
-    if (!id) {
-      return NextResponse.json({ success: false, message: "Module ID is required" }, { status: 400 });
-    }
-    await prisma.$transaction([
-      prisma.modulePermission.deleteMany({
-        where: { moduleId: id },
-      }),
-      prisma.module.delete({
-        where: { id: id },
-      }),
-    ]);
-
-    await logAuditAction('Delete', 'master/module', { data: id });
-    return NextResponse.json({ success: true, message: 'Module deleted' }, { status: 200 });
-
   } catch (error) {
     console.error(error);
-    await logAuditAction('Error', 'master/module', { error: 'Failed to delete module' });
-    return NextResponse.json({ success: false, message: 'Failed to delete module' }, { status: 500 });
+    return NextResponse.json(
+      { success: false, message: "Error deleting module" },
+      { status: 500 }
+    );
   }
 }

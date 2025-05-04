@@ -128,7 +128,7 @@ const DropdownMenu = ({ items }: { items: MenuItem[] }) => {
         });
     };
 
-    return <nav className="flex space-x-6">{renderMenuItems(items)}</nav>;
+    return <nav className="flex space-x-4">{renderMenuItems(items)}</nav>;
 };
 
 function Navbar() {

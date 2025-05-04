@@ -10,7 +10,7 @@ import { SelectController } from "@/components/_form-controls/SelectController"
 import { Form } from "@/components/ui/form"
 import { themeConfig } from "@/hooks/use-config"
 
-import {useTranslations} from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { setUserLocale } from "@/services/locale"
 
 
@@ -29,7 +29,7 @@ const accountFormSchema = z.object({
     .max(30, {
       message: "Name must not be longer than 30 characters.",
     }),
-  dob: z.date({
+  dob: z.coerce.date({
     required_error: "A date of birth is required.",
   }),
   language: z.string({

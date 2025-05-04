@@ -7,8 +7,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useEffect, useState } from "react";
 import DynamicFormComponent from "@/components/custom/dynamic-components";
 import useModuleIdByName from "@/hooks/use-module-id";
-import { Guard } from "@/components/custom/permission-guard";
 import { usePathname, useRouter } from "next/navigation";
+import { PermissionGuard } from "@/components/PermissionGuard";
 
 async function fetchFormMetadata() {
     const res = await fetch('/api/json-data');
@@ -56,11 +56,11 @@ export default function SampleForm() {
 
     return (
         <>
-            <Guard permissionBit={8} moduleId={moduleId}>
+            <PermissionGuard action="WRITE" path={path}>
                 <div className="flex justify-end">
                     <Button onClick={()=>route.push(`${path}/schema`)} variant={'outline'}>Schema</Button>
                 </div>
-            </Guard>
+            </PermissionGuard>
             {dynamicSchema && formFields && defaultValues &&
             <FormTemplate data={formFields} schema={dynamicSchema} defaultValues={defaultValues} />}
         </>

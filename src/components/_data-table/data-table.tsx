@@ -22,6 +22,7 @@ import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar, ToolbarOptions } from "./data-table-toolbar";
 import { DensityFeature, DensityState } from "@/utils/tanstack-utils";
 import { cn } from "@/lib/utils";
+import { useMounted } from "@/hooks/use-mounted";
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[];
@@ -39,7 +40,16 @@ interface GlobalFilterState {
     value: any;
 }
 
-export function DataTable<TData extends { subModules?: TData[] }, TValue>({ columns, data, toolbar, pageSize, getRowCanExpand, isLoading = false, deleteRecord, moduleId }: DataTableProps<TData, TValue>) {
+export function DataTable<TData extends { subModules?: TData[] }, TValue>({
+    columns,
+    data,
+    toolbar,
+    pageSize,
+    getRowCanExpand,
+    isLoading = false,
+    deleteRecord,
+    moduleId
+}: DataTableProps<TData, TValue>) {
 
     const [sorting, setSorting] = useState<SortingState>([]);
     const [globalFilter, setGlobalFilter] = useState<GlobalFilterState | undefined>();
@@ -47,6 +57,8 @@ export function DataTable<TData extends { subModules?: TData[] }, TValue>({ colu
     const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: pageSize ?? data?.length });
     const [density, setDensity] = useState<DensityState>("sm");
     const [expanded, setExpanded] = React.useState<ExpandedState>({});
+
+    const mounted = useMounted();
 
     const table = useReactTable({
         // debugTable: true,
@@ -105,12 +117,19 @@ export function DataTable<TData extends { subModules?: TData[] }, TValue>({ colu
     }, [globalFilter]);
 
     return (
+        mounted &&
         <div className="rounded-md border">
             {isLoading ? (
                 <div className="flex items-center justify-center h-64">Loading...</div>
             ) : (
                 <>
-                    <DataTableToolbar table={table} deleteRecord={deleteRecord} moduleId={moduleId} toolbar={toolbar} />
+                    <DataTableToolbar
+                        table={table}
+                        deleteRecord={deleteRecord}
+                        moduleId={moduleId}
+                        toolbar={toolbar}
+                    />
+
                     <Table>
                         <TableHeader>
                             {table.getHeaderGroups().map((headerGroup) => (
@@ -216,6 +235,7 @@ export function DataTable<TData extends { subModules?: TData[] }, TValue>({ colu
                                 ))}
                         </TableBody>
                     </Table>
+
                     {pageSize && <DataTablePagination table={table} />}
                 </>
             )}

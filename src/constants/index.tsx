@@ -93,3 +93,11 @@ export const defaultFieldConfig: Record<string, { label: string; description: st
     description: 'Please provide your signature above',
   },
 }
+
+export const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+
+export const availableTopics = [
+  { label: "System", topic: "system", desc: "Systems notifcations" },
+  { label: "Security", topic: "security", desc: "Receive notifcation about your account activity and security." },
+  { label: "Promotions", topic: "promotions", desc: "Receive notifcation about new features, and more." },
+];

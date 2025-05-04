@@ -1,9 +1,7 @@
 import TitlePage from "@/components/custom/page-heading";
 import { Metadata } from "next";
-import SendPushNotification from "./SendPushNotification";
-import { auth } from "@/auth";
-import { hasPermission } from "@/lib/rbac";
-import AccessDenied from "@/components/custom/access-denied";
+import SendNotificationForm from "./SendNotificationForm";
+import { getAllUser } from "@/app/action/auth.action";
 
 export const metadata: Metadata = {
   title: "Push Notification",
@@ -11,19 +9,11 @@ export const metadata: Metadata = {
 };
 
 export default async function PushNotification() {
-
-  const session = await auth();
-  const rolePermissions = +session?.user?.permissions;
-  const permission = hasPermission(rolePermissions, 8);
-
-  if (!permission) {
-    return <AccessDenied />;
-  }
-  
+  const users =  await getAllUser();
   return (
     <>
       <TitlePage title={"Push Notifications"} description={"Manage notifications and subscription"} />
-      <SendPushNotification />
+      <SendNotificationForm users={users?.data ?? []} />
     </>
   );
 }

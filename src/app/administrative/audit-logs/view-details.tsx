@@ -12,38 +12,52 @@ interface DetailsDialogProps {
 export const DetailsDialog = React.memo(({ open, setOpen, details }: DetailsDialogProps) => {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogContent aria-describedby="content" className={"overflow-y-scroll max-h-screen"}>
+            <DialogContent aria-describedby="content" className={"overflow-y-scroll max-h-[500px]"}>
                 <DialogHeader>
                     <DialogTitle className="mb-4">Details</DialogTitle>
-                    <pre id="content" className="text-sm">
-                        {details &&
-                            Object.entries(details).map(([key, val], idx) => (
-                                <div key={idx} className="flex gap-2">
-                                    <p className="capitalize">{`${key}:`}</p>
-                                    {renderRecursive(val)}
-                                </div>
-                            ))
-                        }
-                    </pre>
+                    <div id="content" className="font-mono text-sm whitespace-pre-wrap">
+                        {details ? renderRecursive(details?.data, 0) : <p>No details</p>}
+                    </div>
                 </DialogHeader>
             </DialogContent>
         </Dialog>
     )
-})
+});
 
-const renderRecursive = (val: any) => {
-    if (typeof val === 'object' && val !== null) {
+const renderRecursive = (value: any, level: number = 0): JSX.Element => {
+    const indent = ' '.repeat(level * 2);
+    const nextIndent = ' '.repeat((level + 1) * 2);
+
+    if (Array.isArray(value)) {
         return (
-            <p className="pl-4">
-                {Object.entries(val).map(([nestedKey, nestedVal], idx) => (
-                    <div key={idx} className="flex gap-2">
-                        <p className="capitalize">{`${nestedKey}:`}</p>
-                        {renderRecursive(nestedVal)}
+            <>
+                <div>{indent}[</div>
+                {value.map((item, i) => (
+                    <div key={i}>
+                        {renderRecursive(item, level + 1)}
+                        {i < value.length - 1 ? ',' : ''}
                     </div>
                 ))}
-            </p>
+                <div>{indent}]</div>
+            </>
         );
-    } else {
-        return <p>{val}</p>;
     }
-}
+
+    if (typeof value === 'object' && value !== null) {
+        const entries = Object.entries(value);
+        return (
+            <>
+                <div>{indent}{'{'}</div>
+                {entries.map(([key, val], i) => (
+                    <div key={key}>
+                        {nextIndent}"{key}": {renderRecursive(val, level + 1)}
+                        {i < entries.length - 1 ? ',' : ''}
+                    </div>
+                ))}
+                <div>{indent}{'}'}</div>
+            </>
+        );
+    }
+
+    return <span>{JSON.stringify(value)}</span>;
+};

@@ -12,6 +12,7 @@ export async function middleware(req: NextRequest) {
     const currentPath = req.nextUrl.pathname;
     const response = NextResponse.next();
     response.headers.set('x-current-path', req.nextUrl.pathname);
+     const session = await auth();
 
     // let session: Session | null = null;
     const pathAccess = getPathAccess(currentPath);
@@ -23,7 +24,7 @@ export async function middleware(req: NextRequest) {
 
     // 2. Public routes: allow if not authenticated; redirect to /dashboard if already logged in
     if (pathAccess === 'public' || pathAccess === 'landing') {
-        const session = await auth();
+        // const session = await auth();
         if (session) {
             const dashboardUrl = new URL('/dashboard', req.url);
             return NextResponse.redirect(dashboardUrl);
@@ -37,7 +38,7 @@ export async function middleware(req: NextRequest) {
     }
 
     // 4. All other routes require authentication
-    const session = await auth();
+    // const session = await auth();
 
     // If not logged in, redirect to signin (with callback only if path is known)
     if (!session) {

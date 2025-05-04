@@ -10,9 +10,6 @@ interface DetailsDialogProps {
 }
 
 export const DetailsDialog = React.memo(({ open, setOpen, details }: DetailsDialogProps) => {
-
-    console.log('details', details);
-    
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogContent aria-describedby="content" className={"overflow-y-scroll max-h-[500px]"}>

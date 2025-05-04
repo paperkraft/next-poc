@@ -3,6 +3,7 @@ import { Metadata } from 'next';
 import { PermissionGuard } from '@/components/PermissionGuard';
 
 import GroupForm from '../GroupForm';
+import AccessDenied from '@/components/custom/access-denied';
 
 export const metadata: Metadata = {
   title: "Create Group",
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
 
 export default async function CreateGroup() {
   return (
-    <PermissionGuard name="Role" action="WRITE">
+    <PermissionGuard name="Groups" action="WRITE" fallback={<AccessDenied/>}>
       <GroupForm  />
     </PermissionGuard>
   );

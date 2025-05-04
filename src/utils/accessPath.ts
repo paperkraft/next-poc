@@ -1,33 +1,32 @@
-import { normalizePath } from "./findModuleByPath";
+import { MODULE_PATH_PREFIXES, PRIVATE_PATHS, PUBLIC_PATHS } from "@/constants/routes";
 
-export type PathAccessType = 'ignored' | 'auth-public' | 'public' | 'private';
+export type PathAccessType = 'ignored' | 'landing' | 'public' | 'private' | 'module' | 'unknown';
 
-export function getPathAccess(pathname: string): PathAccessType {
-    const normalized = normalizePath(pathname);
+export function getPathAccess(path: string): PathAccessType {
 
-    if (normalized === '/') return 'public';
+    const IGNORED_PATHS = [
+        /^\/api/,
+        /^\/_next\//,
+        /^\/favicon\.ico$/,
+        /^\/.*\.(png|jpg|svg|ico|webmanifest|txt)$/,
+    ];
 
-    if (
-        normalized === '/' ||
-        normalized.startsWith('/signin') ||
-        normalized.startsWith('/signup') ||
-        normalized.startsWith('/forgot-password')
-    ) {
-        return 'auth-public';
-    }
+    // Check ignored paths
+    if (IGNORED_PATHS.some((re) => re.test(path))) return 'ignored';
 
-    if (
-        normalized.startsWith('/api') ||
-        normalized.startsWith('/sw.js') ||
-        normalized.startsWith('/_next') ||
-        normalized.startsWith('/images') ||
-        normalized.startsWith('/favicon.ico') ||
-        normalized.startsWith('/manifest.webmanifest')
-        // normalized.startsWith('/web-app-manifest') ||
-    ) {
-        return 'ignored';
-    }
+    // Exact public paths
+    if (PUBLIC_PATHS.includes(path)) return 'public';
 
-    // Eveything else is private
-    return 'private';
+    // Specific "landing" treatment
+    if (path === '/') return 'landing';
+
+    // Private routes (authenticated but not permissioned)
+    // if (PRIVATE_PATHS.includes(path)) return 'private'; // exact
+    if (PRIVATE_PATHS.some((prefix) => path.startsWith(prefix))) return 'private';
+
+    // Permission-based (module) paths
+    if (MODULE_PATH_PREFIXES.some((prefix) => path.startsWith(prefix))) return 'module';
+
+    // If not matched, path is unknown
+    return 'unknown';
 }

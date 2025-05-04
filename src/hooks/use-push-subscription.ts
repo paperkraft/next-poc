@@ -170,7 +170,7 @@ export function usePushSubscription() {
                 }
             }
             setTopics(updatedTopics);
-            toast.success('Unsubscribed successfully');
+            // toast.success('Unsubscribed successfully');
         } catch (error) {
             console.error("Failed to unsubscribe from push notifications", error);
             toast.error('Failed to unsubscribe')

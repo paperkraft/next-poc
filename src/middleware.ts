@@ -9,7 +9,8 @@ import { logAccessDenied } from './utils/log';
 import { getPathAccess } from './utils/accessPath';
 
 export async function middleware(req: NextRequest) {
-    const currentPath = req.nextUrl.pathname;
+    try{
+        const currentPath = req.nextUrl.pathname;
     const response = NextResponse.next();
     response.headers.set('x-current-path', req.nextUrl.pathname);
      const session = await auth();
@@ -81,6 +82,15 @@ export async function middleware(req: NextRequest) {
 
     // Fallback
     return response;
+    } catch(error){
+        console.error('Middleware error:', {
+            path: req.nextUrl.pathname,
+            error,
+        });
+
+        return new NextResponse('Internal Server Error', { status: 500 });
+    }
+    
 }
 
 export const config = {

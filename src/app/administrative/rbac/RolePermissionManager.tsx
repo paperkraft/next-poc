@@ -99,13 +99,6 @@ export default function RolePermissionManager({ roles }: { roles: IRole[] }) {
 
     const buildPayload = (groups: IGroupedModule[]): PermissionPayload[] => {
         const mapModule = (mod: IModule): PermissionPayload => {
-            // let permissionBits = 0;
-            // for (const key in PERMISSIONS) {
-            //     if (watch(`${mod.id}_${key}`)) {
-            //         permissionBits |= PERMISSIONS[key as keyof typeof PERMISSIONS];
-            //     }
-            // }
-
             const permissionBits = permissionKeys.reduce((acc, key) => {
                 return watch(`${mod.id}_${key}`) ? acc | PERMISSIONS[key] : acc;
             }, 0);

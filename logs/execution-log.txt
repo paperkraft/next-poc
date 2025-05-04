@@ -1,0 +1,2 @@
+[2025-05-04T14:10:00.893Z] Received request for device info.
+[2025-05-04T14:10:14.032Z] Script executed successfully on win32. Output: {"OsName":"Microsoft Windows 11 Pro","OSDisplayVersion":"24H2","OsArchitecture":"64-bit","CsManufacturer":"HP","CsModel":"HP EliteBook 840 G5"}

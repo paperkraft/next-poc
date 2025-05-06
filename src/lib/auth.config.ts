@@ -105,8 +105,6 @@ const authConfig: NextAuthConfig = {
             // If the callbackUrl is present, return it as the redirect destination
             if (urlObj .searchParams.has('callbackUrl')) {
                 const callbackUrl = urlObj.searchParams.get('callbackUrl')!;
-                console.log('callbackUrl', callbackUrl);
-                
                 return callbackUrl; // Redirect to the original requested URL (callbackUrl)
             }
             // If no callbackUrl exists, redirect to the dashboard

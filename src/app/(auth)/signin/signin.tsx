@@ -19,9 +19,10 @@ import ToggleButtons from "@/components/layout/ToggleButtons";
 type signInT = z.infer<typeof signInSchema>;
 
 export default function SignInPage() {
-  const mounted = useMounted();
   const [loading, setLoading] = useState(false);
   const [callbackUrl, setCallbackUrl] = useState<string | null>(null);
+  
+  const mounted = useMounted();
 
   const form = useForm<signInT>({
     resolver: zodResolver(signInSchema),

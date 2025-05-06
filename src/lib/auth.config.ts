@@ -96,16 +96,18 @@ const authConfig: NextAuthConfig = {
             return true;
         },
 
-        authorized({ auth, request: { nextUrl } }) {
-            const isLoggedIn = !!auth;
-            const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
-            if (isOnDashboard) {
-                if (isLoggedIn) return true;
-                return false;
-            } else if (isLoggedIn) {
-                return Response.redirect(new URL('/dashboard', nextUrl));
+        async redirect({ url, baseUrl }) {
+
+            // Check if the callbackUrl exists in the URL
+            const urlObj  = new URL(url);
+
+            // If the callbackUrl is present, return it as the redirect destination
+            if (urlObj .searchParams.has('callbackUrl')) {
+                const callbackUrl = urlObj.searchParams.get('callbackUrl')!;
+                return callbackUrl; // Redirect to the original requested URL (callbackUrl)
             }
-            return true;
+            // If no callbackUrl exists, redirect to the dashboard
+            return `${baseUrl}/dashboard`;
         },
     },
 

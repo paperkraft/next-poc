@@ -1,15 +1,17 @@
-import "@/styles/globals.css";
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import AppLayout from "@/components/layout/app-layout";
-import ThemeProvider from "@/context/theme-provider";
-import { Toaster } from "@/components/ui/sonner";
-import { NextAuthProvider } from "@/context/auth-provider";
-import { cn } from "@/lib/utils";
-import { ChildProps } from "@/types";
+import '@/styles/globals.css';
+
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
+import { Inter } from 'next/font/google';
 
+import AppLayout from '@/components/layout/app-layout';
+import { Toaster } from '@/components/ui/sonner';
+import { NextAuthProvider } from '@/context/auth-provider';
+import ThemeProvider from '@/context/theme-provider';
+import { cn } from '@/lib/utils';
+import { ChildProps } from '@/types';
+
+import type { Metadata } from "next";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {

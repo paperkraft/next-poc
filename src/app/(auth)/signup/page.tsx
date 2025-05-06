@@ -6,6 +6,6 @@ export const metadata: Metadata = {
     description: "Signup to get started",
 };
 
-export default async function SignUp() {
+export default function SignUp() {
     return <SignUpPage/>
 }

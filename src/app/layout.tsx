@@ -10,6 +10,7 @@ import { NextAuthProvider } from '@/context/auth-provider';
 import ThemeProvider from '@/context/theme-provider';
 import { cn } from '@/lib/utils';
 import { ChildProps } from '@/types';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 import type { Metadata } from "next";
 const inter = Inter({ subsets: ["latin"] });
@@ -39,6 +40,7 @@ export default async function RootLayout({ children }: ChildProps) {
             </ThemeProvider>
           </NextIntlClientProvider>
         </NextAuthProvider>
+        <SpeedInsights />
       </body>
     </html>
   );

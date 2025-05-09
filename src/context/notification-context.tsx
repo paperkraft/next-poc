@@ -78,12 +78,26 @@ export const NotificationsProvider: React.FC<{ children: ReactNode }> = ({ child
 
     useEffect(() => {
         if (!subscription) return;
+
+        const controller = new AbortController();
+
         async function fetchTopics() {
-            const endpoint = subscription?.endpoint;
-            const currentTopics = await getCurrentSubscriptionTopics(endpoint as string);
-            setSubscribedTopics(currentTopics);
+            try {
+                const endpoint = subscription?.endpoint;
+                const currentTopics = await getCurrentSubscriptionTopics(endpoint as string);
+                setSubscribedTopics(currentTopics);
+            } catch (error: any) {
+                if (error.name !== 'AbortError') {
+                    console.error(error);
+                }
+            }
         }
+
         fetchTopics();
+
+        return () => {
+            controller.abort(); // cleanup
+        }
     }, [subscription]);
 
     // Function to handle updates when notifications are updated from the API

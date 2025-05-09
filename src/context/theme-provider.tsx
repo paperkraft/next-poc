@@ -1,9 +1,10 @@
 'use client'
-import { createContext, useEffect, useState } from "react";
-import { ThemeProvider as NextThemesProvider } from "next-themes"
 import { AppProgressBar as ProgressBar } from 'next-nprogress-bar';
-import { useMounted } from "@/hooks/use-mounted";
-import { ThemeWrapper } from "@/components/layout/theme-wrapper";
+import { ThemeProvider as NextThemesProvider } from 'next-themes';
+import { createContext, useEffect, useState } from 'react';
+
+import { ThemeWrapper } from '@/components/layout/theme-wrapper';
+import { useMounted } from '@/hooks/use-mounted';
 
 export type ThemeProps = {
     toggleTheme: () => void;
@@ -13,8 +14,9 @@ export type ThemeProps = {
 export const ThemeContext = createContext<ThemeProps | null>(null);
 
 const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-    const [currentTheme, setCurrentTheme] = useState('system');
     const isMounted = useMounted();
+    
+    const [currentTheme, setCurrentTheme] = useState('system');
 
     const toggleTheme = () => {
         localStorage.setItem('theme', currentTheme === 'light' ? 'dark' : 'light');

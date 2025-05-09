@@ -6,12 +6,12 @@ import React, { ReactNode } from 'react';
 
 interface NextAuthProviderProps {
   children: ReactNode;
-  // session: Session | null;
+  session: Session | null;
 }
 
-export const NextAuthProvider = ({ children }: NextAuthProviderProps) => {
+export const NextAuthProvider = ({ children, session }: NextAuthProviderProps) => {
   return (
-    <SessionProvider>
+    <SessionProvider session={session}>
       {children}
     </SessionProvider>
   )

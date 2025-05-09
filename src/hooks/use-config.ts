@@ -1,8 +1,9 @@
-import { IModule } from "@/app/_Interface/Module"
-import { Style } from "@/registry/registry-styles";
-import { BaseColor } from "@/registry/registry-base-colors";
-import { useAtom } from "jotai"
-import { atomWithStorage } from "jotai/utils"
+import { useAtom } from 'jotai';
+import { atomWithStorage } from 'jotai/utils';
+
+import { IModule } from '@/app/_Interface/Module';
+import { BaseColor } from '@/registry/registry-base-colors';
+import { Style } from '@/registry/registry-styles';
 
 type UserConfig = {
     id: string,

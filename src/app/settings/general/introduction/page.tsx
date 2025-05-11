@@ -3,7 +3,6 @@ import AccessDenied from '@/components/custom/access-denied';
 import React from 'react'
 import { hasPermission } from '@/lib/rbac';
 import TitlePage from '@/components/custom/page-heading';
-import TestPage from './Test';
 
 export default async function Page() {
   const session = await auth();
@@ -17,7 +16,6 @@ export default async function Page() {
   return (
     <>
       <TitlePage title='Introduction' description='Sample page to test access' />
-      <TestPage/>
     </>
   )
 }

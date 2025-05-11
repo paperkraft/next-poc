@@ -1,5 +1,5 @@
 "use client";
-import { Eye } from 'lucide-react';
+
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useMemo } from 'react';
@@ -39,22 +39,19 @@ export const RoleMasterColumns = () => {
     {
       accessorKey: "name",
       header: "Role",
-    },
-    {
-      accessorKey: "view",
-      header: () => null,
-      cell: ({ row }) => (
+      cell: ({ row, getValue }) => (
         <Link
-          title="View"
+          title={`${row.original.name}`}
+          prefetch={false}
           href={`${path}/${row.original.id}`}
-          className="opacity-0 group-hover:opacity-100 hover:text-blue-500 block size-4"
+          aria-label={`View details for role ${row.original.name}`}
+          className="hover:text-primary"
         >
-          <Eye size={16} aria-label="View" />
+          {getValue<boolean>()}
         </Link>
       ),
-      enableSorting: false,
     }
-  ], []);
+  ], [path]);
 
   return mounted ? { columns } : { columns: [] };
 };

@@ -16,7 +16,7 @@ interface ModuleData {
 }
 
 export const ModuleMasterColumns = () => {
-    
+
     const mounted = useMounted();
     const path = usePathname();
 
@@ -52,7 +52,20 @@ export const ModuleMasterColumns = () => {
                 const hasSubModules = subModules && subModules?.length > 0;
                 return (
                     <div className={cn({ "flex gap-2 items-center cursor-pointer": hasSubModules })} aria-expanded={row.getIsExpanded()} onClick={row.getToggleExpandedHandler()}>
-                        {getValue<boolean>()}
+                        {hasSubModules ? (
+                            getValue<boolean>()
+                        ) : (
+                            <Link
+                                title={`${row.original.name}`}
+                                prefetch={false}
+                                href={`${path}/${row.original.id}`}
+                                aria-label={`View details for module ${row.original.name}`}
+                                className="hover:text-primary"
+                            >
+                                {getValue<boolean>()}
+                            </Link>
+                        )}
+
                         {hasSubModules && row.getCanExpand() && (row.getIsExpanded() ? <ChevronDownIcon className="size-4" /> : <ChevronRightIcon className="size-4" />)}
                     </div>
                 )
@@ -65,20 +78,6 @@ export const ModuleMasterColumns = () => {
                 const { groupName } = row.original;
                 return <span className="text-sm text-gray-500">{groupName}</span>;
             }
-        },
-        {
-            id: "view",
-            header: () => null,
-            cell: ({ row }) => (
-                <Link
-                    href={`${path}/${row.original.id}`}
-                    className="opacity-0 group-hover:opacity-100 hover:text-blue-500 block size-4"
-                    aria-label={`View details for module ${row.original.name}`}
-                >
-                    <Eye className="size-4" />
-                </Link>
-            ),
-            // enableSorting: false,
         }
     ], [path]);
 

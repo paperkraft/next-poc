@@ -1,9 +1,15 @@
-import { fetchUniqueModule } from "@/app/action/module.action";
-import { getAllGroups } from "@/app/action/group.action";
-import SomethingWentWrong from "@/components/custom/somthing-wrong";
-import TitlePage from "@/components/custom/page-heading";
-import { IGroup } from "@/app/_Interface/Group";
-import ModuleForm from "../ModuleForm";
+import { IGroup } from '@/app/_Interface/Group';
+import { getAllGroups } from '@/app/action/group.action';
+import { fetchUniqueModule } from '@/app/action/module.action';
+import TitlePage from '@/components/custom/page-heading';
+import SomethingWentWrong from '@/components/custom/somthing-wrong';
+
+import ModuleForm from '../ModuleForm';
+
+export const metadata = {
+  title: "Module",
+  description: "Overview module and submodule",
+};
 
 export default async function Page({ params }: { params: { id: string } }) {
   const { id } = params;
@@ -26,7 +32,7 @@ export default async function Page({ params }: { params: { id: string } }) {
   } catch (error) {
     return (
       <>
-        <TitlePage title="Module" description={"Overview module and submodule"} viewPage />
+        <TitlePage {...metadata} viewPage />
         <SomethingWentWrong message={error instanceof Error ? error.message : "An unexpected error occurred."} />
       </>
     )

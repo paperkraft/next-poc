@@ -1,12 +1,15 @@
 "use client";
-import React from "react";
-import { usePathname, useRouter } from "next/navigation";
-import AppSidebar from "./Sidebar/app-sidebar";
-import { useSession } from "next-auth/react";
-import { useMounted } from "@/hooks/use-mounted";
-import { SidebarProvider } from "../ui/sidebar";
-import { NotificationsProvider } from "@/context/notification-context";
-import { PUBLIC_PATHS } from "@/constants/routes";
+import { useSession } from 'next-auth/react';
+import { usePathname, useRouter } from 'next/navigation';
+import React from 'react';
+
+import { PUBLIC_PATHS } from '@/constants/routes';
+import { NotificationsProvider } from '@/context/notification-context';
+import { useMounted } from '@/hooks/use-mounted';
+
+import { SidebarProvider } from '../ui/sidebar';
+import { TooltipProvider } from '../ui/tooltip';
+import AppSidebar from './Sidebar/app-sidebar';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const route = useRouter();
@@ -31,7 +34,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <SidebarProvider>
         <NotificationsProvider>
           <AppSidebar>
-            {children}
+            <TooltipProvider>
+              {children}
+            </TooltipProvider>
           </AppSidebar>
         </NotificationsProvider>
       </SidebarProvider>

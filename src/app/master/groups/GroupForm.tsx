@@ -1,17 +1,15 @@
 'use client';
-import { Edit, Trash2 } from 'lucide-react';
-import { usePathname, useRouter } from 'next/navigation';
+
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import * as z from 'zod';
 
 import { InputController } from '@/components/_form-controls/InputController';
-import ButtonContent from '@/components/custom/button-content';
-import DialogBox from '@/components/custom/dialog-box';
+import ConfirmDeleteDialog from '@/components/common/confirm-delete-dialog';
+import FormButtons from '@/components/common/form-buttons';
 import TitlePage from '@/components/custom/page-heading';
-import { PermissionGuard } from '@/components/PermissionGuard';
-import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import { useMounted } from '@/hooks/use-mounted';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -26,16 +24,17 @@ const groupSchema = z.object({
 
 export type GroupFormValues = z.infer<typeof groupSchema>;
 
-type Group = {
-    id: string;
-    name: string;
+type GroupFormProps = {
+    id?: string;
+    data?: {
+        id: string;
+        name: string;
+    }
 }
 
-export default function GroupForm({ data }: { data?: Group }) {
+export default function GroupForm({ id, data }: GroupFormProps) {
 
-    const { id } = data || { id: "" };
     const router = useRouter();
-    const path = usePathname();
     const mounted = useMounted();
 
     const [show, setShow] = useState(false);
@@ -44,9 +43,7 @@ export default function GroupForm({ data }: { data?: Group }) {
 
     const form = useForm<GroupFormValues>({
         resolver: zodResolver(groupSchema),
-        defaultValues: {
-            name: ""
-        },
+        defaultValues: { name: "" },
     });
 
     useEffect(() => {
@@ -64,8 +61,8 @@ export default function GroupForm({ data }: { data?: Group }) {
         };
 
         const isEdit = !!id;
-        const url = isEdit ? `/api/master/group/${id}` : '/api/master/group';
         const method = isEdit ? "PUT" : "POST";
+        const url = isEdit ? `/api/master/group/${id}` : '/api/master/group';
         const failureMessage = isEdit ? "Failed to update group" : "Failed to create group";
 
         try {
@@ -76,20 +73,16 @@ export default function GroupForm({ data }: { data?: Group }) {
                 body: JSON.stringify(final)
             });
 
-            if (!response.ok) {
-                const error = await response.json();
-                toast.error(error.message || "Failed to create group");
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                toast.error(result.message || failureMessage);
                 return;
             }
 
-            const result = await response.json();
+            toast.success(result.message);
+            router.push('.');
 
-            if (result.success) {
-                toast.success(result.message);
-                router.push('.');
-            } else {
-                toast.error(result.message);
-            }
         } catch (error) {
             console.error(error);
             toast.error(failureMessage + ". Please try again later.");
@@ -99,33 +92,30 @@ export default function GroupForm({ data }: { data?: Group }) {
         }
     }
 
-    const handleDelete = async (id: string) => {
+    const handleDelete = async (ids: string[]) => {
         try {
+            setLoading(true);
             const res = await fetch("/api/master/group", {
                 method: "DELETE",
-                body: JSON.stringify({ id }),
+                body: JSON.stringify({ ids }),
             });
-
-            if (!res.ok) {
-                const error = await res.json();
-                toast.error(error.message || "Failed to delete group");
-                return;
-            }
 
             const result = await res.json();
 
-            if (result.success) {
-                toast.success("group deleted");
-                router.replace('.');
-            } else {
-                toast.error("Failed to delete group ");
+            if (!res.ok || !result.success) {
+                toast.error(result.message || "Failed to delete group");
+                return;
             }
+
+            toast.success(result.message);
+            router.replace('.');
 
         } catch (error) {
             console.error(error);
             toast.error("Failed to delete group. Please try again later.");
         } finally {
             setOpen(false);
+            setLoading(true);
             router.refresh();
         }
     }
@@ -149,22 +139,15 @@ export default function GroupForm({ data }: { data?: Group }) {
         mounted &&
         <>
             {/* Title and action buttons */}
-            <TitlePage title={title} description={pageDesc} viewPage={!!id} createPage={!id}>
-                {!show && id && (
-                    <>
-                        <PermissionGuard action="UPDATE" path={path}>
-                            <Button className="size-7" variant={"outline"} size={"sm"} onClick={() => setShow(true)}>
-                                <Edit className="size-5" />
-                            </Button>
-                        </PermissionGuard>
-                        <PermissionGuard action="DELETE" path={path}>
-                            <Button className="size-7" variant={"outline"} size={"sm"} onClick={() => setOpen(true)}>
-                                <Trash2 className="size-5 text-destructive" />
-                            </Button>
-                        </PermissionGuard>
-                    </>
-                )}
-            </TitlePage>
+            <TitlePage
+                title={title}
+                description={pageDesc}
+                viewPage={!!id}
+                createPage={!id}
+                isEditingVisible={!show && !!id}
+                onEdit={() => setShow(true)}
+                onDelete={() => setOpen(true)}
+            />
 
             {/* Form for Group Creation/Update  */}
             <Form {...form}>
@@ -180,27 +163,20 @@ export default function GroupForm({ data }: { data?: Group }) {
                     />
 
                     {((show && id) || (!id)) && (
-                        <div className="flex justify-end my-4 gap-2">
-                            <Button type="button" variant={"outline"} onClick={() => router.back()}>
-                                Cancel
-                            </Button>
-
-                            <Button type="submit" disabled={loading}>
-                                <ButtonContent status={loading} text={id ? "Update" : "Create"} />
-                            </Button>
-                        </div>
+                        <FormButtons id={id} loading={loading} />
                     )}
                 </form>
             </Form>
 
             {/* Confirmation dialog for deletion */}
             {open && (
-                <DialogBox open={open} title={"Delete Confirmation"} preventClose setClose={() => setOpen(false)}>
-                    <p>Are you sure? Do you want to delete group <strong>{data?.name}</strong>? This action cannot be undone.</p>
-                    <div className="flex justify-end">
-                        <Button onClick={() => handleDelete(id)} variant={'destructive'}>Confirm</Button>
-                    </div>
-                </DialogBox>
+                <ConfirmDeleteDialog
+                    open={open}
+                    itemName={data?.name || ''}
+                    loading={loading}
+                    onConfirm={() => handleDelete([id as string])}
+                    onCancel={() => setOpen(false)}
+                />
             )}
         </>
     );

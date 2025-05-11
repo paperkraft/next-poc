@@ -1,4 +1,3 @@
-import { Metadata } from 'next';
 import { headers } from 'next/headers';
 
 import { fetchModules } from '@/app/action/module.action';
@@ -14,8 +13,8 @@ import ModuleMasterList from './ModuleList';
 export const dynamic = 'force-dynamic';
 export const revalidate = 10;
 
-export const metadata: Metadata = {
-  title: "Module",
+export const metadata = {
+  title: "Modules",
   description: "List of all module and submodule",
 };
 
@@ -28,24 +27,30 @@ export default async function ModuleMasterPage() {
     if (!session) return <AccessDenied />;
 
     const moduleId = findModuleIdByPath(modules, currentPath);
-    const response = await fetchModules().then((res) => res.json());
+    const res = await fetchModules();
+    const response = await res.json();
 
     return (
-      <div className="space-y-2">
-        <TitlePage title="Module List" description="List of all module and submodule" listPage />
-        {response.success
-          ? response.data.length > 0
-            ? <ModuleMasterList data={response.data} moduleId={moduleId} />
-            : <NoRecordPage text="module" />
-          : <SomethingWentWrong message={response.message} />
-        }
-      </div>
+      <>
+        <TitlePage {...metadata} listPage />
+
+        {!response.success ? (
+          <SomethingWentWrong message={response.message} />
+        ) : response.data?.length ? (
+          <ModuleMasterList data={response.data} moduleId={moduleId} />
+        ) : (
+          <NoRecordPage text="module" />
+        )}
+      </>
     );
 
   } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('ModuleMasterPage Error:', error);
+    }
     return (
       <>
-        <TitlePage title="Module List" description="List of all module and submodule" listPage />
+        <TitlePage {...metadata} listPage />
         <SomethingWentWrong message="An unexpected error occurred." />
       </>
     )

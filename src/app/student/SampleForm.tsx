@@ -6,7 +6,6 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useEffect, useState } from "react";
 import DynamicFormComponent from "@/components/custom/dynamic-components";
-import useModuleIdByName from "@/hooks/use-module-id";
 import { usePathname, useRouter } from "next/navigation";
 import { PermissionGuard } from "@/components/PermissionGuard";
 
@@ -22,7 +21,6 @@ export default function SampleForm() {
 
     const route = useRouter();
     const path = usePathname();
-    const moduleId = useModuleIdByName("Student") as string;
 
     const [formFields, setFormFields] = useState<object>();
     const [loading, setLoading] = useState(true);

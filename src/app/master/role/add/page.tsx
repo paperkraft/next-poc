@@ -1,18 +1,16 @@
-import { Metadata } from 'next';
-
+import AccessDenied from '@/components/custom/access-denied';
 import { PermissionGuard } from '@/components/PermissionGuard';
 
 import RoleForm from '../RoleForm';
-import AccessDenied from '@/components/custom/access-denied';
 
-export const metadata: Metadata = {
+export const metadata = {
   title: "Create Role",
   description: "Create role",
 };
 
 export default async function CreateRole() {
   return (
-    <PermissionGuard name="Role" action="WRITE" fallback={<AccessDenied/>}>
+    <PermissionGuard name="Role" action="WRITE" fallback={<AccessDenied />}>
       <RoleForm />
     </PermissionGuard>
   );

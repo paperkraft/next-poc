@@ -1,17 +1,15 @@
 "use client";
-import { Edit, Trash2 } from 'lucide-react';
-import { usePathname, useRouter } from 'next/navigation';
+
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import * as z from 'zod';
 
 import { InputController } from '@/components/_form-controls/InputController';
-import ButtonContent from '@/components/custom/button-content';
-import DialogBox from '@/components/custom/dialog-box';
+import ConfirmDeleteDialog from '@/components/common/confirm-delete-dialog';
+import FormButtons from '@/components/common/form-buttons';
 import TitlePage from '@/components/custom/page-heading';
-import { PermissionGuard } from '@/components/PermissionGuard';
-import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import { useMounted } from '@/hooks/use-mounted';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -26,16 +24,17 @@ export const roleFormSchema = z.object({
 
 export type RoleFormValues = z.infer<typeof roleFormSchema>;
 
-type Role = {
-  id: string;
-  name: string;
+type RoleFormProps = {
+  id?: string;
+  data?: {
+    id: string;
+    name: string;
+  }
 };
 
-export default function RoleForm({ data }: { data?: Role }) {
+export default function RoleForm({ id, data }: RoleFormProps) {
 
-  const { id } = data || { id: "" };
   const router = useRouter();
-  const path = usePathname();
   const mounted = useMounted();
 
   const [show, setShow] = useState(false);
@@ -66,30 +65,23 @@ export default function RoleForm({ data }: { data?: Role }) {
     const url = isEdit ? `/api/master/role/${id}` : "/api/master/role";
     const failureMessage = isEdit ? "Failed to update role" : "Failed to create role";
 
-
     try {
       setLoading(true);
-
-      const res = await fetch(url, {
+      const response = await fetch(url, {
         method: method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(final),
       });
 
-      if (!res.ok) {
-        const error = await res.json();
-        toast.error(error.message || "Failed to create role");
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        toast.error(result.message || failureMessage);
         return;
       }
 
-      const result = await res.json();
-
-      if (result.success) {
-        toast.success(result.message);
-        router.push('.');
-      } else {
-        toast.error(result.message);
-      }
+      toast.success(result.message);
+      router.push('.');
 
     } catch (error) {
       console.error(error);
@@ -100,39 +92,35 @@ export default function RoleForm({ data }: { data?: Role }) {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (ids: string[]) => {
     try {
+      setLoading(true);
       const res = await fetch("/api/master/role", {
         method: "DELETE",
-        body: JSON.stringify({ id }),
+        body: JSON.stringify({ ids }),
       });
-
-      if (!res.ok) {
-        const error = await res.json();
-        toast.error(error.message || "Failed to delete role");
-        return;
-      }
 
       const result = await res.json();
 
-      if (result.success) {
-        toast.success("Role deleted");
-        router.replace('.');
-      } else {
-        toast.error("Failed to delete role");
+      if (!res.ok || !result.success) {
+        toast.error(result.message || "Failed to delete role");
+        return;
       }
+
+      toast.success(result.message);
+      router.replace('.');
 
     } catch (error) {
       console.error(error);
       toast.error("Failed to delete role. Please try again later.");
     } finally {
       setOpen(false);
+      setLoading(false);
       router.refresh();
     }
   }
 
   const shouldReset = (show && !!id) || (!id);
-
 
   const description = id
     ? show
@@ -148,26 +136,20 @@ export default function RoleForm({ data }: { data?: Role }) {
 
   const title = id ? "Role" : "Create Role";
 
+  if (!mounted) return null;
+
   return (
-    mounted &&
     <>
       {/* Title and Action Buttons */}
-      <TitlePage title={title} description={pageDesc} viewPage={!!id} createPage={!id}>
-        {!show && id && (
-          <>
-            <PermissionGuard action="UPDATE" path={path}>
-              <Button className="size-7" variant={"outline"} size={"sm"} onClick={() => setShow(true)}>
-                <Edit className="size-5" />
-              </Button>
-            </PermissionGuard>
-            <PermissionGuard action="DELETE" path={path}>
-              <Button className="size-7" variant={"outline"} size={"sm"} onClick={() => setOpen(true)}>
-                <Trash2 className="size-5 text-destructive" />
-              </Button>
-            </PermissionGuard>
-          </>
-        )}
-      </TitlePage>
+      <TitlePage
+        title={title}
+        description={pageDesc}
+        viewPage={!!id}
+        createPage={!id}
+        isEditingVisible={!show && !!id}
+        onEdit={() => setShow(true)}
+        onDelete={() => setOpen(true)}
+      />
 
       {/* Form for Role Creation/Update */}
       <Form {...form}>
@@ -183,27 +165,20 @@ export default function RoleForm({ data }: { data?: Role }) {
           />
 
           {((show && id) || (!id)) && (
-            <div className="flex justify-end my-4 gap-2">
-              <Button type="button" variant={"outline"} onClick={() => router.back()}>
-                Cancel
-              </Button>
-
-              <Button type="submit" disabled={loading}>
-                <ButtonContent status={loading} text={id ? "Update" : "Create"} />
-              </Button>
-            </div>
+            <FormButtons id={id} loading={loading} />
           )}
         </form>
       </Form>
 
       {/* Delete Confirmation Modal */}
       {open && (
-        <DialogBox open={open} title={"Delete Confirmation"} preventClose setClose={() => setOpen(false)}>
-          <p>Are you sure? Do you want to delete the role <strong>{data?.name}</strong>? This action cannot be undone.</p>
-          <div className="flex justify-end">
-            <Button onClick={() => handleDelete(id as string)} variant={'destructive'}>Confirm</Button>
-          </div>
-        </DialogBox>
+        <ConfirmDeleteDialog
+          open={open}
+          itemName={data?.name || ''}
+          loading={loading}
+          onConfirm={() => handleDelete([id as string])}
+          onCancel={() => setOpen(false)}
+        />
       )}
     </>
   );

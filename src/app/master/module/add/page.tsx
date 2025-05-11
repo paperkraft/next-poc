@@ -5,6 +5,11 @@ import { IGroup } from "@/app/_Interface/Group";
 import { getAllGroups } from "@/app/action/group.action";
 import ModuleForm from "../ModuleForm";
 
+export const metadata = {
+  title: "Create Module",
+  description: "Define a new module",
+};
+
 export default async function AddModulePage() {
   try {
     const groupsResponse = await getAllGroups();
@@ -24,7 +29,7 @@ export default async function AddModulePage() {
   } catch (error) {
     return (
       <>
-        <TitlePage title="Create Module" description="Define a new module" createPage />
+        <TitlePage {...metadata} createPage />
         <SomethingWentWrong message="An unexpected error occurred." />
       </>
     )

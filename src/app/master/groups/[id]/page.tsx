@@ -1,3 +1,5 @@
+import { headers } from 'next/headers';
+
 import { getGroupById } from '@/app/action/group.action';
 import AccessDenied from '@/components/custom/access-denied';
 import NoRecordPage from '@/components/custom/no-record';
@@ -15,6 +17,8 @@ export const metadata = {
 
 export default async function Page({ params }: { params: { id: string } }) {
   const { id } = params;
+  const headersList = headers();
+  const currentPath = headersList.get('x-current-path') || '';
 
   try {
     const { session, modules } = await getSessionModules();
@@ -24,7 +28,7 @@ export default async function Page({ params }: { params: { id: string } }) {
     }
 
     const hasPermission = can({
-      name: "Groups",
+      path: currentPath,
       action: "READ",
       modules,
     });

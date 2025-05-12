@@ -52,19 +52,16 @@ export const ModuleMasterColumns = () => {
                 const hasSubModules = subModules && subModules?.length > 0;
                 return (
                     <div className={cn({ "flex gap-2 items-center cursor-pointer": hasSubModules })} aria-expanded={row.getIsExpanded()} onClick={row.getToggleExpandedHandler()}>
-                        {hasSubModules ? (
-                            getValue<boolean>()
-                        ) : (
-                            <Link
-                                title={`${row.original.name}`}
-                                prefetch={false}
-                                href={`${path}/${row.original.id}`}
-                                aria-label={`View details for module ${row.original.name}`}
-                                className="hover:text-primary"
-                            >
-                                {getValue<boolean>()}
-                            </Link>
-                        )}
+                        <Link
+                            title={`${row.original.name}`}
+                            prefetch={false}
+                            href={`${path}/${row.original.id}`}
+                            aria-label={`View details for module ${row.original.name}`}
+                            className="hover:text-primary hover:font-medium"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            {getValue<boolean>()}
+                        </Link>
 
                         {hasSubModules && row.getCanExpand() && (row.getIsExpanded() ? <ChevronDownIcon className="size-4" /> : <ChevronRightIcon className="size-4" />)}
                     </div>

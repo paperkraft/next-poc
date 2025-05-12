@@ -1,3 +1,5 @@
+import { headers } from 'next/headers';
+
 import AccessDenied from '@/components/custom/access-denied';
 import { PermissionGuard } from '@/components/PermissionGuard';
 
@@ -9,8 +11,11 @@ export const metadata = {
 };
 
 export default async function CreateRole() {
+  const headersList = headers();
+  const currentPath = headersList.get('x-current-path') || '';
+
   return (
-    <PermissionGuard name="Role" action="WRITE" fallback={<AccessDenied />}>
+    <PermissionGuard path={currentPath} action="WRITE" fallback={<AccessDenied />}>
       <RoleForm />
     </PermissionGuard>
   );

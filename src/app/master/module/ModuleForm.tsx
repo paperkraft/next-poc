@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -44,17 +44,17 @@ type ModuleFormValues = z.infer<typeof ModuleFormSchema>;
 
 interface PageProps {
     id?: string,
-    modules?: IModule,
+    module?: IModule,
+    isChild?: boolean,
     groupOptions: IOption[]
 }
 
-export default function ModuleForm({ id, modules, groupOptions }: PageProps) {
+export default function ModuleForm({ id, module, groupOptions, isChild = false }: PageProps) {
 
     const isEdit = !!id;
 
     const mounted = useMounted();
     const router = useRouter();
-    const path = usePathname();
 
     const [show, setShow] = useState(false);
     const [open, setOpen] = useState(false);
@@ -70,15 +70,15 @@ export default function ModuleForm({ id, modules, groupOptions }: PageProps) {
     });
 
     useEffect(() => {
-        if (id && modules) {
+        if (id && module) {
             form.reset({
-                name: modules.name,
-                path: modules.path || '',
-                groupId: modules.groupId || '',
-                children: modules.children || [],
+                name: module.name,
+                path: module.path || '',
+                groupId: module.groupId || '',
+                children: module.children || [],
             });
         }
-    }, [id, modules, form]);
+    }, [id, module, form]);
 
 
     const onSubmit = async (data: ModuleFormValues) => {
@@ -197,14 +197,16 @@ export default function ModuleForm({ id, modules, groupOptions }: PageProps) {
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
-                        <FloatingSelectController
-                            name="groupId"
-                            label="Group"
-                            options={groupOptions ?? []}
-                            description={groupDesc}
-                            readOnly={readOnly}
-                            disabled={readOnly}
-                        />
+                        {!isChild && (
+                            <FloatingSelectController
+                                name="groupId"
+                                label="Group"
+                                options={groupOptions ?? []}
+                                description={groupDesc}
+                                readOnly={readOnly}
+                                disabled={readOnly}
+                            />
+                        )}
                         <FloatingInputController
                             name="name"
                             label="Module Name"
@@ -249,7 +251,7 @@ export default function ModuleForm({ id, modules, groupOptions }: PageProps) {
             {open && (
                 <ConfirmDeleteDialog
                     open={open}
-                    itemName={modules?.name || ''}
+                    itemName={module?.name || ''}
                     loading={loading}
                     onConfirm={() => handleDelete(id as string)}
                     onCancel={() => setOpen(false)}

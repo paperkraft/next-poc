@@ -2,11 +2,12 @@
 import { useLocale, useTranslations } from 'next-intl';
 import { setUserLocale } from '@/services/locale';
 import { Locale } from '@/i18n/config';
-import { CheckIcon, LanguagesIcon } from 'lucide-react';
+import { CheckIcon } from 'lucide-react';
 import { themeConfig } from '@/hooks/use-config';
 import { cn } from '@/lib/utils';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu';
-import { Button } from '../ui/button';
+import LocaleSwitcherButton from './LocaleSwitcherButton';
+import TooltipWrapper from '../common/tootip-wrapper';
 
 export default function LocaleSwitcher() {
     const t = useTranslations('LocaleSwitcher');
@@ -43,7 +44,9 @@ export default function LocaleSwitcher() {
         <>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant={'ghost'} size={'icon'}><LanguagesIcon className="!size-[18px]" /></Button>
+                    <TooltipWrapper tooltip="Change language">
+                        <LocaleSwitcherButton />
+                    </TooltipWrapper>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                     {

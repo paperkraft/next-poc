@@ -1,19 +1,32 @@
-import React from "react";
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+'use client';
 
-type TooltipWrapperProps = {
-    children: React.ReactNode;
+import React from 'react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
+interface TooltipWrapperProps extends React.HTMLAttributes<HTMLElement> {
     tooltip: string;
+    children: React.ReactNode;
 }
-export const TooltipWrapper = ({ children, tooltip }: TooltipWrapperProps) => {
-    return (
-        <Tooltip>
-            <TooltipTrigger>
-                {children}
-            </TooltipTrigger>
-            <TooltipContent>
-                <p>{tooltip}</p>
-            </TooltipContent>
-        </Tooltip>
-    );
-}
+
+const TooltipWrapper = React.forwardRef<HTMLElement, TooltipWrapperProps>(
+    ({ tooltip, children, ...props }, ref) => {
+        return (
+            <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        {React.isValidElement(children)
+                            ? React.cloneElement(children as React.ReactElement, { ref, ...props })
+                            : children}
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>{tooltip}</p>
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+        );
+    }
+);
+
+TooltipWrapper.displayName = 'TooltipWrapper';
+
+export default TooltipWrapper;

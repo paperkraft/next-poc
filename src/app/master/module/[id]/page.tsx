@@ -1,16 +1,16 @@
 import { headers } from 'next/headers';
 
-import { IGroup } from '@/app/_Interface/Group';
 import { getAllGroups } from '@/app/action/group.action';
 import { fetchUniqueModule } from '@/app/action/module.action';
 import AccessDenied from '@/components/custom/access-denied';
+import NoRecordPage from '@/components/custom/no-record';
 import TitlePage from '@/components/custom/page-heading';
 import SomethingWentWrong from '@/components/custom/somthing-wrong';
 import { can } from '@/lib/abac/checkPermissions';
 import { getSessionModules } from '@/lib/abac/sessionModules';
+import { Group } from '@/types/group';
 
 import ModuleForm from '../ModuleForm';
-import NoRecordPage from '@/components/custom/no-record';
 
 export const metadata = {
   title: "Module",
@@ -35,19 +35,19 @@ export default async function Page({ params }: { params: { id: string } }) {
 
     if (!hasPermission) return <AccessDenied />;
 
-    const res = await fetchUniqueModule(id).then((d) => d.json());
+    const res = await fetchUniqueModule(id);
     const groups = await getAllGroups();
 
-    const isModule = res && res.success
+    const isModule = res.success
     const isChild = isModule && res.data?.parentId
-    const module = isModule && res.data || {};
+    const module = isModule && res.data
 
     const isGroup = groups && groups.success
-    const groupOptions = isGroup && groups?.data?.map((item: IGroup) => ({ label: item.name, value: item.id }));
+    const groupOptions = isGroup && groups?.data?.map((item: Group) => ({ label: item.name, value: item.id }));
 
     return (
       (!isModule || !isGroup) ? (
-        <SomethingWentWrong message={isModule ? groups.message : module.message} />
+        <SomethingWentWrong message={isModule ? groups.message : res.message} />
       ) : module && groupOptions ? (
         <ModuleForm groupOptions={groupOptions} id={id} module={module} isChild={!!isChild} />
       ) : (

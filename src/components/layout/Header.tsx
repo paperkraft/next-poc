@@ -8,7 +8,6 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useMounted } from '@/hooks/use-mounted';
 import { cn } from '@/lib/utils';
 
-import { TooltipWrapper } from '../common/tootip-wrapper';
 import AppLogo from '../custom/app-initial';
 import BellNotifications from './bell-notifications';
 import HeaderBreadcrumb from './breadcrum-nav';
@@ -48,17 +47,11 @@ const Header: React.FC = React.memo(() => {
                     <div className='ml-auto flex gap-2'>
                         {!isMobile && (
                             <>
-                                <TooltipWrapper tooltip="Theme Config">
-                                    <ThemeConfig />
-                                </TooltipWrapper>
-                                <TooltipWrapper tooltip="Language">
-                                    <LocaleSwitcher />
-                                </TooltipWrapper>
+                                <ThemeConfig />
+                                <LocaleSwitcher />
                             </>
                         )}
-                        <TooltipWrapper tooltip='Notification'>
-                            <BellNotifications />
-                        </TooltipWrapper>
+                        <BellNotifications />
                         {isHorizontal && <UserAction />}
                     </div>
                 </div>

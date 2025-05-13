@@ -1,11 +1,15 @@
 import * as Locales from 'date-fns/locale'
 
+export type Options = {
+    label: string;
+    value: string;
+}
 export type FormFieldType = {
     label: string
     description?: string
     placeholder?: string
-    defaultValue?: string | string[] | number | number[] | boolean | Date 
-    
+    defaultValue?: string | string[] | number | number[] | boolean | Date
+
     checked?: boolean
     disabled?: boolean
     readOnly?: boolean

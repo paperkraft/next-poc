@@ -22,9 +22,12 @@ import SidebarFooterContent from "./sidebar-footer";
 const CollapseMenus = React.memo(() => {
     const path = usePathname();
     const [config] = themeConfig();
+
     const { data, status } = useSession();
+    
     const [query, setQuery] = React.useState<string>('');
     const debouncedQuery = useDebounce(query, 300);
+    
     const isSearching = query.length > 0;
     const isDual = config.layout === "dual-menu";
 

@@ -1,9 +1,9 @@
+import { ModuleNode } from "@/types/modules";
 import { ActionParam, ALL_PERMISSIONS } from "@/types/permissions";
-import { IModule } from "@/types/permissions";
 
 interface ABACCheck {
     action: ActionParam;
-    modules: IModule[];
+    modules: ModuleNode[];
     path?: string;
     name?: string;
     moduleId?: string;
@@ -40,9 +40,9 @@ function matchPath(target: string, modulePath: string) {
 }
 
 function findMatchingModule(
-    modules: IModule[],
+    modules: ModuleNode[],
     { moduleId, path, name }: Pick<ABACCheck, "moduleId" | "path" | "name">
-): IModule | undefined {
+): ModuleNode | undefined {
     if (moduleId) return modules.find((m) => m.id === moduleId);
     if (path) return modules.find((m) => m.path && matchPath(path, m.path));
     if (name) return modules.find((m) => m.name === name);
@@ -68,6 +68,6 @@ export function isABACAllowed({
     const permissions = matchedModule.permissions;
 
     return requireAll
-        ? requiredBits.every((bit) => (permissions & bit) === bit)
-        : requiredBits.some((bit) => (permissions & bit) === bit);
+        ? requiredBits.every((bit) => (permissions && permissions & bit) === bit)
+        : requiredBits.some((bit) => (permissions && permissions & bit) === bit);
 }

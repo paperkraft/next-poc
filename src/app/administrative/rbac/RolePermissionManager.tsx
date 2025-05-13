@@ -16,15 +16,17 @@ import {
 } from '@/components/ui/table';
 import { useDebounce } from '@/hooks/use-debounce';
 import {
-    IGroupedModule, IModule, IRole, PermissionAction, PermissionPayload, PERMISSIONS
+    IGroupedModule, PermissionAction, PermissionPayload, PERMISSIONS
 } from '@/types/permissions';
 
 import { filterGroupedModules, groupModules } from './helper';
 import { PermissionRow } from './PermissionRow';
+import { ModuleNode } from '@/types/modules';
+import { Role } from '@/types/role';
 
 type FormValues = { [key: string]: boolean };
 
-export default function RolePermissionManager({ roles }: { roles: IRole[] }) {
+export default function RolePermissionManager({ roles }: { roles: Role[] }) {
 
     const [search, setSearch] = useState("");
     const [selectedRole, setSelectedRole] = useState<string>("");
@@ -67,18 +69,18 @@ export default function RolePermissionManager({ roles }: { roles: IRole[] }) {
 
             try {
                 const { data } = await axios.get(`/api/modules?roleId=${selectedRole}`);
-                const sorted = data.sort((a: IModule, b: IModule) => a.position - b.position);
+                const sorted = data.sort((a: ModuleNode, b: ModuleNode) => (a.position ?? Infinity) - (b.position ?? Infinity));
                 const grouped = groupModules(sorted);
                 setGroupedModules(grouped);
 
                 const defaultValues: FormValues = {};
 
-                const populateDefaults = (mod: IModule) => {
+                const populateDefaults = (mod: ModuleNode) => {
                     permissionKeys.forEach((key) => {
                         defaultValues[`${mod.id}_${key}`] =
-                            Boolean(mod.permissions & PERMISSIONS[key]);
+                            Boolean(mod.permissions && mod.permissions & PERMISSIONS[key]);
                     });
-                    mod.subModules.forEach(populateDefaults);
+                    mod.children?.forEach(populateDefaults);
                 };
 
                 sorted.forEach(populateDefaults);
@@ -98,7 +100,7 @@ export default function RolePermissionManager({ roles }: { roles: IRole[] }) {
     }, [selectedRole, permissionKeys, reset]);
 
     const buildPayload = (groups: IGroupedModule[]): PermissionPayload[] => {
-        const mapModule = (mod: IModule): PermissionPayload => {
+        const mapModule = (mod: ModuleNode): PermissionPayload => {
             const permissionBits = permissionKeys.reduce((acc, key) => {
                 return watch(`${mod.id}_${key}`) ? acc | PERMISSIONS[key] : acc;
             }, 0);
@@ -106,7 +108,7 @@ export default function RolePermissionManager({ roles }: { roles: IRole[] }) {
             return {
                 moduleId: mod.id,
                 permissions: permissionBits,
-                subModules: mod.subModules.map(mapModule),
+                children: mod.children.map(mapModule),
             };
         };
 
@@ -196,7 +198,7 @@ export default function RolePermissionManager({ roles }: { roles: IRole[] }) {
                                         </TableCell>
                                     </TableRow>
 
-                                    {group.modules.map((mod: IModule) => (
+                                    {group.modules.map((mod: ModuleNode) => (
                                         <PermissionRow
                                             key={mod.id}
                                             mod={mod}

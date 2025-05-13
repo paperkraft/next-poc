@@ -6,7 +6,6 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import * as z from 'zod';
 
-import { IModule, IOption } from '@/app/_Interface/Module';
 import {
     FloatingInputController
 } from '@/components/_form-controls/floating-label/input-controller';
@@ -20,6 +19,8 @@ import { Form } from '@/components/ui/form';
 import { useMounted } from '@/hooks/use-mounted';
 
 import { RecursiveModuleForm } from './RecursiveModules';
+import { ModuleWithChildren } from '@/types/modules';
+import { Options } from '@/types';
 
 export type ModuleFormData = {
     id?: string;
@@ -44,9 +45,9 @@ type ModuleFormValues = z.infer<typeof ModuleFormSchema>;
 
 interface PageProps {
     id?: string,
-    module?: IModule,
+    module?: ModuleWithChildren,
     isChild?: boolean,
-    groupOptions: IOption[]
+    groupOptions: Options[]
 }
 
 export default function ModuleForm({ id, module, groupOptions, isChild = false }: PageProps) {

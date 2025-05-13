@@ -35,7 +35,7 @@ export async function GET(req: Request) {
       groupName: mod.group?.name,
       position: mod.group?.position,
       permissions: permissionMap.get(mod.id) || 0,
-      subModules: [],
+      children: [],
     });
   });
 
@@ -43,7 +43,7 @@ export async function GET(req: Request) {
   const rootModules: any[] = [];
   moduleMap.forEach((mod) => {
     if (mod.parentId && moduleMap.has(mod.parentId)) {
-      moduleMap.get(mod.parentId).subModules.push(mod);
+      moduleMap.get(mod.parentId).children.push(mod);
     } else {
       rootModules.push(mod);
     }

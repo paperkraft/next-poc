@@ -1,61 +1,80 @@
 import prisma from "@/lib/prisma";
+import { FetchModuleResponse, FetchModulesResponse, ModuleNode, ModuleWithChildren, ModuleWithRelations } from "@/types/modules";
 import { NextResponse } from "next/server";
 
-export async function fetchModules() {
+// Recursive sort by name or custom logic
+function sortModules(modules: ModuleNode[]): ModuleNode[] {
+    return modules
+        .sort((a, b) => {
+            // First sort by group position (nulls last), then by name
+            if (a.position !== b.position) {
+                return (a.position ?? Infinity) - (b.position ?? Infinity);
+            }
+            return a.name.localeCompare(b.name);
+        })
+        .map((mod) => ({
+            ...mod,
+            subModules: sortModules(mod.children),
+        }));
+}
+
+export async function fetchModules(): Promise<FetchModulesResponse> {
     try {
-        const allModules = await prisma.module.findMany({
+        const allModules: ModuleWithRelations[] = await prisma.module.findMany({
+            where: { isDeleted: false },
             include: {
                 children: true,
                 parent: true,
                 group: true,
-            },
-            where: { isDeleted: false }
-        });
-
-        // Map for fast lookup
-        const moduleMap = new Map<string, any>();
-
-        allModules.forEach((mod) => {
-            moduleMap.set(mod.id, {
-                id: mod.id,
-                name: mod.name,
-                path: mod?.path,
-                parentId: mod.parentId,
-                groupId: mod.groupId,
-                groupName: mod.group?.name,
-                position: mod.group?.position,
-                subModules: [],
-            });
-        });
-
-        // Nest modules by parentId
-        moduleMap.forEach((mod) => {
-            if (mod.parentId && moduleMap.has(mod.parentId)) {
-                moduleMap.get(mod.parentId)!.subModules.push(mod);
             }
         });
 
-        const rootModules = Array.from(moduleMap.values()).filter((mod) => !mod.parentId);
+        // Build a map for quick lookups
+        const moduleMap = new Map<string, ModuleNode>();
 
-        return NextResponse.json(
-            { success: true, message: 'Success', data: rootModules },
-            { status: 200 }
+        for (const mod of allModules) {
+            moduleMap.set(mod.id, {
+                id: mod.id,
+                name: mod.name,
+                path: mod.path ?? undefined,
+                parentId: mod.parentId ?? undefined,
+                groupId: mod.groupId ?? undefined,
+                groupName: mod.group?.name,
+                position: mod.group?.position ?? undefined,
+                children: [],
+            });
+        }
+
+        // Link children to their parents
+        for (const mod of moduleMap.values()) {
+            if (mod.parentId && moduleMap.has(mod.parentId)) {
+                moduleMap.get(mod.parentId)!.children.push(mod);
+            }
+        }
+
+        // Extract top-level modules (no parent)
+        const rootModules: ModuleNode[] = Array.from(moduleMap.values()).filter(
+            (mod) => !mod.parentId
         );
+
+        return {
+            success: true,
+            message: 'Success',
+            data: sortModules(rootModules)
+        }
     } catch (error) {
         console.error("Error fetching modules:", error);
-        return NextResponse.json(
-            { success: false, message: 'Error fetching modules' },
-            { status: 500 }
-        );
+        return {
+            success: false,
+            message: 'Error fetching modules',
+            data: []
+        }
     }
 }
 
-export async function fetchUniqueModule(id: string) {
+export async function fetchUniqueModule(id: string): Promise<FetchModuleResponse> {
     if (!id) {
-        return NextResponse.json(
-            { success: false, message: "ID is required" },
-            { status: 400 }
-        );
+        return { success: false, message: "ID is required", data: null }
     }
 
     try {
@@ -81,31 +100,23 @@ export async function fetchUniqueModule(id: string) {
         });
 
         if (!module) {
-            return NextResponse.json(
-                { success: false, message: "Module not found" },
-                { status: 404 }
-            );
+            return { success: false, message: "Module not found", data: null }
         }
 
-        const finalModule = {
+        const finalModule: ModuleWithChildren = {
             id: module.id,
             name: module.name,
             path: module.path,
             parentId: module.parentId,
             groupId: module.groupId,
+            groupName: module.group?.name,
             children: module.children,
         }
 
-        return NextResponse.json(
-            { success: true, message: "Success", data: finalModule },
-            { status: 200 }
-        );
+        return { success: true, message: "Success", data: finalModule }
     } catch (error) {
         console.error("Error fetching module:", error);
-        return NextResponse.json(
-            { success: false, message: "Error fetching module" },
-            { status: 500 }
-        );
+        return { success: false, message: "Error fetching module", data: null }
     }
 }
 
@@ -154,7 +165,7 @@ interface RolePermissionWithModule {
         name: string;
         path: string | null;
         parentId: string | null;
-        group: { name: string } | null;
+        group: { id: string, name: string } | null;
         children: {
             id: string;
             name: string;
@@ -164,28 +175,19 @@ interface RolePermissionWithModule {
     };
 }
 
-export interface RoleModulesProps {
-    id: string;
-    name: string;
-    path: string | null;
-    group: string | undefined;
-    parentId: string | null;
-    permissions: number;
-    subModules: RoleModulesProps[];
-}
-
-function RoleModules(data: RolePermissionWithModule[]): RoleModulesProps[] {
-    const moduleMap = new Map<string, RoleModulesProps>();
+function RoleModules(data: RolePermissionWithModule[]): ModuleNode[] {
+    const moduleMap = new Map<string, ModuleNode>();
 
     data.forEach(({ permissionBits, module }) => {
-        const baseModule: RoleModulesProps = {
+        const baseModule: ModuleNode = {
             id: module.id,
             name: module.name,
-            path: module.path,
-            group: module.group?.name,
-            parentId: module.parentId,
+            path: module.path ?? undefined,
+            groupId: module.group?.id,
+            groupName: module.group?.name,
+            parentId: module.parentId ?? undefined,
             permissions: permissionBits,
-            subModules: [],
+            children: [],
         };
         moduleMap.set(module.id, baseModule);
     });
@@ -193,7 +195,7 @@ function RoleModules(data: RolePermissionWithModule[]): RoleModulesProps[] {
     // Nest subModules under their parent
     moduleMap.forEach((mod) => {
         if (mod.parentId && moduleMap.has(mod.parentId)) {
-            moduleMap.get(mod.parentId)?.subModules.push(mod);
+            moduleMap.get(mod.parentId)?.children.push(mod);
         }
     });
 

@@ -9,12 +9,13 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { TableCell, TableRow } from '@/components/ui/table';
 import { highlightMatch } from '@/lib/highlight-text';
 import { cn } from '@/lib/utils';
-import { IModule, PERMISSIONS } from '@/types/permissions';
+import { PERMISSIONS } from '@/types/permissions';
+import { ModuleNode } from '@/types/modules';
 
 type Props = {
-    mod: IModule;
+    mod: ModuleNode;
     level: number;
-    modules: IModule[];
+    modules: ModuleNode[];
     control: any;
     watch: UseFormWatch<any>;
     setValue: UseFormSetValue<any>;
@@ -26,20 +27,20 @@ type Props = {
 export const PermissionRow: React.FC<Props> = ({ mod, level, modules, control, watch, setValue, openModules, setOpenModules, debouncedSearch }) => {
 
     const permissionKeys = Object.keys(PERMISSIONS) as (keyof typeof PERMISSIONS)[];
-    const hasSubModules = mod?.subModules?.length > 0;
+    const hasSubModules = mod?.children?.length > 0;
 
-    const updateChildren = (m: IModule, perm: string, value: boolean) => {
-        m.subModules.forEach((sub) => {
+    const updateChildren = (m: ModuleNode, perm: string, value: boolean) => {
+        m.children.forEach((sub) => {
             setValue(`${sub.id}_${perm}`, value);
             updateChildren(sub, perm, value);
         });
     };
 
-    const updateParent = (current: IModule, perm: string) => {
+    const updateParent = (current: ModuleNode, perm: string) => {
         const parent = modules.find((pm) => pm.id === current.parentId);
         if (!parent) return;
 
-        const hasAnyChild = parent.subModules.some((sub) => watch(`${sub.id}_${perm}`));
+        const hasAnyChild = parent.children.some((sub) => watch(`${sub.id}_${perm}`));
         setValue(`${parent.id}_${perm}`, hasAnyChild);
         updateParent(parent, perm);
     };
@@ -69,7 +70,7 @@ export const PermissionRow: React.FC<Props> = ({ mod, level, modules, control, w
                                 });
 
                                 if (!val) {
-                                    mod.subModules.forEach((sub) => {
+                                    mod.children.forEach((sub) => {
                                         permissionKeys.forEach((perm) => {
                                             setValue(`${sub.id}_${perm}`, false);
                                         });
@@ -118,7 +119,7 @@ export const PermissionRow: React.FC<Props> = ({ mod, level, modules, control, w
                 {hasSubModules && (
                     <CollapsibleContent asChild>
                         <>
-                            {mod.subModules.map((sub) => (
+                            {mod.children.map((sub) => (
                                 <PermissionRow
                                     key={sub.id}
                                     mod={sub}

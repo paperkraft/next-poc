@@ -1,6 +1,5 @@
 import { headers } from 'next/headers';
 
-import { IGroup } from '@/app/_Interface/Group';
 import { getAllGroups } from '@/app/action/group.action';
 import AccessDenied from '@/components/custom/access-denied';
 import NoRecordPage from '@/components/custom/no-record';
@@ -8,6 +7,7 @@ import TitlePage from '@/components/custom/page-heading';
 import SomethingWentWrong from '@/components/custom/somthing-wrong';
 import { can } from '@/lib/abac/checkPermissions';
 import { getSessionModules } from '@/lib/abac/sessionModules';
+import { Group } from '@/types/group';
 
 import ModuleForm from '../ModuleForm';
 
@@ -33,7 +33,7 @@ export default async function AddModulePage() {
     if (!hasPermission) return <AccessDenied />;
 
     const response = await getAllGroups();
-    const groupOptions = response?.data && response?.data.map((item: IGroup) => ({ label: item.name, value: item.id }));
+    const groupOptions = response?.data && response?.data.map((item: Group) => ({ label: item.name, value: item.id }));
 
     return (
       (!response.success ? (

@@ -27,8 +27,7 @@ export default async function ModuleMasterPage() {
     if (!session) return <AccessDenied />;
 
     const moduleId = findModuleIdByPath(modules, currentPath);
-    const res = await fetchModules();
-    const response = await res.json();
+    const response = await fetchModules();
 
     return (
       <>

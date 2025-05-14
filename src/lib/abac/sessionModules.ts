@@ -1,9 +1,9 @@
 import { auth } from '@/auth';
-import { IModule } from '@/types/permissions';
+import { ModuleNode } from '@/types/modules';
 import { Session } from 'next-auth';
 
 type SessionModules = {
-    modules: IModule[];
+    modules: ModuleNode[];
     session: Session | null;
 }
 

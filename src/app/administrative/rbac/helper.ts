@@ -1,25 +1,26 @@
-import { IGroupedModule, IModule } from "@/types/permissions";
+import { ModuleNode } from "@/types/modules";
+import { IGroupedModule } from "@/types/permissions";
 import fuzzysort from "fuzzysort";
 
-export const filterModulesByName = (mods: IModule[], query: string, openSet = new Set<string>()): IModule[] => {
+export const filterModulesByName = (mods: ModuleNode[], query: string, openSet = new Set<string>()): ModuleNode[] => {
     if (!query.trim()) return mods;
 
     return mods
         .map((mod) => {
-            const subMatches = filterModulesByName(mod.subModules || [], query, openSet);
+            const subMatches = filterModulesByName(mod.children || [], query, openSet);
             const isMatch = !!fuzzysort.single(query, mod.name);
 
             if (isMatch || subMatches.length > 0) {
                 if (subMatches.length > 0) openSet.add(mod.id);
                 return {
                     ...mod,
-                    subModules: subMatches,
+                    children: subMatches,
                 };
             }
 
             return null;
         })
-        .filter((mod): mod is IModule => mod !== null);
+        .filter((mod): mod is ModuleNode => mod !== null);
 };
 
 export function filterGroupedModules(
@@ -37,8 +38,7 @@ export function filterGroupedModules(
                 .map(mod => {
                     const match = mod.name.toLowerCase().includes(lowerSearch);
 
-                    const filteredSubModules = mod.subModules.filter(sub =>
-                        sub.name.toLowerCase().includes(lowerSearch)
+                    const filteredSubModules = mod.children.filter(sub => sub.name.toLowerCase().includes(lowerSearch)
                     );
 
                     if (match || filteredSubModules.length > 0) {
@@ -47,13 +47,13 @@ export function filterGroupedModules(
                         }
                         return {
                             ...mod,
-                            subModules: filteredSubModules,
+                            children: filteredSubModules,
                         };
                     }
 
                     return null;
                 })
-                .filter(Boolean) as IModule[];
+                .filter(Boolean) as ModuleNode[];
 
             if (filteredModules.length > 0) {
                 return {
@@ -68,22 +68,22 @@ export function filterGroupedModules(
 }
 
 // Group by groupName and sort by group and module positions
-export const groupModules = (modules: IModule[]): IGroupedModule[] => {
+export const groupModules = (modules: ModuleNode[]): IGroupedModule[] => {
     const groupMap = new Map<string, IGroupedModule>();
 
     for (const mod of modules) {
-        if (!groupMap.has(mod.groupId)) {
-            groupMap.set(mod.groupId, {
-                groupId: mod.groupId,
-                groupName: mod.groupName,
+        if (!groupMap.has(mod.groupId as string)) {
+            groupMap.set(mod.groupId as string, {
+                groupId: mod.groupId as string,
+                groupName: mod.groupName as string,
                 modules: [],
             });
         }
 
-        groupMap.get(mod.groupId)!.modules.push(mod);
+        groupMap.get(mod.groupId as string)!.modules.push(mod);
     }
     return Array.from(groupMap.values()).map((group) => ({
         ...group,
-        modules: group.modules.sort((a, b) => a.position - b.position),
+        modules: group.modules.sort((a, b) => (a.position ?? Infinity) - (b.position ?? Infinity)),
     }));
 };

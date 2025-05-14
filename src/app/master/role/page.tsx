@@ -1,68 +1,54 @@
-import { Metadata } from 'next';
+import { headers } from 'next/headers';
 
 import { fetchRoles } from '@/app/action/role.action';
 import AccessDenied from '@/components/custom/access-denied';
 import NoRecordPage from '@/components/custom/no-record';
 import TitlePage from '@/components/custom/page-heading';
 import SomethingWentWrong from '@/components/custom/somthing-wrong';
-import { can } from '@/lib/abac/checkPermissions';
 import { getSessionModules } from '@/lib/abac/sessionModules';
-import { findModuleId } from '@/utils/helper';
+import { findModuleIdByPath } from '@/utils/helper';
 
 import RoleList from './RoleMasterList';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 10;
 
-export const metadata: Metadata = {
+export const metadata = {
   title: "Role",
   description: "Define role",
 };
 
 export default async function RoleMasterPage() {
+  const headersList = headers();
+  const currentPath = headersList.get('x-current-path') || '';
 
   try {
-
     const { session, modules } = await getSessionModules();
-
     if (!session) return <AccessDenied />;
 
-    const hasPermission = can({
-      name: "Role",
-      action: "READ",
-      modules,
-    });
-
-    if (!hasPermission) return <AccessDenied />;
-
-    const moduleId = findModuleId(modules, "Role");
-    const response = await fetchRoles()
+    const moduleId = findModuleIdByPath(modules, currentPath);
+    const response = await fetchRoles();
 
     return (
       <>
-        <TitlePage
-          title="Role"
-          description="List of all roles"
-          listPage
-        />
+        <TitlePage {...metadata} listPage />
 
-        {response.success ? (
-          response.data && response?.data?.length > 0
-            ? <RoleList data={response.data} moduleId={moduleId} />
-            : <NoRecordPage text="role" />
-        ) : (
+        {!response.success ? (
           <SomethingWentWrong message={response.message} />
+        ) : response.data?.length ? (
+          <RoleList data={response.data} moduleId={moduleId} />
+        ) : (
+          <NoRecordPage text="role" />
         )}
       </>
     );
   } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('RoleMasterPage Error:', error);
+    }
     return (
       <>
-        <TitlePage
-          title="Role"
-          description="List of all roles"
-          listPage
-        />
+        <TitlePage {...metadata} listPage />
         <SomethingWentWrong message="An unexpected error occurred." />
       </>
     )

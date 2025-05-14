@@ -3,11 +3,12 @@ import { IconData } from "../icon-data";
 type inputType = {
     id: string;
     name: string;
-    parentId: string | null;
-    permissions: number;
-    group: string;
     path: string;
-    subModules: inputType[];
+    parentId: string | null;
+    groupId: string;
+    groupName: string;
+    permissions: number;
+    children: inputType[];
 };
 
 interface MenuItem {
@@ -35,15 +36,15 @@ export type menuType = {
 const generateSubMenu = (subModule: inputType): submenuType => ({
     title: subModule.name,
     url: subModule.path ?? '#',
-    submenu: subModule.subModules.map(generateSubMenu)
+    submenu: subModule.children.map(generateSubMenu)
 });
 
 export const mapMenu = (inputData: inputType[]): menuType[] => {
     const groupedData = inputData && inputData?.reduce((acc, item) => {
-        if (!acc[item.group]) {
-            acc[item.group] = [];
+        if (!acc[item.groupId]) {
+            acc[item.groupId] = [];
         }
-        acc[item.group].push(item);
+        acc[item.groupId].push(item);
         return acc;
     }, {} as { [key: string]: inputType[] });
 
@@ -56,19 +57,27 @@ export const mapMenu = (inputData: inputType[]): menuType[] => {
             const matchingIcon = IconData.find(icon => icon.title === item.name)?.icon;
 
             return {
-                label: item.group,
+                label: item.groupName,
                 title: item.name,
                 url: item.path ?? '#',
                 icon: matchingIcon as React.ComponentType,
                 isActive: false,
-                submenu: item.subModules.map(generateSubMenu),
+                submenu: item.children.map(generateSubMenu),
             }
         });
     }).flat();
 };
 
-export function getBreadcrumbs(menus: menuType[], url: string): { label: string; title: string; url: string }[] | null {
-    const findBreadcrumbs = (submenus: submenuType[], url: string, breadcrumb: { label: string; title: string; url: string }[] = []): { label: string; title: string; url: string }[] | null => {
+type BreadcrumbProps = {
+    label: string;
+    title: string;
+    url: string
+}
+
+export function getBreadcrumbs(menus: menuType[], url: string): BreadcrumbProps[] | null {
+
+    const findBreadcrumbs = (submenus: submenuType[], url: string, breadcrumb: BreadcrumbProps[] = []): BreadcrumbProps[] | null => {
+
         for (const submenu of submenus) {
             if (submenu.url === url) {
                 return [...breadcrumb, { label: breadcrumb[0]?.label ?? '', title: submenu.title, url: submenu.url }];
@@ -141,8 +150,6 @@ export function searchSubmenu(submenu: submenuType[], query: string): boolean {
             (item.submenu && searchSubmenu(item.submenu, query))
     );
 }
-
-
 
 export const cleanSubMenu = (submenu: submenuType[]): MenuItem[] => {
     return submenu.map((item) => {

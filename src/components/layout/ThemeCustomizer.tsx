@@ -1,7 +1,7 @@
 'use client';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Label } from "@/components/ui/label";
 import { baseColors } from "@/registry/registry-base-colors";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,9 @@ import { ThemeWrapper } from "@/components/layout/theme-wrapper";
 import { useSidebar } from "@/components/ui/sidebar";
 import { setUserLocale } from "@/services/locale";
 import { CollapsedLayoutIcon, CompactContentIcon, HorizontalLayoutIcon, VerticalLayoutIcon, WideContentIcon } from "@/lib/layout-icons";
-import { useMemo } from "react";
+import React, { useMemo } from "react";
+import ThemeConfigButton from "./ThemeConfigButton";
+import TooltipWrapper from "../common/tootip-wrapper";
 
 type OptionButtonProps = {
     isActive: boolean;
@@ -25,13 +27,21 @@ type OptionButtonProps = {
     asChild?: boolean;
 };
 
-const OptionButton = ({ isActive, onClick, children, className, asChild = false }: OptionButtonProps) => (
-    <Button variant="outline" size="sm" onClick={onClick} asChild={asChild}
-        className={cn(isActive && "border-2 border-primary", className)}
-    >
-        {children}
-    </Button>
-)
+const OptionButton = ({ isActive, onClick, children, className, asChild = false }: OptionButtonProps) => {
+    const childIsButton = React.isValidElement(children) && children.type === 'button';
+
+    return (
+        <Button
+            variant="outline"
+            size="sm"
+            onClick={onClick}
+            asChild={asChild && !childIsButton}
+            className={cn(isActive && "border-2 border-primary", className)}
+        >
+            {children}
+        </Button>
+    )
+}
 
 export default function ThemeCustomizer() {
     const mounted = useMounted();
@@ -63,18 +73,6 @@ export default function ThemeCustomizer() {
 
     const filteredColors = useMemo(() => baseColors.filter(({ name }) => !["stone", "gray", "neutral"].includes(name)), []);
 
-    const layouts = [
-        { key: 'vertical', label: 'Vertical', icon: VerticalLayoutIcon },
-        { key: 'horizontal', label: 'Horizontal', icon: HorizontalLayoutIcon },
-        { key: 'collapsed', label: 'Collapsed', icon: CollapsedLayoutIcon },
-        { key: 'dual-menu', label: 'Dual Menu', icon: CollapsedLayoutIcon },
-    ];
-
-    const content = [
-        { key: 'wide', label: 'Wide', icon: WideContentIcon },
-        { key: 'compact', label: 'Compact', icon: CompactContentIcon },
-    ];
-
     const layout = [
         {
             label: "Layout",
@@ -94,13 +92,15 @@ export default function ThemeCustomizer() {
         }
     ]
 
-
     return (
         <>
             <Sheet>
                 <SheetTrigger asChild>
-                    <Button variant={'ghost'} size="icon"><PaletteIcon className='!size-[18px]' /></Button>
+                    <TooltipWrapper tooltip="Customize Theme">
+                        <ThemeConfigButton />
+                    </TooltipWrapper>
                 </SheetTrigger>
+
                 <SheetContent className="h-[calc(100vh-32px)] p-4 [&>button:first-child]:hidden m-4 rounded-lg">
                     <ThemeWrapper>
                         <SheetHeader>
@@ -206,10 +206,7 @@ export default function ThemeCustomizer() {
                                         </div>
                                     </div>
                                 ))}
-
                             </div>
-
-                            <ScrollBar orientation="vertical" />
                         </ScrollArea>
                     </ThemeWrapper>
                 </SheetContent>

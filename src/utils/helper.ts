@@ -1,36 +1,27 @@
-interface IModule {
-    id: string;
-    name: string;
-    path?: string;
-    parentId?: string;
-    groupId: string;
-    groupName: string;
-    permissions: number;
-    subModules: IModule[];
-}
+import { ModuleNode } from "@/types/modules";
 
-export const findModuleId = (modules: IModule[], moduleName: string): string | undefined => {
+export const findModuleId = (modules: ModuleNode[], moduleName: string): string | undefined => {
     for (const module of modules) {
         if (module.name === moduleName) {
             return module.id as string;
         }
 
-        if (module.subModules && module.subModules.length > 0) {
-            const subModuleId = findModuleId(module.subModules, moduleName);
+        if (module.children && module.children.length > 0) {
+            const subModuleId = findModuleId(module.children, moduleName);
             if (subModuleId) return subModuleId as string;
         }
     }
     return undefined;
 };
 
-export const findModuleIdByPath = (modules: IModule[], path: string): string | undefined => {
+export const findModuleIdByPath = (modules: ModuleNode[], path: string): string | undefined => {
     for (const module of modules) {
         if (module.path === path) {
             return module.id as string;
         }
 
-        if (module.subModules && module.subModules.length > 0) {
-            const subModuleId = findModuleId(module.subModules, path);
+        if (module.children && module.children.length > 0) {
+            const subModuleId = findModuleId(module.children, path);
             if (subModuleId) return subModuleId as string;
         }
     }

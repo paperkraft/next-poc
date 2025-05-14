@@ -13,24 +13,26 @@ import { ChildProps } from '@/types';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
 import type { Metadata } from "next";
+import { auth } from '@/auth';
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | App",
-    absolute: "App",
+    template: "%s | SV",
+    absolute: "SV",
   },
   description: "CRM"
 };
 
 export default async function RootLayout({ children }: ChildProps) {
+  const session = await auth();
   const locale = await getLocale();
   const messages = await getMessages();
 
   return (
     <html lang={locale} suppressHydrationWarning>
       <body className={cn(inter.className)}>
-        <NextAuthProvider>
+        <NextAuthProvider session={session}>
           <NextIntlClientProvider messages={messages}>
             <ThemeProvider>
               <AppLayout>

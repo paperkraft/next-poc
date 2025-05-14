@@ -1,5 +1,5 @@
 "use client";
-import { Eye } from 'lucide-react';
+
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useMemo } from 'react';
@@ -9,7 +9,7 @@ import { useMounted } from '@/hooks/use-mounted';
 import { ColumnDef } from '@tanstack/react-table';
 
 export const GroupsMasterColumns = () => {
-  
+
   const mounted = useMounted();
   const path = usePathname();
 
@@ -39,16 +39,19 @@ export const GroupsMasterColumns = () => {
     {
       accessorKey: "name",
       header: "Name",
-    },
-    {
-      accessorKey: "view",
-      header:() => null,
-      cell: ({row}) => (
-        <Link href={`${path}/${row.original.id}`} className="opacity-0 group-hover:opacity-100 hover:text-blue-500 block size-4"><Eye className="size-4" /></Link>
+      cell: ({ row, getValue }) => (
+        <Link
+          title={`${row.original.name}`}
+          prefetch={false}
+          href={`${path}/${row.original.id}`}
+          aria-label={`View details for group ${row.original.name}`}
+          className="hover:text-primary"
+        >
+          {getValue<boolean>()}
+        </Link>
       ),
-      enableSorting: false,
     }
-  ], []);
+  ], [path]);
 
   return mounted ? { columns } : { columns: [] };
 };

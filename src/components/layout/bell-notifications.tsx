@@ -8,6 +8,8 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { useNotifications } from '@/context/notification-context';
 import React from 'react';
+import BellNotificationsButton from './BellNotificationsButton';
+import TooltipWrapper from '../common/tootip-wrapper';
 
 const BellNotifications = () => {
     const [open, setOpen] = React.useState(false);
@@ -41,15 +43,15 @@ const BellNotifications = () => {
     return (
         <DropdownMenu open={open} onOpenChange={(isOpen) => setOpen(isOpen)}>
             <DropdownMenuTrigger asChild>
-                <Button variant={'ghost'} className='size-8 block relative' autoFocus={false}>
-                    <BellIcon className='-translate-x-1/2 block !size-5' />
-                    {
-                        count > 0 && (
+                <TooltipWrapper tooltip="Notifications">
+                    <BellNotificationsButton>
+                        {count > 0 && (
                             <span className='absolute top-0 right-0 bg-red-500 size-[18px] rounded-full flex justify-center items-center'>
                                 <span className='text-white text-[12px] select-none'>{count}</span>
-                            </span>)
-                    }
-                </Button>
+                            </span>
+                        )}
+                    </BellNotificationsButton>
+                </TooltipWrapper>
             </DropdownMenuTrigger>
 
             <DropdownMenuContent align='end' className='min-w-64 max-w-72 shadow-lg'>

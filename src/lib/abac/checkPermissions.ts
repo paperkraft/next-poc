@@ -1,11 +1,12 @@
-import { ActionParam, ALL_PERMISSIONS, IModule, PermissionAction } from "@/types/permissions";
+import { ActionParam, ALL_PERMISSIONS, PermissionAction } from "@/types/permissions";
 import { isABACAllowed } from "./isABACAllowed";
+import { ModuleNode } from "@/types/modules";
 
 type BaseParams = {
     moduleId?: string;
     path?: string;
     name?: string;
-    modules: IModule[];
+    modules: ModuleNode[];
 };
 
 function normalizeActions(action: ActionParam): PermissionAction[] {
@@ -22,6 +23,6 @@ function createChecker(requireAll: boolean) {
         });
 }
 
-export const can = createChecker(false);        
+export const can = createChecker(false);
 export const canAny = createChecker(false);
 export const canAll = createChecker(true);

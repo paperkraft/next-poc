@@ -1,8 +1,9 @@
-import { IModule } from "@/app/_Interface/Module"
-import { Style } from "@/registry/registry-styles";
-import { BaseColor } from "@/registry/registry-base-colors";
-import { useAtom } from "jotai"
-import { atomWithStorage } from "jotai/utils"
+import { useAtom } from 'jotai';
+import { atomWithStorage } from 'jotai/utils';
+
+import { BaseColor } from '@/registry/registry-base-colors';
+import { Style } from '@/registry/registry-styles';
+import { ModuleNode } from '@/types/modules';
 
 type UserConfig = {
     id: string,
@@ -10,7 +11,7 @@ type UserConfig = {
     email: string,
     roleId: string,
     permissions: number,
-    modules: IModule[]
+    modules: ModuleNode[]
 } | null;
 
 export type LayoutType = {
@@ -25,7 +26,7 @@ export type ThemeConfig = {
     mode: string;
     layout: LayoutType["layout"];
     content: LayoutType["content"] | string;
-    theme:  BaseColor["name"];
+    theme: BaseColor["name"];
     radius: number;
 }
 

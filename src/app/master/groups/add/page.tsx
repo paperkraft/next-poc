@@ -1,19 +1,22 @@
-import { Metadata } from 'next';
+import { headers } from 'next/headers';
 
+import AccessDenied from '@/components/custom/access-denied';
 import { PermissionGuard } from '@/components/PermissionGuard';
 
 import GroupForm from '../GroupForm';
-import AccessDenied from '@/components/custom/access-denied';
 
-export const metadata: Metadata = {
+export const metadata = {
   title: "Create Group",
   description: "Define a new group",
 };
 
 export default async function CreateGroup() {
+  const headersList = headers();
+  const currentPath = headersList.get('x-current-path') || '';
+
   return (
-    <PermissionGuard name="Groups" action="WRITE" fallback={<AccessDenied/>}>
-      <GroupForm  />
+    <PermissionGuard path={currentPath} action="WRITE" fallback={<AccessDenied />}>
+      <GroupForm />
     </PermissionGuard>
   );
 }

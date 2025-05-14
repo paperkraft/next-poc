@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET() {
-  return fetchModules();
+  const res = await fetchModules();
+  return NextResponse.json({ success: res.success, message: res.message, data: res.data });
 }
 
 export async function POST(req: NextRequest) {

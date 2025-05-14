@@ -1,21 +1,24 @@
 'use client'
 
-import React, { useMemo } from "react";
-import { SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarInput, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, useSidebar } from "@/components/ui/sidebar";
-import { ChevronRight, DotIcon, SearchIcon, X } from "lucide-react";
-import { useSession } from "next-auth/react";
+import _ from 'lodash';
+import { ChevronRight, DotIcon, SearchIcon, X } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import React, { useMemo } from 'react';
 
-import DefaultMenu from "./sidebar-default";
-import SidebarSkeleton from "./sidebar-skeleton";
-import { checkIsActive, mapMenu, menuType, submenuType } from "./helper";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { useDebounce } from "@/hooks/use-debounce";
-import _ from "lodash";
-import { usePathname } from "next/navigation";
-import Link from "next/link";
-import { cn } from "@/lib/utils";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import {
+    SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarInput, SidebarMenu,
+    SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, useSidebar
+} from '@/components/ui/sidebar';
+import { useDebounce } from '@/hooks/use-debounce';
+import { cn } from '@/lib/utils';
 
+import { checkIsActive, mapMenu, menuType, submenuType } from './helper';
+import DefaultMenu from './sidebar-default';
+import SidebarSkeleton from './sidebar-skeleton';
 
 const VerticalMenus = React.memo(() => {
 

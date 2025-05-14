@@ -11,14 +11,14 @@ type Payload = {
 type ModulePermissionInput = {
   moduleId: string;
   permissions: number;
-  subModules?: ModulePermissionInput[];
+  children?: ModulePermissionInput[];
 };
 
 async function flattenModules(modules: ModulePermissionInput[]): Promise<ModulePermissionInput[]> {
   const result: ModulePermissionInput[] = [];
   const recurse = (mod: ModulePermissionInput) => {
     result.push({ moduleId: mod.moduleId, permissions: mod.permissions });
-    mod.subModules?.forEach(recurse);
+    mod.children?.forEach(recurse);
   };
   modules.forEach(recurse);
   return result;

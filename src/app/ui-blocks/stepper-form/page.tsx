@@ -1,13 +1,11 @@
-import { Metadata } from 'next';
-
 import StepperForm from '@/components/_stepper-form/StepperForm';
 
-export const metadata: Metadata = {
+export const metadata = {
     title: "Stepper Form",
     description: "Multi-step form",
 };
 
-export default function StepperPage() {
+export default async function StepperPage() {
     return (
         <StepperForm />
     );

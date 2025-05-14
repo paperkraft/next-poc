@@ -26,15 +26,15 @@ export default function Student() {
 
 function UpgradeBanner({ onClose }: { onClose: () => void }) {
     return (
-        <div className="relative flex items-center justify-between p-3 border border-blue-100 rounded-lg mb-6 bg-blue-50/50 dark:bg-blue-950/50 dark:border-blue-900">
-            <div className="flex items-center gap-2">
-                <div>
-                    <Info className="size-5 text-blue-500" />
+        <div className="relative flex justify-between p-3 border border-blue-100 rounded-lg mb-6 bg-blue-50/50 dark:bg-blue-950/50 dark:border-blue-900">
+            <div className="flex flex-wrap lg:flex-nowrap items-center gap-2">
+                <div className="flex gap-2">
+                    <Info className="size-4 text-blue-500 flex-1" />
+                    <p className="text-gray-700 dark:text-gray-300 text-xs lg:text-sm">
+                        Upgrade your plan today to access premium features and resources!
+                    </p>
                 </div>
-                <p className="text-gray-700 dark:text-gray-300">
-                    Upgrade your plan today to access premium features and resources!
-                </p>
-                <Button variant="link" className="text-blue-600 font-medium p-0 dark:text-blue-400">
+                <Button variant="link" className="text-blue-600 font-medium p-0 dark:text-blue-400 text-xs lg:text-sm">
                     Upgrade Now
                 </Button>
             </div>

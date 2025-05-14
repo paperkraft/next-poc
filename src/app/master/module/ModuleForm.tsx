@@ -1,28 +1,26 @@
 'use client';
 
-import { Edit, Loader, Trash2 } from 'lucide-react';
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import * as z from 'zod';
 
-import { IModule, IOption } from '@/app/_Interface/Module';
 import {
     FloatingInputController
 } from '@/components/_form-controls/floating-label/input-controller';
 import {
     FloatingSelectController
 } from '@/components/_form-controls/floating-label/select-controller';
-import ButtonContent from '@/components/custom/button-content';
-import DialogBox from '@/components/custom/dialog-box';
+import ConfirmDeleteDialog from '@/components/common/confirm-delete-dialog';
+import FormButtons from '@/components/common/form-buttons';
 import TitlePage from '@/components/custom/page-heading';
-import { PermissionGuard } from '@/components/PermissionGuard';
-import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import { useMounted } from '@/hooks/use-mounted';
 
 import { RecursiveModuleForm } from './RecursiveModules';
+import { ModuleWithChildren } from '@/types/modules';
+import { Options } from '@/types';
 
 export type ModuleFormData = {
     id?: string;
@@ -47,17 +45,17 @@ type ModuleFormValues = z.infer<typeof ModuleFormSchema>;
 
 interface PageProps {
     id?: string,
-    modules?: IModule,
-    groupOptions: IOption[]
+    module?: ModuleWithChildren,
+    isChild?: boolean,
+    groupOptions: Options[]
 }
 
-export default function ModuleForm({ id, modules, groupOptions }: PageProps) {
+export default function ModuleForm({ id, module, groupOptions, isChild = false }: PageProps) {
 
     const isEdit = !!id;
 
     const mounted = useMounted();
     const router = useRouter();
-    const path = usePathname();
 
     const [show, setShow] = useState(false);
     const [open, setOpen] = useState(false);
@@ -73,15 +71,15 @@ export default function ModuleForm({ id, modules, groupOptions }: PageProps) {
     });
 
     useEffect(() => {
-        if (id && modules) {
+        if (id && module) {
             form.reset({
-                name: modules.name,
-                path: modules.path || '',
-                groupId: modules.groupId || '',
-                children: modules.children || [],
+                name: module.name,
+                path: module.path || '',
+                groupId: module.groupId || '',
+                children: module.children || [],
             });
         }
-    }, [id, modules, form]);
+    }, [id, module, form]);
 
 
     const onSubmit = async (data: ModuleFormValues) => {
@@ -145,20 +143,15 @@ export default function ModuleForm({ id, modules, groupOptions }: PageProps) {
                 headers: { 'Content-Type': 'application/json' }
             })
 
-            if (!res.ok) {
-                const error = await res.json();
-                toast.error(error.message);
+            const result = await res.json();
+
+            if (!res.ok || !result.success) {
+                toast.error(result.message || "Failed to delete module");
                 return;
             }
 
-            const result = await res.json();
-
-            if (result.success) {
-                toast.success(result.message);
-                router.replace('.');
-            } else {
-                toast.error(result.message);
-            }
+            toast.success(result.message);
+            router.replace('.');
 
         } catch (error) {
             console.error(error);
@@ -188,52 +181,33 @@ export default function ModuleForm({ id, modules, groupOptions }: PageProps) {
 
     const readOnly = !show && !!id;
 
+    if (!mounted) return null;
+
     return (
-        mounted &&
         <>
             <TitlePage
                 title={title}
                 description={pageDesc}
                 viewPage={!!id}
                 createPage={!id}
-            >
-                {!show && id && (
-                    <>
-                        <PermissionGuard action="UPDATE" path={path}>
-                            <Button
-                                className="size-7"
-                                variant={"outline"}
-                                size={"sm"}
-                                onClick={() => setShow(true)}
-                            >
-                                <Edit className="size-5" />
-                            </Button>
-                        </PermissionGuard>
-                        <PermissionGuard action="DELETE" path={path}>
-                            <Button
-                                className="size-7"
-                                variant={"outline"}
-                                size={"sm"}
-                                onClick={() => setOpen(true)}
-                            >
-                                <Trash2 className="size-5 text-destructive" />
-                            </Button>
-                        </PermissionGuard>
-                    </>
-                )}
-            </TitlePage>
+                isEditingVisible={!show && !!id}
+                onEdit={() => setShow(true)}
+                onDelete={() => setOpen(true)}
+            />
 
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
-                        <FloatingSelectController
-                            name="groupId"
-                            label="Group"
-                            options={groupOptions ?? []}
-                            description={groupDesc}
-                            readOnly={readOnly}
-                            disabled={readOnly}
-                        />
+                        {!isChild && (
+                            <FloatingSelectController
+                                name="groupId"
+                                label="Group"
+                                options={groupOptions ?? []}
+                                description={groupDesc}
+                                readOnly={readOnly}
+                                disabled={readOnly}
+                            />
+                        )}
                         <FloatingInputController
                             name="name"
                             label="Module Name"
@@ -270,59 +244,19 @@ export default function ModuleForm({ id, modules, groupOptions }: PageProps) {
                     />
 
                     {((show && id) || (!id)) && (
-                        <div className="flex justify-end my-4 gap-2">
-                            <Button
-                                type="button"
-                                variant={"outline"}
-                                onClick={() => router.back()}
-                            >
-                                Cancel
-                            </Button>
-
-                            <Button
-                                type="submit"
-                                disabled={loading}
-                            >
-                                <ButtonContent
-                                    status={loading}
-                                    text={id ? "Update" : "Create"}
-                                />
-                            </Button>
-                        </div>
+                        <FormButtons id={id} loading={loading} />
                     )}
                 </form>
             </Form>
 
-            {open && mounted && (
-                <DialogBox
+            {open && (
+                <ConfirmDeleteDialog
                     open={open}
-                    preventClose
-                    title={"Delete Confirmation"}
-                    setClose={() => setOpen(false)}
-                >
-                    <p>Are you sure? Do you want to delete the module&nbsp;
-                        <strong>{modules?.name}</strong>?<br />
-                        This action cannot be undone.
-                    </p>
-
-                    <div className="flex justify-end gap-2">
-                        <Button
-                            aria-label="Delete selected module"
-                            variant={'destructive'}
-                            disabled={loading}
-                            onClick={() => handleDelete(id as string)}
-                        >
-                            {loading && <Loader className="size-4 animate-spin" />}
-                            {loading ? "Deleting" : "Confirm"}
-                        </Button>
-                        <Button
-                            type='button'
-                            variant={'outline'}
-                            onClick={() => setOpen(false)}>
-                            Cancel
-                        </Button>
-                    </div>
-                </DialogBox>
+                    itemName={module?.name || ''}
+                    loading={loading}
+                    onConfirm={() => handleDelete(id as string)}
+                    onCancel={() => setOpen(false)}
+                />
             )}
         </>
     );

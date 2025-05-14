@@ -11,7 +11,8 @@ import {
 } from '@/components/ui/table';
 import { useMounted } from '@/hooks/use-mounted';
 import { cn } from '@/lib/utils';
-import { IGroupedModule, IModule } from '@/types/permissions';
+import { ModuleNode } from '@/types/modules';
+import { IGroupedModule } from '@/types/permissions';
 
 export default function GroupTable({ groupedModules }: { groupedModules: IGroupedModule[] }) {
     return (
@@ -60,14 +61,14 @@ export default function GroupTable({ groupedModules }: { groupedModules: IGroupe
 }
 
 
-const Tree = React.memo(({ data, level }: { data: IModule, level: number }) => {
+const Tree = React.memo(({ data, level }: { data: ModuleNode, level: number }) => {
 
     const mounted = useMounted();
     const path = usePathname();
 
-    const hasSubModules = data && data?.subModules?.length > 0;
-    
-    if(!mounted) return null;
+    const hasSubModules = data && data?.children?.length > 0;
+
+    if (!mounted) return null;
 
     return (
         <Collapsible asChild>
@@ -95,7 +96,7 @@ const Tree = React.memo(({ data, level }: { data: IModule, level: number }) => {
                 <CollapsibleContent asChild>
                     <React.Fragment>
                         {
-                            data && data.subModules.map((sub, index) => (
+                            data && data.children.map((sub, index) => (
                                 <Tree key={index} data={sub} level={level + 1} />
                             ))
                         }

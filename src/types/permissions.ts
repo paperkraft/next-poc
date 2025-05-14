@@ -1,5 +1,7 @@
+import { ModuleNode } from "./modules";
+
 export type PermissionKey = 'read' | 'write' | 'update' | 'delete';
- 
+
 export const PERMISSIONS = {
   READ: 1 << 0,
   WRITE: 1 << 1,
@@ -12,29 +14,13 @@ export const ALL_PERMISSIONS: PermissionAction[] = Object.keys(PERMISSIONS) as P
 
 type SpecialAction = "ALL" | "ANY";
 export type ActionParam = PermissionAction | PermissionAction[] | SpecialAction;
-
-export interface IRole {
-  id: string;
-  name: string;
-}
-export interface IModule {
-  id: string;
-  name: string;
-  path?: string;
-  parentId?: string;
-  groupId: string;
-  groupName: string;
-  permissions: number;
-  subModules: IModule[];
-  position: number;
-}
 export interface IGroupedModule {
   groupId: string;
   groupName: string;
-  modules: IModule[];
+  modules: ModuleNode[];
 }
 export interface PermissionPayload {
   moduleId: string;
   permissions: number;
-  subModules: PermissionPayload[];
+  children: PermissionPayload[];
 }

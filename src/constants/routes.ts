@@ -3,7 +3,6 @@ export const PUBLIC_PATHS = [
     '/signin',
     '/signup',
     '/forgot-password',
-    // '/access-denied'
 ];
 
 export const PRIVATE_PATHS = [

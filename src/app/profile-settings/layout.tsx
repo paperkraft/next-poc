@@ -13,10 +13,10 @@ export default async function Layout({ children }: { children: ReactNode }) {
       title: t('profile.title'),
       href: "/profile-settings",
     },
-    {
-      title: t('account.title'),
-      href: "/profile-settings/account",
-    },
+    // {
+    //   title: t('account.title'),
+    //   href: "/profile-settings/account",
+    // },
     {
       title: t('appearance.title'),
       href: "/profile-settings/appearance",

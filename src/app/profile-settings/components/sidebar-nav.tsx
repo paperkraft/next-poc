@@ -4,6 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
+import { useMounted } from "@/hooks/use-mounted"
 
 interface SidebarNavProps extends React.HTMLAttributes<HTMLElement> {
   items: {
@@ -13,7 +14,10 @@ interface SidebarNavProps extends React.HTMLAttributes<HTMLElement> {
 }
 
 export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
-  const pathname = usePathname()
+  const mounted = useMounted();
+  const pathname = usePathname();
+
+  if (!mounted) return null;
 
   return (
     <nav
@@ -30,7 +34,7 @@ export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
           className={cn(
             buttonVariants({ variant: "ghost" }),
             "justify-start hover:text-primary",
-            {"bg-muted hover:bg-muted text-primary" : pathname === item.href}
+            { "bg-muted hover:bg-muted text-primary": pathname === item.href }
           )}
         >
           {item.title}

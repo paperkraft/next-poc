@@ -1,11 +1,14 @@
 'use client'
 
-import React from "react";
-import { getFormattedDateTime } from "@/utils";
-import { DataTable } from "@/components/_data-table/data-table";
-import { DetailsDialog } from "./view-details";
-import { createColumns } from "./column-data";
-import { toast } from "sonner";
+import React from 'react';
+import { toast } from 'sonner';
+
+import { DataTable } from '@/components/_data-table/data-table';
+import { getFormattedDateTime } from '@/utils';
+
+import { createColumns } from './column-data';
+import { DetailsDialog } from './view-details';
+
 interface AuditLogTableProp {
     data: {
         id: String,

@@ -16,7 +16,12 @@ export const DetailsDialog = React.memo(({ open, setOpen, details }: DetailsDial
                 <DialogHeader>
                     <DialogTitle className="mb-4">Details</DialogTitle>
                     <div id="content" className="font-mono text-sm whitespace-pre-wrap">
-                        {details ? renderRecursive(details?.data, 0) : <p>No details</p>}
+                        {details
+                            ? details.data
+                                ? renderRecursive(details.data)
+                                : renderRecursive(details)
+                            : <p>No details</p>
+                        }
                     </div>
                 </DialogHeader>
             </DialogContent>

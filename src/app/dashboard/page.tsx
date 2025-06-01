@@ -1,7 +1,7 @@
 import AllowNotification from "@/components/custom/allow-notification";
 import Student from "./student";
 
-export default function Page() {
+export default async function Page() {
 
   return (
     <>

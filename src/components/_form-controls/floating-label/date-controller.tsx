@@ -1,6 +1,6 @@
 'use client';
 
-import { isDate } from 'date-fns';
+import { format, isDate } from 'date-fns';
 import { HTMLAttributes } from 'react';
 import { FieldValues, Path, PathValue, useFormContext } from 'react-hook-form';
 
@@ -37,12 +37,7 @@ export const FloatingDateController = <T extends FieldValues>({ name, label, ...
                         label={label}
                         value={field.value ? new Date(field.value) : null}
                         onChange={(date: Date | null) => {
-                            try {
-                                field.onChange(isDate(date) ? date.toISOString() : '');
-                            } catch (error) {
-                                console.error(error);
-                                throw error;
-                            }
+                            field.onChange(date ? format(date, "yyyy-MM-dd") : "");
                         }}
                         disabled={rest?.disabled}
                         readOnly={rest?.readOnly}

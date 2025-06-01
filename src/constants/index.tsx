@@ -20,7 +20,7 @@ export const fieldTypes: FieldType[] = [
   { name: 'Signature Input', isNew: true },
 ]
 
-export const defaultFieldConfig: Record<string, { label: string; description: string; placeholder?: any, defaultValue?:any }> = {
+export const defaultFieldConfig: Record<string, { label: string; description: string; placeholder?: any, defaultValue?: any }> = {
   Input: {
     label: 'Label',
     description: 'This is sample description.',
@@ -95,6 +95,8 @@ export const defaultFieldConfig: Record<string, { label: string; description: st
 }
 
 export const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+
+export const SECRET_KEY = process.env.NEXT_PUBLIC_STORE_KEY
 
 export const availableTopics = [
   { label: "System", topic: "system", desc: "Systems notifcations" },

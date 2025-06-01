@@ -13,6 +13,7 @@ import { ChildProps } from '@/types';
 
 import type { Metadata } from "next";
 import { auth } from '@/auth';
+import StoreProvider from '@/context/store-provider';
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -31,16 +32,18 @@ export default async function RootLayout({ children }: ChildProps) {
   return (
     <html lang={locale} suppressHydrationWarning>
       <body className={cn(inter.className)}>
-        <NextAuthProvider session={session}>
-          <NextIntlClientProvider messages={messages}>
-            <ThemeProvider>
-              <AppLayout>
-                {children}
-              </AppLayout>
-              <Toaster richColors position="top-center" />
-            </ThemeProvider>
-          </NextIntlClientProvider>
-        </NextAuthProvider>
+        <StoreProvider>
+          <NextAuthProvider session={session}>
+            <NextIntlClientProvider messages={messages}>
+              <ThemeProvider>
+                <AppLayout>
+                  {children}
+                </AppLayout>
+                <Toaster richColors position="top-center" />
+              </ThemeProvider>
+            </NextIntlClientProvider>
+          </NextAuthProvider>
+        </StoreProvider>
       </body>
     </html>
   );

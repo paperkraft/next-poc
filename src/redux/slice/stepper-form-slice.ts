@@ -10,12 +10,13 @@ export const InitialFormValue = {
     bloodGroup: "",
 
     location: {
+        pincode: "",
         addressLine1: "",
         addressLine2: "",
-        addressLine3: "",
+        area: "",
         country: "",
         state: "",
-        city: "",
+        district: "",
     },
 
     email: "",

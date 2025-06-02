@@ -14,7 +14,7 @@ type StepSchemas<T extends z.ZodType<any>> = {
     onUpdate?: (data: z.infer<T>) => void;
 }
 
-function useDebounce<T extends (...args: any[]) => void>(fn: T, delay: number) {
+export function useDebounce<T extends (...args: any[]) => void>(fn: T, delay: number) {
     const timeout = React.useRef<NodeJS.Timeout | null>(null);
 
     return React.useCallback((...args: Parameters<T>) => {

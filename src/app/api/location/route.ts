@@ -3,7 +3,7 @@ import path from 'path'
 import fs from 'fs'
 
 // Types
-type PincodeEntry = {
+export type PincodeEntry = {
     country: string
     district: string
     pincode: number
@@ -52,17 +52,36 @@ export async function GET(request: Request) {
         !areaParam &&
         !talukasParam
     ) {
-        return NextResponse.json(
-            { error: 'No matching records found.' },
-            { status: 400 }
-        )
+        return NextResponse.json({
+            success: false,
+            message: 'No matching records found.'
+        }, { status: 404 })
     }
 
     const data = loadPincodeData();
 
     // Exact match by pincode
-    if (pincodeParam && data[pincodeParam]) {
-        return NextResponse.json(data[pincodeParam])
+    if (pincodeParam) {
+        if (pincodeParam.length === 6) {
+            const entry = data[pincodeParam];
+            if (entry) {
+                return NextResponse.json({
+                    success: true,
+                    message: 'Pincode exist',
+                    data: entry
+                }, { status: 200 });
+            } else {
+                return NextResponse.json({
+                    success: false,
+                    message: 'No matching records found for the provided pincode.'
+                }, { status: 404 });
+            }
+        } else {
+            return NextResponse.json({
+                success: false,
+                message: 'Invalid pincode format. Must be 6 digits.'
+            }, { status: 400 });
+        }
     }
 
     // Filter by district/state/area
@@ -88,9 +107,17 @@ export async function GET(request: Request) {
     }
 
     if (results.length === 0) {
-        return NextResponse.json({ error: 'No matching records found.' }, { status: 404 })
+        return NextResponse.json({
+            success: false,
+            message: 'No matching records found.'
+        }, { status: 404 })
     }
 
-    const filtered = Object.fromEntries(results)
-    return NextResponse.json(filtered)
+    const filtered = Object.fromEntries(results);
+
+    return NextResponse.json({
+        success: true,
+        message: 'Success',
+        data: filtered
+    }, { status: 200 })
 }

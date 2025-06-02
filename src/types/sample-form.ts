@@ -22,12 +22,13 @@ export const sampleFormSchema = z.object({
     alternateMobile: z.string().optional(),
 
     location: z.object({
+        pincode: RequiredString("Postal code is required"),
         addressLine1: RequiredString("Address Line 1 is required"),
         addressLine2: z.string().optional(),
-        addressLine3: z.string().optional(),
+        area: RequiredString("Area is required"),
         country: RequiredString("Please select a country"),
         state: RequiredString("Please select a state"),
-        city: RequiredString("Please select a city"),
+        district: RequiredString("Please select a city"),
     }),
 
     emergencyContacts: z.array(emergencyContactsSchema)

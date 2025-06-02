@@ -33,6 +33,8 @@ export default function WelcomePage() {
   //   fetchDeviceInfo();
   // }, []);
 
+  
+
   return (
     mounted && data &&
     <>

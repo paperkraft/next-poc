@@ -9,16 +9,27 @@ interface StepperIndicatorProps {
   activeStep: number;
   icons?: boolean;
   stepIcons?: React.ReactNode[];
+  onStepClick?: (stepNo: number) => void; // ← add this
+
 }
 
-const StepperIndicator = ({ steps, activeStep, icons = false, stepIcons = [] }: StepperIndicatorProps) => {
+const StepperIndicator = ({
+  steps,
+  activeStep,
+  icons = false,
+  stepIcons = [],
+  onStepClick
+}: StepperIndicatorProps) => {
   const stepArray = Array.from({ length: steps }, (_, i) => i + 1);
 
   return (
     <div className="flex justify-center items-center p-4">
       {stepArray.map((step, index) => (
         <Fragment key={step}>
-          <div
+          <button
+            type="button"
+            disabled={step === activeStep}            // optional: disable current
+            onClick={() => onStepClick?.(step)}
             className={cn("size-10 flex justify-center items-center border-2 rounded-full",
               step < activeStep
                 ? "bg-primary text-primary-foreground border-primary"
@@ -32,7 +43,7 @@ const StepperIndicator = ({ steps, activeStep, icons = false, stepIcons = [] }: 
               : step < activeStep
                 ? <Check className="size-5" />
                 : step}
-          </div>
+          </button>
 
           {index < steps - 1 && (
             <div className="relative flex-grow h-0.5 bg-muted overflow-hidden">

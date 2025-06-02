@@ -9,9 +9,11 @@ import { getSessionModules } from '@/lib/abac/sessionModules';
 import { findModuleIdByPath } from '@/utils/helper';
 
 import GroupMasterList from './GroupMasterList';
+import fs from "fs";
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 10;
+
 
 export const metadata = {
   title: "Groups",
@@ -19,6 +21,7 @@ export const metadata = {
 };
 
 export default async function GroupPage() {
+
   const headersList = headers();
   const currentPath = headersList.get('x-current-path') || '';
 

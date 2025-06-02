@@ -37,3 +37,18 @@ export function debounce<T extends (...args: any[]) => void>(callback: T, delay:
     }, delay);
   };
 }
+
+
+export const parseToDate = (val: string): Date | null => {
+  // ISO 8601: 1990-12-31  ➜ [yyyy, mm, dd]
+  const iso = /^(\d{4})-(\d{2})-(\d{2})$/;
+  const isoM = val.match(iso);
+  if (isoM) return new Date(`${isoM[1]}-${isoM[2]}-${isoM[3]}`);
+
+  // DMY: 31-12-1990      ➜ [dd, mm, yyyy]
+  const dmy = /^(\d{2})-(\d{2})-(\d{4})$/;
+  const dmyM = val.match(dmy);
+  if (dmyM) return new Date(`${dmyM[3]}-${dmyM[2]}-${dmyM[1]}`);
+
+  return null; // unsupported format
+};

@@ -1,6 +1,6 @@
-import { z, ZodString } from 'zod';
+import { z } from 'zod';
 
-export type Options = {
+export type SelectOptions = {
     label: string;
     value: string;
 }
@@ -9,9 +9,17 @@ export type FormFields = {
     name: string;
     label: string;
     type: string;
+
     required?: boolean;
     validations?: any;
-    options?: Options[];
+
+    endpoint?: string;
+
+    colSpan?: number;
+    rowSpan?: number;
+    startColumn?: number;
+    startRow?: number;
+
     showIf?: {
         field: string;
         value: string;
@@ -91,7 +99,6 @@ export function generateZodSchema(fields: FormFields[]) {
                     break;
             }
         } else {
-            // If not required, allow empty values
             switch (field.type) {
                 case "TEXT":
                 case "TEXTAREA":

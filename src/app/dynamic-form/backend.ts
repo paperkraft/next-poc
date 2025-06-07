@@ -1,33 +1,47 @@
-export const backendForm = {
+import { FormFields } from "./schema";
+
+type formConfig = {
+    fields: FormFields[];
+    steps: {
+        title: string;
+        fields: string[]
+    }[];
+    layout: {
+        columns: number;
+    }
+}
+
+export const backendForm: formConfig = {
     fields: [
         { name: 'fullName', label: 'Full Name', type: 'TEXT', required: true, validations: { minLength: 3, maxLength: 5 } },
-        { name: 'email', label: 'Email Address', type: 'EMAIL', required: true },
+        { name: 'gender', label: 'Gender', type: 'SELECT', required: true, endpoint: '/api/options/gender', startColumn: 1 },
+        { name: 'dob', label: 'Date of Birth', type: 'DATE', startColumn: 3 },
+        { name: 'email', label: 'Email Address', type: 'EMAIL', required: true, colSpan: 2 },
         {
-            name: 'department', label: 'Department', type: 'SELECT', required: true, options: [
-                { label: 'HR', value: 'hr' }, { label: 'Engineering', value: 'eng' }, { label: 'Marketing', value: 'mkt' }
-            ]
+            name: 'department', label: 'Department', type: 'SELECT', required: true,
+            endpoint: '/api/options/departments'
+
         },
         { name: 'startDate', label: 'Start Date', type: 'DATE' },
-        { name: 'address', label: 'Address', type: 'TEXTAREA', colSpan: 2 },
-        { name: 'github', label: 'GitHub Profile', type: 'TEXT', showIf: { field: 'department', value: 'eng' } },
+        { name: 'address', label: 'Address', type: 'TEXTAREA', colSpan: 3, rowSpan: 2 },
+        { name: 'branch', label: 'Branch', type: 'TEXT', showIf: { field: 'department', value: 'eng' } },
         { name: 'agreement', label: 'Agree to Terms', type: 'CHECKBOX', required: true },
     ],
     steps: [
         {
             title: 'Personal Info',
-            fields: ['fullName', 'email'],
+            fields: ['fullName', 'dob', 'gender', 'email'],
         },
         {
             title: 'Work Info',
-            fields: ['department', 'startDate', 'address'],
+            fields: ['department', 'branch', 'startDate', 'address'],
         },
         {
             title: 'Consent',
-            fields: ['github', 'agreement'],
+            fields: ['agreement'],
         }
     ],
     layout: {
-        columns: 2,
-        fieldOrder: ['fullName', 'email', 'department', 'startDate', 'github', 'agreement']
+        columns: 3
     }
 };

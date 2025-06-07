@@ -3,25 +3,28 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Control, Controller, UseFormRegister } from 'react-hook-form';
-import { FormField } from '@/components/ui/form';
+import { SelectOptions } from './schema';
 
 type FieldsComponents = {
     field: any;
     register: UseFormRegister<any>;
     control: Control;
+    selectOptions: Record<string, SelectOptions[]>;
 }
 
-export function FieldComponent({ field, register, control }: FieldsComponents) {
+export function FieldComponent({ field, register, control, selectOptions }: FieldsComponents) {
+
+    const common = { ...register(field.name), id: field.name, placeholder: field.label }
 
     switch (field.type) {
         case 'TEXT':
-            return <Input id={field.name} {...register(field.name)} placeholder={field.label} />;
+            return <Input {...common} />;
         case 'TEXTAREA':
-            return <Textarea id={field.name} {...register(field.name)} placeholder={field.label} />;
+            return <Textarea {...common} />;
         case 'EMAIL':
-            return <Input id={field.name} type="email" {...register(field.name)} placeholder={field.label} />;
+            return <Input {...common} type="email" />;
         case 'NUMBER':
-            return <Input id={field.name} type="number" {...register(field.name)} placeholder={field.label} />;
+            return <Input {...common} type="number" />;
         case 'SELECT':
             return (
                 <Controller
@@ -37,9 +40,9 @@ export function FieldComponent({ field, register, control }: FieldsComponents) {
                                 <SelectValue placeholder='Select' />
                             </SelectTrigger>
                             <SelectContent>
-                                {field.options?.map((opt: any) => (
-                                    <SelectItem key={opt.value} value={opt.value}>
-                                        {opt.label}
+                                {selectOptions && selectOptions[field.name]?.map((item) => (
+                                    <SelectItem key={item.value} value={item.value}>
+                                        {item.label}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -62,7 +65,7 @@ export function FieldComponent({ field, register, control }: FieldsComponents) {
                 />
             );
         case 'DATE':
-            return <Input id={field.name} type="date" {...register(field.name)} className='inline-block' />;
+            return <Input {...common} type="date" className='inline-block' />;
         default:
             return null;
     }

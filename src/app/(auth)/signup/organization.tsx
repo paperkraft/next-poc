@@ -6,13 +6,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod"
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
-import { InputController } from "@/components/_form-controls/InputController";
 import { useMounted } from "@/hooks/use-mounted";
 import { signUp } from "./signup";
 import { toast } from "sonner";
 import ButtonContent from "@/components/custom/button-content";
 import { OrganizationSchema } from "@/lib/zod";
 import { FloatingInputController } from "@/components/_form-controls/floating-label/input-controller";
+import { FloatingSelectController } from "@/components/_form-controls/floating-label/select-controller";
 
 type orgType = z.infer<typeof OrganizationSchema>;
 
@@ -24,6 +24,7 @@ export default function OrganizationPage(signupData: signUp) {
     const form = useForm<orgType>({
         resolver: zodResolver(OrganizationSchema),
         defaultValues: {
+            type: "",
             organization: "",
             state: "",
             city: "",
@@ -34,7 +35,7 @@ export default function OrganizationPage(signupData: signUp) {
         setLoading(true);
         const final = { ...signupData, ...data }
         try {
-            const res = await fetch('/api/user/signup', {
+            const res = await fetch('/api/tenant/onboard', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(final),
@@ -43,7 +44,7 @@ export default function OrganizationPage(signupData: signUp) {
             if (res.success) {
                 setLoading(false);
                 toast.success("Please sign in");
-                router.push('/signin');
+                router.replace('/signin');
             } else {
                 toast.error(res.message);
             }
@@ -55,7 +56,7 @@ export default function OrganizationPage(signupData: signUp) {
         }
     }
 
-    if(!mounted) return null;
+    if (!mounted) return null;
 
     return (
         <Form {...form}>
@@ -68,6 +69,15 @@ export default function OrganizationPage(signupData: signUp) {
                     </div>
 
                     <div className="space-y-5">
+                        <FloatingSelectController
+                            name="type"
+                            label="Organization Type"
+                            options={[
+                                { label: "School", value: "SCHOOL" },
+                                { label: "College", value: "COLLEGE" },
+                            ]}
+                        />
+
                         <FloatingInputController
                             name="organization"
                             label="Organization Name"
@@ -87,7 +97,7 @@ export default function OrganizationPage(signupData: signUp) {
                         />
 
                         <Button type="submit" className="w-full" disabled={loading}>
-                            <ButtonContent status={loading} text="Create" loadingText="Creating..."/>
+                            <ButtonContent status={loading} text="Create" loadingText="Creating..." />
                         </Button>
 
                     </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useState } from "react";
 import { Clock, Flame, Info, Trophy, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,6 +13,22 @@ import { useMounted } from "@/hooks/use-mounted";
 export default function Student() {
     const [showBanner, setShowBanner] = useState(true);
     const mounted = useMounted();
+    const { data } = useSession();
+
+    if (data?.user?.status === 'PENDING') {
+        return (
+            <>
+                <div className="max-w-md mx-auto border p-6 rounded-lg">
+                    <h2 className="text-xl font-semibold">Approval Pending</h2>
+                    <ul className="text-muted-foreground mt-2 text-sm list-inside list-disc">
+                        <li>Your institute account is awaiting approval by the system administrator.</li>
+                        <li>You'll be notified once access is granted.</li>
+                        <li>For assistance, please contact support.</li>
+                    </ul>
+                </div>
+            </>
+        )
+    }
 
     return (
         mounted &&

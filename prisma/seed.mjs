@@ -27,7 +27,6 @@ async function main() {
   }
   console.log("✅ Permissions seeded.");
 
-
   // 2. Roles
   console.log("🎭 Seeding roles...");
   const roles = ["super-admin", "organization-admin", "guest"];
@@ -57,7 +56,6 @@ async function main() {
   }
   console.log("✅ Groups seeded.");
 
-
   // 4. Modules
   console.log("📁 Seeding modules...");
   const modules = [
@@ -73,7 +71,6 @@ async function main() {
     },
   ];
   console.log("✅ Modules seeded.");
-
 
   // Fetch all groups with their IDs
   const allGroups = await prisma.group.findMany();
@@ -92,17 +89,16 @@ async function main() {
       },
     });
   }
-  
+
   // 5. Assign RolePermissions (super-admin gets full access)
   const superAdmin = await prisma.role.findUnique({
     where: { name: "super-admin" },
   });
-  
+
   const guestRole = await prisma.role.findUnique({
     where: { name: "guest" },
   });
-  
-  
+
   console.log("🔧 Assigning role permissions...");
   if (superAdmin) {
     const allModules = await prisma.module.findMany();

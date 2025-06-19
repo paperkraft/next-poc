@@ -1,4 +1,5 @@
 'use client'
+import { useSession } from 'next-auth/react';
 import React from 'react';
 
 import ThemeConfig from '@/components/layout/ThemeCustomizer';
@@ -20,6 +21,7 @@ const Header: React.FC = React.memo(() => {
     const mounted = useMounted();
     const isMobile = useIsMobile();
     const [config] = themeConfig();
+    const { data: session } = useSession();
 
     if (!mounted) return null;
 
@@ -41,8 +43,11 @@ const Header: React.FC = React.memo(() => {
                         </>
                     )}
 
-                    {!isMobile && !isHorizontal && <HeaderBreadcrumb />}
-                    {!isMobile && isHorizontal && <AppLogo />}
+                    {/* {!isMobile && !isHorizontal && <HeaderBreadcrumb />} */}
+                    {/* {!isMobile && isHorizontal && <AppLogo />} */}
+                    {!isMobile && (
+                        <span className='font-medium'>{session?.user?.tenantName ?? ''}</span>
+                    )}
 
                     <div className='ml-auto flex gap-2'>
                         {!isMobile && (

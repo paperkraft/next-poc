@@ -7,9 +7,41 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum TenantType {
+  SCHOOL
+  COLLEGE
+}
+
+model Tenant {
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  name         String     @unique
+  type         TenantType
+  code         String     @unique
+  address      String?
+  city         String?
+  state        String?
+  country      String?
+  contactEmail String?
+  contactPhone String?
+  description  String?
+  isActive     Boolean    @default(true)
+  isDeleted    Boolean    @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users          User[]
+  roles          Role[]
+  groups         Group[]
+  modules        Module[]
+  RolePermission RolePermission[]
+}
+
 // ABAC-style Role
 model Role {
   id          String           @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId    String?          @db.ObjectId
+  tenant      Tenant?          @relation(fields: [tenantId], references: [id])
   name        String           @unique
   users       User[]
   permissions RolePermission[]
@@ -22,9 +54,11 @@ model Role {
 
 // Permissions associated with a specific Role and Module
 model RolePermission {
-  id             String @id @default(auto()) @map("_id") @db.ObjectId
-  roleId         String @db.ObjectId
-  moduleId       String @db.ObjectId
+  id             String  @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId       String? @db.ObjectId
+  tenant         Tenant? @relation(fields: [tenantId], references: [id])
+  roleId         String  @db.ObjectId
+  moduleId       String  @db.ObjectId
   permissionBits Int // Bitmask permissions
 
   role   Role   @relation(fields: [roleId], references: [id])
@@ -33,7 +67,7 @@ model RolePermission {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([roleId, moduleId])
+  @@unique([tenantId, roleId, moduleId])
 }
 
 // Individual permission definitions (view, edit, delete, etc.)
@@ -48,16 +82,18 @@ model Permission {
 
 // Modular structure (with self-referencing for hierarchy)
 model Module {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  name      String   @unique
-  path      String?
-  parentId  String?  @db.ObjectId
-  parent    Module?  @relation("ModuleParent", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  children  Module[] @relation("ModuleParent")
-  groupId   String?  @db.ObjectId
-  group     Group?   @relation(fields: [groupId], references: [id])
-  isDeleted Boolean  @default(false)
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId String?  @db.ObjectId
+  tenant   Tenant?  @relation(fields: [tenantId], references: [id])
+  name     String   @unique
+  path     String?
+  parentId String?  @db.ObjectId
+  parent   Module?  @relation("ModuleParent", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children Module[] @relation("ModuleParent")
+  groupId  String?  @db.ObjectId
+  group    Group?   @relation(fields: [groupId], references: [id])
 
+  isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -68,12 +104,13 @@ model Module {
 model User {
   id           String         @id @default(auto()) @map("_id") @db.ObjectId
   email        String         @unique
+  tenantId     String?        @db.ObjectId
+  tenant       Tenant?        @relation(fields: [tenantId], references: [id])
   roleId       String         @db.ObjectId
   role         Role           @relation(fields: [roleId], references: [id])
   auditLog     AuditLog[]
   subscription Subscription[]
-  isDeleted    Boolean        @default(false)
-  isActive     Boolean        @default(true)
+  Notification Notification[]
 
   // Optional fields
   firstName    String?
@@ -86,19 +123,23 @@ model User {
   city         String?
   ip           String?
 
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  Notification Notification[]
+  isSuperAdmin Boolean  @default(false) // Super-admin flag
+  isDeleted    Boolean  @default(false)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 // Grouping of modules (e.g. Dashboard, Settings, etc.)
 model Group {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  name      String   @unique
-  position  Int      @default(999) // <- Add this for ordering
-  modules   Module[]
-  isDeleted Boolean  @default(false)
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId String?  @db.ObjectId
+  tenant   Tenant?  @relation(fields: [tenantId], references: [id])
+  name     String   @unique
+  position Int      @default(999) // <- Add this for ordering
+  modules  Module[]
 
+  isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

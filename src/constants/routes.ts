@@ -9,7 +9,8 @@ export const PRIVATE_PATHS = [
     '/profile',
     '/settings',
     '/notifications',
-    '/access-denied'
+    '/access-denied',
+    '/dynamic-form'
 ];
 
 export const MODULE_PATH_PREFIXES = [

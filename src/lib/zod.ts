@@ -28,6 +28,7 @@ export const signUpSchema = z.object({
 });
 
 export const OrganizationSchema = z.object({
+  type: z.string({ required_error: "Organization name is required" }),
   organization: z.string({ required_error: "Organization name is required" })
     .min(1, "Organization name is required")
     .max(30, "Organization name must be less than 30 characters"),

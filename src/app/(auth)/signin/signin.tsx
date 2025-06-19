@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { useMounted } from "@/hooks/use-mounted";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { getRecaptchaToken } from "@/app/action/auth.action";
 import { signInSchema } from "@/lib/zod";
@@ -15,13 +15,14 @@ import Divider from "@/components/custom/divider";
 import ButtonContent from "@/components/custom/button-content";
 import { FloatingInputController } from "@/components/_form-controls/floating-label/input-controller";
 import ToggleButtons from "@/components/layout/ToggleButtons";
+import { Session } from "next-auth";
 
 type signInT = z.infer<typeof signInSchema>;
 
 export default function SignInPage() {
   const [loading, setLoading] = useState(false);
   const [callbackUrl, setCallbackUrl] = useState<string | null>(null);
-  
+
   const mounted = useMounted();
 
   const form = useForm<signInT>({

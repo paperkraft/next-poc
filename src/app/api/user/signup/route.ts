@@ -12,7 +12,7 @@ export async function POST(request: Request) {
                 OR: [
                     { email: email },
                 ]
-            }
+            } 
         });
 
         if (existingUser) {

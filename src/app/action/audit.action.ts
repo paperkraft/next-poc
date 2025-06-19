@@ -1,9 +1,13 @@
+import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { getFormattedDateTime } from "@/utils";
 import { JsonObject } from "@prisma/client/runtime/library";
 import { NextResponse } from "next/server";
 
 export async function fetchAuditLogs() {
+    const session = await auth();
+    const isSuperAdmin = session?.user?.isSuperAdmin;
+
     try {
         const auditLog = await prisma.auditLog.findMany({
             include: {
@@ -19,8 +23,10 @@ export async function fetchAuditLogs() {
             }
         });
 
+        const allLogs = isSuperAdmin ? auditLog : auditLog.filter((x) => x.tenantId == session?.user?.tenantId)
+
         return NextResponse.json(
-            { success: true, message: 'Success', data: auditLog },
+            { success: true, message: 'Success', data: allLogs },
             { status: 200 }
         );
     } catch (error) {

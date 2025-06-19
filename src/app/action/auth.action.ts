@@ -26,7 +26,7 @@ export const getRecaptchaToken = async (): Promise<string | null> => {
 
 export const getUser = async (email: string, password: string) => {
     const user = await prisma.user.findFirst({
-        where: { email },
+        where: { email, isActive: true },
         include: { tenant: true }
     });
 
@@ -57,7 +57,6 @@ export const getUser = async (email: string, password: string) => {
         roleId: user.roleId,
         tenantId: user.tenantId,
         tenantName: user.tenant?.name,
-        status: user.tenant?.status,
         modules: modulesResult.data,
     };
 };

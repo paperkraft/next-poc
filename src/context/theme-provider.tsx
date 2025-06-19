@@ -15,8 +15,8 @@ export const ThemeContext = createContext<ThemeProps | null>(null);
 
 const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     const isMounted = useMounted();
-    
-    const [currentTheme, setCurrentTheme] = useState('system');
+
+    const [currentTheme, setCurrentTheme] = useState('light');
 
     const toggleTheme = () => {
         localStorage.setItem('theme', currentTheme === 'light' ? 'dark' : 'light');
@@ -36,7 +36,7 @@ const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
             <ThemeWrapper>
                 <NextThemesProvider
                     attribute="class"
-                    defaultTheme={"system"}
+                    defaultTheme={"light"}
                     enableSystem
                     disableTransitionOnChange
                 >

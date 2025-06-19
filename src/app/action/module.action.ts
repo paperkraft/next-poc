@@ -21,7 +21,7 @@ function sortModules(modules: ModuleNode[]): ModuleNode[] {
 export async function fetchModules(): Promise<FetchModulesResponse> {
     try {
         const allModules: ModuleWithRelations[] = await prisma.module.findMany({
-            where: { isDeleted: false },
+            where: { isActive: true },
             include: {
                 children: true,
                 parent: true,

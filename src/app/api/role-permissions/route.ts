@@ -26,6 +26,8 @@ async function flattenModules(modules: ModulePermissionInput[]): Promise<ModuleP
 
 export async function POST(req: NextRequest) {
   const { roleId, modules }: Payload = await req.json();
+  const session = await auth();
+  const tenantId = session?.user?.tenantId;
 
   const flatModules = await flattenModules(modules);
 
@@ -47,7 +49,8 @@ export async function POST(req: NextRequest) {
     if (mod.permissions > 0) {
       upserts.push(
         prisma.rolePermission.upsert({
-          where: { roleId_moduleId: { roleId, moduleId: mod.moduleId } },
+          where: { tenantId_roleId_moduleId: { roleId, moduleId: mod.moduleId, tenantId } },
+
           update: { permissionBits: mod.permissions },
           create: {
             roleId,
@@ -73,7 +76,7 @@ export async function POST(req: NextRequest) {
   const data = await prisma.$transaction([...upserts, ...deletes]);
 
   // Step 5: Update session
-  const session = await auth();
+
   await unstable_update({ ...session?.user });
 
   await logAuditAction('Upsert', 'RBAC', { data: data });

@@ -1,3 +1,4 @@
+import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
@@ -11,15 +12,18 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 export async function POST(req: Request, { params }: { params: { id: string } }) {
     const { modules } = await req.json();
     const flattened = flattenPermissions(modules);
+    const session = await auth();
+    const tenantId = session?.user?.tenantId;
 
     // upsert
     await Promise.all(
         flattened.map(({ moduleId, permissionBits }) =>
             prisma.rolePermission.upsert({
                 where: {
-                    roleId_moduleId: {
+                    tenantId_roleId_moduleId: {
                         roleId: params.id,
                         moduleId,
+                        tenantId
                     },
                 },
                 update: { permissionBits },

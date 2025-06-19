@@ -130,7 +130,7 @@ export async function DELETE(request: Request) {
         id: { in: ids },
       },
       data: {
-        isDeleted: true,
+        isActive: true,
       },
     });
 

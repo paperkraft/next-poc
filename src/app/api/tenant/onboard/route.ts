@@ -29,6 +29,7 @@ export async function POST(req: NextRequest) {
             data: {
                 name: organization,
                 type,
+                code: organization.trim(),
                 contactEmail: email,
                 country: 'India',
                 state: rest.state,

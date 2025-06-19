@@ -78,9 +78,11 @@ async function main() {
   const allGroups = await prisma.group.findMany({
     where: { tenantId: tenant.id },
   });
+
   const groupMap = new Map(allGroups.map((g) => [g.name, g.id]));
 
   console.log("📁 Seeding modules...");
+  
   const modules = [
     { name: "Dashboard", path: "/dashboard", group: "Home" },
     { name: "Module", path: "/master/module", group: "Master" },
@@ -173,6 +175,7 @@ async function main() {
       lastName: "Admin",
       roleId: orgAdminRole.id,
       isActive: true,
+      tenantId: tenant.id,
     },
   });
 

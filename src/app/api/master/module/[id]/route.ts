@@ -59,7 +59,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
         // Step 1: Update parent module
         await prisma.module.update({
             where: { id: params.id },
-            data: { name, path: url, groupId: groupId ? groupId : undefined, isDeleted: false },
+            data: { name, path: url, groupId: groupId ? groupId : undefined, isActive: true },
         });
 
         // Step 2: Recursive handler to sync children
@@ -148,7 +148,7 @@ async function syncChildren(children: ModuleInput[], parentId: string, depth: nu
                         path: childUrl,
                         groupId,
                         parentId,
-                        isDeleted: false
+                        isActive: true
                     },
                 });
 

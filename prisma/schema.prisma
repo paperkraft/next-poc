@@ -25,7 +25,6 @@ model Tenant {
   contactPhone String?
   description  String?
   isActive     Boolean    @default(true)
-  isDeleted    Boolean    @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -35,6 +34,7 @@ model Tenant {
   groups         Group[]
   modules        Module[]
   RolePermission RolePermission[]
+  AuditLog       AuditLog[]
 }
 
 // ABAC-style Role
@@ -45,7 +45,7 @@ model Role {
   name        String           @unique
   users       User[]
   permissions RolePermission[]
-  isDeleted   Boolean          @default(false)
+  isActive    Boolean          @default(true)
   description String?
 
   createdAt DateTime @default(now())
@@ -93,7 +93,7 @@ model Module {
   groupId  String?  @db.ObjectId
   group    Group?   @relation(fields: [groupId], references: [id])
 
-  isDeleted Boolean  @default(false)
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -124,7 +124,6 @@ model User {
   ip           String?
 
   isSuperAdmin Boolean  @default(false) // Super-admin flag
-  isDeleted    Boolean  @default(false)
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -139,13 +138,15 @@ model Group {
   position Int      @default(999) // <- Add this for ordering
   modules  Module[]
 
-  isDeleted Boolean  @default(false)
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model AuditLog {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId  String?  @db.ObjectId
+  tenant    Tenant?  @relation(fields: [tenantId], references: [id])
   action    String
   entity    String
   userId    String   @db.ObjectId

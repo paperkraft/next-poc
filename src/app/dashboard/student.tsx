@@ -15,6 +15,8 @@ export default function Student() {
     const mounted = useMounted();
     const { data } = useSession();
 
+    if (!mounted) return null
+
     if (data?.user?.status === 'PENDING') {
         return (
             <>
@@ -31,8 +33,7 @@ export default function Student() {
     }
 
     return (
-        mounted &&
-        <section className="flex-1 p-4 md:p-6 overflow-auto">
+        <section className="overflow-auto">
             {showBanner && <UpgradeBanner onClose={() => setShowBanner(false)} />}
             <DashboardHeader />
             <MetricsGrid />

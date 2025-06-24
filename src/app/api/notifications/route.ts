@@ -50,13 +50,13 @@ export async function POST(req: Request) {
         const subscriptionString = JSON.stringify(subscription);
 
         // Check if the user already has a subscription using JSON comparison
-        const existingSubscription = await prisma.subscription.findFirst({
-            where: { 
+        const existingSubscription = await prisma.pushSubscription.findFirst({
+            where: {
                 userId,
-                subscription:{
+                subscription: {
                     equals: subscriptionString
                 }
-             },
+            },
         });
 
         if (existingSubscription) {

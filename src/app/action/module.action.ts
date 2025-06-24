@@ -1,3 +1,4 @@
+import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { FetchModuleResponse, FetchModulesResponse, ModuleNode, ModuleWithChildren, ModuleWithRelations } from "@/types/modules";
 import { NextResponse } from "next/server";
@@ -20,7 +21,7 @@ function sortModules(modules: ModuleNode[]): ModuleNode[] {
 
 export async function fetchModules(): Promise<FetchModulesResponse> {
     try {
-        const allModules: ModuleWithRelations[] = await prisma.module.findMany({
+        const allModules: ModuleWithRelations[] = await prisma.menuItem.findMany({
             where: { isActive: true },
             include: {
                 children: true,
@@ -78,7 +79,7 @@ export async function fetchUniqueModule(id: string): Promise<FetchModuleResponse
     }
 
     try {
-        const module = await prisma.module.findUnique({
+        const module = await prisma.menuItem.findUnique({
             where: { id },
             include: {
                 children: {
@@ -130,11 +131,14 @@ export async function fetchModuleByRole(roleId: string) {
         );
     }
 
+    const session = await auth();
+    const tenantId = session?.user?.tenantId;
+
     try {
-        const roleModules = await prisma.rolePermission.findMany({
-            where: { roleId },
+        const roleMenus = await prisma.rolePermission.findMany({
+            where: { roleId, tenantId },
             include: {
-                module: {
+                menus: {
                     include: {
                         group: true,
                         children: true,
@@ -143,7 +147,7 @@ export async function fetchModuleByRole(roleId: string) {
             }
         });
 
-        const formattedModules = RoleModules(roleModules);
+        const formattedModules = RoleModules(roleMenus);
 
         return NextResponse.json(
             { success: true, message: 'Success', data: formattedModules },
@@ -160,7 +164,7 @@ export async function fetchModuleByRole(roleId: string) {
 
 interface RolePermissionWithModule {
     permissionBits: number;
-    module: {
+    menus: {
         id: string;
         name: string;
         path: string | null;
@@ -176,29 +180,29 @@ interface RolePermissionWithModule {
 }
 
 function RoleModules(data: RolePermissionWithModule[]): ModuleNode[] {
-    const moduleMap = new Map<string, ModuleNode>();
+    const menuMap = new Map<string, ModuleNode>();
 
-    data.forEach(({ permissionBits, module }) => {
+    data.forEach(({ permissionBits, menus }) => {
         const baseModule: ModuleNode = {
-            id: module.id,
-            name: module.name,
-            path: module.path ?? undefined,
-            groupId: module.group?.id,
-            groupName: module.group?.name,
-            parentId: module.parentId ?? undefined,
+            id: menus.id,
+            name: menus.name,
+            path: menus.path ?? undefined,
+            groupId: menus.group?.id,
+            groupName: menus.group?.name,
+            parentId: menus.parentId ?? undefined,
             permissions: permissionBits,
             children: [],
         };
-        moduleMap.set(module.id, baseModule);
+        menuMap.set(menus.id, baseModule);
     });
 
     // Nest subModules under their parent
-    moduleMap.forEach((mod) => {
-        if (mod.parentId && moduleMap.has(mod.parentId)) {
-            moduleMap.get(mod.parentId)?.children.push(mod);
+    menuMap.forEach((mod) => {
+        if (mod.parentId && menuMap.has(mod.parentId)) {
+            menuMap.get(mod.parentId)?.children.push(mod);
         }
     });
 
     // Return only root-level modules
-    return Array.from(moduleMap.values()).filter((mod) => !mod.parentId);
+    return Array.from(menuMap.values()).filter((mod) => !mod.parentId);
 }

@@ -1,6 +1,6 @@
 'use server'
 import { auth, unstable_update } from '@/auth';
-import { Prisma, PrismaClient } from '@prisma/client';
+import { AuditAction, Prisma, PrismaClient } from '@prisma/client';
 import { headers } from 'next/headers';
 import { getDeviceDetails } from './utils';
 
@@ -9,16 +9,18 @@ const prisma = new PrismaClient();
  * Logs an action to the audit log.
  * 
  * @param action - A short description of the action (e.g., "USER_CREATED", "ROLE_UPDATED").
- * @param userId - The ID of the user who performed the action.
  * @param entity - Path of actual entity.
  * @param details - The response object or additional metadata to include in the log.
+ * @param userId - The ID of the user who performed the action.
+ * @param tenantId - The ID of the tenant user who performed the action.
  */
 
 export async function logAuditAction(
-    action: string,
+    action: AuditAction,
     entity: string,
-    details: Prisma.InputJsonValue, 
-    userId?: string
+    details: Prisma.InputJsonValue,
+    userId?: string,
+    tenantId?: string
 ) {
     try {
         const session = await auth();
@@ -30,22 +32,23 @@ export async function logAuditAction(
             ipAddress = 'Localhost (testing)';
         }
 
-        await unstable_update({...session?.user});
+        await unstable_update({ ...session?.user });
 
         await prisma.auditLog.create({
             data: {
                 action,
                 entity,
                 userId: userId ?? session?.user?.id,
+                tenantId: tenantId ?? session?.user?.tenantId,
                 details: info,
                 device: {
                     ...deviceDetails,
                     ip: ipAddress,
                 },
-                timestamp: new Date(),
+                createdAt: new Date(),
             },
         });
-        
+
     } catch (error) {
         console.error('Failed to log audit action:', error);
     }

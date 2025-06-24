@@ -5,7 +5,7 @@ import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 
 interface createColumnsProps {
@@ -102,11 +102,11 @@ export const createColumns = ({ setOpen, setDetails }: createColumnsProps) => {
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" className="size-5 p-0">
                                 <span className="sr-only">Open menu</span>
-                                <MoreHorizontalIcon size={16}/>
+                                <MoreHorizontalIcon size={16} />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                                 onClick={() => {
                                     setOpen(true);
                                     setDetails(parseJson(data.details));
@@ -117,14 +117,14 @@ export const createColumns = ({ setOpen, setDetails }: createColumnsProps) => {
                                 Details
                             </DropdownMenuItem>
 
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                                 onClick={() => {
                                     setOpen(true);
                                     setDetails(parseJson(data.device));
                                 }}
                                 className="hover:text-blue-500 cursor-pointer"
                             >
-                                <DeviceIcon device={data.device ?? ""}/>
+                                <DeviceIcon device={data.device ?? ""} />
                                 Device
                             </DropdownMenuItem>
                         </DropdownMenuContent>

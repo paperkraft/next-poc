@@ -1,5 +1,6 @@
 import { logAuditAction } from "@/lib/audit-log";
 import prisma from "@/lib/prisma";
+import { AuditAction } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
@@ -28,8 +29,8 @@ export async function POST(request: Request) {
         const data = await prisma.role.create({
             data: { name }
         });
-        
-        await logAuditAction('Create', 'master/role', { data });
+
+        await logAuditAction(AuditAction.CREATE, 'master/role', { data });
 
         return NextResponse.json(
             { success: true, message: 'Role created', data },
@@ -37,7 +38,7 @@ export async function POST(request: Request) {
         );
     } catch (error) {
         console.error(error);
-        await logAuditAction('Error', 'master/role', { error: 'Failed to create role' });
+        await logAuditAction(AuditAction.ERROR, 'master/role', { error: 'Failed to create role' });
         return NextResponse.json(
             { success: false, message: 'Error in creating role' },
             { status: 400 }
@@ -61,7 +62,7 @@ export async function DELETE(request: Request) {
         const rolesWithUser = await prisma.role.findMany({
             where: {
                 id: { in: ids },
-                users: { some: {} },  // Check if the role has any associated users
+                user: { some: {} },  // Check if the role has any associated users
             }
         });
 
@@ -84,7 +85,7 @@ export async function DELETE(request: Request) {
             where: { id: { in: ids } },
         });
 
-        await logAuditAction('Delete', 'master/role', { data: existingRecords });
+        await logAuditAction(AuditAction.DELETE, 'master/role', { data: existingRecords });
 
         revalidatePath('/master/role');
 
@@ -94,7 +95,7 @@ export async function DELETE(request: Request) {
         );
     } catch (error) {
         console.error(error);
-        await logAuditAction('Error', 'master/role', { error: 'Failed to delete role' });
+        await logAuditAction(AuditAction.ERROR, 'master/role', { error: 'Failed to delete role' });
         return NextResponse.json(
             { success: false, message: "Error deleting role" },
             { status: 500 }

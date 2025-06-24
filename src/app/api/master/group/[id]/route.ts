@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { logAuditAction } from '@/lib/audit-log';
 import prisma from '@/lib/prisma';
+import { AuditAction } from '@prisma/client';
 
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
     const { id } = params;
@@ -23,12 +24,12 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
             );
         }
 
-        const data = await prisma.group.update({
+        const data = await prisma.menuGroup.update({
             where: { id },
             data: { name }
         });
 
-        await logAuditAction('Update', 'master/groups', { data });
+        await logAuditAction(AuditAction.UPDATE, 'master/groups', { data });
 
         return NextResponse.json(
             { success: true, message: "Group updated", data },
@@ -36,7 +37,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         );
     } catch (error) {
         console.error(error);
-        await logAuditAction('Error', 'master/groups', { error: "Error updating group" });
+        await logAuditAction(AuditAction.ERROR, 'master/groups', { error: "Error updating group" });
         return NextResponse.json(
             { success: false, message: "Error updating group" },
             { status: 500 }
@@ -55,11 +56,11 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     }
 
     try {
-        const data = await prisma.group.findUnique({
+        const data = await prisma.menuGroup.findUnique({
             where: { id: id },
-            select: { 
-                id: true, 
-                name: true 
+            select: {
+                id: true,
+                name: true
             }
         });
 

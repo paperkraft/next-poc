@@ -1,9 +1,9 @@
-import type { Module, Group } from '@prisma/client';
+import type { MenuItem, MenuGroup } from '@prisma/client';
 
-export type ModuleWithRelations = Module & {
-    group: Group | null;
-    children: Module[];
-    parent: Module | null;
+export type ModuleWithRelations = MenuItem & {
+    group: MenuGroup | null;
+    children: MenuItem[];
+    parent: MenuItem | null;
 }
 
 export type ModuleNode = {

@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-        const data = await prisma.subscription.findUnique({
+        const data = await prisma.pushSubscription.findUnique({
             where: { userId, endpoint },
             select: {
                 topics: true

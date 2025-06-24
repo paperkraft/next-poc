@@ -11,7 +11,7 @@ export async function GET(req: Request) {
 
   // Fetch all modules and role permissions
   const [modules, rolePermissions] = await Promise.all([
-    prisma.module.findMany({
+    prisma.menuItem.findMany({
       include: { group: true }
     }),
     prisma.rolePermission.findMany({
@@ -21,7 +21,7 @@ export async function GET(req: Request) {
 
   const permissionMap = new Map<string, number>();
   rolePermissions.forEach((rp) => {
-    permissionMap.set(rp.moduleId, rp.permissionBits);
+    permissionMap.set(rp.menuId, rp.permissionBits);
   });
 
   // Attach permissions and build id map

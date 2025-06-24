@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth, unstable_update } from '@/auth';
 import prisma from '@/lib/prisma';
 import { logAuditAction } from '@/lib/audit-log';
+import { AuditAction } from '@prisma/client';
 
 type Payload = {
   roleId: string;
@@ -34,11 +35,11 @@ export async function POST(req: NextRequest) {
   // Step 1: Get current permissions from DB
   const existingPermissions = await prisma.rolePermission.findMany({
     where: { roleId },
-    select: { id: true, moduleId: true },
+    select: { id: true, menuId: true },
   });
 
   const incomingModuleMap = new Map(flatModules.map(m => [m.moduleId, m.permissions]));
-  const existingModuleMap = new Map(existingPermissions.map(p => [p.moduleId, p.id]));
+  const existingModuleMap = new Map(existingPermissions.map(p => [p.menuId, p.id]));
 
   const upserts = [];
   const deletes = [];
@@ -49,12 +50,12 @@ export async function POST(req: NextRequest) {
     if (mod.permissions > 0) {
       upserts.push(
         prisma.rolePermission.upsert({
-          where: { tenantId_roleId_moduleId: { roleId, moduleId: mod.moduleId, tenantId } },
+          where: { tenantId_roleId_menuId: { roleId, menuId: mod.moduleId, tenantId } },
 
           update: { permissionBits: mod.permissions },
           create: {
             roleId,
-            moduleId: mod.moduleId,
+            menuId: mod.moduleId,
             permissionBits: mod.permissions,
           },
         })
@@ -79,7 +80,7 @@ export async function POST(req: NextRequest) {
 
   await unstable_update({ ...session?.user });
 
-  await logAuditAction('Upsert', 'RBAC', { data: data });
+  await logAuditAction(AuditAction.UPDATE, 'RBAC', { data: data });
 
   return NextResponse.json({ success: true });
 }

@@ -1,18 +1,21 @@
-import { Separator } from "@/components/ui/separator";
-import { ProfileForm } from "./ProfileForm";
-import { getTranslations } from "next-intl/server";
+import { getTranslations } from 'next-intl/server';
 
-export default async function SettingsProfilePage() {
+import { LoginDetail } from '@/app/action/audit.action';
+import { Separator } from '@/components/ui/separator';
+
+import { ProfileForm } from './ProfileForm';
+
+export default async function SettingsProfilePage({ lastLogins }: { lastLogins: LoginDetail[] | null }) {
   const t = await getTranslations('setting');
 
   return (
     <div className="space-y-4">
       <div>
-      <h3 className="text-lg font-medium">{t('profile.title')}</h3>
-      <p className="text-sm text-muted-foreground">{t('profile.description')}</p>
+        <h3 className="text-lg font-medium">{t('profile.title')}</h3>
+        <p className="text-sm text-muted-foreground">{t('profile.description')}</p>
       </div>
       <Separator />
-      <ProfileForm />
+      <ProfileForm lastLogins={lastLogins} />
     </div>
   )
 }

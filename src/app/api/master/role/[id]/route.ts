@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { logAuditAction } from '@/lib/audit-log';
 import prisma from '@/lib/prisma';
+import { AuditAction } from '@prisma/client';
 
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
     const { id } = params;
@@ -28,7 +29,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
             data: { name }
         });
 
-        await logAuditAction('Update', 'master/role', { data: data });
+        await logAuditAction(AuditAction.UPDATE, 'master/role', { data: data });
 
         return NextResponse.json(
             { success: true, message: "Role updated", data: data },
@@ -36,7 +37,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         );
     } catch (error) {
         console.error(error);
-        await logAuditAction('Error', 'master/role', { error: 'Failed to update role' });
+        await logAuditAction(AuditAction.ERROR, 'master/role', { error: 'Failed to update role' });
         return NextResponse.json(
             { success: false, message: "Error updating role" },
             { status: 500 }

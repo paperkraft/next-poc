@@ -1,10 +1,11 @@
 import { logAuditAction } from "@/lib/audit-log";
 import prisma from "@/lib/prisma";
 import { FetchGroupResponse, FetchGroupsResponse } from "@/types/group";
+import { AuditAction } from "@prisma/client";
 
 export async function getAllGroups(): Promise<FetchGroupsResponse> {
     try {
-        const groups = await prisma.group.findMany({
+        const groups = await prisma.menuGroup.findMany({
             select: { id: true, name: true }
         });
 
@@ -25,7 +26,7 @@ export async function getAllGroups(): Promise<FetchGroupsResponse> {
 
 export async function getGroupById(id: string): Promise<FetchGroupResponse> {
     try {
-        const group = await prisma.group.findUnique({
+        const group = await prisma.menuGroup.findUnique({
             where: { id: id },
             select: { id: true, name: true },
         });
@@ -53,7 +54,7 @@ export async function getGroupById(id: string): Promise<FetchGroupResponse> {
 
 export async function createGroup(name: string): Promise<FetchGroupResponse> {
     try {
-        const exist = await prisma.group.findFirst({
+        const exist = await prisma.menuGroup.findFirst({
             where: { name }
         });
 
@@ -65,11 +66,11 @@ export async function createGroup(name: string): Promise<FetchGroupResponse> {
             };
         }
 
-        const group = await prisma.group.create({
+        const group = await prisma.menuGroup.create({
             data: { name },
         });
 
-        await logAuditAction('Create', 'master/groups', { data: group });
+        await logAuditAction(AuditAction.CREATE, 'master/groups', { data: group });
 
         return {
             success: true,
@@ -87,12 +88,12 @@ export async function createGroup(name: string): Promise<FetchGroupResponse> {
 
 export async function updateGroup(id: string, name: string): Promise<FetchGroupResponse> {
     try {
-        const group = await prisma.group.update({
+        const group = await prisma.menuGroup.update({
             where: { id },
             data: { name },
         });
 
-        await logAuditAction('Update', 'master/groups', { data: group });
+        await logAuditAction(AuditAction.UPDATE, 'master/groups', { data: group });
 
         return {
             success: true,
@@ -116,10 +117,10 @@ export async function deleteGroup(ids: string[]): Promise<FetchGroupResponse> {
         }
 
         // Check if any group is assigned to a module
-        const groupsWithModules = await prisma.group.findMany({
+        const groupsWithModules = await prisma.menuGroup.findMany({
             where: {
                 id: { in: ids },
-                modules: { some: {} },  // Check if the group has any associated modules
+                menus: { some: {} },  // Check if the group has any associated modules
             }
         });
 
@@ -131,13 +132,13 @@ export async function deleteGroup(ids: string[]): Promise<FetchGroupResponse> {
         }
 
         // Proceed with deletion if no group is assigned to any module
-        const deletedGroups = await prisma.group.deleteMany({
+        const deletedGroups = await prisma.menuGroup.deleteMany({
             where: {
                 id: { in: ids },
             },
         });
 
-        await logAuditAction('Delete', 'master/groups', { data: deletedGroups });
+        await logAuditAction(AuditAction.DELETE, 'master/groups', { data: deletedGroups });
 
         return {
             success: true,
@@ -145,7 +146,7 @@ export async function deleteGroup(ids: string[]): Promise<FetchGroupResponse> {
         };
     } catch (error) {
         console.error("Error deleting groups:", error);
-        await logAuditAction('Error', 'master/groups', { error: "Error deleting group" });
+        await logAuditAction(AuditAction.ERROR, 'master/groups', { error: "Error deleting group" });
 
         return {
             success: false,

@@ -18,17 +18,13 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { ThemeWrapper } from "../theme-wrapper";
 import { themeConfig } from "@/hooks/use-config";
+import { AuditAction } from "@prisma/client";
 
 const options = [
     {
         label: 'Profile',
-        url: '/profile',
-        icon: UserIcon
-    },
-    {
-        label: 'Setting',
         url: '/profile-settings',
-        icon: Settings2Icon
+        icon: UserIcon
     },
     {
         label: 'Notifications',
@@ -52,7 +48,7 @@ const SidebarFooterContent = React.memo(() => {
         setIsLoggingOut(true);
         try {
             await signOut({ redirect: false });
-            await logAuditAction('logout', 'auth/signout', { data: { user: `${user?.name}` } }, user.id);
+            await logAuditAction(AuditAction.LOGOUT, 'auth/signout', { data: { user: `${user?.name}` } }, user.id, user?.tenantId);
         } catch (error) {
             console.error("Logout failed", error);
         } finally {
@@ -154,7 +150,7 @@ const SidebarFooterContent = React.memo(() => {
                 </SidebarMenuItem>
             </SidebarMenu>
 
-            
+
         </>
     )
 });

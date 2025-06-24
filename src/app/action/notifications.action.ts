@@ -69,7 +69,7 @@ export async function sendNotification(input: SendNotificationInput) {
 
     if (input.topics) {
         // Send to all users subscribed to the topic
-        const subscriptions = await prisma.subscription.findMany({
+        const subscriptions = await prisma.pushSubscription.findMany({
             where: { topics: { hasSome: input.topics } },
             select: { userId: true },
         });
@@ -93,7 +93,7 @@ export async function sendNotification(input: SendNotificationInput) {
     notificationEmitter.emit('newNotification', newNotification)
 
     //SECTION - Push notification
-    const subscriptions = await prisma.subscription.findMany({
+    const subscriptions = await prisma.pushSubscription.findMany({
         where: { userId: { in: userIds } },
     });
 
@@ -114,7 +114,7 @@ export async function sendNotification(input: SendNotificationInput) {
 
             if (error.statusCode === 410 || error.statusCode === 404) {
                 console.log(`Deleting expired subscription: ${sub.id}`);
-                await prisma.subscription.delete({
+                await prisma.pushSubscription.delete({
                     where: { id: sub.id }
                 });
             }

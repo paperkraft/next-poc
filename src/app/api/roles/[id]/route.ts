@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 export async function GET(req: Request, { params }: { params: { id: string } }) {
     const permissions = await prisma.rolePermission.findMany({
         where: { roleId: params.id },
-        select: { moduleId: true, permissionBits: true },
+        select: { menuId: true, permissionBits: true },
     });
     return Response.json(permissions);
 }
@@ -17,17 +17,17 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
     // upsert
     await Promise.all(
-        flattened.map(({ moduleId, permissionBits }) =>
+        flattened.map(({ menuId, permissionBits }) =>
             prisma.rolePermission.upsert({
                 where: {
-                    tenantId_roleId_moduleId: {
+                    tenantId_roleId_menuId: {
                         roleId: params.id,
-                        moduleId,
+                        menuId,
                         tenantId
                     },
                 },
                 update: { permissionBits },
-                create: { roleId: params.id, moduleId, permissionBits },
+                create: { roleId: params.id, menuId, permissionBits },
             })
         )
     );
@@ -35,9 +35,9 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     return Response.json({ success: true });
 }
 
-function flattenPermissions(modules: any[]): { moduleId: string; permissionBits: number }[] {
-    return modules.flatMap((m) => [
-        { moduleId: m.moduleId, permissionBits: m.permissionBits },
+function flattenPermissions(menus: any[]): { menuId: string; permissionBits: number }[] {
+    return menus.flatMap((m) => [
+        { menuId: m.menuId, permissionBits: m.permissionBits },
         ...flattenPermissions(m.children || []),
     ]);
 }

@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
 
         // Create PENDING tenant request
         const existing = await prisma.tenant.findFirst({
-            where: { name: organization, type, contactEmail: email },
+            where: { name: organization, type },
         });
 
         if (existing) {
@@ -29,11 +29,15 @@ export async function POST(req: NextRequest) {
             data: {
                 name: organization,
                 type,
-                code: organization.trim(),
-                contactEmail: email,
-                country: 'India',
-                state: rest.state,
-                city: rest.city,
+                slug: organization.trim(),
+                address: {
+                    country: 'India',
+                    state: rest.state,
+                    city: rest.city,
+                },
+                contact: {
+                    contactEmail: email,
+                }
             },
         });
 

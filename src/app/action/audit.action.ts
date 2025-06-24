@@ -1,32 +1,32 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { getFormattedDateTime } from "@/utils";
+import { AuditAction } from "@prisma/client";
 import { JsonObject } from "@prisma/client/runtime/library";
 import { NextResponse } from "next/server";
 
 export async function fetchAuditLogs() {
     const session = await auth();
-    const isSuperAdmin = session?.user?.isSuperAdmin;
+    const tenantId = session?.user?.tenantId
 
     try {
         const auditLog = await prisma.auditLog.findMany({
             include: {
                 user: {
                     select: {
-                        firstName: true,
-                        lastName: true,
+                        profile: true
                     }
-                }
+                },
             },
             orderBy: {
-                timestamp: 'desc'
+                createdAt: 'desc'
             }
         });
 
-        const allLogs = isSuperAdmin ? auditLog : auditLog.filter((x) => x.tenantId == session?.user?.tenantId)
+        const filterLogs = tenantId ? auditLog.filter((x) => x.tenantId === tenantId) : auditLog
 
         return NextResponse.json(
-            { success: true, message: 'Success', data: allLogs },
+            { success: true, message: 'Success', data: filterLogs },
             { status: 200 }
         );
     } catch (error) {
@@ -56,13 +56,13 @@ export async function calculateDateWiseOnlineSessions(userId: string, toDate: Da
     const auditLogs = await prisma.auditLog.findMany({
         where: {
             userId,
-            action: { in: ['login', 'logout'] },
-            timestamp: { lte: toDate },
+            action: { in: [AuditAction.LOGIN, AuditAction.LOGOUT] },
+            createdAt: { lte: toDate },
         },
-        orderBy: { timestamp: 'asc' },
+        orderBy: { createdAt: 'asc' },
         select: {
             action: true,
-            timestamp: true,
+            createdAt: true,
         },
     });
 
@@ -77,15 +77,15 @@ export async function calculateDateWiseOnlineSessions(userId: string, toDate: Da
     };
 
     for (const log of auditLogs) {
-        const logDate = log.timestamp.toISOString().split('T')[0];
+        const logDate = log.createdAt.toISOString().split('T')[0];
 
-        if (log.action === 'login') {
+        if (log.action === AuditAction.LOGIN) {
             // Track the last login time
             if (lastLoginTime) {
-                // console.warn(`Duplicate login detected for userId: ${userId} at ${log.timestamp}`);
+                // console.warn(`Duplicate login detected for userId: ${userId} at ${log.createdAt}`);
 
                 // Force logout after sessionTimeout (if login happens after a long time)
-                const timeDifference = log.timestamp.getTime() - lastLoginTime.getTime();
+                const timeDifference = log.createdAt.getTime() - lastLoginTime.getTime();
 
                 if (timeDifference > sessionTimeout) {
                     // Assume the previous session ended and create a session for it
@@ -98,15 +98,15 @@ export async function calculateDateWiseOnlineSessions(userId: string, toDate: Da
 
                     dateWiseSessions[logDate].push({
                         startTime: `${getFormattedDateTime(lastLoginTime)} *`,
-                        endTime: `${getFormattedDateTime(log.timestamp)}`,
+                        endTime: `${getFormattedDateTime(log.createdAt)}`,
                         duration,
                     });
                 }
             }
-            lastLoginTime = log.timestamp;
-        } else if (log.action === 'logout' && lastLoginTime) {
+            lastLoginTime = log.createdAt;
+        } else if (log.action === AuditAction.LOGOUT && lastLoginTime) {
             // Calculate the session duration between login and logout
-            const durationMs = log.timestamp.getTime() - lastLoginTime.getTime();
+            const durationMs = log.createdAt.getTime() - lastLoginTime.getTime();
             const duration = formatDuration(durationMs);
 
             if (!dateWiseSessions[logDate]) {
@@ -115,13 +115,13 @@ export async function calculateDateWiseOnlineSessions(userId: string, toDate: Da
 
             dateWiseSessions[logDate].push({
                 startTime: `${getFormattedDateTime(lastLoginTime)}`,
-                endTime: `${getFormattedDateTime(log.timestamp)}`,
+                endTime: `${getFormattedDateTime(log.createdAt)}`,
                 duration,
             });
 
             lastLoginTime = null; // Reset the last login time after a logout
         } else {
-            console.warn(`Unexpected logout without prior login for user: ${userId} at ${log.timestamp}`);
+            console.warn(`Unexpected logout without prior login for user: ${userId} at ${log.createdAt}`);
         }
     }
 
@@ -165,14 +165,14 @@ export async function getLastThreeLogins(userId: string): Promise<LoginDetail[]>
     const logins = await prisma.auditLog.findMany({
         where: {
             userId,
-            action: 'login',
+            action: AuditAction.LOGIN,
         },
         orderBy: {
-            timestamp: 'desc',
+            createdAt: 'desc',
         },
         take: 3,
         select: {
-            timestamp: true,
+            createdAt: true,
             device: true,
         },
     });
@@ -181,7 +181,7 @@ export async function getLastThreeLogins(userId: string): Promise<LoginDetail[]>
         // const details = login.device ? JSON.parse(login.device) : {};
         const details = login.device ? login.device as JsonObject : {};
         return {
-            timestamp: `${getFormattedDateTime(login.timestamp)}`,
+            timestamp: `${getFormattedDateTime(login.createdAt)}`,
             device: details.device + ' ' + details.browser as string,
             ipAddress: details.ip as string,
         };

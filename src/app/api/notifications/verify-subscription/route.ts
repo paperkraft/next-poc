@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ success: false, message: "Invalid subscription object" }, { status: 400 });
         }
 
-        const existingSubscription = await prisma.subscription.findFirst({
+        const existingSubscription = await prisma.pushSubscription.findFirst({
             where: { userId, endpoint },
         });
 

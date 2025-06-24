@@ -11,6 +11,8 @@ import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMounted } from '@/hooks/use-mounted';
+import { LoginDetail } from '@/app/action/audit.action';
+import LastLoginSession from './LastLoginSession';
 
 const profileFormSchema = z.object({
   firstName: z.string({ required_error: "First Name is required" })
@@ -37,9 +39,8 @@ const defaultValues: Partial<ProfileFormValues> = {
   email: "",
 }
 
-export function ProfileForm() {
+export function ProfileForm({ lastLogins }: { lastLogins: LoginDetail[] | null }) {
   const mounted = useMounted();
-
   const t = useTranslations('setting');
 
   const { data: session } = useSession();
@@ -53,6 +54,8 @@ export function ProfileForm() {
 
   useEffect(() => {
     if (user) {
+      form.setValue("email", user.email)
+
       const fetchItem = async () => {
         const response = await fetch(`/api/user/id`, {
           method: "POST",
@@ -61,11 +64,13 @@ export function ProfileForm() {
 
         const data = await response.json();
 
-        Object.entries(data).map(([key, val]: any) => {
-          if (val) form.setValue(key, val);
-        })
+        if (data?.profile) {
+          form.setValue("firstName", data?.profile?.firstName)
+          form.setValue("lastName", data?.profile?.lastName)
+        }
       };
       fetchItem();
+
     }
   }, [user]);
 
@@ -83,7 +88,7 @@ export function ProfileForm() {
     }
   }
 
-  if(!mounted) return null;
+  if (!mounted) return null;
 
   return (
     <Form {...form}>
@@ -117,6 +122,8 @@ export function ProfileForm() {
           description={t("profile.form.email_desc")}
           readOnly
         />
+
+        <LastLoginSession lastLogins={lastLogins} />
 
         <Button type="submit">{t("profile.form.btn")}</Button>
       </form>

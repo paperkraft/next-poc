@@ -1,5 +1,6 @@
 import { logAuditAction } from "@/lib/audit-log";
 import prisma from "@/lib/prisma";
+import { AuditAction } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 export async function DELETE(request: Request) {
@@ -23,10 +24,10 @@ export async function DELETE(request: Request) {
             where: { id: { in: ids } },
         });
 
-        await logAuditAction('Delete', 'audit-log', { data: existingRecords[0].details });
+        await logAuditAction(AuditAction.DELETE, 'audit-log', { data: existingRecords[0].details });
         return NextResponse.json({ success: true, message: 'Success', data: result.count }, { status: 200 });
     } catch (error: any) {
-        await logAuditAction('Error', 'audit-log', { error: "Error deleting log" });
+        await logAuditAction(AuditAction.ERROR, 'audit-log', { error: "Error deleting log" });
         return NextResponse.json({ ...error });
     }
 }

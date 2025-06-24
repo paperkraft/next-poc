@@ -41,11 +41,25 @@ export const getUser = async (email: string, password: string) => {
     });
 
     if (!hasPwd) {
-        await logAuditAction(AuditAction.ERROR, "auth/signin", { data: { error: "Invalid credentials" } });
+        await logAuditAction(
+            AuditAction.ERROR, 
+            "auth/signin",
+            { data: { error: "Invalid credentials" } },
+            user?.id,
+            user?.tenantId as string,
+            user?.tenant?.slug
+        );
         return null;
     }
 
-    await logAuditAction(AuditAction.LOGIN, "auth/signin", { data: `${user?.profile?.firstName} ${user?.profile?.lastName}` }, user.id, user?.tenantId as string);
+    await logAuditAction(
+        AuditAction.LOGIN, 
+        "auth/signin",
+        { data: `${user?.profile?.firstName} ${user?.profile?.lastName}` },
+        user.id,
+        user?.tenantId as string,
+        user.tenant?.slug
+    );
 
     // Fetch ABAC modules using the role ID
     const moduleResponse = await fetchModuleByRole(user.roleId);

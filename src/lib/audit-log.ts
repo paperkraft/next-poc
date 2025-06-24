@@ -20,7 +20,8 @@ export async function logAuditAction(
     entity: string,
     details: Prisma.InputJsonValue,
     userId?: string,
-    tenantId?: string
+    tenantId?: string,
+    slug?: string
 ) {
     try {
         const session = await auth();
@@ -40,6 +41,7 @@ export async function logAuditAction(
                 entity,
                 userId: userId ?? session?.user?.id,
                 tenantId: tenantId ?? session?.user?.tenantId,
+                slug: slug ?? session?.user?.slug,
                 details: info,
                 device: {
                     ...deviceDetails,

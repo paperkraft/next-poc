@@ -10,8 +10,9 @@ import { Button } from '../ui/button';
 export default function AccessDenied({ session }: { session?: Session | null }) {
     const router = useRouter();
     const mounted = useMounted();
-    if (!mounted) return null
+
     return (
+        mounted &&
         <div className={cn("flex flex-col gap-2 items-center justify-center p-6 bg-accent rounded-md ",
             session ? "h-[calc(100svh-100px)]" : "h-screen"
         )}>

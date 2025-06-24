@@ -202,6 +202,7 @@ model AuditLog {
   userId    String      @db.ObjectId
   tenant    Tenant?     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId  String?     @db.ObjectId
+  slug      String?
   metadata  Json        @default("{}")
   entity    String
   details   Json

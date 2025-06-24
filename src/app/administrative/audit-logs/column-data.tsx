@@ -87,6 +87,11 @@ export const createColumns = ({ setOpen, setDetails }: createColumnsProps) => {
             cell: ({ row }) => <span className="hidden lg:table-cell">{row.original.entity}</span>,
         },
         {
+            accessorKey: "slug",
+            header: () => <div className="hidden lg:table-cell">Slug</div>,
+            cell: ({ row }) => <span className="hidden lg:table-cell">{row.original.slug}</span>,
+        },
+        {
             accessorKey: "timestamp",
             header: "Timestamp",
             cell: ({ row }) => <p className="text-wrap w-24 lg:w-auto">{row.original.timestamp}</p>,

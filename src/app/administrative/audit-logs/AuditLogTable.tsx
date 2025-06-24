@@ -5,23 +5,26 @@ import { toast } from 'sonner';
 
 import { DataTable } from '@/components/_data-table/data-table';
 import { getFormattedDateTime } from '@/utils';
+import { AuditAction } from '@prisma/client';
 
 import { createColumns } from './column-data';
 import { DetailsDialog } from './view-details';
-import { AuditAction } from '@prisma/client';
 
 interface AuditLogTableProp {
+    moduleId?: string;
     data: {
         id: String,
         user: { profile: { firstName: string, lastName: string } }
         action: AuditAction,
         entity: String,
         userId: String,
+        tenantId: String | null,
+        slug: String | null,
         details: Record<string, string | undefined>,
         device: Record<string, string | undefined>,
         createdAt: Date
     }[],
-    moduleId?: string;
+
 }
 
 const AuditLogTable = ({ data, moduleId }: AuditLogTableProp) => {
@@ -36,6 +39,7 @@ const AuditLogTable = ({ data, moduleId }: AuditLogTableProp) => {
             name: `${item?.user?.profile?.firstName} ${item?.user?.profile?.lastName}`,
             action: item?.action.toLowerCase(),
             entity: item?.entity,
+            slug: item?.slug,
             details: JSON.stringify(item?.details, null, 2),
             device: JSON.stringify(item?.device, null, 2),
             timestamp: getFormattedDateTime(new Date(item?.createdAt)),

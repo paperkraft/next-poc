@@ -22,7 +22,7 @@ import { ISendNotificationForm, SendNotificationFormSchema } from '@/types/notif
 import { zodResolver } from '@hookform/resolvers/zod';
 
 type FormProps = {
-    users: { id: string; name: string }[];
+    users: { id: number; name: string }[];
 };
 
 export default function SendNotificationForm({ users }: FormProps) {

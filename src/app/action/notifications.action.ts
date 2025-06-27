@@ -7,8 +7,9 @@ import prisma from '@/lib/prisma';
 import { sendWebPushNotification } from '@/lib/web-push';
 
 import { handleError, handleNoId, handleSuccess } from './response.action';
+import { NotificationStatus } from '@prisma/client';
 
-export const getAllNotifications = async (userId: string) => {
+export const getAllNotifications = async (userId: number) => {
     try {
 
         if (!userId) {
@@ -39,7 +40,7 @@ export const getAllNotifications = async (userId: string) => {
     }
 }
 
-export const getUnreadNotifications = async (userId: string) => {
+export const getUnreadNotifications = async (userId: number) => {
     try {
         if (!userId) {
             return await handleNoId("UserId required")
@@ -57,7 +58,7 @@ export const getUnreadNotifications = async (userId: string) => {
     }
 }
 
-type SendNotificationInput = { topics?: string[]; userId?: string; title: string; message: string }
+type SendNotificationInput = { topics?: string[]; userId?: number; title: string; message: string }
 
 export async function sendNotification(input: SendNotificationInput) {
 
@@ -65,7 +66,7 @@ export async function sendNotification(input: SendNotificationInput) {
         return { success: false, message: " Topic or UserId is required" }
     }
 
-    let userIds: string[] = [];
+    let userIds: number[] = [];
 
     if (input.topics) {
         // Send to all users subscribed to the topic
@@ -84,7 +85,7 @@ export async function sendNotification(input: SendNotificationInput) {
         message: input.message,
         topic: input.topics ? input.topics.join(",") : undefined,
         userId: userId,
-        status: "sent",
+        status: NotificationStatus.SENT,
     }));
 
     const newNotification = await prisma.notification.createMany({ data: notifications });

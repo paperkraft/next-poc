@@ -17,7 +17,7 @@ export const metadata = {
   description: "Overview module and submodule",
 };
 
-export default async function Page({ params }: { params: { id: string } }) {
+export default async function Page({ params }: { params: { id: number } }) {
   const { id } = params;
   const headersList = headers();
   const currentPath = headersList.get('x-current-path') || '';

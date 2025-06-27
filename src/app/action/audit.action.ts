@@ -55,7 +55,7 @@ export async function calculateDateWiseOnlineSessions(userId: string, toDate: Da
     // Fetch the audit log entries for the user
     const auditLogs = await prisma.auditLog.findMany({
         where: {
-            userId,
+            userId: +userId,
             action: { in: [AuditAction.LOGIN, AuditAction.LOGOUT] },
             createdAt: { lte: toDate },
         },
@@ -164,7 +164,7 @@ export async function getLastThreeLogins(userId: string): Promise<LoginDetail[]>
     // Query the last 3 login actions for the user
     const logins = await prisma.auditLog.findMany({
         where: {
-            userId,
+            userId: +userId,
             action: AuditAction.LOGIN,
         },
         orderBy: {

@@ -25,7 +25,7 @@ const authConfig: NextAuthConfig = {
 
                     // GET User details
                     await getUser(email, password).then((data) => {
-                        return data ? user = data : null
+                        return data ? user = data as any : null
                     })
 
                     if (!user) {
@@ -68,7 +68,7 @@ const authConfig: NextAuthConfig = {
 
             if (trigger === "update" && session) {
                 // Fetch menu based on roleId from session
-                const menu = await fetchModuleByRole(session.roleId).then((d) => d.json());
+                const menu = await fetchModuleByRole(+session.roleId).then((d) => d.json());
                 const updateSession = { ...session, modules: menu.data }
                 token = { ...token, user: updateSession }
                 return token;
@@ -100,10 +100,10 @@ const authConfig: NextAuthConfig = {
         async redirect({ url, baseUrl }) {
 
             // Check if the callbackUrl exists in the URL
-            const urlObj  = new URL(url);
+            const urlObj = new URL(url);
 
             // If the callbackUrl is present, return it as the redirect destination
-            if (urlObj .searchParams.has('callbackUrl')) {
+            if (urlObj.searchParams.has('callbackUrl')) {
                 const callbackUrl = urlObj.searchParams.get('callbackUrl')!;
                 return callbackUrl; // Redirect to the original requested URL (callbackUrl)
             }

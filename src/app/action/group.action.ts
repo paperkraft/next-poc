@@ -27,7 +27,7 @@ export async function getAllGroups(): Promise<FetchGroupsResponse> {
 export async function getGroupById(id: string): Promise<FetchGroupResponse> {
     try {
         const group = await prisma.menuGroup.findUnique({
-            where: { id: id },
+            where: { id: +id },
             select: { id: true, name: true },
         });
 
@@ -70,7 +70,11 @@ export async function createGroup(name: string): Promise<FetchGroupResponse> {
             data: { name },
         });
 
-        await logAuditAction(AuditAction.CREATE, 'master/groups', { data: group });
+        await logAuditAction({
+            action: AuditAction.CREATE,
+            entity: 'master/groups',
+            details: { data: group }
+        });
 
         return {
             success: true,
@@ -89,11 +93,15 @@ export async function createGroup(name: string): Promise<FetchGroupResponse> {
 export async function updateGroup(id: string, name: string): Promise<FetchGroupResponse> {
     try {
         const group = await prisma.menuGroup.update({
-            where: { id },
+            where: { id: +id },
             data: { name },
         });
 
-        await logAuditAction(AuditAction.UPDATE, 'master/groups', { data: group });
+        await logAuditAction({
+            action: AuditAction.UPDATE,
+            entity: 'master/groups',
+            details: { data: group }
+        });
 
         return {
             success: true,
@@ -109,7 +117,7 @@ export async function updateGroup(id: string, name: string): Promise<FetchGroupR
     }
 }
 
-export async function deleteGroup(ids: string[]): Promise<FetchGroupResponse> {
+export async function deleteGroup(ids: number[]): Promise<FetchGroupResponse> {
     try {
 
         if (!ids || !Array.isArray(ids)) {
@@ -138,7 +146,11 @@ export async function deleteGroup(ids: string[]): Promise<FetchGroupResponse> {
             },
         });
 
-        await logAuditAction(AuditAction.DELETE, 'master/groups', { data: deletedGroups });
+        await logAuditAction({
+            action: AuditAction.DELETE,
+            entity: 'master/groups',
+            details: { data: deletedGroups }
+        });
 
         return {
             success: true,
@@ -146,7 +158,11 @@ export async function deleteGroup(ids: string[]): Promise<FetchGroupResponse> {
         };
     } catch (error) {
         console.error("Error deleting groups:", error);
-        await logAuditAction(AuditAction.ERROR, 'master/groups', { error: "Error deleting group" });
+        await logAuditAction({
+            action: AuditAction.ERROR,
+            entity: 'master/groups',
+            details: { error: "Error deleting group" }
+        });
 
         return {
             success: false,

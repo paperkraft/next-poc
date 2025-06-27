@@ -30,7 +30,11 @@ export async function POST(request: Request) {
             data: { name }
         });
 
-        await logAuditAction(AuditAction.CREATE, 'master/role', { data });
+        await logAuditAction({
+            action: AuditAction.CREATE,
+            entity: 'master/role',
+            details: { data }
+        });
 
         return NextResponse.json(
             { success: true, message: 'Role created', data },
@@ -38,7 +42,11 @@ export async function POST(request: Request) {
         );
     } catch (error) {
         console.error(error);
-        await logAuditAction(AuditAction.ERROR, 'master/role', { error: 'Failed to create role' });
+        await logAuditAction({
+            action: AuditAction.ERROR,
+            entity: 'master/role',
+            details: { error: 'Failed to create role' }
+        });
         return NextResponse.json(
             { success: false, message: 'Error in creating role' },
             { status: 400 }
@@ -62,7 +70,7 @@ export async function DELETE(request: Request) {
         const rolesWithUser = await prisma.role.findMany({
             where: {
                 id: { in: ids },
-                user: { some: {} },  // Check if the role has any associated users
+                users: { some: {} },  // Check if the role has any associated users
             }
         });
 
@@ -85,7 +93,11 @@ export async function DELETE(request: Request) {
             where: { id: { in: ids } },
         });
 
-        await logAuditAction(AuditAction.DELETE, 'master/role', { data: existingRecords });
+        await logAuditAction({
+            action: AuditAction.DELETE,
+            entity: 'master/role',
+            details: { data: existingRecords }
+        });
 
         revalidatePath('/master/role');
 
@@ -95,7 +107,11 @@ export async function DELETE(request: Request) {
         );
     } catch (error) {
         console.error(error);
-        await logAuditAction(AuditAction.ERROR, 'master/role', { error: 'Failed to delete role' });
+        await logAuditAction({
+            action: AuditAction.ERROR,
+            entity: 'master/role',
+            details: { error: 'Failed to delete role' }
+        });
         return NextResponse.json(
             { success: false, message: "Error deleting role" },
             { status: 500 }

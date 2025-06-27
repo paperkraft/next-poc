@@ -31,7 +31,7 @@ export async function fetchModules(): Promise<FetchModulesResponse> {
         });
 
         // Build a map for quick lookups
-        const moduleMap = new Map<string, ModuleNode>();
+        const moduleMap = new Map<number, ModuleNode>();
 
         for (const mod of allModules) {
             moduleMap.set(mod.id, {
@@ -73,14 +73,14 @@ export async function fetchModules(): Promise<FetchModulesResponse> {
     }
 }
 
-export async function fetchUniqueModule(id: string): Promise<FetchModuleResponse> {
+export async function fetchUniqueModule(id: number): Promise<FetchModuleResponse> {
     if (!id) {
         return { success: false, message: "ID is required", data: null }
     }
 
     try {
         const module = await prisma.menuItem.findUnique({
-            where: { id },
+            where: { id: +id },
             include: {
                 children: {
                     select: {
@@ -111,7 +111,7 @@ export async function fetchUniqueModule(id: string): Promise<FetchModuleResponse
             parentId: module.parentId,
             groupId: module.groupId,
             groupName: module.group?.name,
-            children: module.children,
+            children: module?.children,
         }
 
         return { success: true, message: "Success", data: finalModule }
@@ -122,7 +122,7 @@ export async function fetchUniqueModule(id: string): Promise<FetchModuleResponse
 }
 
 // used in session and auth.
-export async function fetchModuleByRole(roleId: string) {
+export async function fetchModuleByRole(roleId: number) {
 
     if (!roleId) {
         return NextResponse.json(
@@ -131,12 +131,9 @@ export async function fetchModuleByRole(roleId: string) {
         );
     }
 
-    const session = await auth();
-    const tenantId = session?.user?.tenantId;
-
     try {
         const roleMenus = await prisma.rolePermission.findMany({
-            where: { roleId, tenantId },
+            where: { roleId: +roleId },
             include: {
                 menus: {
                     include: {
@@ -165,22 +162,22 @@ export async function fetchModuleByRole(roleId: string) {
 interface RolePermissionWithModule {
     permissionBits: number;
     menus: {
-        id: string;
+        id: number;
         name: string;
         path: string | null;
-        parentId: string | null;
-        group: { id: string, name: string } | null;
+        parentId: number | null;
+        group: { id: number, name: string } | null;
         children: {
-            id: string;
+            id: number;
             name: string;
             path: string | null;
-            parentId: string | null;
+            parentId: number | null;
         }[];
     };
 }
 
 function RoleModules(data: RolePermissionWithModule[]): ModuleNode[] {
-    const menuMap = new Map<string, ModuleNode>();
+    const menuMap = new Map<number, ModuleNode>();
 
     data.forEach(({ permissionBits, menus }) => {
         const baseModule: ModuleNode = {

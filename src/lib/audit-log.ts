@@ -1,10 +1,18 @@
 'use server'
 import { auth, unstable_update } from '@/auth';
-import { AuditAction, Prisma, PrismaClient } from '@prisma/client';
+import { AuditAction, Prisma } from '@prisma/client';
 import { headers } from 'next/headers';
 import { getDeviceDetails } from './utils';
+import prisma from './prisma';
+interface AuditProps {
+    action: AuditAction,
+    entity: string,
+    details: Prisma.InputJsonValue,
+    userId?: number,
+    tenantId?: number | null,
+    slug?: string
+}
 
-const prisma = new PrismaClient();
 /**
  * Logs an action to the audit log.
  * 
@@ -15,14 +23,7 @@ const prisma = new PrismaClient();
  * @param tenantId - The ID of the tenant user who performed the action.
  */
 
-export async function logAuditAction(
-    action: AuditAction,
-    entity: string,
-    details: Prisma.InputJsonValue,
-    userId?: string,
-    tenantId?: string,
-    slug?: string
-) {
+export async function logAuditAction({ action, entity, details, userId, tenantId, slug }: AuditProps) {
     try {
         const session = await auth();
         const info = JSON.parse(JSON.stringify(details));
@@ -30,7 +31,7 @@ export async function logAuditAction(
         const deviceDetails = getDeviceDetails(headersList.get('user-agent'));
         let ipAddress: string | undefined = headersList.get('X-Forwarded-For') as string || undefined;
         if (ipAddress === '::1') {
-            ipAddress = 'Localhost (testing)';
+            ipAddress = 'Localhost';
         }
 
         await unstable_update({ ...session?.user });
@@ -39,7 +40,7 @@ export async function logAuditAction(
             data: {
                 action,
                 entity,
-                userId: userId ?? session?.user?.id,
+                userId: userId ?? +session?.user?.id,
                 tenantId: tenantId ?? session?.user?.tenantId,
                 slug: slug ?? session?.user?.slug,
                 details: info,

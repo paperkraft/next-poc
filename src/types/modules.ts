@@ -7,11 +7,11 @@ export type ModuleWithRelations = MenuItem & {
 }
 
 export type ModuleNode = {
-    id: string;
+    id: number;
     name: string;
     path?: string;
-    parentId?: string;
-    groupId?: string;
+    parentId?: number;
+    groupId?: number;
     groupName?: string;
     position?: number;
     permissions?: number;
@@ -26,22 +26,22 @@ export type FetchModulesResponse = {
 
 // Unique Module
 export type ChildModule = {
-    id: string;
+    id: number;
     name: string;
     path: string | null;
     children: {
-        id: string;
+        id: number;
         name: string;
         path: string | null;
     }[];
 };
 
 export type ModuleWithChildren = {
-    id: string;
+    id: number;
     name: string;
     path: string | null;
-    parentId: string | null;
-    groupId: string | null;
+    parentId: number | null;
+    groupId: number | null;
     groupName?: string;
     children: ChildModule[];
 };

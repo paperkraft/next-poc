@@ -33,13 +33,13 @@ export async function GET(req: Request) {
     if (!userId) {
         return await handleNoId("UserId required")
     }
-    return await getAllNotifications(userId);
+    return await getAllNotifications(+userId);
 }
 
 export async function POST(req: Request) {
     try {
         const session = await auth();
-        const userId: string = session?.user?.id;
+        const userId = session?.user?.id;
 
         const { subscription } = await req.json();
 

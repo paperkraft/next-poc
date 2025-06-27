@@ -13,14 +13,14 @@ export async function GET(_req: Request) {
             const onNewNotification = async () => {
                 console.log('New notification');
                 if (!isStreamActive) return;
-                await sendNotifications(controller, userId);
+                await sendNotifications(controller, +userId);
             };
 
             // Add the listener
             notificationEmitter.on('newNotification', onNewNotification);
 
             // Send initial notifications
-            await sendNotifications(controller, userId);
+            await sendNotifications(controller, +userId);
 
             // Cleanup
             controller.close = () => {
@@ -46,7 +46,7 @@ export async function GET(_req: Request) {
     });
 }
 
-const sendNotifications = async (controller: ReadableStreamDefaultController, userId: string) => {
+const sendNotifications = async (controller: ReadableStreamDefaultController, userId: number) => {
     const encoder = new TextEncoder();
     try {
         const notifications = await prisma.notification.findMany({

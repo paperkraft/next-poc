@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-async function createModuleRecursive(data: any, parentId?: string, depth: number = 0): Promise<any> {
+async function createModuleRecursive(data: any, parentId?: number, depth: number = 0): Promise<any> {
   const { name, path, groupId, children = [] } = data;
 
   if (depth > 2) {
@@ -32,7 +32,7 @@ async function createModuleRecursive(data: any, parentId?: string, depth: number
       data: {
         name,
         path,
-        groupId,
+        groupId: +groupId,
         parentId,
       },
     });

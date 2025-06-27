@@ -23,7 +23,7 @@ import { ModuleWithChildren } from '@/types/modules';
 import { Options } from '@/types';
 
 export type ModuleFormData = {
-    id?: string;
+    id?: number;
     name: string;
     path?: string | null;
     groupId?: string | null;
@@ -32,7 +32,7 @@ export type ModuleFormData = {
 
 const RecursiveModuleSchema: z.ZodType<ModuleFormData> = z.lazy(() =>
     z.object({
-        id: z.string().optional(),
+        id: z.number().optional(),
         name: z.string().min(1, { message: "Name is required." }),
         path: z.string().optional().nullable(),
         groupId: z.string().optional().nullable(),
@@ -44,7 +44,7 @@ const ModuleFormSchema = RecursiveModuleSchema;
 type ModuleFormValues = z.infer<typeof ModuleFormSchema>;
 
 interface PageProps {
-    id?: string,
+    id?: number,
     module?: ModuleWithChildren,
     isChild?: boolean,
     groupOptions: Options[]
@@ -75,7 +75,7 @@ export default function ModuleForm({ id, module, groupOptions, isChild = false }
             form.reset({
                 name: module.name,
                 path: module.path || '',
-                groupId: module.groupId || '',
+                groupId: String(module.groupId) || '',
                 children: module.children || [],
             });
         }
@@ -135,7 +135,7 @@ export default function ModuleForm({ id, module, groupOptions, isChild = false }
         }
     };
 
-    const handleDelete = async (id: string) => {
+    const handleDelete = async (id: number) => {
         try {
             setLoading(true);
             const res = await fetch(`/api/master/module/${id}`, {
@@ -249,12 +249,12 @@ export default function ModuleForm({ id, module, groupOptions, isChild = false }
                 </form>
             </Form>
 
-            {open && (
+            {open && id && (
                 <ConfirmDeleteDialog
                     open={open}
                     itemName={module?.name || ''}
                     loading={loading}
-                    onConfirm={() => handleDelete(id as string)}
+                    onConfirm={() => handleDelete(id)}
                     onCancel={() => setOpen(false)}
                 />
             )}

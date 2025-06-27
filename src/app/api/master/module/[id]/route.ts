@@ -3,11 +3,11 @@ import { revalidatePath } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 
 interface Params {
-    params: { id: string };
+    params: { id: number };
 }
 
 type ModuleInput = {
-    id?: string;
+    id?: number;
     name: string;
     path?: string;
     groupId?: string;
@@ -58,8 +58,8 @@ export async function PUT(req: NextRequest, { params }: Params) {
 
         // Step 1: Update parent module
         await prisma.menuItem.update({
-            where: { id: params.id },
-            data: { name, path: url, groupId: groupId ? groupId : undefined, isActive: true },
+            where: { id: +params.id },
+            data: { name, path: url, groupId: groupId ? +groupId : undefined, isActive: true },
         });
 
         // Step 2: Recursive handler to sync children
@@ -83,7 +83,7 @@ export async function DELETE(req: NextRequest, { params }: Params) {
 
     try {
         // Collect all IDs in the hierarchy
-        await deleteModuleAndDescendants(id);
+        await deleteModuleAndDescendants(+id);
 
         revalidatePath('/master/module');
 
@@ -107,14 +107,14 @@ export async function DELETE(req: NextRequest, { params }: Params) {
 }
 
 
-async function syncChildren(children: ModuleInput[], parentId: string, depth: number = 1) {
+async function syncChildren(children: ModuleInput[], parentId: number, depth: number = 1) {
 
     if (depth > maxDepth) {
         throw new ModuleDepthError(depth);
     }
 
     const existingChildren = await prisma.menuItem.findMany({
-        where: { parentId },
+        where: { parentId: +parentId },
         select: { id: true },
     });
 
@@ -133,7 +133,7 @@ async function syncChildren(children: ModuleInput[], parentId: string, depth: nu
     await Promise.all(
         children.map(async (child) => {
             const childUrl = child.path === "" ? "#" : child.path?.startsWith('/') ? child.path : child.path?.startsWith('#') ? undefined : `/${child.path}`;
-            const groupId = child.groupId || undefined;
+            const groupId = child.groupId;
 
             if (depth > maxDepth) {
                 throw new ModuleDepthError(depth);
@@ -142,11 +142,11 @@ async function syncChildren(children: ModuleInput[], parentId: string, depth: nu
             if (child.id) {
                 // Update existing
                 await prisma.menuItem.update({
-                    where: { id: child.id },
+                    where: { id: +child.id },
                     data: {
                         name: child.name,
                         path: childUrl,
-                        groupId,
+                        groupId: Number(groupId),
                         parentId,
                         isActive: true
                     },
@@ -156,7 +156,7 @@ async function syncChildren(children: ModuleInput[], parentId: string, depth: nu
                     await syncChildren(child.children, child.id, depth + 1);
                 } else {
                     // Remove nested children from DB if none provided
-                    await prisma.menuItem.deleteMany({ where: { parentId: child.id } });
+                    await prisma.menuItem.deleteMany({ where: { parentId: +child.id } });
                 }
             } else {
                 // Create new
@@ -164,7 +164,7 @@ async function syncChildren(children: ModuleInput[], parentId: string, depth: nu
                     data: {
                         name: child.name,
                         path: childUrl,
-                        groupId,
+                        groupId: Number(groupId),
                         parentId,
                     },
                 });
@@ -178,10 +178,10 @@ async function syncChildren(children: ModuleInput[], parentId: string, depth: nu
 }
 
 // Delete removed children and all its nested children
-async function deleteModuleAndDescendants(menuId: string) {
+async function deleteModuleAndDescendants(menuId: number) {
 
     const assigned = await prisma.rolePermission.findMany({
-        where: { menuId },
+        where: { menuId: +menuId },
         select: {
             menuId: true,
             menus: { select: { name: true } },
@@ -207,11 +207,11 @@ async function deleteModuleAndDescendants(menuId: string) {
 
     // Delete children recursively
     const childModules = await prisma.menuItem.findMany({
-        where: { parentId: menuId },
+        where: { parentId: +menuId },
         select: { id: true },
     });
 
-    await Promise.all(childModules.map((c) => deleteModuleAndDescendants(c.id)));
+    await Promise.all(childModules.map((c) => deleteModuleAndDescendants(+c.id)));
 
     // Delete this module
     await prisma.menuItem.delete({ where: { id: menuId } });

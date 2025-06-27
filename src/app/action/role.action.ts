@@ -25,10 +25,10 @@ export async function fetchRoles(): Promise<FetchRolesResponse> {
     }
 }
 
-export async function fetchUniqueRoles(id: string): Promise<FetchRoleResponse> {
+export async function fetchUniqueRoles(id: number): Promise<FetchRoleResponse> {
     try {
         const role = await prisma.role.findUnique({
-            where: { id: id },
+            where: { id: +id },
             select: {
                 id: true,
                 name: true,

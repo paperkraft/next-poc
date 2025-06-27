@@ -6,7 +6,7 @@ import prisma from '@/lib/prisma';
 export async function POST(req: NextRequest) {
     try {
         const session = await auth();
-        const userId: string = session?.user?.id;
+        const userId = session?.user?.id;
 
         if (!userId) {
             return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
     try {
         const session = await auth();
-        const userId: string | undefined = session?.user?.id;
+        const userId = session?.user?.id;
 
         if (!userId) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

@@ -48,13 +48,14 @@ const SidebarFooterContent = React.memo(() => {
         setIsLoggingOut(true);
         try {
             await signOut({ redirect: false });
-            await logAuditAction(
-                AuditAction.LOGOUT, 'auth/signout',
-                { data: { user: `${user?.name}` } },
-                user.id,
-                user?.tenantId,
-                user?.slug
-            );
+            await logAuditAction({
+                action: AuditAction.LOGOUT,
+                entity: 'auth/signout',
+                details: { data: { user: `${user?.name}` } },
+                userId: +user.id,
+                tenantId: user?.tenantId,
+                slug: user?.slug
+            });
         } catch (error) {
             console.error("Logout failed", error);
         } finally {

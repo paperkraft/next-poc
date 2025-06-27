@@ -1,3 +1,4 @@
+import { auth } from "@/auth";
 import { logAuditAction } from "@/lib/audit-log";
 import prisma from "@/lib/prisma";
 import { FetchGroupResponse, FetchGroupsResponse } from "@/types/group";
@@ -5,7 +6,20 @@ import { AuditAction } from "@prisma/client";
 
 export async function getAllGroups(): Promise<FetchGroupsResponse> {
     try {
+        const session = await auth();
+
+        if (!session) {
+            return {
+                success: false,
+                message: "User session not found.",
+                data: [],
+            };
+        }
+
+        const { tenantId } = session.user;
+
         const groups = await prisma.menuGroup.findMany({
+            where: tenantId ? { tenantId, isActive: true } : undefined,
             select: { id: true, name: true }
         });
 
@@ -54,8 +68,20 @@ export async function getGroupById(id: string): Promise<FetchGroupResponse> {
 
 export async function createGroup(name: string): Promise<FetchGroupResponse> {
     try {
+        const session = await auth();
+
+        if (!session) {
+            return {
+                success: false,
+                message: "User session not found.",
+                data: null,
+            };
+        }
+
+        const { tenantId } = session.user;
+
         const exist = await prisma.menuGroup.findFirst({
-            where: { name }
+            where: { name, tenantId }
         });
 
         if (exist) {
@@ -67,7 +93,7 @@ export async function createGroup(name: string): Promise<FetchGroupResponse> {
         }
 
         const group = await prisma.menuGroup.create({
-            data: { name },
+            data: { name, tenantId },
         });
 
         await logAuditAction({
@@ -108,6 +134,7 @@ export async function updateGroup(id: string, name: string): Promise<FetchGroupR
             message: "Group updated successfully",
             data: group,
         };
+
     } catch (error) {
         console.error("Error updating group:", error);
         return {
@@ -156,6 +183,7 @@ export async function deleteGroup(ids: number[]): Promise<FetchGroupResponse> {
             success: true,
             message: "Group(s) deleted successfully",
         };
+
     } catch (error) {
         console.error("Error deleting groups:", error);
         await logAuditAction({

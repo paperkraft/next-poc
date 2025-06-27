@@ -8,7 +8,7 @@ import { ActionParam } from '@/types/permissions';
 
 interface PermissionGuardProps {
     action: ActionParam;
-    moduleId?: string;
+    moduleId?: number;
     path?: string;
     name?: string;
     children: ReactNode;

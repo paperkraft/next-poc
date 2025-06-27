@@ -30,8 +30,8 @@ interface DataTableProps<TData, TValue> {
     pageSize?: number;
     getRowCanExpand?: (row: Row<TData>) => boolean;
     isLoading?: boolean;
-    deleteRecord?: (id: string | string[]) => Promise<void>;
-    moduleId?: string;
+    deleteRecord?: (id: number | number[]) => Promise<void>;
+    moduleId?: number;
     toolbar?: ToolbarOptions[];
 }
 

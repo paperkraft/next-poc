@@ -5,12 +5,12 @@ import { logAuditAction } from '@/lib/audit-log';
 import { AuditAction } from '@prisma/client';
 
 type Payload = {
-  roleId: string;
+  roleId: number;
   modules: ModulePermissionInput[];
 };
 
 type ModulePermissionInput = {
-  moduleId: string;
+  moduleId: number;
   permissions: number;
   children?: ModulePermissionInput[];
 };
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
 
   // Step 1: Get current permissions from DB
   const existingPermissions = await prisma.rolePermission.findMany({
-    where: { roleId },
+    where: { roleId: +roleId },
     select: { id: true, menuId: true },
   });
 
@@ -80,7 +80,11 @@ export async function POST(req: NextRequest) {
 
   await unstable_update({ ...session?.user });
 
-  await logAuditAction(AuditAction.UPDATE, 'RBAC', { data: data });
+  await logAuditAction({
+    action: AuditAction.UPDATE,
+    entity: 'RBAC',
+    details: { data: data }
+  });
 
   return NextResponse.json({ success: true });
 }

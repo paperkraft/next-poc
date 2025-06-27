@@ -1,15 +1,15 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: { id: number } }) {
     const permissions = await prisma.rolePermission.findMany({
-        where: { roleId: params.id },
+        where: { roleId: +params.id },
         select: { menuId: true, permissionBits: true },
     });
     return Response.json(permissions);
 }
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: { id: number } }) {
     const { modules } = await req.json();
     const flattened = flattenPermissions(modules);
     const session = await auth();
@@ -21,7 +21,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
             prisma.rolePermission.upsert({
                 where: {
                     tenantId_roleId_menuId: {
-                        roleId: params.id,
+                        roleId: +params.id,
                         menuId,
                         tenantId
                     },
@@ -35,7 +35,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     return Response.json({ success: true });
 }
 
-function flattenPermissions(menus: any[]): { menuId: string; permissionBits: number }[] {
+function flattenPermissions(menus: any[]): { menuId: number; permissionBits: number }[] {
     return menus.flatMap((m) => [
         { menuId: m.menuId, permissionBits: m.permissionBits },
         ...flattenPermissions(m.children || []),

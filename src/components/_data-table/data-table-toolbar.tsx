@@ -15,8 +15,8 @@ export type ToolbarOptions = (typeof ALLOWED_TOOLBARS)[number];
 interface DataTableToolbarProps<TData>
     extends React.HTMLAttributes<HTMLDivElement> {
     table: Table<TData>;
-    deleteRecord?: (id: string | string[]) => Promise<void>;
-    moduleId?: string;
+    deleteRecord?: (id: number | number[]) => Promise<void>;
+    moduleId?: number;
     toolbar?: ToolbarOptions[]
 }
 
@@ -29,7 +29,7 @@ export function DataTableToolbar<TData>({ table, deleteRecord, moduleId, toolbar
             <DataTableSearch table={table} />
             <div className="hidden md:flex items-center gap-2">
                 {isSelected && moduleId &&
-                    <PermissionGuard action="DELETE" moduleId={moduleId}>
+                    <PermissionGuard action="DELETE" moduleId={+moduleId}>
                         <DeleteRecordDialog table={table} deleteRecord={deleteRecord} />
                     </PermissionGuard>
                 }

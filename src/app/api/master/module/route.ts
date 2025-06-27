@@ -1,4 +1,5 @@
 import { fetchModules } from "@/app/action/module.action";
+import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
@@ -28,12 +29,26 @@ async function createModuleRecursive(data: any, parentId?: number, depth: number
   }
 
   try {
+
+    const session = await auth();
+
+    if (!session) {
+      return {
+        success: false,
+        message: "User session not found.",
+        data: [],
+      };
+    }
+
+    const { tenantId } = session.user;
+
     const module = await prisma.menuItem.create({
       data: {
         name,
         path,
         groupId: +groupId,
         parentId,
+        tenantId
       },
     });
 
@@ -63,7 +78,7 @@ export async function DELETE(request: Request) {
 
   if (!ids || !Array.isArray(ids)) {
     return NextResponse.json(
-      { success: false, message: "Module Id is required" },
+      { success: false, message: "Module Id is required route" },
       { status: 400 }
     );
   }
@@ -125,13 +140,19 @@ export async function DELETE(request: Request) {
     }
 
     // Step 3: Soft delete (mark as isDeleted: true)
-    const data = await prisma.menuItem.updateMany({
+    // const data = await prisma.menuItem.updateMany({
+    //   where: {
+    //     id: { in: ids },
+    //   },
+    //   data: {
+    //     isActive: false,
+    //   },
+    // });
+
+    const data = await prisma.menuItem.deleteMany({
       where: {
         id: { in: ids },
-      },
-      data: {
-        isActive: true,
-      },
+      }
     });
 
     revalidatePath('/master/module');

@@ -20,9 +20,23 @@ function sortModules(modules: ModuleNode[]): ModuleNode[] {
 }
 
 export async function fetchModules(): Promise<FetchModulesResponse> {
+
     try {
+
+        const session = await auth();
+
+        if (!session) {
+            return {
+                success: false,
+                message: "User session not found.",
+                data: [],
+            };
+        }
+
+        const { tenantId } = session.user;
+
         const allModules: ModuleWithRelations[] = await prisma.menuItem.findMany({
-            where: { isActive: true },
+            where: tenantId ? { tenantId, isActive: true } : undefined,
             include: {
                 children: true,
                 parent: true,

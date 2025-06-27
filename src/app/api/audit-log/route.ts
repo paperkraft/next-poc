@@ -24,10 +24,18 @@ export async function DELETE(request: Request) {
             where: { id: { in: ids } },
         });
 
-        await logAuditAction(AuditAction.DELETE, 'audit-log', { data: existingRecords[0].details });
+        await logAuditAction({
+            action: AuditAction.DELETE,
+            entity: 'audit-log',
+            details: { data: existingRecords[0].details }
+        });
         return NextResponse.json({ success: true, message: 'Success', data: result.count }, { status: 200 });
     } catch (error: any) {
-        await logAuditAction(AuditAction.ERROR, 'audit-log', { error: "Error deleting log" });
+        await logAuditAction({
+            action: AuditAction.ERROR,
+            entity: 'audit-log',
+            details: { error: "Error deleting log" }
+        });
         return NextResponse.json({ ...error });
     }
 }

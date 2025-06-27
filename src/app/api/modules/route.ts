@@ -15,17 +15,18 @@ export async function GET(req: Request) {
       include: { group: true }
     }),
     prisma.rolePermission.findMany({
-      where: { roleId },
+      where: { roleId: +roleId },
     }),
   ]);
 
-  const permissionMap = new Map<string, number>();
+  const permissionMap = new Map<number, number>();
+
   rolePermissions.forEach((rp) => {
     permissionMap.set(rp.menuId, rp.permissionBits);
   });
 
   // Attach permissions and build id map
-  const moduleMap = new Map<string, any>();
+  const moduleMap = new Map<number, any>();
   modules.forEach((mod) => {
     moduleMap.set(mod.id, {
       id: mod.id,

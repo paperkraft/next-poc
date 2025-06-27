@@ -1,9 +1,23 @@
+import { auth } from '@/auth';
 import prisma from '@/lib/prisma';
 import { FetchRoleResponse, FetchRolesResponse } from '@/types/role';
 
 export async function fetchRoles(): Promise<FetchRolesResponse> {
     try {
+        const session = await auth();
+
+        if (!session) {
+            return {
+                success: false,
+                message: "User session not found.",
+                data: [],
+            };
+        }
+
+        const { tenantId } = session.user;
+
         const roles = await prisma.role.findMany({
+            where: tenantId ? { tenantId, isActive: true } : undefined,
             select: {
                 id: true,
                 name: true,
@@ -15,6 +29,7 @@ export async function fetchRoles(): Promise<FetchRolesResponse> {
             message: 'Success',
             data: roles
         }
+
     } catch (error) {
         console.error("Error fetching roles:", error);
         return {
@@ -40,6 +55,7 @@ export async function fetchUniqueRoles(id: number): Promise<FetchRoleResponse> {
             message: 'Success',
             data: role
         }
+
     } catch (error) {
         console.error("Error fetching role:", error);
         return {

@@ -6,7 +6,7 @@ interface ABACCheck {
     modules: ModuleNode[];
     path?: string;
     name?: string;
-    moduleId?: string;
+    moduleId?: number;
     requireAll?: boolean;
 }
 

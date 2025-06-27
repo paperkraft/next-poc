@@ -8,11 +8,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
 
-interface ModuleData {
-    id: string;
+interface ModuleNode {
+    id: number;
     name: string;
     groupName?: string;
-    subModules?: ModuleData[];
+    subModules?: ModuleNode[];
 }
 
 export const ModuleMasterColumns = () => {
@@ -20,7 +20,7 @@ export const ModuleMasterColumns = () => {
     const mounted = useMounted();
     const path = usePathname();
 
-    const columns: ColumnDef<ModuleData>[] = useMemo(() => [
+    const columns: ColumnDef<ModuleNode>[] = useMemo(() => [
         {
             id: "select",
             header: ({ table }) => (
@@ -51,7 +51,10 @@ export const ModuleMasterColumns = () => {
                 const { subModules } = row.original;
                 const hasSubModules = subModules && subModules?.length > 0;
                 return (
-                    <div className={cn({ "flex gap-2 items-center cursor-pointer": hasSubModules })} aria-expanded={row.getIsExpanded()} onClick={row.getToggleExpandedHandler()}>
+                    <div className={cn({ "flex gap-2 items-center cursor-pointer": hasSubModules })}
+                        aria-expanded={row.getIsExpanded()}
+                        onClick={row.getToggleExpandedHandler()}
+                    >
                         <Link
                             title={`${row.original.name}`}
                             prefetch={false}

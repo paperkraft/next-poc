@@ -1,4 +1,5 @@
 import { createGroup, deleteGroup } from "@/app/action/group.action";
+import { auth } from "@/auth";
 import { logAuditAction } from "@/lib/audit-log";
 import prisma from "@/lib/prisma";
 import { AuditAction } from "@prisma/client";
@@ -7,7 +8,20 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
     try {
+        const session = await auth();
+
+        if (!session) {
+            return {
+                success: false,
+                message: "User session not found.",
+                data: [],
+            };
+        }
+
+        const { tenantId } = session.user;
+
         const data = await prisma.menuGroup.findMany({
+            where: tenantId ? { tenantId, isActive: true } : undefined,
             select: {
                 id: true,
                 name: true
@@ -26,6 +40,19 @@ export async function GET() {
 export async function POST(request: Request) {
     const { name } = await request.json();
     try {
+
+        const session = await auth();
+
+        if (!session) {
+            return {
+                success: false,
+                message: "User session not found.",
+                data: [],
+            };
+        }
+
+        const { tenantId } = session.user;
+
         if (!name) {
             return NextResponse.json(
                 { success: false, message: 'Group name is required' },
@@ -34,7 +61,7 @@ export async function POST(request: Request) {
         }
 
         const exist = await prisma.menuGroup.findFirst({
-            where: { name }
+            where: { name, tenantId }
         });
 
         if (exist) {
@@ -45,17 +72,26 @@ export async function POST(request: Request) {
         }
 
         const data = await prisma.menuGroup.create({
-            data: { name }
+            data: { name, tenantId }
         });
 
-        await logAuditAction(AuditAction.CREATE, 'master/groups', { data });
+        await logAuditAction({
+            action: AuditAction.CREATE,
+            entity: 'master/groups',
+            details: { data }
+        });
 
         return NextResponse.json(
             { success: true, message: 'Group created', data },
             { status: 200 }
         );
+
     } catch (error) {
-        await logAuditAction(AuditAction.ERROR, 'master/groups', { error: "Error creating group" });
+        await logAuditAction({
+            action: AuditAction.ERROR,
+            entity: 'master/groups',
+            details: { error: "Error creating group" }
+        });
         return NextResponse.json(
             { success: false, message: 'Error in creating group' },
             { status: 400 }
@@ -101,7 +137,11 @@ export async function DELETE(request: Request) {
             where: { id: { in: ids } },
         });
 
-        await logAuditAction(AuditAction.DELETE, 'master/groups', { data: existingRecords });
+        await logAuditAction({
+            action: AuditAction.DELETE,
+            entity: 'master/groups',
+            details: { data: existingRecords }
+        });
 
         revalidatePath('/master/groups');
 
@@ -111,7 +151,11 @@ export async function DELETE(request: Request) {
         );
     } catch (error) {
         console.error(error);
-        await logAuditAction(AuditAction.ERROR, 'master/groups', { error: "Error deleting group" });
+        await logAuditAction({
+            action: AuditAction.ERROR,
+            entity: 'master/groups',
+            details: { error: "Error deleting group" }
+        });
         return NextResponse.json(
             { success: false, message: "Error deleting group" },
             { status: 500 }

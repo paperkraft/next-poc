@@ -17,7 +17,7 @@ export const getAllNotifications = async (userId: number) => {
         }
 
         const notifications = await prisma.notification.findMany({
-            where: { userId },
+            where: { userId: +userId },
             orderBy: { createdAt: 'desc' },
             take: 50
         })
@@ -47,7 +47,7 @@ export const getUnreadNotifications = async (userId: number) => {
         }
 
         const notifications = await prisma.notification.findMany({
-            where: { userId, read: false },
+            where: { userId: +userId, read: false },
             orderBy: { createdAt: 'desc' }
         })
 

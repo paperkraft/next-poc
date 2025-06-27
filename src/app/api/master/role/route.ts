@@ -1,3 +1,4 @@
+import { auth } from "@/auth";
 import { logAuditAction } from "@/lib/audit-log";
 import prisma from "@/lib/prisma";
 import { AuditAction } from "@prisma/client";
@@ -6,7 +7,21 @@ import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
     try {
+
+        const session = await auth();
+
+        if (!session) {
+            return {
+                success: false,
+                message: "User session not found.",
+                data: [],
+            };
+        }
+
+        const { tenantId } = session.user;
+
         const roles = await prisma.role.findMany({
+            where: tenantId ? { tenantId, isActive: true } : undefined,
             select: {
                 id: true,
                 name: true,

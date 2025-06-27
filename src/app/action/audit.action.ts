@@ -6,11 +6,20 @@ import { JsonObject } from "@prisma/client/runtime/library";
 import { NextResponse } from "next/server";
 
 export async function fetchAuditLogs() {
-    const session = await auth();
-    const tenantId = session?.user?.tenantId
-
     try {
+        const session = await auth();
+
+        if (!session) {
+            return NextResponse.json(
+                { success: false, message: 'User session not found.', data: [] },
+                { status: 200 }
+            );
+        }
+
+        const { tenantId } = session.user;
+
         const auditLog = await prisma.auditLog.findMany({
+            where: tenantId ? { tenantId } : undefined,
             include: {
                 user: {
                     select: {
@@ -23,10 +32,8 @@ export async function fetchAuditLogs() {
             }
         });
 
-        const filterLogs = tenantId ? auditLog.filter((x) => x.tenantId === tenantId) : auditLog
-
         return NextResponse.json(
-            { success: true, message: 'Success', data: filterLogs },
+            { success: true, message: 'Success', data: auditLog },
             { status: 200 }
         );
     } catch (error) {

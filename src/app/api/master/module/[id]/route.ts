@@ -77,7 +77,7 @@ export async function DELETE(req: NextRequest, { params }: Params) {
     if (!id) {
         return NextResponse.json({
             success: false,
-            message: 'Module ID is required'
+            message: 'Module ID is required [id]'
         }, { status: 400 });
     }
 
@@ -153,7 +153,7 @@ async function syncChildren(children: ModuleInput[], parentId: number, depth: nu
                 });
 
                 if (child.children && child.children.length > 0) {
-                    await syncChildren(child.children, child.id, depth + 1);
+                    await syncChildren(child.children, +child.id, depth + 1);
                 } else {
                     // Remove nested children from DB if none provided
                     await prisma.menuItem.deleteMany({ where: { parentId: +child.id } });
@@ -170,7 +170,7 @@ async function syncChildren(children: ModuleInput[], parentId: number, depth: nu
                 });
 
                 if (child.children && child.children.length > 0) {
-                    await syncChildren(child.children, created.id, depth + 1);
+                    await syncChildren(child.children, +created.id, depth + 1);
                 }
             }
         })
@@ -214,7 +214,7 @@ async function deleteModuleAndDescendants(menuId: number) {
     await Promise.all(childModules.map((c) => deleteModuleAndDescendants(+c.id)));
 
     // Delete this module
-    await prisma.menuItem.delete({ where: { id: menuId } });
+    await prisma.menuItem.delete({ where: { id: +menuId } });
 }
 
 class ModuleDepthError extends Error {

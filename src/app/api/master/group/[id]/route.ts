@@ -25,19 +25,29 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         }
 
         const data = await prisma.menuGroup.update({
-            where: { id },
+            where: { id: +id },
             data: { name }
         });
 
-        await logAuditAction(AuditAction.UPDATE, 'master/groups', { data });
+        await logAuditAction({
+            action: AuditAction.UPDATE,
+            entity: 'master/groups',
+            details: { data }
+        });
 
         return NextResponse.json(
             { success: true, message: "Group updated", data },
             { status: 200 }
         );
+
     } catch (error) {
         console.error(error);
-        await logAuditAction(AuditAction.ERROR, 'master/groups', { error: "Error updating group" });
+        await logAuditAction({
+            action: AuditAction.ERROR,
+            entity: 'master/groups',
+            details: { error: "Error updating group" }
+        });
+
         return NextResponse.json(
             { success: false, message: "Error updating group" },
             { status: 500 }
@@ -57,7 +67,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
     try {
         const data = await prisma.menuGroup.findUnique({
-            where: { id: id },
+            where: { id: +id },
             select: {
                 id: true,
                 name: true

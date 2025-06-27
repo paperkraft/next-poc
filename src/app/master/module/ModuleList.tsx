@@ -13,7 +13,7 @@ import { ModuleNode } from '@/types/modules';
 
 interface ModuleMasterProps {
   data: ModuleNode[];
-  moduleId?: string
+  moduleId?: number
 }
 
 const ModuleMasterList = ({ data, moduleId }: ModuleMasterProps) => {
@@ -23,9 +23,7 @@ const ModuleMasterList = ({ data, moduleId }: ModuleMasterProps) => {
   const groupedModules = data && groupModules(data.sort((a, b) => (a.position ?? Infinity) - (b.position ?? Infinity)));
   const moduleData = data && data.sort((a, b) => (a.position ?? Infinity) - (b.position ?? Infinity)).map((item) => item);
 
-  const deleteRecord = async (id: string | string[]) => {
-    const ids = Array.isArray(id) ? id : [id];
-
+  const deleteRecord = async (ids: number | number[]) => {
     try {
       const res = await fetch("/api/master/module", {
         method: "DELETE",

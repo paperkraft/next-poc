@@ -59,10 +59,15 @@ export default function SignInPage() {
         body: JSON.stringify({ ...data, token }),
       }).then((res) => res.json());
 
-      if (response.success) {
-        // Redirect to the callbackUrl if it exists, otherwise redirect to the dashboard
-        window.location.href = callbackUrl || "/dashboard";
-      }
+      console.log('res', response);
+
+
+      // if (response.success) {
+      //   // Redirect to the callbackUrl if it exists, otherwise redirect to the dashboard
+      //   window.location.href = callbackUrl || "/dashboard";
+      // }
+
+      window.location.reload()
 
       if (response.type === "CredentialsSignin" || response.code === "credentials") {
         toast.error("Invalid credentials");

@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { logAuditAction } from "@/lib/audit-log";
+import { getTenantDb } from "@/lib/client";
 import prisma from "@/lib/prisma";
 import { FetchGroupResponse, FetchGroupsResponse } from "@/types/group";
 import { AuditAction } from "@prisma/client";

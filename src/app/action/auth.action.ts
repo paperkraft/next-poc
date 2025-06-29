@@ -71,8 +71,9 @@ export const getUser = async (email: string, password: string) => {
         name: `${user?.profile?.firstName ?? ""} ${user?.profile?.lastName ?? ""}`.trim(),
         email: user.email,
         roleId: user.roleId,
-        tenantId: user.tenantId,
+        globalRoles: user.globalRoles as string[],
         slug: user.tenant?.slug,
+        tenantId: user.tenantId,
         tenantName: user.tenant?.name,
         modules: modulesResult.data,
     };

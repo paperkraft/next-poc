@@ -41,10 +41,10 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
 
             <SidebarInset>
                 <Header />
-                <div className={cn("grid grid-rows p-4 gap-4 w-full", { "container px-8": config.content === 'compact' })}>
+                <div className={cn("grid grid-rows p-4 gap-4 w-full pb-10", { "container px-8": config.content === 'compact' })}>
                     {children}
                 </div>
-                <div className="w-full flex justify-center items-center absolute bottom-5 pb-2">
+                <div className="w-full flex justify-center items-center absolute bottom-2">
                     <p className="text-muted-foreground text-sm"><span className="text-xs">Designed by:</span> Sannake.Vishal #SV</p>
                 </div>
             </SidebarInset>

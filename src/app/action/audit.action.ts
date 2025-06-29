@@ -8,15 +8,7 @@ import { NextResponse } from "next/server";
 export async function fetchAuditLogs() {
     try {
         const session = await auth();
-
-        if (!session) {
-            return NextResponse.json(
-                { success: false, message: 'User session not found.', data: [] },
-                { status: 200 }
-            );
-        }
-
-        const { tenantId } = session.user;
+        const tenantId = session?.user?.tenantId
 
         const auditLog = await prisma.auditLog.findMany({
             where: tenantId ? { tenantId } : undefined,

@@ -27,11 +27,11 @@ export default function Home() {
     }
   }, []);
 
-  useEffect(() => {
-    if (status === "authenticated") {
-      route.replace("/dashboard");
-    }
-  }, [status, route]);
+  // useEffect(() => {
+  //   if (status === "authenticated") {
+  //     route.replace("/dashboard");
+  //   }
+  // }, [status, route]);
 
   if (!isClient) return null;
 

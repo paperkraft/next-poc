@@ -14,6 +14,7 @@ import { ChildProps } from '@/types';
 import type { Metadata } from "next";
 import { auth } from '@/auth';
 import StoreProvider from '@/context/store-provider';
+import { TooltipProvider } from '@/components/ui/tooltip';
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -36,9 +37,11 @@ export default async function RootLayout({ children }: ChildProps) {
           <NextAuthProvider session={session}>
             <NextIntlClientProvider messages={messages}>
               <ThemeProvider>
-                <AppLayout>
+                <TooltipProvider>
                   {children}
-                </AppLayout>
+                </TooltipProvider>
+                {/* <AppLayout>
+                </AppLayout> */}
                 <Toaster richColors position="top-center" />
               </ThemeProvider>
             </NextIntlClientProvider>

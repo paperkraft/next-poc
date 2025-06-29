@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils';
 import { checkIsActive, mapMenu, menuType, submenuType } from './helper';
 import DefaultMenu from './sidebar-default';
 import SidebarSkeleton from './sidebar-skeleton';
+import { useTenant } from '@/context/TenantProvider';
 
 const VerticalMenus = React.memo(() => {
 

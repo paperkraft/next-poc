@@ -6,10 +6,11 @@ import NoRecordPage from '@/components/custom/no-record';
 import TitlePage from '@/components/custom/page-heading';
 import SomethingWentWrong from '@/components/custom/somthing-wrong';
 import { getSessionModules } from '@/lib/abac/sessionModules';
-import { findModuleIdByPath } from '@/utils/helper';
+import { findModuleIdByPathNew } from '@/utils/helper';
 
 import GroupMasterList from './GroupMasterList';
-import fs from "fs";
+import { useTenant } from '@/context/TenantProvider';
+import { getUserModules } from '@/lib/menus';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 10;
@@ -29,7 +30,9 @@ export default async function GroupPage() {
     const { session, modules } = await getSessionModules();
     if (!session) return <AccessDenied />;
 
-    const moduleId = findModuleIdByPath(modules, currentPath);
+    const menus = await getUserModules(session.user?.tenantId, session.user?.roleId);
+
+    const moduleId = findModuleIdByPathNew(menus, currentPath);
     const response = await getAllGroups();
 
     return (

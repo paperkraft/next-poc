@@ -162,8 +162,8 @@ export default function GroupForm({ id, data }: GroupFormProps) {
                         readOnly={!show && !!id}
                     />
 
-                    {((show && id) || (!id)) && (
-                        <FormButtons id={id} loading={loading} />
+                    {((show && id) || (id)) && (
+                        <FormButtons id={+id} loading={loading} />
                     )}
                 </form>
             </Form>

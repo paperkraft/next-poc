@@ -18,13 +18,12 @@ import UserAction from './UserAction';
 
 const Header = React.memo(({ menus = [] }: { menus: GroupedMenus[] }) => {
     const mounted = useMounted();
+    const { data: session } = useSession();
     const { isMobile } = useSidebar();
     const [config] = themeConfig();
-    const { data: session } = useSession();
+    const isHorizontal = config.layout === 'horizontal';
 
     if (!mounted) return null;
-
-    const isHorizontal = config.layout === 'horizontal';
 
     return (
         <>

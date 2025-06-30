@@ -1,9 +1,10 @@
 import { ModuleNode } from "@/types/modules";
 import { ActionParam, ALL_PERMISSIONS } from "@/types/permissions";
+import { GroupedMenus, MenuItem } from "../menus";
 
 interface ABACCheck {
     action: ActionParam;
-    modules: ModuleNode[];
+    modules: GroupedMenus[];
     path?: string;
     name?: string;
     moduleId?: number;
@@ -49,6 +50,15 @@ function findMatchingModule(
     return undefined;
 };
 
+function findMatchingModuleNew(modules: GroupedMenus[], { moduleId, path, name }: Pick<ABACCheck, "moduleId" | "path" | "name">): MenuItem | undefined {
+    for (const group of modules) {
+        if (moduleId) return group.modules.find((m) => m.id === moduleId);
+        if (path) return group.modules.find((m) => m.path && matchPath(path, m.path));
+        if (name) return group.modules.find((m) => m.name === name);
+    }
+    return undefined;
+};
+
 export function isABACAllowed({
     action,
     modules,
@@ -61,11 +71,12 @@ export function isABACAllowed({
     if (!modules) return false;
 
     const requiredBits = normalizeActions(action);
-    const matchedModule = findMatchingModule(modules, { moduleId, path, name });
+    // const matchedModule = findMatchingModule(modules, { moduleId, path, name });
+    const matchedModule = findMatchingModuleNew(modules, { moduleId, path, name });
 
     if (!matchedModule) return false;
 
-    const permissions = matchedModule.permissions;
+    const permissions = matchedModule.permission;
 
     return requireAll
         ? requiredBits.every((bit) => (permissions && permissions & bit) === bit)

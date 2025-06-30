@@ -54,12 +54,12 @@ const TenantMenus = React.memo(({ menus = [] }: { menus: GroupedMenus[] }) => {
                 <SidebarGroupContent className="relative">
                     <SidebarInput
                         id="search"
+                        aria-label="Search menu items"
                         placeholder="Search for menu..."
                         className="px-8 focus-within:!ring-primary"
                         value={query ?? ""}
                         onChange={(e) => setQuery(e.target.value)}
                         autoFocus={false}
-                        aria-label="Search menu items"
                     />
 
                     <SearchIcon className="pointer-events-none absolute left-2 top-1/2 size-4 -translate-y-1/2 select-none opacity-50" />
@@ -111,7 +111,7 @@ export const RenderMenus = React.memo(({ item, isSearchActive }: { item: MenuIte
     const isActive = useMemo(() => checkIsActive(item, path), [item, path]);
     const shouldExpand = isSearchActive ? true : isActive;
 
-    const LucideIcon = Icons[item.icon as keyof typeof Icons] as React.ElementType;
+    const LucideIcon = Icons[item.icon as keyof typeof Icons] as React.ElementType ?? Icons.DotIcon;
 
     if (!mounted) return null
 
@@ -150,7 +150,6 @@ export const RenderMenus = React.memo(({ item, isSearchActive }: { item: MenuIte
 });
 
 RenderMenus.displayName = "RenderMenus";
-
 
 function checkIsActive(item: MenuItem, pathname: string): boolean {
     const isSubmenuActive = (submenu: MenuItem[]): boolean => {

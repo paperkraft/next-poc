@@ -51,7 +51,7 @@ export default function ContentLayout({ children, tenant, menus = [] }: ContentP
             }
 
             <SidebarInset>
-                <Header />
+                <Header menus={menus} />
                 <div className={cn("grid grid-rows p-4 gap-4 w-full pb-12", { "container px-8": config.content === 'compact' })}>
                     {children}
                 </div>

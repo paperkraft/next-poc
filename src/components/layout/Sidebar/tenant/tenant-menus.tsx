@@ -1,7 +1,8 @@
 'use client'
 
 import _ from 'lodash';
-import { ChevronRight, DotIcon, SearchIcon, X } from 'lucide-react';
+import { ChevronRight, SearchIcon, X } from 'lucide-react';
+import * as Icons from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -110,13 +111,15 @@ export const RenderMenus = React.memo(({ item, isSearchActive }: { item: MenuIte
     const isActive = useMemo(() => checkIsActive(item, path), [item, path]);
     const shouldExpand = isSearchActive ? true : isActive;
 
+    const LucideIcon = Icons[item.icon as keyof typeof Icons] as React.ElementType;
+
     if (!mounted) return null
 
     if (!hasSubmenu) {
         return (
             <SidebarMenuButton tooltip={item.name} asChild onClick={() => isMobile && toggleSidebar()} className="focus-within:!ring-primary">
                 <Link href={item.path as string} className={cn("hover:!text-primary hover:bg-muted", { "bg-muted text-primary": isActive })}>
-                    <DotIcon />
+                    <LucideIcon />
                     {item.name}
                 </Link>
             </SidebarMenuButton>
@@ -128,7 +131,7 @@ export const RenderMenus = React.memo(({ item, isSearchActive }: { item: MenuIte
             <Collapsible defaultOpen={shouldExpand} className="group/collapsible [&[data-state=open]>button>svg:not(:first-child)]:rotate-90">
                 <CollapsibleTrigger asChild>
                     <SidebarMenuButton tooltip={item.name} className="focus-within:!ring-primary">
-                        <DotIcon />
+                        <LucideIcon />
                         <span>{item.name}</span>
                         <ChevronRight className="ml-auto transition-transform duration-200" />
                     </SidebarMenuButton>

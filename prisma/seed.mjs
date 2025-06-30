@@ -134,15 +134,16 @@ async function main() {
   console.log("📁 Seeding menus...");
 
   const menuItems = [
-    { name: "Dashboard", path: "/dashboard", group: "Home" },
-    { name: "Module", path: "/master/module", group: "Master" },
-    { name: "Role", path: "/master/role", group: "Master" },
-    { name: "Groups", path: "/master/groups", group: "Master" },
-    { name: "RBAC", path: "/administrative/rbac", group: "Administrative" },
+    { name: "Dashboard", path: "/dashboard", group: "Home", icon: "Home" },
+    { name: "Module", path: "/master/module", group: "Master", icon: "LayoutGrid" },
+    { name: "Role", path: "/master/role", group: "Master", icon: "User2" },
+    { name: "Groups", path: "/master/groups", group: "Master", icon: "Grid" },
+    { name: "RBAC", path: "/administrative/rbac", group: "Administrative", icon: "Shield" },
     {
       name: "Audit Logs",
       path: "/administrative/audit-logs",
       group: "Administrative",
+      icon: "Logs"
     },
   ];
 
@@ -151,6 +152,7 @@ async function main() {
       data: {
         name: mod.name,
         path: mod.path,
+        icon: mod.icon,
         groupId: groupMap.get(mod.group),
         tenantId: tenant.id,
       },

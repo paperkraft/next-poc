@@ -6,16 +6,17 @@ import ThemeConfig from '@/components/layout/ThemeCustomizer';
 import { Separator } from '@/components/ui/separator';
 import { themeConfig } from '@/hooks/use-config';
 import { useMounted } from '@/hooks/use-mounted';
+import { GroupedMenus } from '@/lib/menus';
 import { cn } from '@/lib/utils';
 
 import { useSidebar } from '../ui/sidebar';
 import BellNotifications from './bell-notifications';
 import LocaleSwitcher from './locale-switcher';
-import Navbar from './navbar';
 import { CustomTrigger } from './Sidebar/custom-trigger';
+import TenantNavbar from './Sidebar/tenant/tenant-navbar';
 import UserAction from './UserAction';
 
-const Header: React.FC = React.memo(() => {
+const Header = React.memo(({ menus = [] }: { menus: GroupedMenus[] }) => {
     const mounted = useMounted();
     const { isMobile } = useSidebar();
     const [config] = themeConfig();
@@ -60,7 +61,7 @@ const Header: React.FC = React.memo(() => {
 
             {!isMobile && isHorizontal && (
                 <div className="border-b py-1">
-                    <Navbar />
+                    <TenantNavbar menus={menus} />
                 </div>
             )}
         </>

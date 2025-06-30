@@ -23,6 +23,7 @@ export type MenuItem = {
     id: number;
     name: string;
     path?: string;
+    icon: string;
     parentId?: number;
     groupId?: number;
     groupName?: string;
@@ -58,6 +59,7 @@ export async function getUserModules(tenantId: number, roleId: number): Promise<
                 select: {
                     id: true,
                     name: true,
+                    icon: true,
                     path: true,
                     parentId: true,
                     groupId: true,
@@ -72,12 +74,14 @@ export async function getUserModules(tenantId: number, roleId: number): Promise<
                         select: {
                             id: true,
                             name: true,
+                            icon: true,
                             path: true,
                             parentId: true,
                             groupId: true,
                             children: {
                                 select: {
                                     id: true,
+                                    icon: true,
                                     name: true,
                                     path: true,
                                     parentId: true,
@@ -119,6 +123,7 @@ export async function getUserModules(tenantId: number, roleId: number): Promise<
             menuMap.set(menu.id, {
                 id: menu.id,
                 name: menu.name,
+                icon: menu.icon ?? "DotIcon",
                 path: slug ? `/${slug}${menu.path}` : `/admin${menu.path}` || undefined,
                 parentId: menu.parentId || undefined,
                 groupId: group?.id,
@@ -139,6 +144,7 @@ export async function getUserModules(tenantId: number, roleId: number): Promise<
                 menuMap.set(child.id, {
                     id: child.id,
                     name: child.name,
+                    icon: child.icon ?? "DotIcon",
                     path: child.path || undefined,
                     parentId: child.parentId || undefined,
                     groupId: group?.id,
@@ -155,6 +161,7 @@ export async function getUserModules(tenantId: number, roleId: number): Promise<
                     menuMap.set(grandchild.id, {
                         id: grandchild.id,
                         name: grandchild.name,
+                        icon: grandchild.icon ?? "DotIcon",
                         path: grandchild.path || undefined,
                         parentId: grandchild.parentId || undefined,
                         groupId: group?.id,

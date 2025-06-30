@@ -25,9 +25,9 @@ export const roleFormSchema = z.object({
 export type RoleFormValues = z.infer<typeof roleFormSchema>;
 
 type RoleFormProps = {
-  id?: string;
+  id?: number;
   data?: {
-    id: string;
+    id: number;
     name: string;
   }
 };
@@ -92,7 +92,7 @@ export default function RoleForm({ id, data }: RoleFormProps) {
     }
   };
 
-  const handleDelete = async (ids: string[]) => {
+  const handleDelete = async (ids: number[]) => {
     try {
       setLoading(true);
       const res = await fetch("/api/master/role", {
@@ -176,7 +176,7 @@ export default function RoleForm({ id, data }: RoleFormProps) {
           open={open}
           itemName={data?.name || ''}
           loading={loading}
-          onConfirm={() => handleDelete([id as string])}
+          onConfirm={() => id && handleDelete([id])}
           onCancel={() => setOpen(false)}
         />
       )}

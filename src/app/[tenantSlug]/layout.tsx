@@ -1,11 +1,11 @@
-import { auth } from '@/auth';
-import { TenantProvider } from '@/context/TenantProvider'
-import { validateTenantAccess } from '@/lib/tenants'
-import { getUserModules } from '@/lib/menus';
-import { redirect } from 'next/navigation'
-import { SidebarProvider } from '@/components/ui/sidebar';
-import Content from '@/components/common/Content';
+import { redirect } from 'next/navigation';
 
+import { auth } from '@/auth';
+import ContentLayout from '@/components/common/ContentLayout';
+import { SidebarProvider } from '@/components/ui/sidebar';
+import { TenantProvider } from '@/context/TenantProvider';
+import { getUserModules } from '@/lib/menus';
+import { validateTenantAccess } from '@/lib/tenants';
 
 type TenantLayoutProps = {
     children: React.ReactNode,
@@ -22,28 +22,21 @@ export default async function TenantLayout({ children, params }: TenantLayoutPro
         redirect('/signin')
     }
 
-    const isAdmin = !!session.user.globalRoles?.includes('SYSTEM_ADMIN');
-
     const { isValid, redirectPath, tenant } = await validateTenantAccess(params.tenantSlug);
 
     if (!isValid && redirectPath) {
         redirect(redirectPath)
     }
 
-    // const tenant = await getTenantBySlug(params.tenantSlug);
-    const userMenus = await getUserModules(session?.user.tenantId, session?.user.roleId);
-    console.log('userMenus', userMenus);
+    const userMenus = await getUserModules(session.user?.tenantId, session.user?.roleId);
 
     return (
-        <>
-            <TenantProvider tenant={tenant} menus={userMenus}>
-                <SidebarProvider>
-                    <Content isAdmin={isAdmin}>
-                        {children}
-                    </Content>
-                </SidebarProvider>
-            </TenantProvider>
-
-        </>
+        <TenantProvider tenant={tenant} menus={userMenus}>
+            <SidebarProvider>
+                <ContentLayout tenant={tenant} menus={userMenus}>
+                    {children}
+                </ContentLayout>
+            </SidebarProvider>
+        </TenantProvider>
     )
 }

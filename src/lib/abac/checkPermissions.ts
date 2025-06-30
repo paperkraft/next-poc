@@ -3,7 +3,7 @@ import { isABACAllowed } from "./isABACAllowed";
 import { ModuleNode } from "@/types/modules";
 
 type BaseParams = {
-    moduleId?: string;
+    moduleId?: number;
     path?: string;
     name?: string;
     modules: ModuleNode[];

@@ -6,7 +6,7 @@ import { auth } from '@/auth';
 
 async function getTenantStats(tenantId: number) {
     try {
-        return await prisma.$transaction(async (tx) => {
+        return await prisma.$transaction(async (tx: any) => {
             const [userCount, activeUsers, roleCount] = await Promise.all([
                 tx.user.count({ where: { tenantId } }),
                 tx.user.count({ where: { tenantId, isActive: true } }),
@@ -94,7 +94,7 @@ export default async function TenantAdminDashboard() {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+                <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
                 <p className="mt-2 text-gray-600">
                     Manage your organization's users, roles, and settings
                 </p>
@@ -124,7 +124,7 @@ export default async function TenantAdminDashboard() {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            {stats.recentUsers.map((user) => (
+                            {stats.recentUsers.map((user: any) => (
                                 <div key={user.id} className="flex items-center space-x-4">
                                     <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
                                         <span className="text-sm font-medium">

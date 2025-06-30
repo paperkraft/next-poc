@@ -1,0 +1,132 @@
+"use client"
+import { useSession } from 'next-auth/react';
+import { useTranslations } from 'next-intl';
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { z } from 'zod';
+
+import { InputController } from '@/components/_form-controls/InputController';
+import { Button } from '@/components/ui/button';
+import { Form } from '@/components/ui/form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMounted } from '@/hooks/use-mounted';
+import { LoginDetail } from '@/app/action/audit.action';
+import LastLoginSession from './LastLoginSession';
+
+const profileFormSchema = z.object({
+  firstName: z.string({ required_error: "First Name is required" })
+    .min(1, "First Name is required"),
+  lastName: z.string({ required_error: "Last Name is required" })
+    .min(1, "Last Name is required"),
+  username: z
+    .string().min(3, {
+      message: "Username must be at least 3 characters.",
+    }).max(10, {
+      message: "Username must not be longer than 10 characters.",
+    }),
+  email: z.string({
+    required_error: "Please enter email.",
+  }).email("Invalid email"),
+})
+
+type ProfileFormValues = z.infer<typeof profileFormSchema>
+
+const defaultValues: Partial<ProfileFormValues> = {
+  firstName: "",
+  lastName: "",
+  username: "",
+  email: "",
+}
+
+export function ProfileForm({ lastLogins }: { lastLogins: LoginDetail[] | null }) {
+  const mounted = useMounted();
+  const t = useTranslations('setting');
+
+  const { data: session } = useSession();
+  const user = session?.user;
+
+  const form = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileFormSchema),
+    defaultValues,
+    mode: "onChange",
+  });
+
+  useEffect(() => {
+    if (user) {
+      form.setValue("email", user.email)
+
+      const fetchItem = async () => {
+        const response = await fetch(`/api/user/id`, {
+          method: "POST",
+          body: JSON.stringify({ id: user.id })
+        });
+
+        const data = await response.json();
+
+        if (data?.profile) {
+          form.setValue("firstName", data?.profile?.firstName)
+          form.setValue("lastName", data?.profile?.lastName)
+        }
+      };
+      fetchItem();
+
+    }
+  }, [user]);
+
+  async function onSubmit(data: ProfileFormValues) {
+    const res = await fetch('/api/user/update', {
+      method: "POST",
+      body: JSON.stringify(data)
+    })
+
+    const result = await res.json();
+    if (result.success) {
+      toast.success("Profile updated");
+    } else {
+      toast.error("Failed to update profile");
+    }
+  }
+
+  if (!mounted) return null;
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <InputController
+            name="firstName"
+            label={t("profile.form.firstName")}
+            description={t("profile.form.firstName_desc")}
+            readOnly
+          />
+
+          <InputController
+            name="lastName"
+            label={t("profile.form.lastName")}
+            description={t("profile.form.lastName_desc")}
+            readOnly
+          />
+        </div>
+
+        <InputController
+          name="username"
+          label={t("profile.form.username")}
+          description={t("profile.form.username_desc")}
+        />
+
+        <InputController
+          name="email"
+          label={t("profile.form.email")}
+          description={t("profile.form.email_desc")}
+          readOnly
+        />
+
+        <LastLoginSession lastLogins={lastLogins} />
+
+        <Button type="submit">{t("profile.form.btn")}</Button>
+      </form>
+    </Form>
+  )
+}

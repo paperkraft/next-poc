@@ -1,37 +1,23 @@
 'use client';
 
-import { ReactNode, useState } from "react";
-import { Clock, Flame, Info, Trophy, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { useSession } from "next-auth/react";
-import { Badge } from "@/components/ui/badge";
-import { useMounted } from "@/hooks/use-mounted";
-import { useTenant } from "@/context/TenantProvider";
+import { Clock, Flame, Info, Trophy, X } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import { ReactNode, useState } from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import {
+    Select, SelectContent, SelectItem, SelectTrigger, SelectValue
+} from '@/components/ui/select';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useMounted } from '@/hooks/use-mounted';
 
 export default function Student() {
-    const [showBanner, setShowBanner] = useState(true);
     const mounted = useMounted();
-    const { data } = useSession();
+    const [showBanner, setShowBanner] = useState(true);
 
-    if (!mounted) return null
-
-    if (data?.user?.status === 'PENDING') {
-        return (
-            <>
-                <div className="max-w-md mx-auto border p-6 rounded-lg">
-                    <h2 className="text-xl font-semibold">Approval Pending</h2>
-                    <ul className="text-muted-foreground mt-2 text-sm list-inside list-disc">
-                        <li>Your institute account is awaiting approval by the system administrator.</li>
-                        <li>You'll be notified once access is granted.</li>
-                        <li>For assistance, please contact support.</li>
-                    </ul>
-                </div>
-            </>
-        )
-    }
+    if (!mounted) return null;
 
     return (
         <section className="overflow-auto">
@@ -103,7 +89,16 @@ function MetricsGrid() {
     );
 }
 
-function MetricCard({ title, value, change, period, icon, tooltip }: { title: string, value: string, change: number, period: string, icon: ReactNode, tooltip: string }) {
+type MetricCardProps = {
+    title: string;
+    value: string;
+    change: number;
+    period: string;
+    icon: ReactNode;
+    tooltip: string
+}
+
+function MetricCard({ title, value, change, period, icon, tooltip }: MetricCardProps) {
     return (
         <TooltipProvider>
             <Card>

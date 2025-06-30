@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import prisma from "@/lib/prisma";
 import { getTenantsForAdmin } from "@/lib/tenants";
 import { BarChart3, Building, School, Users } from "lucide-react";
-import { redirect } from "next/navigation";
 
 async function getDashboardStats() {
     try {
@@ -26,15 +25,9 @@ async function getDashboardStats() {
 export default async function AdminDashboard() {
 
     const session = await auth();
-
-    if (!session || !session?.user?.globalRoles?.includes('SYSTEM_ADMIN')) {
-        redirect('/access-denied')
-    }
-
     const stats = await getDashboardStats();
-    // const stats: any = {}
-
     const tenants = await getTenantsForAdmin()
+
     const currentTenant = tenants.find(t => t.id === session?.user?.tenantId)
 
     const statCards = [

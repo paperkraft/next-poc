@@ -1,6 +1,7 @@
 'use client'
+
 import { logAuditAction } from "@/lib/audit-log";
-import { BellIcon, EllipsisVerticalIcon, LogOutIcon, Settings2Icon, UserIcon } from "lucide-react";
+import { EllipsisVerticalIcon, LogOutIcon } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar";
@@ -19,21 +20,13 @@ import Link from "next/link";
 import { ThemeWrapper } from "../theme-wrapper";
 import { themeConfig } from "@/hooks/use-config";
 import { AuditAction } from "@prisma/client";
+import { useRouter } from "next/navigation";
+import { UserActions } from "@/config/user-action";
 
-const options = [
-    {
-        label: 'Profile',
-        url: '/profile-settings',
-        icon: UserIcon
-    },
-    {
-        label: 'Notifications',
-        url: '/notifications',
-        icon: BellIcon
-    },
-]
+
 
 const SidebarFooterContent = React.memo(() => {
+    const router = useRouter();
     const { data } = useSession();
     const [config] = themeConfig();
     const { isMobile, toggleSidebar } = useSidebar();
@@ -42,12 +35,13 @@ const SidebarFooterContent = React.memo(() => {
     const isDual = (config.layout === "collapsed" || config.layout === "dual-menu") && !isMobile
 
     const user = data && data?.user;
+    const slug = data?.user?.slug ?? "admin";
     const initials = user && user?.name?.split(' ').map((word: any[]) => word[0]).join('').toUpperCase();
 
     const logout = async () => {
         setIsLoggingOut(true);
         try {
-            await signOut({ redirect: false });
+            await signOut({ redirect: true });
             await logAuditAction({
                 action: AuditAction.LOGOUT,
                 entity: 'auth/signout',
@@ -61,6 +55,7 @@ const SidebarFooterContent = React.memo(() => {
         } finally {
             setIsLoggingOut(false);
             handleClose();
+            router.replace('/signin');
         }
     }
 
@@ -134,15 +129,13 @@ const SidebarFooterContent = React.memo(() => {
                                 <DropdownMenuSeparator />
 
                                 <DropdownMenuGroup>
-                                    {
-                                        options.map((item) => (
-                                            <DropdownMenuItem key={item.label} asChild className="cursor-pointer" onClick={handleClose}>
-                                                <Link href={item.url} className="flex flex-1 items-center hover:!text-primary">
-                                                    {item.icon && <item.icon />}{item.label}
-                                                </Link>
-                                            </DropdownMenuItem>
-                                        ))
-                                    }
+                                    {UserActions.map((item) => (
+                                        <DropdownMenuItem key={item.label} asChild className="cursor-pointer" onClick={handleClose}>
+                                            <Link href={`/${slug}${item.url}`} className="flex flex-1 items-center hover:!text-primary">
+                                                {item.icon && <item.icon />}{item.label}
+                                            </Link>
+                                        </DropdownMenuItem>
+                                    ))}
                                 </DropdownMenuGroup>
 
                                 <DropdownMenuSeparator />

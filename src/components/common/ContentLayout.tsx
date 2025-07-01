@@ -18,11 +18,12 @@ import { Tenant } from '@prisma/client';
 
 type ContentProps = {
     children: React.ReactNode;
-    tenant?: Tenant | null;
+    currentTenant?: Tenant | null;
+    tenants?: Tenant[] | null;
     menus?: GroupedMenus[]
 }
 
-export default function ContentLayout({ children, tenant, menus = [] }: ContentProps) {
+export default function ContentLayout({ children, currentTenant, menus = [], tenants = [] }: ContentProps) {
 
     const [config] = themeConfig();
     const { isMobile } = useSidebar();
@@ -51,7 +52,7 @@ export default function ContentLayout({ children, tenant, menus = [] }: ContentP
             }
 
             <SidebarInset>
-                <Header menus={menus} />
+                <Header menus={menus} currentTenant={currentTenant} tenants={tenants} />
                 <div className={cn("grid grid-rows p-4 gap-4 w-full pb-12", { "container px-8": config.content === 'compact' })}>
                     {children}
                 </div>

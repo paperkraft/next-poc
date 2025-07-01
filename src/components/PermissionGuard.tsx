@@ -14,7 +14,6 @@ interface PermissionGuardProps {
     name?: string;
     children: ReactNode;
     fallback?: ReactNode;
-    modules?: GroupedMenus[];
 }
 
 export function PermissionGuard({
@@ -24,7 +23,6 @@ export function PermissionGuard({
     name,
     children,
     fallback = null,
-    modules = []
 }: PermissionGuardProps) {
     const { data: session, status } = useSession();
 
@@ -39,7 +37,7 @@ export function PermissionGuard({
         moduleId,
         path,
         name,
-        modules: modules ?? session?.user?.modules ?? [] // Get the user's modules from session
+        modules: session?.user?.modules ?? [] // Get the user's modules from session
     }), [action, moduleId, path, name, session?.user?.modules]);
 
     // Render children if permission is granted, otherwise fallback

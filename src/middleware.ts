@@ -7,19 +7,17 @@ import { logAccessDenied } from './utils/log';
 
 export async function middleware(req: NextRequest) {
     const currentPath = req.nextUrl.pathname;
+    const response = NextResponse.next();
 
     // Skip middleware for these paths to prevent loops
     if (['/access-denied', '/tenant-access-denied'].includes(currentPath)) {
-        return NextResponse.next();
+        return response;
     }
 
     try {
-        //
-        const tenantId = req.cookies.get('x-tenant-id')?.value
-        const tenantSlug = req.cookies.get('x-tenant-slug')?.value
+        // const tenantId = req.cookies.get('x-tenant-id')?.value
+        // const tenantSlug = req.cookies.get('x-tenant-slug')?.value
 
-
-        const response = NextResponse.next();
         const token = await getToken({ req, secret: process.env.AUTH_SECRET });
         const session = token ? JSON.parse(JSON.stringify(token)) : null;
         const pathAccess = getPathAccess(currentPath);
@@ -28,13 +26,13 @@ export async function middleware(req: NextRequest) {
         response.headers.set('x-current-path', currentPath);
         response.headers.set('x-tenant-id', session?.user?.tenantId?.toString() || 'none');
 
-        // Extract tenant slug from path (first segment)
+        // Extract tenant slug from path: /[tenant-slug]/...
         const pathSegments = currentPath.split('/').filter(Boolean);
-        const pathTenantSlug = pathSegments[0];
+        const tenantSlug = pathSegments[0];
 
         // Determine if user is super admin (from session)
         const isSuperAdmin = session?.user?.globalRoles?.includes('SYSTEM_ADMIN');
-        const isTenantRoute = pathTenantSlug && !['signin', 'signup'].includes(pathTenantSlug);
+        const isTenantRoute = tenantSlug && !['signin', 'signup'].includes(tenantSlug);
 
         // 1. Handle ignored paths
         if (pathAccess === 'ignored') {
@@ -64,9 +62,6 @@ export async function middleware(req: NextRequest) {
 
         // 4. Super admin access rules
         if (isSuperAdmin) {
-            if (tenantId && tenantSlug) {
-                // console.log('admin access tenant', tenantSlug);
-            }
             return response;
         }
 
@@ -92,7 +87,18 @@ export async function middleware(req: NextRequest) {
             }
         }
 
-        return response;
+        // Add tenant info to headers for server components
+        const requestHeaders = new Headers(req.headers)
+        requestHeaders.set("x-tenant-slug", tenantSlug)
+        requestHeaders.set("x-original-path", currentPath)
+
+        // Continue with the request, keeping the path structure
+        return NextResponse.next({
+            request: {
+                headers: requestHeaders,
+            },
+        })
+
 
     } catch (error) {
         console.error('Middleware error:', {

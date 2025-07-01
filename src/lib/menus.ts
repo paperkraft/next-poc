@@ -39,7 +39,7 @@ export type GroupedMenus = {
     modules: MenuItem[];
 }
 
-export async function getUserModules(tenantId: number, roleId: number): Promise<GroupedMenus[]> {
+export async function getUserModules(tenantId: number | null, roleId: number): Promise<GroupedMenus[]> {
     // Fetch all menu items with permissions in a single optimized query
     const rolePermissions = await prisma.rolePermission.findMany({
         where: {

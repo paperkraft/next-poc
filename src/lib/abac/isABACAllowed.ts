@@ -1,6 +1,7 @@
 import { ModuleNode } from "@/types/modules";
 import { ActionParam, ALL_PERMISSIONS } from "@/types/permissions";
 import { GroupedMenus, MenuItem } from "../menus";
+import { findMatchingMenuItem } from "./find-modules";
 
 interface ABACCheck {
     action: ActionParam;
@@ -50,15 +51,6 @@ function findMatchingModule(
     return undefined;
 };
 
-function findMatchingModuleNew(modules: GroupedMenus[], { moduleId, path, name }: Pick<ABACCheck, "moduleId" | "path" | "name">): MenuItem | undefined {
-    for (const group of modules) {
-        if (moduleId) return group.modules.find((m) => m.id === moduleId);
-        if (path) return group.modules.find((m) => m.path && matchPath(path, m.path));
-        if (name) return group.modules.find((m) => m.name === name);
-    }
-    return undefined;
-};
-
 export function isABACAllowed({
     action,
     modules,
@@ -72,7 +64,9 @@ export function isABACAllowed({
 
     const requiredBits = normalizeActions(action);
     // const matchedModule = findMatchingModule(modules, { moduleId, path, name });
-    const matchedModule = findMatchingModuleNew(modules, { moduleId, path, name });
+    const matchedModule = findMatchingMenuItem(modules, { id: moduleId, name, path });
+
+    console.log('matchedModule', matchedModule);
 
     if (!matchedModule) return false;
 

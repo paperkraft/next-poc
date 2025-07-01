@@ -4,6 +4,7 @@ import { RECAPTCHA_SITE_KEY } from "@/utils/constants";
 import { verifyPassword } from "@/utils/password";
 import { fetchModuleByRole } from "./module.action";
 import { AuditAction } from "@prisma/client";
+import { getUserModules } from "@/lib/menus";
 
 export const getRecaptchaToken = async (): Promise<string | null> => {
     if (!window.grecaptcha) {
@@ -63,8 +64,10 @@ export const getUser = async (email: string, password: string) => {
     });
 
     // Fetch ABAC modules using the role ID
-    const moduleResponse = await fetchModuleByRole(+user.roleId);
-    const modulesResult = await moduleResponse.json();
+    // const moduleResponse = await fetchModuleByRole(+user.roleId);
+    // const modulesResult = await moduleResponse.json();
+
+    const modules = user ? await getUserModules(user.tenantId, +user.roleId) : []
 
     return {
         id: user.id,
@@ -75,7 +78,7 @@ export const getUser = async (email: string, password: string) => {
         slug: user.tenant?.slug,
         tenantId: user.tenantId,
         tenantName: user.tenant?.name,
-        modules: modulesResult.data,
+        modules: modules,
     };
 };
 

@@ -1,20 +1,18 @@
 import { redirect } from 'next/navigation';
 
-import { auth } from '@/auth';
-import ContentLayout from '@/components/common/ContentLayout';
-import { SidebarProvider } from '@/components/ui/sidebar';
-import { TenantProvider } from '@/context/TenantProvider';
-import { getUserModules } from '@/lib/menus';
 import { validateTenantAccess } from '@/lib/tenants';
+import { auth } from '@/auth';
+import { getUserModules } from '@/lib/menus';
+import { TenantProvider } from '@/context/TenantProvider';
+import { SidebarProvider } from '@/components/ui/sidebar';
+import ContentLayout from '@/components/common/ContentLayout';
 
 type TenantLayoutProps = {
     children: React.ReactNode,
-    params: {
-        tenantSlug: string
-    }
+    params: { tenantSlug: string }
 }
 
-export default async function TenantLayout({ children, params }: TenantLayoutProps) {
+export default async function TenantRootLayout({ children, params }: TenantLayoutProps) {
     // Validate tenant access
     const session = await auth();
 
@@ -31,12 +29,14 @@ export default async function TenantLayout({ children, params }: TenantLayoutPro
     const userMenus = await getUserModules(session.user?.tenantId, session.user?.roleId);
 
     return (
-        <TenantProvider tenant={tenant} menus={userMenus}>
-            <SidebarProvider>
-                <ContentLayout tenant={tenant} menus={userMenus}>
-                    {children}
-                </ContentLayout>
-            </SidebarProvider>
-        </TenantProvider>
+        <>
+            <TenantProvider tenant={tenant} menus={userMenus}>
+                <SidebarProvider>
+                    <ContentLayout currentTenant={tenant} menus={userMenus}>
+                        {children}
+                    </ContentLayout>
+                </SidebarProvider>
+            </TenantProvider>
+        </>
     )
 }

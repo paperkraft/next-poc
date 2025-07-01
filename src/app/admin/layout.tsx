@@ -2,9 +2,10 @@ import { auth } from "@/auth";
 import Content from "@/components/common/ContentLayout";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { getUserModules } from "@/lib/menus";
+import { getTenantsForAdmin } from "@/lib/tenants";
 import { redirect } from "next/navigation";
 
-export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminRootLayout({ children }: { children: React.ReactNode }) {
 
     const session = await auth();
 
@@ -13,10 +14,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     }
 
     const menus = await getUserModules(session?.user.tenantId, session?.user.roleId);
+    const tenants = await getTenantsForAdmin();
 
     return (
         <SidebarProvider>
-            <Content menus={menus}>
+            <Content menus={menus} tenants={tenants}>
                 {children}
             </Content>
         </SidebarProvider>

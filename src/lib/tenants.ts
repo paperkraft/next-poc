@@ -1,15 +1,17 @@
 import { auth } from "@/auth"
 import prisma from "./prisma";
 import { headers } from "next/headers";
+import { Tenant } from "@prisma/client";
+// import { getTenantBySlug } from "./menus";
 
 export async function getTenantsForAdmin() {
     return prisma.tenant.findMany({
-        select: {
-            id: true,
-            name: true,
-            slug: true,
-            isActive: true
-        },
+        // select: {
+        //     id: true,
+        //     name: true,
+        //     slug: true,
+        //     isActive: true
+        // },
         orderBy: {
             name: 'asc'
         }
@@ -111,7 +113,7 @@ export async function getCurrentTenant(): Promise<TenantContext | null> {
 }
 
 // Get tenant by slug (for API routes and client-side)
-export async function getTenantBySlug(slug: string): Promise<TenantContext | null> {
+export async function getTenantBySlug(slug: string): Promise<Tenant | null> {
     try {
         const tenant = await prisma.tenant.findUnique({
             where: {
@@ -130,7 +132,7 @@ export async function getTenantBySlug(slug: string): Promise<TenantContext | nul
             },
         })
 
-        return tenant as TenantContext
+        return tenant as Tenant
     } catch (error) {
         console.error("Error fetching tenant by slug:", error)
         return null

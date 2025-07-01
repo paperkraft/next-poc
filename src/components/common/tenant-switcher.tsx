@@ -8,39 +8,16 @@ import { Button } from "@/components/ui/button"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Badge } from "@/components/ui/badge"
-
-// Mock tenant data
-const tenants = [
-    {
-        id: 1,
-        name: "Springfield University",
-        type: "UNIVERSITY",
-        slug: "springfield-uni",
-        isActive: true,
-    },
-    {
-        id: 2,
-        name: "Riverside College",
-        type: "COLLEGE",
-        slug: "riverside-college",
-        isActive: true,
-    },
-    {
-        id: 3,
-        name: "Oakwood High School",
-        type: "SCHOOL",
-        slug: "oakwood-high",
-        isActive: true,
-    },
-]
+import { Tenant } from "@prisma/client"
 
 interface TenantSwitcherProps {
-    currentTenant: any
+    currentTenant?: Tenant | null
     onViewChange: (view: "system" | "tenant") => void
     activeView: "system" | "tenant"
+    tenants?: Tenant[] | null
 }
 
-export function TenantSwitcherN({ currentTenant, onViewChange, activeView }: TenantSwitcherProps) {
+export function TenantSwitcherN({ currentTenant, onViewChange, activeView, tenants = [] }: TenantSwitcherProps) {
     const [open, setOpen] = React.useState(false)
     const [selectedTenant, setSelectedTenant] = React.useState(currentTenant)
 
@@ -104,7 +81,7 @@ export function TenantSwitcherN({ currentTenant, onViewChange, activeView }: Ten
                             <CommandGroup heading="Tenants">
                                 <CommandInput placeholder="Search tenants..." />
                                 <CommandEmpty>No tenant found.</CommandEmpty>
-                                {tenants.map((tenant) => (
+                                {tenants?.map((tenant) => (
                                     <CommandItem
                                         key={tenant.id}
                                         onSelect={() => {

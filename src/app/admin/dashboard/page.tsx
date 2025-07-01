@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { TenantSwitcher } from "@/components/common/TenantSwithc";
+import { SystemAdminDashboard } from "@/components/dashboard/system-admin-dashboard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import prisma from "@/lib/prisma";
 import { getTenantsForAdmin } from "@/lib/tenants";
@@ -59,7 +60,8 @@ export default async function AdminDashboard() {
 
     return (
         <>
-            <div className="space-y-6">
+            <SystemAdminDashboard />
+            <div className="space-y-6 hidden">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900">Super Admin Dashboard</h1>
                     <p className="mt-2 text-gray-600">

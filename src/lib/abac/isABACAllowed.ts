@@ -65,11 +65,7 @@ export function isABACAllowed({
     const requiredBits = normalizeActions(action);
     // const matchedModule = findMatchingModule(modules, { moduleId, path, name });
     const matchedModule = findMatchingMenuItem(modules, { id: moduleId, name, path });
-
-    console.log('matchedModule', matchedModule);
-
     if (!matchedModule) return false;
-
     const permissions = matchedModule.permission;
 
     return requireAll

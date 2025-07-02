@@ -1,4 +1,4 @@
-import { ModuleNode } from "./modules";
+import { MenuItem } from "@/lib/menus";
 
 export type PermissionKey = 'read' | 'write' | 'update' | 'delete';
 
@@ -15,12 +15,12 @@ export const ALL_PERMISSIONS: PermissionAction[] = Object.keys(PERMISSIONS) as P
 type SpecialAction = "ALL" | "ANY";
 export type ActionParam = PermissionAction | PermissionAction[] | SpecialAction;
 export interface IGroupedModule {
-  groupId: string;
+  groupId: number;
   groupName: string;
-  modules: ModuleNode[];
+  modules: MenuItem[];
 }
 export interface PermissionPayload {
-  moduleId: string;
+  moduleId: number;
   permissions: number;
   children: PermissionPayload[];
 }

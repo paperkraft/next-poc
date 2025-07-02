@@ -10,17 +10,17 @@ import { TableCell, TableRow } from '@/components/ui/table';
 import { highlightMatch } from '@/lib/highlight-text';
 import { cn } from '@/lib/utils';
 import { PERMISSIONS } from '@/types/permissions';
-import { ModuleNode } from '@/types/modules';
+import { MenuItem } from '@/lib/menus';
 
 type Props = {
-    mod: ModuleNode;
+    mod: MenuItem;
     level: number;
-    modules: ModuleNode[];
+    modules: MenuItem[];
     control: any;
     watch: UseFormWatch<any>;
     setValue: UseFormSetValue<any>;
-    openModules: string[];
-    setOpenModules: React.Dispatch<React.SetStateAction<string[]>>;
+    openModules: number[];
+    setOpenModules: React.Dispatch<React.SetStateAction<number[]>>;
     debouncedSearch: string;
 };
 
@@ -29,14 +29,14 @@ export const PermissionRow: React.FC<Props> = ({ mod, level, modules, control, w
     const permissionKeys = Object.keys(PERMISSIONS) as (keyof typeof PERMISSIONS)[];
     const hasSubModules = mod?.children?.length > 0;
 
-    const updateChildren = (m: ModuleNode, perm: string, value: boolean) => {
+    const updateChildren = (m: MenuItem, perm: string, value: boolean) => {
         m.children.forEach((sub) => {
             setValue(`${sub.id}_${perm}`, value);
             updateChildren(sub, perm, value);
         });
     };
 
-    const updateParent = (current: ModuleNode, perm: string) => {
+    const updateParent = (current: MenuItem, perm: string) => {
         const parent = modules.find((pm) => pm.id === current.parentId);
         if (!parent) return;
 

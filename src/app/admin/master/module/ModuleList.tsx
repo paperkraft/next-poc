@@ -3,16 +3,17 @@ import { LayoutDashboard, List } from 'lucide-react';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 
-import { groupModules } from '../../administrative/rbac/helper';
+// import { groupModules } from '../../administrative/rbac/helper';
 import { DataTable } from '@/components/_data-table/data-table';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 import GroupTable from './components/GroupedTable';
 import { ModuleMasterColumns } from './module-list-column';
-import { ModuleNode } from '@/types/modules';
+import { groupModules } from '../../permissions/helper';
+import { MenuItem } from '@/lib/menus';
 
 interface ModuleMasterProps {
-  data: ModuleNode[];
+  data: MenuItem[];
   moduleId?: number
 }
 

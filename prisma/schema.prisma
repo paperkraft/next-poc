@@ -117,7 +117,8 @@ model RolePermission {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  @@unique([tenantId, roleId, menuId])
+  @@unique([roleId, menuId, tenantId], name: "role_permission_tenant_unique")
+  @@unique([roleId, menuId], name: "role_permission_global_unique")
   @@index([tenantId, roleId])
   @@index([tenantId, menuId])
 }

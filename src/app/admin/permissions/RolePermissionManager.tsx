@@ -23,6 +23,7 @@ import { filterGroupedModules, groupModules } from './helper';
 import { PermissionRow } from './PermissionRow';
 import { ModuleNode } from '@/types/modules';
 import { Role } from '@/types/role';
+import { MenuItem } from '@/lib/menus';
 
 type FormValues = { [key: string]: boolean };
 
@@ -31,7 +32,7 @@ export default function RolePermissionManager({ roles }: { roles: Role[] }) {
     const [search, setSearch] = useState("");
     const [selectedRole, setSelectedRole] = useState<string>("");
     const [groupedModules, setGroupedModules] = useState<IGroupedModule[]>([]);
-    const [openModules, setOpenModules] = useState<string[]>([]);
+    const [openModules, setOpenModules] = useState<number[]>([]);
     const [loading, setLoading] = useState(false);
 
 
@@ -43,7 +44,7 @@ export default function RolePermissionManager({ roles }: { roles: Role[] }) {
         []
     );
 
-    const openSet = useMemo(() => new Set<string>(), []);
+    const openSet = useMemo(() => new Set<number>(), []);
 
 
     const filteredGroups = useMemo(
@@ -147,7 +148,7 @@ export default function RolePermissionManager({ roles }: { roles: Role[] }) {
                     </SelectTrigger>
                     <SelectContent>
                         {roles.map((role) => (
-                            <SelectItem key={role.id} value={role.id}>{role.name}</SelectItem>
+                            <SelectItem key={role.id} value={`${role.id}`}>{role.name}</SelectItem>
                         ))}
                     </SelectContent>
                 </Select>
@@ -198,7 +199,7 @@ export default function RolePermissionManager({ roles }: { roles: Role[] }) {
                                         </TableCell>
                                     </TableRow>
 
-                                    {group.modules.map((mod: ModuleNode) => (
+                                    {group.modules.map((mod: MenuItem) => (
                                         <PermissionRow
                                             key={mod.id}
                                             mod={mod}

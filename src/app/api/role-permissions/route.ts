@@ -18,7 +18,7 @@ type ModulePermissionInput = {
 async function flattenModules(modules: ModulePermissionInput[]): Promise<ModulePermissionInput[]> {
   const result: ModulePermissionInput[] = [];
   const recurse = (mod: ModulePermissionInput) => {
-    result.push({ moduleId: mod.moduleId, permissions: mod.permissions });
+    result.push({ moduleId: +mod.moduleId, permissions: +mod.permissions });
     mod.children?.forEach(recurse);
   };
   modules.forEach(recurse);
@@ -28,14 +28,29 @@ async function flattenModules(modules: ModulePermissionInput[]): Promise<ModuleP
 export async function POST(req: NextRequest) {
   const { roleId, modules }: Payload = await req.json();
   const session = await auth();
-  const tenantId = session?.user?.tenantId;
+
+  // Handle tenantId for system admins
+  const tenantId = session?.user?.globalRoles?.includes('SYSTEM_ADMIN')
+    ? null
+    : session?.user?.tenantId;
+
+  if (!tenantId && !session?.user?.globalRoles?.includes('SYSTEM_ADMIN')) {
+    return NextResponse.json(
+      { error: 'Tenant context required for non-system admins' },
+      { status: 400 }
+    );
+  }
 
   const flatModules = await flattenModules(modules);
 
-  // Step 1: Get current permissions from DB
+  // Step 1: Get current permissions
+  const whereClause = tenantId
+    ? { roleId: +roleId, tenantId }
+    : { roleId: +roleId };
+
   const existingPermissions = await prisma.rolePermission.findMany({
-    where: { roleId: +roleId },
-    select: { id: true, menuId: true },
+    where: whereClause,
+    select: { id: true, menuId: true, tenantId: true },
   });
 
   const incomingModuleMap = new Map(flatModules.map(m => [m.moduleId, m.permissions]));
@@ -48,21 +63,30 @@ export async function POST(req: NextRequest) {
   for (const mod of flatModules) {
     const existingId = existingModuleMap.get(mod.moduleId);
     if (mod.permissions > 0) {
+      const data = {
+        roleId: +roleId,
+        menuId: +mod.moduleId,
+        permissionBits: +mod.permissions,
+        tenantId: tenantId ?? null // Explicit null for system admins
+      };
+
       upserts.push(
         prisma.rolePermission.upsert({
-          where: { tenantId_roleId_menuId: { roleId, menuId: mod.moduleId, tenantId } },
+          where: {
+            // Use the appropriate unique constraint based on tenantId
+            ...(tenantId
+              ? { role_permission_tenant_unique: { roleId: +roleId, menuId: mod.moduleId, tenantId } }
+              : { role_permission_global_unique: { roleId: +roleId, menuId: mod.moduleId } }
+            )
+          },
 
           update: { permissionBits: mod.permissions },
-          create: {
-            roleId,
-            menuId: mod.moduleId,
-            permissionBits: mod.permissions,
-          },
+          create: data
         })
       );
     } else if (existingId) {
       // If permissionBits is 0, delete this record
-      deletes.push(prisma.rolePermission.delete({ where: { id: existingId } }));
+      deletes.push(prisma.rolePermission.delete({ where: { id: +existingId } }));
     }
   }
 

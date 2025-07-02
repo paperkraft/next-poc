@@ -63,7 +63,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
         });
 
         // Step 2: Recursive handler to sync children
-        await syncChildren(children, params.id);
+        await syncChildren(children, +params.id);
 
         return NextResponse.json({ success: true, message: 'Module and children updated successfully' });
     } catch (error) {
@@ -118,7 +118,7 @@ async function syncChildren(children: ModuleInput[], parentId: number, depth: nu
         select: { id: true },
     });
 
-    const existingIds = existingChildren.map((c) => c.id);
+    const existingIds = existingChildren.map((c) => +c.id);
     const submittedIds = children.map((c) => c.id).filter(Boolean);
 
     // Delete removed children

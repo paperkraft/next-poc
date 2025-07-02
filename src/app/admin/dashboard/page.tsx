@@ -1,9 +1,6 @@
-import { auth } from "@/auth";
-import { TenantSwitcher } from "@/components/common/TenantSwitch";
 import { SystemAdminDashboard } from "@/components/dashboard/system-admin-dashboard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import prisma from "@/lib/prisma";
-import { getTenantsForAdmin } from "@/lib/tenants";
 import { BarChart3, Building, School, Users } from "lucide-react";
 
 async function getDashboardStats() {
@@ -25,12 +22,7 @@ async function getDashboardStats() {
 
 export default async function AdminDashboard() {
 
-    const session = await auth();
     const stats = await getDashboardStats();
-    const tenants = await getTenantsForAdmin()
-
-    const currentTenant = tenants.find(t => t.id === session?.user?.tenantId)
-
     const statCards = [
         {
             title: "Total Tenants",
@@ -71,8 +63,6 @@ export default async function AdminDashboard() {
                         System overview and management console
                     </p>
                 </div>
-
-                <TenantSwitcher currentTenant={currentTenant} tenants={tenants} />
 
                 {/* Stats Grid */}
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">

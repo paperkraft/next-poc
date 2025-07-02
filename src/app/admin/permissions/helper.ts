@@ -1,8 +1,9 @@
-import { ModuleNode } from "@/types/modules";
+// import { ModuleNode } from "@/types/modules";
+import { MenuItem } from "@/lib/menus";
 import { IGroupedModule } from "@/types/permissions";
 import fuzzysort from "fuzzysort";
 
-export const filterModulesByName = (mods: ModuleNode[], query: string, openSet = new Set<string>()): ModuleNode[] => {
+export const filterModulesByName = (mods: MenuItem[], query: string, openSet = new Set<number>()): MenuItem[] => {
     if (!query.trim()) return mods;
 
     return mods
@@ -20,13 +21,13 @@ export const filterModulesByName = (mods: ModuleNode[], query: string, openSet =
 
             return null;
         })
-        .filter((mod): mod is ModuleNode => mod !== null);
+        .filter((mod): mod is MenuItem => mod !== null);
 };
 
 export function filterGroupedModules(
     groups: IGroupedModule[],
     search: string,
-    openSet: Set<string>
+    openSet: Set<number>
 ) {
     if (!search.trim()) return groups;
 
@@ -53,7 +54,7 @@ export function filterGroupedModules(
 
                     return null;
                 })
-                .filter(Boolean) as ModuleNode[];
+                .filter(Boolean) as MenuItem[];
 
             if (filteredModules.length > 0) {
                 return {
@@ -68,19 +69,19 @@ export function filterGroupedModules(
 }
 
 // Group by groupName and sort by group and module positions
-export const groupModules = (modules: ModuleNode[]): IGroupedModule[] => {
-    const groupMap = new Map<string, IGroupedModule>();
+export const groupModules = (modules: MenuItem[]): IGroupedModule[] => {
+    const groupMap = new Map<number, IGroupedModule>();
 
     for (const mod of modules) {
-        if (!groupMap.has(mod.groupId as string)) {
-            groupMap.set(mod.groupId as string, {
-                groupId: mod.groupId as string,
+        if (!groupMap.has(+mod?.groupId!)) {
+            groupMap.set(+mod?.groupId!, {
+                groupId: +mod?.groupId!,
                 groupName: mod.groupName as string,
                 modules: [],
             });
         }
 
-        groupMap.get(mod.groupId as string)!.modules.push(mod);
+        groupMap.get(mod?.groupId!)!.modules.push(mod);
     }
     return Array.from(groupMap.values()).map((group) => ({
         ...group,

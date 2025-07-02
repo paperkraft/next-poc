@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { auth, unstable_update } from '@/auth'
 import { cookies } from 'next/headers'
+import { getRoleId, getRoleIdWithEmail } from '@/lib/menus'
 
 export async function POST(req: Request) {
     const session = await auth()
@@ -10,7 +11,19 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
-    const { tenantId } = await req.json()
+    const { tenantId } = await req.json();
+
+    if (+tenantId === 0) {
+        const roleId = await getRoleIdWithEmail(session.user.email);
+        await unstable_update({ ...session.user, tenantId: null, slug: undefined, roleId: +roleId });
+
+        return NextResponse.json({
+            success: true,
+            tenant: {
+                slug: 'admin'
+            }
+        })
+    }
 
     // Verify the tenant exists
     const tenant = await prisma.tenant.findUnique({
@@ -21,7 +34,8 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'Tenant not found' }, { status: 404 })
     }
 
-    // await unstable_update({ user: { ...session.user, tenanId: tenant.id, slug: tenant.slug } });
+    const roleId = await getRoleId(tenant.id);
+    await unstable_update({ ...session.user, tenantId: tenant.id, slug: tenant.slug, roleId: +roleId });
 
     // Set tenant context cookies
     cookies().set('x-tenant-id', tenant.id.toString(), {

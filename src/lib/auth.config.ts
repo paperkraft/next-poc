@@ -9,7 +9,6 @@ import { AUTH_SECRET, GITHUB_ID, GITHUB_SECRET } from '@/utils/constants';
 
 import { getIpAddress } from './utils';
 import { signInSchema } from './zod';
-import { verifyPassword } from '@/utils/password';
 import { auth } from '@/auth';
 
 const authConfig: NextAuthConfig = {
@@ -72,9 +71,9 @@ const authConfig: NextAuthConfig = {
 
             if (trigger === "update" && session) {
                 // Fetch menu based on roleId from session
-                const menu = await fetchModuleByRole(+session.roleId).then((d) => d.json());
-                const updateSession = { ...session, modules: menu.data }
-                token = { ...token, user: updateSession }
+                // const menu = await fetchModuleByRole(+session.roleId).then((d) => d.json());
+                // const updateSession = { ...session, modules: menu.data }
+                token = { ...token, user: session }
                 return token;
             };
             return token;

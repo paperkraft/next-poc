@@ -15,11 +15,20 @@ export function TenantSwitcher({
     currentTenant,
     tenants
 }: {
-    currentTenant?: { id: number; slug: string; name: string }
-    tenants: Array<{ id: number; slug: string; name: string }>
+    currentTenant?: { id: number; slug: string; name: string } | null
+    tenants: Array<{ id: number; slug: string; name: string }> | null
 }) {
     const [loading, setLoading] = useState(false)
-    const router = useRouter()
+    const router = useRouter();
+
+    const systemTenant = {
+        id: 0,
+        name: 'System',
+        slug: 'admin',
+    }
+
+    // Combine the system tenant with the retrieved tenants
+    const tenantsWithSystem = [systemTenant, ...tenants!];
 
     const switchTenant = async (tenantId: number) => {
         setLoading(true)
@@ -39,7 +48,7 @@ export function TenantSwitcher({
             // Force refresh to update session-dependent components
             const result = await response.json();
             const slug = result?.tenant?.slug;
-            slug ? router.replace(`/${result?.tenant?.slug}/dashboard`) : router.refresh()
+            slug ? router.replace(`/${slug}/dashboard`) : router.refresh()
 
             // router.refresh()
         } catch (error) {
@@ -53,16 +62,16 @@ export function TenantSwitcher({
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="outline" disabled={loading}>
-                    {currentTenant?.name ?? "select"}
+                    {currentTenant?.name ?? "System"}
                     <ChevronDown className="ml-2 h-4 w-4" />
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
-                {tenants.map((tenant) => (
+                {tenantsWithSystem?.map((tenant) => (
                     <DropdownMenuItem
                         key={tenant.id}
                         onClick={() => switchTenant(tenant.id)}
-                        disabled={tenant.id === currentTenant?.id}
+                        disabled={tenant.id === (currentTenant?.id ?? 0)}
                     >
                         {tenant.name}
                     </DropdownMenuItem>

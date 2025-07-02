@@ -9,6 +9,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Badge } from "@/components/ui/badge"
 import { Tenant } from "@prisma/client"
+import { useRouter } from "next/navigation"
 
 interface TenantSwitcherProps {
     currentTenant?: Tenant | null
@@ -18,8 +19,10 @@ interface TenantSwitcherProps {
 }
 
 export function TenantSwitcherN({ currentTenant, onViewChange, activeView, tenants = [] }: TenantSwitcherProps) {
-    const [open, setOpen] = React.useState(false)
-    const [selectedTenant, setSelectedTenant] = React.useState(currentTenant)
+    const router = useRouter();
+    const [open, setOpen] = React.useState(false);
+    const [loading, setLoading] = React.useState(false);
+    const [selectedTenant, setSelectedTenant] = React.useState(currentTenant);
 
     const viewOptions = [
         {
@@ -37,6 +40,38 @@ export function TenantSwitcherN({ currentTenant, onViewChange, activeView, tenan
     ]
 
     const currentView = viewOptions.find((option) => option.value === activeView)
+
+    const switchTenant = async (tenantId: number) => {
+
+        console.log('tenantId', tenantId)
+
+        setLoading(true)
+        try {
+            const response = await fetch('/api/switch-tenant', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ tenantId }),
+            })
+
+            if (!response.ok) {
+                throw new Error('Failed to switch tenant')
+            }
+
+            // Force refresh to update session-dependent components
+            const result = await response.json();
+            const slug = result?.tenant?.slug;
+            // slug ? router.replace(`/${result?.tenant?.slug}/dashboard`) : router.refresh()
+            router.replace(`/${slug ?? 'admin'}/dashboard`)
+
+            // router.refresh()
+        } catch (error) {
+            console.error('Tenant switch failed:', error)
+        } finally {
+            setLoading(false)
+        }
+    }
 
     return (
         <div className="space-y-2">
@@ -88,6 +123,7 @@ export function TenantSwitcherN({ currentTenant, onViewChange, activeView, tenan
                                             setSelectedTenant(tenant)
                                             onViewChange("tenant")
                                             setOpen(false)
+                                            switchTenant(tenant.id)
                                         }}
                                     >
                                         <Building2 className="mr-2 h-4 w-4" />

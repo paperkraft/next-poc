@@ -15,7 +15,9 @@ export async function getTenantsForAdmin() {
         orderBy: {
             name: 'asc'
         }
-    })
+    });
+
+
 }
 
 export async function validateTenantAccess(tenantSlug: string) {

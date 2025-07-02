@@ -235,3 +235,38 @@ export async function getUserModules(tenantId: number | null, roleId: number): P
         })
         .sort((a, b) => a.position - b.position);
 }
+
+export async function getRoleId(tenantId: number) {
+    const adminRole = await prisma.role.findFirst({
+        where: {
+            tenantId: +tenantId,
+            name: {
+                contains: 'admin',  // Match roles whose name contains 'admin'
+                mode: 'insensitive',  // Case-insensitive match (optional, can be removed if not needed)
+            },
+        }
+    })
+
+    if (!adminRole) {
+        throw new Error('Admin role not found for this tenant');
+    }
+
+    // Return the roleId of the found admin role
+    return adminRole.id;
+}
+
+export async function getRoleIdWithEmail(email: string) {
+    const adminRole = await prisma.user.findFirst({
+        where: { email },
+        select: {
+            roleId: true
+        }
+    })
+
+    if (!adminRole) {
+        throw new Error('Admin role not found for this tenant');
+    }
+
+    // Return the roleId of the found admin role
+    return adminRole.roleId;
+}

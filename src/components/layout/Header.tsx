@@ -17,6 +17,7 @@ import TenantNavbar from './Sidebar/tenant/tenant-navbar';
 import UserAction from './UserAction';
 import { TenantSwitcherN } from '../common/tenant-switcher';
 import { Tenant } from '@prisma/client';
+import { TenantSwitcher } from '../common/TenantSwitch';
 
 type HeaderProps = {
     menus: GroupedMenus[];
@@ -31,8 +32,10 @@ const Header = React.memo(({ menus = [], currentTenant, tenants = [] }: HeaderPr
     const [config] = themeConfig();
     const isHorizontal = config.layout === 'horizontal';
     const isSystemAdmin = session?.user?.globalRoles.includes("SYSTEM_ADMIN");
+    const tenantName = session?.user?.tenantName;
+    const tenantId = session?.user?.tenantId;
 
-    const [activeView, setActiveView] = React.useState<"system" | "tenant">(isSystemAdmin ? "system" : "tenant");
+    const [activeView, setActiveView] = React.useState<"system" | "tenant">(isSystemAdmin && !tenantId ? "system" : "tenant");
 
     if (!mounted) return null;
 
@@ -53,11 +56,12 @@ const Header = React.memo(({ menus = [], currentTenant, tenants = [] }: HeaderPr
                     )}
 
                     {!isMobile && (
-                        <span className='font-medium'>{session?.user?.tenantName ?? 'System'}</span>
+                        <span className='font-medium'>{tenantName ?? 'System'}</span>
                     )}
 
                     {isSystemAdmin && (
-                        <TenantSwitcherN currentTenant={currentTenant} onViewChange={setActiveView} activeView={activeView} tenants={tenants} />
+                        // <TenantSwitcherN currentTenant={currentTenant} onViewChange={setActiveView} activeView={activeView} tenants={tenants} />
+                        <TenantSwitcher currentTenant={currentTenant} tenants={tenants} />
                     )}
 
                     <div className='ml-auto flex gap-2'>

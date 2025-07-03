@@ -60,8 +60,8 @@ const Header = React.memo(({ menus = [], currentTenant, tenants = [] }: HeaderPr
                     )}
 
                     {isSystemAdmin && (
-                        // <TenantSwitcherN currentTenant={currentTenant} onViewChange={setActiveView} activeView={activeView} tenants={tenants} />
-                        <TenantSwitcher currentTenant={currentTenant} tenants={tenants} />
+                        <TenantSwitcherN currentTenant={currentTenant} onViewChange={setActiveView} activeView={activeView} tenants={tenants} />
+                        // <TenantSwitcher currentTenant={currentTenant} tenants={tenants} />
                     )}
 
                     <div className='ml-auto flex gap-2'>

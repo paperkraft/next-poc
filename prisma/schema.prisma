@@ -125,7 +125,7 @@ model RolePermission {
 
 model Permission {
   id        Int      @id @default(autoincrement())
-  name      String   @unique
+  name      String
   bitmask   Int
   tenantId  Int?
   tenant    Tenant?  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
@@ -160,7 +160,7 @@ model MenuItem {
 
 model MenuGroup {
   id        Int        @id @default(autoincrement())
-  name      String     @unique
+  name      String
   position  Int        @default(0)
   tenantId  Int?
   tenant    Tenant?    @relation(fields: [tenantId], references: [id], onDelete: Cascade)

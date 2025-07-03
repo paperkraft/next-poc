@@ -1,4 +1,4 @@
-import { GlobalRole, PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
@@ -121,9 +121,17 @@ async function main() {
     data: [
       { name: "Home", tenantId: tenant.id, position: 1 },
       { name: "Master", tenantId: tenant.id, position: 2 },
-      { name: "Administrative", tenantId: tenant.id, position: 3 },
+      // { name: "Administrative", tenantId: tenant.id, position: 3 },
     ],
   });
+
+  const systemGroup = await prisma.menuGroup.create({
+    data: {
+      name: "System Administration",
+      position: 3,
+      tenantId: null, // Global group
+    }
+  })
 
   const allGroups = await prisma.menuGroup.findMany({
     where: { tenantId: tenant.id },
@@ -138,13 +146,13 @@ async function main() {
     { name: "Module", path: "/master/module", group: "Master", icon: "LayoutGrid" },
     { name: "Role", path: "/master/role", group: "Master", icon: "User2" },
     { name: "Groups", path: "/master/groups", group: "Master", icon: "Grid" },
-    { name: "RBAC", path: "/administrative/rbac", group: "Administrative", icon: "Shield" },
-    {
-      name: "Audit Logs",
-      path: "/administrative/audit-logs",
-      group: "Administrative",
-      icon: "Logs"
-    },
+    // { name: "RBAC", path: "/administrative/rbac", group: "Administrative", icon: "Shield" },
+    // {
+    //   name: "Audit Logs",
+    //   path: "/administrative/audit-logs",
+    //   group: "Administrative",
+    //   icon: "Logs"
+    // },
   ];
 
   for (const mod of menuItems) {
@@ -203,6 +211,49 @@ async function main() {
 
   // Global access for super-admin to all tenant modules
   for (const menu of allMenus) {
+    await prisma.rolePermission.create({
+      data: {
+        roleId: superAdminRole.id,
+        menuId: menu.id,
+        tenantId: null,
+        permissionBits: 15,
+      },
+    });
+  }
+
+  console.log("🛠️ Seeding nested System Admin menus...");
+
+  for (const parent of SystemAdminMenus) {
+    const parentItem = await prisma.menuItem.create({
+      data: {
+        name: parent.name,
+        path: undefined,
+        icon: parent.icon,
+        tenantId: null,
+        groupId: systemGroup.id,
+        parentId: null,
+      },
+    });
+
+    for (const child of parent.children) {
+      await prisma.menuItem.create({
+        data: {
+          name: child.name,
+          path: child.path,
+          icon: undefined,
+          tenantId: null,
+          groupId: systemGroup.id,
+          parentId: parentItem.id,
+        },
+      });
+    }
+  }
+
+  const systemMenus = await prisma.menuItem.findMany({
+    where: { tenantId: null },
+  });
+
+  for (const menu of systemMenus) {
     await prisma.rolePermission.create({
       data: {
         roleId: superAdminRole.id,
@@ -289,3 +340,43 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
+
+
+const SystemAdminMenus = [
+  {
+    name: "Tenant Management",
+    icon: "Building2",
+    children: [
+      { name: "All Tenants", path: "/admin/tenants" },
+      { name: "Create Tenant", path: "/admin/tenants/create" },
+      { name: "Tenant Analytics", path: "/admin/tenants/analytics" },
+    ],
+  },
+  {
+    name: "System Users",
+    icon: "Users",
+    children: [
+      { name: "All Users", path: "/admin/users" },
+      { name: "Global Roles", path: "/admin/global-roles" },
+      { name: "User Analytics", path: "/admin/users/analytics" },
+    ],
+  },
+  {
+    name: "System Settings",
+    icon: "Settings",
+    children: [
+      { name: "Global Settings", path: "/admin/settings" },
+      { name: "System Permissions", path: "/admin/permissions" },
+      { name: "Feature Flags", path: "/admin/features" },
+    ],
+  },
+  {
+    name: "Audit & Monitoring",
+    icon: "Activity",
+    children: [
+      { name: "Audit Logs", path: "/admin/audit-logs" },
+      { name: "System Health", path: "/admin/health" },
+      { name: "Performance", path: "/admin/performance" },
+    ],
+  },
+]

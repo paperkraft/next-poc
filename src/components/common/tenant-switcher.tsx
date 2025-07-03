@@ -24,6 +24,9 @@ export function TenantSwitcherN({ currentTenant, onViewChange, activeView, tenan
     const [loading, setLoading] = React.useState(false);
     const [selectedTenant, setSelectedTenant] = React.useState(currentTenant);
 
+    // Combine the system tenant with the retrieved tenants
+    const tenantsWithSystem = [...(tenants ?? [])];
+
     const viewOptions = [
         {
             value: "system",
@@ -42,9 +45,6 @@ export function TenantSwitcherN({ currentTenant, onViewChange, activeView, tenan
     const currentView = viewOptions.find((option) => option.value === activeView)
 
     const switchTenant = async (tenantId: number) => {
-
-        console.log('tenantId', tenantId)
-
         setLoading(true)
         try {
             const response = await fetch('/api/switch-tenant', {
@@ -61,9 +61,8 @@ export function TenantSwitcherN({ currentTenant, onViewChange, activeView, tenan
 
             // Force refresh to update session-dependent components
             const result = await response.json();
-            const slug = result?.tenant?.slug;
-            // slug ? router.replace(`/${result?.tenant?.slug}/dashboard`) : router.refresh()
-            router.replace(`/${slug ?? 'admin'}/dashboard`)
+            const slug = result?.tenant?.slug ?? "admin";
+            router.replace(`/${slug}/dashboard`)
 
             // router.refresh()
         } catch (error) {
@@ -83,6 +82,7 @@ export function TenantSwitcherN({ currentTenant, onViewChange, activeView, tenan
                         role="combobox"
                         aria-expanded={open}
                         className="w-full justify-between bg-transparent"
+                        disabled={loading}
                     >
                         <div className="flex items-center gap-2">
                             {currentView && <currentView.icon className="h-4 w-4" />}
@@ -102,6 +102,7 @@ export function TenantSwitcherN({ currentTenant, onViewChange, activeView, tenan
                                     onSelect={() => {
                                         onViewChange("system")
                                         setOpen(false)
+                                        switchTenant(0)
                                     }}
                                 >
                                     <Settings className="mr-2 h-4 w-4" />
@@ -116,11 +117,11 @@ export function TenantSwitcherN({ currentTenant, onViewChange, activeView, tenan
                             <CommandGroup heading="Tenants">
                                 <CommandInput placeholder="Search tenants..." />
                                 <CommandEmpty>No tenant found.</CommandEmpty>
-                                {tenants?.map((tenant) => (
+                                {tenantsWithSystem?.map((tenant) => (
                                     <CommandItem
                                         key={tenant.id}
                                         onSelect={() => {
-                                            setSelectedTenant(tenant)
+                                            setSelectedTenant(tenant as Tenant)
                                             onViewChange("tenant")
                                             setOpen(false)
                                             switchTenant(tenant.id)
@@ -131,7 +132,7 @@ export function TenantSwitcherN({ currentTenant, onViewChange, activeView, tenan
                                             <div className="flex items-center gap-2">
                                                 <span>{tenant.name}</span>
                                                 <Badge variant="secondary" className="text-xs">
-                                                    {tenant.type}
+                                                    {tenant?.type}
                                                 </Badge>
                                             </div>
                                             <span className="text-xs text-muted-foreground">{tenant.slug}</span>
@@ -139,7 +140,10 @@ export function TenantSwitcherN({ currentTenant, onViewChange, activeView, tenan
                                         <Check
                                             className={cn(
                                                 "ml-auto h-4 w-4",
-                                                activeView === "tenant" && selectedTenant?.id === tenant.id ? "opacity-100" : "opacity-0",
+                                                activeView === "tenant" &&
+                                                    selectedTenant?.id === tenant.id
+                                                    ? "opacity-100"
+                                                    : "opacity-0",
                                             )}
                                         />
                                     </CommandItem>

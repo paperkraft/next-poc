@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 
-import { validateTenantAccess } from '@/lib/tenants';
+import { getTenantsForAdmin, validateTenantAccess } from '@/lib/tenants';
 import { auth } from '@/auth';
 import { getUserModules } from '@/lib/menus';
 import { TenantProvider } from '@/context/TenantProvider';
@@ -27,12 +27,13 @@ export default async function TenantRootLayout({ children, params }: TenantLayou
     }
 
     const userMenus = await getUserModules(session.user?.tenantId, session.user?.roleId);
+    const tenants = await getTenantsForAdmin();
 
     return (
         <>
             <TenantProvider tenant={tenant} menus={userMenus}>
                 <SidebarProvider>
-                    <ContentLayout currentTenant={tenant} menus={userMenus}>
+                    <ContentLayout currentTenant={tenant} menus={userMenus} tenants={tenants}>
                         {children}
                     </ContentLayout>
                 </SidebarProvider>

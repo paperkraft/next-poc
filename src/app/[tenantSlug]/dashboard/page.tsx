@@ -1,5 +1,4 @@
 import { auth } from '@/auth';
-import AllowNotification from '@/components/custom/allow-notification';
 
 import Student from './student';
 import TenantAdminDashboard from './tenant-admin';
@@ -14,24 +13,21 @@ export default async function Page() {
     redirect('/signin')
   }
 
-  const isAdmin = session.user?.roleId === 2 || !!session.user?.globalRoles?.includes('SYSTEM_ADMIN');
-  const isFaculty = session.user?.roleId === 3
+  // const isAdmin = session.user?.role?.toLowerCase() === "admin" || !!session.user?.globalRoles?.includes('SYSTEM_ADMIN');
+  // const isFaculty = session.user?.role?.toLowerCase() === "faculty"
 
-  return (
-    <>
-      <AllowNotification />
+  const role = session?.user?.role
 
-      {!isAdmin && !isFaculty && (
-        <Student />
-      )}
-
-      {isAdmin && (
-        <TenantAdminDashboard />
-      )}
-
-      {isFaculty && (
-        <FacultyDashboard />
-      )}
-    </>
-  );
+  switch (role) {
+    case 'Super Admin':
+      return <TenantAdminDashboard />
+    case 'Admin':
+      return <TenantAdminDashboard />
+    case 'Faculty':
+      return <FacultyDashboard />
+    case 'Student':
+      return <Student />
+    default:
+      return <div>Unauthorized</div>
+  }
 }

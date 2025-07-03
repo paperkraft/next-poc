@@ -28,7 +28,7 @@ export function TenantSwitcher({
     }
 
     // Combine the system tenant with the retrieved tenants
-    const tenantsWithSystem = [systemTenant, ...tenants!];
+    const tenantsWithSystem = [systemTenant, ...(tenants ?? [])];
 
     const switchTenant = async (tenantId: number) => {
         setLoading(true)
@@ -62,7 +62,7 @@ export function TenantSwitcher({
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="outline" disabled={loading}>
-                    {currentTenant?.name ?? "System"}
+                    {loading ? 'Switching...' : currentTenant?.name ?? 'System'}
                     <ChevronDown className="ml-2 h-4 w-4" />
                 </Button>
             </DropdownMenuTrigger>

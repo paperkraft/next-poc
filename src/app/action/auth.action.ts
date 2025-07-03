@@ -64,9 +64,6 @@ export const getUser = async (email: string, password: string) => {
     });
 
     // Fetch ABAC modules using the role ID
-    // const moduleResponse = await fetchModuleByRole(+user.roleId);
-    // const modulesResult = await moduleResponse.json();
-
     const modules = user ? await getUserModules(user.tenantId, +user.roleId) : []
 
     return {

@@ -5,7 +5,8 @@ import { Tenant } from "@prisma/client";
 // import { getTenantBySlug } from "./menus";
 
 export async function getTenantsForAdmin() {
-    return prisma.tenant.findMany({
+
+    const tenants = await prisma.tenant.findMany({
         // select: {
         //     id: true,
         //     name: true,
@@ -17,7 +18,7 @@ export async function getTenantsForAdmin() {
         }
     });
 
-
+    return tenants
 }
 
 export async function validateTenantAccess(tenantSlug: string) {

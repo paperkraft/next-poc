@@ -43,8 +43,8 @@ export default async function Page({ params }: { params: { id: string } }) {
       <>
         {!response.success ? (
           <SomethingWentWrong message={response.message} />
-        ) : response.data && Object.entries(response.data).length ? (
-          <GroupForm id={id} data={response.data} />
+        ) : response.data && Object.entries(response.data).length && id ? (
+          <GroupForm id={+id} data={response.data} />
         ) : (
           <NoRecordPage text="group" />
         )}

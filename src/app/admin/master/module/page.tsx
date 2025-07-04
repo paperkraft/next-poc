@@ -9,6 +9,7 @@ import { getSessionModules } from '@/lib/abac/sessionModules';
 import { findModuleIdByPath } from '@/utils/helper';
 
 import ModuleMasterList from './ModuleList';
+import { MenuItem } from '@/lib/menus';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 10;
@@ -36,7 +37,7 @@ export default async function ModuleMasterPage() {
         {!response.success ? (
           <SomethingWentWrong message={response.message} />
         ) : response.data?.length ? (
-          <ModuleMasterList data={response.data} moduleId={moduleId} />
+          <ModuleMasterList data={response.data as MenuItem[]} moduleId={moduleId} />
         ) : (
           <NoRecordPage text="module" />
         )}

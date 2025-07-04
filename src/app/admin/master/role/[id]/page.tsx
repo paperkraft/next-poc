@@ -33,13 +33,13 @@ export default async function Page({ params }: { params: { id: string } }) {
 
     if (!hasPermission) return <AccessDenied />;
 
-    const response = await fetchUniqueRoles(id);
+    const response = await fetchUniqueRoles(+id);
 
     return (
       (!response.success ? (
         <SomethingWentWrong message={response.message} />
       ) : response.data && Object.entries(response.data).length ? (
-        <RoleForm id={id} data={response.data} />
+        <RoleForm id={+id} data={response.data} />
       ) : (
         <NoRecordPage text="role" />
       ))

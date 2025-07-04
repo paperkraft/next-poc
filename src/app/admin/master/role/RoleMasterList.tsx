@@ -11,7 +11,7 @@ const RoleMasterList = ({ data, moduleId }: RoleListProps) => {
 
   const { columns } = RoleMasterColumns();
 
-  const deleteRecord = async (id: string | string[]) => {
+  const deleteRecord = async (id: number | number[]) => {
     const ids = Array.isArray(id) ? id : [id];
 
     try {

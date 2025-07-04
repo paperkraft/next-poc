@@ -1,8 +1,9 @@
-import { NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
-import { auth, unstable_update } from '@/auth'
-import { cookies } from 'next/headers'
-import { getRoleId, getRoleIdWithEmail } from '@/lib/menus'
+import { cookies } from 'next/headers';
+import { NextResponse } from 'next/server';
+
+import { auth, unstable_update } from '@/auth';
+import { getRoleId, getRoleIdWithEmail } from '@/lib/menus';
+import prisma from '@/lib/prisma';
 
 export async function POST(req: Request) {
     const session = await auth()
@@ -16,6 +17,9 @@ export async function POST(req: Request) {
     if (+tenantId === 0) {
         const roleId = await getRoleIdWithEmail(session.user.email);
         await unstable_update({ ...session.user, tenantId: null, slug: undefined, roleId: +roleId });
+
+        cookies().delete('x-tenant-id');
+        cookies().delete('x-tenant-slug');
 
         return NextResponse.json({
             success: true,
@@ -43,7 +47,7 @@ export async function POST(req: Request) {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 7 // 1 week
+        maxAge: 60 * 60 * 24 * 1 // 1 day
     })
 
     cookies().set('x-tenant-slug', tenant.slug, {
@@ -51,7 +55,7 @@ export async function POST(req: Request) {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 7 // 1 week
+        maxAge: 60 * 60 * 24 * 1 // 1 day
     })
 
 

@@ -37,13 +37,14 @@ async function AuditLogContent() {
         const { session, modules } = await getSessionModules();
         if (!session) return <AccessDenied />;
 
-        // const hasPermission = can({
-        //     action: "READ",
-        //     path: currentPath,
-        //     modules,
-        // });
+        const hasPermission = can({
+            action: "READ",
+            path: currentPath,
+            modules,
+        });
 
-        // if (!hasPermission) return <AccessDenied />;
+        if (!hasPermission) return <AccessDenied />;
+
         const moduleId = findModuleIdByPath(modules, currentPath);
 
         const { success, data, message } = await fetchAuditLogs().then((res) => res.json());

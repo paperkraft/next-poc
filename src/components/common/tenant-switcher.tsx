@@ -8,24 +8,45 @@ import { Button } from "@/components/ui/button"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Badge } from "@/components/ui/badge"
-import { Tenant } from "@prisma/client"
 import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
+
+interface Tenant {
+    id: number;
+    slug: string;
+    name: string;
+    type: string;
+}
 
 interface TenantSwitcherProps {
     currentTenant?: Tenant | null
-    onViewChange: (view: "system" | "tenant") => void
-    activeView: "system" | "tenant"
     tenants?: Tenant[] | null
 }
 
-export function TenantSwitcherN({ currentTenant, onViewChange, activeView, tenants = [] }: TenantSwitcherProps) {
+export function TenantSwitcher({ currentTenant, tenants = [] }: TenantSwitcherProps) {
     const router = useRouter();
+    const { data: session } = useSession();
+    const sessionTenantId = session?.user?.tenantId;
+
+    // STATE
     const [open, setOpen] = React.useState(false);
     const [loading, setLoading] = React.useState(false);
-    const [selectedTenant, setSelectedTenant] = React.useState(currentTenant);
+    const [selectedTenant, setSelectedTenant] = React.useState<Tenant | null>(currentTenant ?? null);
+    const [activeView, setActiveView] = React.useState<"system" | "tenant">(
+        currentTenant ? "tenant" : "system"
+    );
 
-    // Combine the system tenant with the retrieved tenants
-    const tenantsWithSystem = [...(tenants ?? [])];
+    // On session or tenant prop change, adjust the view
+    React.useEffect(() => {
+        if (!sessionTenantId || !currentTenant) {
+            setActiveView("system");
+            setSelectedTenant(null);
+        } else {
+            setActiveView("tenant");
+            setSelectedTenant(currentTenant);
+        }
+    }, [sessionTenantId, currentTenant]);
+
 
     const viewOptions = [
         {
@@ -36,9 +57,9 @@ export function TenantSwitcherN({ currentTenant, onViewChange, activeView, tenan
         },
         {
             value: "tenant",
-            label: selectedTenant ? selectedTenant.name : "Select Tenant",
+            label: selectedTenant?.name || "Select Tenant",
             icon: Building2,
-            description: selectedTenant ? `Manage ${selectedTenant.name}` : "Select a tenant to manage",
+            description: selectedTenant?.slug || "Select a tenant to manage",
         },
     ]
 
@@ -61,14 +82,13 @@ export function TenantSwitcherN({ currentTenant, onViewChange, activeView, tenan
 
             // Force refresh to update session-dependent components
             const result = await response.json();
-            const slug = result?.tenant?.slug ?? "admin";
-            router.replace(`/${slug}/dashboard`)
-
-            // router.refresh()
+            const slug = result?.tenant?.slug ?? "admin"; // fallback to system slug
+            router.replace(`/${slug}/dashboard`);
         } catch (error) {
             console.error('Tenant switch failed:', error)
         } finally {
             setLoading(false)
+            // router.refresh();
         }
     }
 
@@ -100,29 +120,30 @@ export function TenantSwitcherN({ currentTenant, onViewChange, activeView, tenan
                             <CommandGroup heading="Views">
                                 <CommandItem
                                     onSelect={() => {
-                                        onViewChange("system")
+                                        setActiveView("system");
+                                        setSelectedTenant(null);
                                         setOpen(false)
                                         switchTenant(0)
                                     }}
                                 >
-                                    <Settings className="mr-2 h-4 w-4" />
+                                    <Settings className="mr-2 size-4" />
                                     <div className="flex flex-col">
                                         <span>System Admin</span>
                                         <span className="text-xs text-muted-foreground">Manage all tenants and system settings</span>
                                     </div>
-                                    <Check className={cn("ml-auto h-4 w-4", activeView === "system" ? "opacity-100" : "opacity-0")} />
+                                    <Check className={cn("ml-auto size-4", activeView === "system" ? "opacity-100" : "opacity-0")} />
                                 </CommandItem>
                             </CommandGroup>
 
                             <CommandGroup heading="Tenants">
                                 <CommandInput placeholder="Search tenants..." />
                                 <CommandEmpty>No tenant found.</CommandEmpty>
-                                {tenantsWithSystem?.map((tenant) => (
+                                {tenants?.map((tenant) => (
                                     <CommandItem
                                         key={tenant.id}
                                         onSelect={() => {
-                                            setSelectedTenant(tenant as Tenant)
-                                            onViewChange("tenant")
+                                            setSelectedTenant(tenant)
+                                            setActiveView("tenant")
                                             setOpen(false)
                                             switchTenant(tenant.id)
                                         }}
@@ -132,7 +153,7 @@ export function TenantSwitcherN({ currentTenant, onViewChange, activeView, tenan
                                             <div className="flex items-center gap-2">
                                                 <span>{tenant.name}</span>
                                                 <Badge variant="secondary" className="text-xs">
-                                                    {tenant?.type}
+                                                    {tenant.type}
                                                 </Badge>
                                             </div>
                                             <span className="text-xs text-muted-foreground">{tenant.slug}</span>

@@ -5,14 +5,19 @@ import { Tenant } from "@prisma/client";
 // import { getTenantBySlug } from "./menus";
 
 export async function getTenantsForAdmin() {
+    const session = await auth()
+    if (!session?.user?.globalRoles?.includes('SYSTEM_ADMIN')) {
+        return null
+    }
 
     const tenants = await prisma.tenant.findMany({
-        // select: {
-        //     id: true,
-        //     name: true,
-        //     slug: true,
-        //     isActive: true
-        // },
+        select: {
+            id: true,
+            name: true,
+            slug: true,
+            type: true,
+            isActive: true
+        },
         orderBy: {
             name: 'asc'
         }

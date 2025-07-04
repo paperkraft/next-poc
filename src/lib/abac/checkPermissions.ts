@@ -1,12 +1,13 @@
 import { ActionParam, ALL_PERMISSIONS, PermissionAction } from "@/types/permissions";
 import { isABACAllowed } from "./isABACAllowed";
 import { ModuleNode } from "@/types/modules";
+import { GroupedMenus } from "../menus";
 
 type BaseParams = {
     moduleId?: number;
     path?: string;
     name?: string;
-    modules: ModuleNode[];
+    modules: GroupedMenus[];
 };
 
 function normalizeActions(action: ActionParam): PermissionAction[] {

@@ -11,13 +11,13 @@ import { createColumns } from './column-data';
 import { DetailsDialog } from './view-details';
 
 interface AuditLogTableProp {
-    moduleId?: string;
+    moduleId?: number;
     data: {
-        id: String,
+        id: number,
         user: { profile: { firstName: string, lastName: string } }
         action: AuditAction,
         entity: String,
-        userId: String,
+        userId: number,
         tenantId: String | null,
         slug: String | null,
         details: Record<string, string | undefined>,
@@ -47,7 +47,7 @@ const AuditLogTable = ({ data, moduleId }: AuditLogTableProp) => {
         [data]
     );
 
-    const deleteRecord = async (id: string | string[]) => {
+    const deleteRecord = async (id: number | number[]) => {
         const ids = Array.isArray(id) ? id : [id];
 
         try {

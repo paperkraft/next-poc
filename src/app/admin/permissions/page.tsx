@@ -5,10 +5,11 @@ import AccessDenied from '@/components/custom/access-denied';
 import NoRecordPage from '@/components/custom/no-record';
 import TitlePage from '@/components/custom/page-heading';
 import SomethingWentWrong from '@/components/custom/somthing-wrong';
-import { canAny } from '@/lib/abac/checkPermissions';
+import { can, canAny } from '@/lib/abac/checkPermissions';
 import { getSessionModules } from '@/lib/abac/sessionModules';
 
 import RolePermissionsPage from './RolePermissionManager';
+import { headers } from 'next/headers';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 10;
@@ -20,14 +21,17 @@ export const metadata: Metadata = {
 
 export default async function RBAC() {
 
+    const headersList = headers();
+    const currentPath = headersList.get('x-current-path') || '';
+
     try {
         const { session, modules } = await getSessionModules();
 
         if (!session) return <AccessDenied />;
 
-        const hasPermission = canAny({
-            name: "Role",
-            action: ["READ", "WRITE"],
+        const hasPermission = can({
+            action: "READ",
+            path: currentPath,
             modules,
         });
 

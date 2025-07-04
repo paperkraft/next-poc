@@ -35,7 +35,7 @@ export default async function RoleMasterPage() {
 
         {!response.success ? (
           <SomethingWentWrong message={response.message} />
-        ) : response.data?.length ? (
+        ) : response.data?.length && moduleId ? (
           <RoleList data={response.data} moduleId={moduleId} />
         ) : (
           <NoRecordPage text="role" />

@@ -18,8 +18,8 @@ import { Tenant } from '@prisma/client';
 
 type ContentProps = {
     children: React.ReactNode;
-    currentTenant?: Tenant | null;
-    tenants?: Tenant[] | null;
+    currentTenant?: { id: number; slug: string; name: string, type: string } | null;
+    tenants?: Array<{ id: number; slug: string; name: string, type: string }> | null
     menus?: GroupedMenus[]
 }
 

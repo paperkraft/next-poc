@@ -40,6 +40,7 @@ model Tenant {
   permissions    Permission[]
   rolePermission RolePermission[]
   auditLogs      AuditLog[]
+  widgets        TenantWidget[]
 
   @@index([type])
 }
@@ -60,6 +61,7 @@ model User {
   customFields     Json               @default("{}")
   profile          Profile?
   auditLog         AuditLog[]
+  widgets          UserWidget[]
   notification     Notification[]
   pushSubscription PushSubscription[]
 
@@ -101,6 +103,7 @@ model Role {
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
   users       User[]
+  widgets     RoleWidget[]
 
   @@unique([tenantId, name])
 }
@@ -135,6 +138,69 @@ model Permission {
 
   @@unique([name, tenantId], name: "permission_name_tenant")
   @@index([tenantId, name])
+}
+
+model Widget {
+  id          Int            @id @default(autoincrement())
+  key         String         @unique
+  name        String
+  description String?
+  component   String
+  category    String
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  tenants     TenantWidget[]
+}
+
+model TenantWidget {
+  id        Int      @id @default(autoincrement())
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId  Int
+  widget    Widget   @relation(fields: [widgetId], references: [id], onDelete: Cascade)
+  widgetId  Int
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  roleWidget RoleWidget[]
+  userWidget UserWidget[]
+
+  @@unique([tenantId, widgetId])
+}
+
+model RoleWidget {
+  id         Int          @id @default(autoincrement())
+  isAssigned Boolean      @default(false)
+  sortOrder  Int          @default(0)
+  role       Role         @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  roleId     Int
+  widget     TenantWidget @relation(fields: [widgetId], references: [id], onDelete: Cascade)
+  widgetId   Int
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  userWidgetConfigs UserWidget[]
+
+  @@unique([roleId, widgetId])
+}
+
+model UserWidget {
+  id           Int          @id @default(autoincrement())
+  isPinned     Boolean      @default(false)
+  isHidden     Boolean      @default(false)
+  customSize   String       @default("small")
+  sortOrder    Int
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       Int
+  widget       TenantWidget @relation(fields: [widgetId], references: [id], onDelete: Cascade)
+  widgetId     Int
+  roleWidget   RoleWidget   @relation(fields: [roleWidgetId], references: [id], onDelete: Cascade)
+  roleWidgetId Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, widgetId])
 }
 
 model MenuItem {

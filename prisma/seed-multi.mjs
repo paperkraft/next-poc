@@ -15,6 +15,7 @@ async function main() {
   await prisma.role.deleteMany();
   await prisma.permission.deleteMany();
   await prisma.tenant.deleteMany();
+  await prisma.widget.deleteMany();
 
   console.log("✅ Database cleared.");
 
@@ -46,7 +47,7 @@ async function main() {
   const systemAdminMenus = [
     {
       name: "Dashboard",
-      path: "/admin/dashboard",
+      path: "/dashboard",
       icon: "BarChart3",
       children: [],
     },
@@ -183,35 +184,25 @@ async function main() {
       slug: "sunrise",
       email: "admin@sunrise.edu",
       city: "Kolhapur",
+      type: "SCHOOL",
       adminUser: {
         email: "admin@sunrise.edu",
         password: "admin123",
         firstName: "Amit",
-        lastName: "Singh",
+        lastName: "Patil",
       },
     },
     {
-      name: "Green Valley Academy",
+      name: "Green Valley College",
       slug: "greenvalley",
       email: "admin@greenvalley.edu",
       city: "Pune",
+      type: "COLLEGE",
       adminUser: {
         email: "admin@greenvalley.edu",
         password: "admin123",
         firstName: "Neha",
         lastName: "Patil",
-      },
-    },
-    {
-      name: "Blue Ridge High",
-      slug: "blueridge",
-      email: "admin@blueridge.edu",
-      city: "Mumbai",
-      adminUser: {
-        email: "admin@blueridge.edu",
-        password: "admin123",
-        firstName: "Raj",
-        lastName: "Kapoor",
       },
     },
   ];
@@ -222,7 +213,7 @@ async function main() {
         name: t.name,
         slug: t.slug,
         description: `${t.name} is a reputed educational institute.`,
-        type: "SCHOOL",
+        type: t.type,
         address: {
           street: "123 School St",
           city: t.city,
@@ -385,6 +376,54 @@ async function main() {
 
     console.log(`✅ Seeded tenant: ${t.name}`);
   }
+
+  console.log("🛠️ Seeding sample widgets");
+  await prisma.widget.createMany({
+    data: [
+      {
+        key: "STATS",
+        name: "Statistics",
+        component: "StatsWidget",
+        description: "Key metrics and numbers",
+        category: "analytics",
+      },
+      {
+        key: "TIMETABLE",
+        name: "Time Table",
+        component: "TimetableWidget",
+        description: "Class schedule",
+        category: "organization",
+      },
+      {
+        key: "ATTENDANCE",
+        name: "Attendance Tracker",
+        component: "AttendanceWidget",
+        description: "Attendance Tracker",
+        category: "management",
+      },
+      {
+        key: "ASSIGNMENTS",
+        name: "Assignments",
+        component: "AssignmentsWidget",
+        description: "Assignments",
+        category: "academics",
+      },
+      {
+        key: "GRADES",
+        name: "Gradebook",
+        component: "GradesWidget",
+        description: "Gradebook",
+        category: "academics",
+      },
+      {
+        key: "NOTICES",
+        name: "Announcements",
+        component: "NoticesWidget",
+        description: "Notification",
+        category: "communication",
+      },
+    ],
+  });
 
   console.log("🎉 All data seeded successfully!");
 }

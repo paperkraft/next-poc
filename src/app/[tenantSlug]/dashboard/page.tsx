@@ -5,7 +5,7 @@ import TenantAdminDashboard from './tenant-admin';
 import { redirect } from 'next/navigation';
 import FacultyDashboard from './faculty';
 
-export default async function Page() {
+export default async function DashboardPage() {
 
   const session = await auth();
 

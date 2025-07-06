@@ -1,3 +1,5 @@
-export default function Loading() {
-    return null
+import Loading from "@/app/loading";
+
+export default function Page() {
+    return <Loading />
 }

@@ -70,7 +70,7 @@ interface WidgetAssignmentProviderProps {
     tenantWidgets?: TenantWidget[]
 }
 
-export function SystemWidgetAssignmentProvider({
+export function WidgetAssignmentProvider({
     children,
     tenantId,
     allWidgets,
@@ -236,10 +236,14 @@ export function SystemWidgetAssignmentProvider({
         getAssignment,
     }
 
-    return <WidgetAssignmentContext.Provider value={value}>{children}</WidgetAssignmentContext.Provider>
+    return (
+        <WidgetAssignmentContext.Provider value={value}>
+            {children}
+        </WidgetAssignmentContext.Provider>
+    )
 }
 
-export function useSystemWidgetAssignment() {
+export function useWidgetAssignment() {
     const context = useContext(WidgetAssignmentContext)
     if (context === undefined) {
         throw new Error("useWidgetAssignment must be used within a SystemWidgetAssignmentProvider")

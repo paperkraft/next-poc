@@ -4,7 +4,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Star } from "lucide-react"
-import { useSystemWidgetAssignment } from "@/context/system-widget-assignment-context"
+import { useWidgetAssignment } from "@/context/widget-assignment-context"
 
 interface WidgetCardProps {
     widget: {
@@ -23,7 +23,7 @@ export function WidgetCard({ widget }: WidgetCardProps) {
         handleWidgetSelection,
         handleToggleAssignment,
         handleToggleDefault,
-    } = useSystemWidgetAssignment()
+    } = useWidgetAssignment()
 
     const assignment = getAssignment(widget.id)
     const isAssigned = assignment?.isAssigned || false

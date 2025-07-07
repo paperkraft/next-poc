@@ -3,10 +3,10 @@
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Search } from "lucide-react"
-import { useSystemWidgetAssignment } from "@/context/system-widget-assignment-context"
+import { useWidgetAssignment } from "@/context/widget-assignment-context"
 
 export function WidgetAssignmentFilters() {
-    const { searchFilter, setSearchFilter, categoryFilter, setCategoryFilter, categories } = useSystemWidgetAssignment()
+    const { searchFilter, setSearchFilter, categoryFilter, setCategoryFilter, categories } = useWidgetAssignment()
 
     return (
         <div className="flex flex-col md:flex-row gap-4">

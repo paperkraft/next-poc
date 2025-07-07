@@ -3,7 +3,7 @@
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { Star } from "lucide-react"
-import { useSystemWidgetAssignment } from "@/context/system-widget-assignment-context"
+import { useWidgetAssignment } from "@/context/widget-assignment-context"
 
 export function TableView() {
     const {
@@ -15,7 +15,7 @@ export function TableView() {
         handleWidgetSelection,
         handleToggleAssignment,
         handleToggleDefault,
-    } = useSystemWidgetAssignment()
+    } = useWidgetAssignment()
 
     return (
         <div className="overflow-x-auto">

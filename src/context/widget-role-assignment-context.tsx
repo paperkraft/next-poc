@@ -1,54 +1,77 @@
-'use client'
+"use client"
 
-import { updateRoleWidgetAssignment } from '@/app/actions/widgets'
-import { createContext, useContext, useState, useMemo } from 'react'
-import { toast } from 'sonner'
+import { updateRoleWidgetAssignment } from "@/app/actions/widgets"
+import { createContext, useContext, useMemo, useState, type ReactNode } from "react"
+import { toast } from "sonner"
 
-interface Widget {
+type Widget = {
     id: number
-    key: string
     name: string
-    description?: string | null
     category: string
-    roles: { roleId: number; isAssigned: boolean }[]
+    roles: Array<{
+        roleId: number
+        isAssigned: boolean
+    }>
 }
 
-interface Role {
+type Role = {
     id: number
     name: string
     color: string
 }
 
-interface WidgetAssignmentContextType {
+type ViewMode = "table" | "cards" | "roles"
+
+interface WidgetRoleAssignmentContextType {
+    // Data
     widgets: Widget[]
     roles: Role[]
-    tenantSlug: string
+
+    // UI State
+    viewMode: ViewMode
     widgetFilter: string
     roleFilter: string
-    isUpdating: boolean
+    selectedCategory: string
     selectedWidgets: number[]
-    recentChanges: Record<string, boolean>
+    isUpdating: boolean
+
+    // Computed values
+    categories: string[]
+    filteredWidgets: Widget[]
+    filteredRoles: Role[]
+
+    // Actions
+    setViewMode: (mode: ViewMode) => void
     setWidgetFilter: (filter: string) => void
     setRoleFilter: (filter: string) => void
-    toggleAssignment: (widgetId: number, roleId: number, isAssigned: boolean) => Promise<void>
+    setSelectedCategory: (category: string) => void
+    setSelectedWidgets: (widgets: number[]) => void
     toggleWidgetSelection: (widgetId: number) => void
-    bulkAssignToRole: (roleId: number, assign: boolean) => Promise<void>
-    setSelectedWidgets: (widgetId: number[]) => void
+    toggleAssignment: (widgetId: number, roleId: number, checked: boolean) => void
+    bulkAssignToRole: (roleId: number, assign: boolean) => void
+    handleSelectAll: (widgets: Widget[]) => void
+    handleClearSelection: () => void
+    getAssignmentStatus: (widget: Widget, roleId: number) => boolean
+    getAssignedRolesCount: (widget: Widget) => number
 }
 
-const WidgetAssignmentContext = createContext<WidgetAssignmentContextType | null>(null)
+const WidgetRoleAssignmentContext = createContext<WidgetRoleAssignmentContextType | undefined>(undefined)
 
-export function WidgetAssignmentProvider({
-    initialWidgets,
-    initialRoles,
-    tenantSlug,
-    children
-}: {
+interface WidgetRoleAssignmentProviderProps {
+    children: ReactNode
     initialWidgets: Widget[]
     initialRoles: Role[]
     tenantSlug: string
-    children: React.ReactNode
-}) {
+}
+
+export function WidgetRoleAssignmentProvider({
+    children,
+    initialWidgets,
+    initialRoles,
+    tenantSlug
+
+}: WidgetRoleAssignmentProviderProps) {
+
     const [widgets, setWidgets] = useState<Widget[]>(initialWidgets)
     const [roles] = useState<Role[]>(initialRoles)
     const [widgetFilter, setWidgetFilter] = useState('')
@@ -57,11 +80,16 @@ export function WidgetAssignmentProvider({
     const [recentChanges, setRecentChanges] = useState<Record<string, boolean>>({})
     const [isUpdating, setIsUpdating] = useState(false)
 
-    const filteredWidgets = useMemo(() => {
-        return widgets.filter(widget =>
-            widget.name.toLowerCase().includes(widgetFilter.toLowerCase())
-        )
-    }, [widgets, widgetFilter])
+    const [viewMode, setViewMode] = useState<ViewMode>("cards")
+    const [selectedCategory, setSelectedCategory] = useState<string>("all")
+
+    const categories = ["all", ...Array.from(new Set(widgets.map((w) => w.category)))]
+
+    const filteredWidgets = widgets.filter((widget) => {
+        const matchesWidget = widget.name.toLowerCase().includes(widgetFilter.toLowerCase())
+        const matchesCategory = selectedCategory === "all" || widget.category === selectedCategory
+        return matchesWidget && matchesCategory
+    })
 
     const filteredRoles = useMemo(() => {
         return roles.filter(role =>
@@ -173,34 +201,72 @@ export function WidgetAssignmentProvider({
         }
     }
 
+    const handleSelectAll = (widgets: Widget[]) => {
+        const widgetIds = widgets.map((w) => w.id)
+        const allSelected = widgetIds.every((id) => selectedWidgets.includes(id))
+
+        if (allSelected) {
+            setSelectedWidgets(selectedWidgets.filter((id) => !widgetIds.includes(id)))
+        } else {
+            setSelectedWidgets([...new Set([...selectedWidgets, ...widgetIds])])
+        }
+    }
+
+    const handleClearSelection = () => {
+        setSelectedWidgets([])
+    }
+
+    const getAssignmentStatus = (widget: Widget, roleId: number) => {
+        return widget.roles.find((r) => r.roleId === roleId)?.isAssigned || false
+    }
+
+    const getAssignedRolesCount = (widget: Widget) => {
+        return widget.roles.filter((r) => r.isAssigned).length
+    }
+
+    const value: WidgetRoleAssignmentContextType = {
+        // Data
+        widgets,
+        roles,
+
+        // UI State
+        viewMode,
+        widgetFilter,
+        roleFilter,
+        selectedCategory,
+        selectedWidgets,
+        isUpdating,
+
+        // Computed values
+        categories,
+        filteredWidgets,
+        filteredRoles,
+
+        // Actions
+        setViewMode,
+        setWidgetFilter,
+        setRoleFilter,
+        setSelectedCategory,
+        setSelectedWidgets,
+        toggleWidgetSelection,
+        toggleAssignment,
+        bulkAssignToRole,
+        handleSelectAll,
+        handleClearSelection,
+        getAssignmentStatus,
+        getAssignedRolesCount,
+    }
+
     return (
-        <WidgetAssignmentContext.Provider
-            value={{
-                widgets: filteredWidgets,
-                roles: filteredRoles,
-                isUpdating,
-                tenantSlug,
-                widgetFilter,
-                roleFilter,
-                selectedWidgets,
-                recentChanges,
-                setWidgetFilter,
-                setRoleFilter,
-                toggleAssignment,
-                toggleWidgetSelection,
-                bulkAssignToRole,
-                setSelectedWidgets,
-            }}
-        >
+        <WidgetRoleAssignmentContext.Provider value={value}>
             {children}
-        </WidgetAssignmentContext.Provider>
-    )
+        </WidgetRoleAssignmentContext.Provider>)
 }
 
-export const useWidgetAssignment = () => {
-    const context = useContext(WidgetAssignmentContext)
-    if (!context) {
-        throw new Error('useWidgetAssignment must be used within a WidgetAssignmentProvider')
+export function useWidgetRoleAssignment() {
+    const context = useContext(WidgetRoleAssignmentContext)
+    if (context === undefined) {
+        throw new Error("useWidgetRoleAssignment must be used within a WidgetRoleAssignmentProvider")
     }
     return context
 }

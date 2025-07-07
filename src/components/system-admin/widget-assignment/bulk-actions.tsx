@@ -5,11 +5,11 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Check, X, Star } from "lucide-react"
-import { useSystemWidgetAssignment } from "@/context/system-widget-assignment-context"
+import { useWidgetAssignment } from "@/context/widget-assignment-context"
 
 export function WidgetAssignmentBulkActions() {
     const { selectedWidgets, isLoading, handleBulkAssign, handleBulkDefault, handleClearSelection } =
-        useSystemWidgetAssignment()
+        useWidgetAssignment()
 
     if (selectedWidgets.length === 0) return null
 

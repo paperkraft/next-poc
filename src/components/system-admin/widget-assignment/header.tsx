@@ -2,10 +2,10 @@
 
 import { Button } from "@/components/ui/button"
 import { Grid3X3, List, Package } from "lucide-react"
-import { useSystemWidgetAssignment } from "@/context/system-widget-assignment-context"
+import { useWidgetAssignment } from "@/context/widget-assignment-context"
 
 export function WidgetAssignmentHeader() {
-    const { tenantId, viewMode, setViewMode } = useSystemWidgetAssignment()
+    const { tenantId, viewMode, setViewMode } = useWidgetAssignment()
 
     return (
         <div className="flex items-center justify-between">

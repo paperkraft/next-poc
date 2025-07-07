@@ -4,7 +4,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Package, Star } from "lucide-react"
-import { useSystemWidgetAssignment } from "@/context/system-widget-assignment-context"
+import { useWidgetAssignment } from "@/context/widget-assignment-context"
 import { SelectAllHeader } from "../select-all-header"
 
 export function CategoryView() {
@@ -18,7 +18,7 @@ export function CategoryView() {
         handleWidgetSelection,
         handleToggleAssignment,
         handleToggleDefault,
-    } = useSystemWidgetAssignment()
+    } = useWidgetAssignment()
 
     return (
         <div className="space-y-6">

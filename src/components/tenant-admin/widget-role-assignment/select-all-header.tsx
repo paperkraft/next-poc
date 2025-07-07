@@ -3,7 +3,7 @@
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { useWidgetAssignment } from "@/context/widget-assignment-context"
+import { useWidgetRoleAssignment } from "@/context/widget-role-assignment-context"
 
 interface SelectAllHeaderProps {
     widgets: any[]
@@ -11,7 +11,7 @@ interface SelectAllHeaderProps {
 }
 
 export function SelectAllHeader({ widgets, title = "Select All Widgets" }: SelectAllHeaderProps) {
-    const { selectedWidgets, handleSelectAll, handleClearSelection } = useWidgetAssignment()
+    const { selectedWidgets, handleSelectAll, handleClearSelection } = useWidgetRoleAssignment()
 
     const allSelected = widgets.length > 0 && widgets.every((w) => selectedWidgets.includes(w.id))
     const someSelected = widgets.some((w) => selectedWidgets.includes(w.id))

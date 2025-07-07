@@ -1,11 +1,11 @@
 "use client"
 
-import { useSystemWidgetAssignment } from "@/context/system-widget-assignment-context"
+import { useWidgetAssignment } from "@/context/widget-assignment-context"
 import { SelectAllHeader } from "../select-all-header"
 import { WidgetCard } from "../widget-card"
 
 export function CardsView() {
-    const { filteredWidgets } = useSystemWidgetAssignment()
+    const { filteredWidgets } = useWidgetAssignment()
 
     return (
         <div className="space-y-4">

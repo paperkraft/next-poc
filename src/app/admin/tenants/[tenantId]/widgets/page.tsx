@@ -1,6 +1,6 @@
 import { getTenantWidgets } from '@/app/actions/system-admin/widgets';
 import { auth } from '@/auth';
-import { SystemAdminWidgetAssignmentPanel } from '@/components/system-admin/widget-assignment-panel';
+import { AdminWidgetAssignmentPanel } from '@/components/system-admin/widget-assignment-panel';
 
 export default async function TenantWidgetsPage({
     params
@@ -18,7 +18,7 @@ export default async function TenantWidgetsPage({
 
     return (
         <div className="container mx-auto py-8">
-            <SystemAdminWidgetAssignmentPanel
+            <AdminWidgetAssignmentPanel
                 tenantId={Number(params.tenantId)}
                 allWidgets={allWidgets}
                 tenantWidgets={tenantWidgets}

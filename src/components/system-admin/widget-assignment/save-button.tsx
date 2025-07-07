@@ -2,10 +2,10 @@
 
 import { Button } from "@/components/ui/button"
 import { Save } from "lucide-react"
-import { useSystemWidgetAssignment } from "@/context/system-widget-assignment-context"
+import { useWidgetAssignment } from "@/context/widget-assignment-context"
 
 export function WidgetAssignmentSaveButton() {
-    const { isLoading, handleSave, filteredWidgets, allWidgets } = useSystemWidgetAssignment()
+    const { isLoading, handleSave, filteredWidgets, allWidgets } = useWidgetAssignment()
 
     return (
         <div className="flex items-center justify-between">

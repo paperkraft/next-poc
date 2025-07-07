@@ -1,5 +1,5 @@
 "use client"
-import { SystemWidgetAssignmentProvider, useSystemWidgetAssignment } from "@/context/system-widget-assignment-context"
+import { WidgetAssignmentProvider, useWidgetAssignment } from "@/context/widget-assignment-context"
 import { WidgetAssignmentHeader } from "./widget-assignment/header"
 import { WidgetAssignmentStats } from "./widget-assignment/stats"
 import { WidgetAssignmentFilters } from "./widget-assignment/filters"
@@ -23,7 +23,7 @@ type TenantWidget = Widget & {
 }
 
 function WidgetAssignmentContent() {
-    const { viewMode, allWidgets } = useSystemWidgetAssignment()
+    const { viewMode, allWidgets } = useWidgetAssignment()
 
     if (allWidgets.length === 0) {
         return (
@@ -54,7 +54,7 @@ function WidgetAssignmentContent() {
     )
 }
 
-export function SystemAdminWidgetAssignmentPanel({
+export function AdminWidgetAssignmentPanel({
     tenantId,
     allWidgets,
     tenantWidgets = [],
@@ -64,8 +64,8 @@ export function SystemAdminWidgetAssignmentPanel({
     tenantWidgets?: TenantWidget[]
 }) {
     return (
-        <SystemWidgetAssignmentProvider tenantId={tenantId} allWidgets={allWidgets} tenantWidgets={tenantWidgets}>
+        <WidgetAssignmentProvider tenantId={tenantId} allWidgets={allWidgets} tenantWidgets={tenantWidgets}>
             <WidgetAssignmentContent />
-        </SystemWidgetAssignmentProvider>
+        </WidgetAssignmentProvider>
     )
 }

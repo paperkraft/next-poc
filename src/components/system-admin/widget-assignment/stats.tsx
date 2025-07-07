@@ -2,10 +2,10 @@
 
 import { Card, CardContent } from "@/components/ui/card"
 import { Package, Check, Star } from "lucide-react"
-import { useSystemWidgetAssignment } from "@/context/system-widget-assignment-context"
+import { useWidgetAssignment } from "@/context/widget-assignment-context"
 
 export function WidgetAssignmentStats() {
-    const { allWidgets, assignedCount, defaultCount } = useSystemWidgetAssignment()
+    const { allWidgets, assignedCount, defaultCount } = useWidgetAssignment()
 
     return (
         <div className="flex gap-4">

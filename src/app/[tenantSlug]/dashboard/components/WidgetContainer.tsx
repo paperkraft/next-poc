@@ -24,7 +24,7 @@ export default function WidgetContainer({ widget }: { widget: FullUserWidget }) 
 
     const handleToggle = async (key: 'isPinned' | 'isHidden', value: boolean) => {
         try {
-            await updateWidget(widget.widget.id.toString(), { [key]: value })
+            await updateWidget(+widget.id, { [key]: value })
         } catch (err) {
             console.error(`Failed to update ${key}:`, err)
         }
@@ -54,7 +54,7 @@ export default function WidgetContainer({ widget }: { widget: FullUserWidget }) 
                     >
                         <GripVertical size={16} />
                     </button>
-                    <h3 className="font-medium">{widget.widget.widget.name}</h3>
+                    <h3 className="font-medium">{widget.widget.name}</h3>
                 </div>
 
                 <div className="flex gap-2">
@@ -74,7 +74,7 @@ export default function WidgetContainer({ widget }: { widget: FullUserWidget }) 
             </div>
 
             <div className="p-4">
-                <WidgetLoader widget={widget.widget} />
+                <WidgetLoader widget={widget} />
             </div>
         </div>
     )

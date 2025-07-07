@@ -52,8 +52,7 @@ export default function DashboardLayout() {
 
     return (
         <div className="space-y-4">
-            <div className='flex justify-between items-center'>
-                <AddWidgetButton />
+            <div className='flex justify-end'>
                 <DashboardSettings />
             </div>
 

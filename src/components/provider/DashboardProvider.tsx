@@ -10,7 +10,6 @@ import {
     updateUserWidget as serverUpdateUserWidget
 } from '@/app/action/widgets';
 import { AvailableWidget, FullUserWidget } from '@/types/widget';
-import { TenantWidget, Widget } from '@prisma/client';
 
 interface DashboardContextType {
     userWidgets: FullUserWidget[];
@@ -71,7 +70,6 @@ export function DashboardProvider({
                 console.log('userWidgets', userWidgets);
                 console.log('availableWidgets', availableWidgets);
 
-
                 setState({
                     userWidgets,
                     availableWidgets,
@@ -95,8 +93,8 @@ export function DashboardProvider({
             }));
 
             await serverUpdateUserWidget({
-                userWidgetId,
-                userId,
+                userWidgetId: +userWidgetId,
+                userId: +userId,
                 updates
             });
         });

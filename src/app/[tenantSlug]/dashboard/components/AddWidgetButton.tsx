@@ -24,8 +24,7 @@ export default function AddWidgetButton() {
 
 
     // Filter out widgets that are already added
-    const addableWidgets = availableWidgets.filter(aw =>
-        !userWidgets.some(uw => uw.widgetId === aw.id))
+    const addableWidgets = availableWidgets.filter(aw => !userWidgets.some(uw => uw.widgetId === aw.id))
 
     const handleAddWidget = async (widgetId: number) => {
         try {

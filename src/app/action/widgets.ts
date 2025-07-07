@@ -7,39 +7,48 @@ import prisma from '@/lib/prisma';
 import { RoleWidget, TenantWidget, Widget } from '@prisma/client';
 import { AvailableWidget, FullUserWidget } from '@/types/widget';
 
-export async function getUserWidgets(userId: number) {
-    return prisma.userWidget.findMany({
+export async function getUserWidgets(userId: number): Promise<FullUserWidget[]> {
+    const widgets = await prisma.userWidget.findMany({
         where: { userId },
         include: {
             widget: {
                 include: {
                     widget: true,
-                    tenant: true
                 }
             },
             roleWidget: true
         },
         orderBy: { sortOrder: 'asc' }
-    });
+    })
+
+    // Map raw data to FullUserWidget interface
+    return widgets.map((uw) => ({
+        id: uw.id,
+        widgetId: uw.widgetId,
+        isPinned: uw.isPinned,
+        isHidden: uw.isHidden,
+        customSize: uw.customSize as 'small' | 'medium' | 'large', // type assertion
+        sortOrder: uw.sortOrder,
+        widget: {
+            id: uw.widget.widget.id,
+            key: uw.widget.widget.key,
+            name: uw.widget.widget.name,
+            description: uw.widget.widget.description ?? '',
+            component: uw.widget.widget.component,
+        },
+        roleWidget: {
+            id: uw.roleWidget.id,
+            roleId: uw.roleWidget.roleId,
+            widgetId: uw.roleWidget.widgetId,
+            isAssigned: uw.roleWidget.isAssigned,
+            sortOrder: uw.roleWidget.sortOrder,
+        },
+    }));
 }
 
 export async function getAvailableWidgets(tenantSlug: string, userId: number): Promise<AvailableWidget[]> {
     // Get widgets assigned to tenant that user doesn't already have
-    // const userWidgets = await prisma.userWidget.findMany({
-    //     where: { userId },
-    //     select: { widgetId: true }
-    // });
-
-    // return prisma.tenantWidget.findMany({
-    //     where: {
-    //         tenant: { slug: tenantSlug },
-    //         id: { notIn: userWidgets.map(uw => uw.widgetId) }
-    //     },
-    //     include: {
-    //         widget: true
-    //     }
-    // });
-    return prisma.tenantWidget.findMany({
+    const widgets = await prisma.tenantWidget.findMany({
         where: {
             OR: [
                 { tenant: { slug: tenantSlug } },
@@ -59,9 +68,19 @@ export async function getAvailableWidgets(tenantSlug: string, userId: number): P
             widget: true,
             roleWidget: true
         }
-    })
-}
+    });
 
+    return widgets.map(tw => ({
+        id: tw.id, // TenantWidget.id
+        widget: {
+            id: tw.widget.id,
+            key: tw.widget.key,
+            name: tw.widget.name,
+            description: tw.widget.description ?? '',
+            component: tw.widget.component,
+        }
+    }));
+}
 
 export async function assignWidgetToRole({
     tenantSlug,
@@ -114,7 +133,6 @@ export async function updateUserWidget({
     updates: {
         isPinned?: boolean
         isHidden?: boolean
-        // customSize?: 'small' | 'medium' | 'large'
         customSize?: string
         sortOrder?: number
     }
@@ -125,23 +143,42 @@ export async function updateUserWidget({
     }
 
     const updated = await prisma.userWidget.update({
-        where: {
-            id: userWidgetId,
-            userId
-        },
+        where: { id: userWidgetId, userId },
         data: updates,
         include: {
-            widget: true,
-            roleWidget: {
+            widget: {
                 include: {
-                    role: true
+                    widget: true
                 }
-            }
+            },
+            roleWidget: true
         }
     })
 
-    revalidatePath('/dashboard')
-    return updated as any
+    revalidatePath(`/${session.user.slug}/dashboard`);
+
+    return {
+        id: updated.id,
+        widgetId: updated.widgetId,
+        isPinned: updated.isPinned,
+        isHidden: updated.isHidden,
+        customSize: updated.customSize as 'small' | 'medium' | 'large',
+        sortOrder: updated.sortOrder,
+        widget: {
+            id: updated.widget.widget.id,
+            key: updated.widget.widget.key,
+            name: updated.widget.widget.name,
+            description: updated.widget.widget.description ?? '',
+            component: updated.widget.widget.component
+        },
+        roleWidget: {
+            id: updated.roleWidget.id,
+            roleId: updated.roleWidget.roleId,
+            widgetId: updated.roleWidget.widgetId,
+            isAssigned: updated.roleWidget.isAssigned,
+            sortOrder: updated.roleWidget.sortOrder
+        }
+    };
 }
 
 export async function addWidgetToUser({
@@ -185,17 +222,40 @@ export async function addWidgetToUser({
             sortOrder: (maxOrder._max.sortOrder || 0) + 1
         },
         include: {
-            widget: true,
-            roleWidget: {
+            widget: {
                 include: {
-                    role: true
+                    widget: true
                 }
-            }
+            },
+            roleWidget: true
         }
     })
 
-    revalidatePath('/dashboard')
-    return newWidget as any
+    revalidatePath(`/${session.user.slug}/dashboard/widgets`)
+
+    // Map to FullUserWidget type
+    return {
+        id: newWidget.id,
+        widgetId: newWidget.widgetId,
+        isPinned: newWidget.isPinned,
+        isHidden: newWidget.isHidden,
+        customSize: newWidget.customSize as 'small' | 'medium' | 'large',
+        sortOrder: newWidget.sortOrder,
+        widget: {
+            id: newWidget.widget.widget.id,
+            key: newWidget.widget.widget.key,
+            name: newWidget.widget.widget.name,
+            description: newWidget.widget.widget.description ?? '',
+            component: newWidget.widget.widget.component
+        },
+        roleWidget: {
+            id: newWidget.roleWidget.id,
+            roleId: newWidget.roleWidget.roleId,
+            widgetId: newWidget.roleWidget.widgetId,
+            isAssigned: newWidget.roleWidget.isAssigned,
+            sortOrder: newWidget.roleWidget.sortOrder
+        }
+    };
 }
 
 export async function removeWidgetFromUser({
@@ -217,7 +277,7 @@ export async function removeWidgetFromUser({
         }
     })
 
-    revalidatePath('/dashboard')
+    revalidatePath(`/${session.user.slug}/dashboard/widgets`)
 }
 
 export async function reorderUserWidgets({
@@ -240,7 +300,8 @@ export async function reorderUserWidgets({
             })
         ))
 
-    revalidatePath('/dashboard')
+    revalidatePath(`/${session.user.slug}/dashboard/widgets`)
+
 }
 
 export async function resetUserWidgets(userId: number): Promise<FullUserWidget[]> {
@@ -259,11 +320,17 @@ export async function resetUserWidgets(userId: number): Promise<FullUserWidget[]
             isAssigned: true,
             widget: { isDefault: true }
         },
-        include: { widget: true }
+        include: {
+            widget: {
+                include: {
+                    widget: true // Includes the inner `Widget` model
+                }
+            }
+        }
     })
 
-    // Create default widgets
-    const results = await Promise.all(
+    //  Create new user widgets
+    const created = await Promise.all(
         roleWidgets.map((rw, index) =>
             prisma.userWidget.create({
                 data: {
@@ -273,25 +340,47 @@ export async function resetUserWidgets(userId: number): Promise<FullUserWidget[]
                     sortOrder: index,
                     isPinned: false,
                     isHidden: false,
-                    customSize: 'medium'
+                    customSize: 'small'
                 },
                 include: {
-                    widget: true,
-                    roleWidget: {
+                    widget: {
                         include: {
-                            role: true
+                            widget: true
                         }
-                    }
+                    },
+                    roleWidget: true
                 }
             })
         )
     )
 
-    revalidatePath('/dashboard')
-    return results as any
+    revalidatePath(`/${session.user.slug}/dashboard/widgets`)
+    // Map Prisma response to FullUserWidget[]
+    return created.map((uw): FullUserWidget => ({
+        id: uw.id,
+        widgetId: uw.widgetId,
+        isPinned: uw.isPinned,
+        isHidden: uw.isHidden,
+        customSize: uw.customSize as 'small' | 'medium' | 'large',
+        sortOrder: uw.sortOrder,
+        widget: {
+            id: uw.widget.widget.id,
+            key: uw.widget.widget.key,
+            name: uw.widget.widget.name,
+            description: uw.widget.widget.description ?? '',
+            component: uw.widget.widget.component
+        },
+        roleWidget: {
+            id: uw.roleWidget.id,
+            roleId: uw.roleWidget.roleId,
+            widgetId: uw.roleWidget.widgetId,
+            isAssigned: uw.roleWidget.isAssigned,
+            sortOrder: uw.roleWidget.sortOrder
+        }
+    }));
 }
 
-// admin panel widgets actions
+// ------------------------- admin panel widgets actions ------------------------------ //
 
 export async function getTenantRoles(tenantSlug: string) {
     return prisma.role.findMany({

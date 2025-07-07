@@ -1,6 +1,6 @@
-import { getTenantWidgets } from '@/app/action/tenant-widgets'
-import { auth } from '@/auth'
-import { AdminWidgetAssignmentPanel } from '@/components/admin/WidgetAssignmentPanel'
+import { getTenantWidgets } from '@/app/action/tenant-widgets';
+import { auth } from '@/auth';
+import { AdminWidgetAssignmentPanel } from '@/components/admin/WidgetAssignmentPanel';
 
 export default async function TenantWidgetsPage({
     params

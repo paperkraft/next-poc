@@ -201,6 +201,7 @@ model UserWidget {
   updatedAt DateTime @updatedAt
 
   @@unique([userId, widgetId])
+  @@index([userId])
 }
 
 model MenuItem {

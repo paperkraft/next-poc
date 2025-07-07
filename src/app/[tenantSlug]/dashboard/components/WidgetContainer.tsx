@@ -42,15 +42,15 @@ export default function WidgetContainer({ widget }: { widget: FullUserWidget }) 
         <div
             ref={setNodeRef}
             style={style}
-            className={`bg-white rounded-lg shadow border ${isDragging ? 'ring-2 ring-blue-500 z-10' : ''
+            className={`bg-background rounded-lg shadow border dark:border-gray-50/30 ${isDragging ? 'ring-2 ring-blue-500 z-10' : ''
                 } ${widget.customSize === 'large' ? 'md:col-span-3' : 'md:col-span-1'}`}
         >
-            <div className="flex items-center justify-between p-3 bg-gray-50 border-b rounded-t-lg">
+            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-50/30 border-b rounded-t-lg">
                 <div className="flex items-center gap-2">
                     <button
                         {...attributes}
                         {...listeners}
-                        className="text-gray-400 hover:text-gray-600 cursor-grab"
+                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-50 cursor-grab"
                     >
                         <GripVertical size={16} />
                     </button>
@@ -60,13 +60,13 @@ export default function WidgetContainer({ widget }: { widget: FullUserWidget }) 
                 <div className="flex gap-2">
                     <button
                         onClick={() => handleToggle('isPinned', !widget.isPinned)}
-                        className={`p-1 rounded ${widget.isPinned ? 'text-blue-500 bg-blue-50' : 'text-gray-400 hover:text-gray-600'}`}
+                        className={`p-1 rounded ${widget.isPinned ? 'text-blue-500 bg-blue-50' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-50'}`}
                     >
                         <Pin size={16} />
                     </button>
                     <button
                         onClick={() => handleToggle('isHidden', true)}
-                        className="text-gray-400 hover:text-gray-600 p-1 rounded"
+                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-50 p-1 rounded"
                     >
                         <EyeOff size={16} />
                     </button>

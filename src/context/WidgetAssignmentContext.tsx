@@ -6,13 +6,17 @@ import { toast } from 'sonner'
 
 interface Widget {
     id: number
+    key: string
     name: string
+    description?: string | null
+    category: string
     roles: { roleId: number; isAssigned: boolean }[]
 }
 
 interface Role {
     id: number
     name: string
+    color: string
 }
 
 interface WidgetAssignmentContextType {
@@ -185,7 +189,7 @@ export function WidgetAssignmentProvider({
                 toggleAssignment,
                 toggleWidgetSelection,
                 bulkAssignToRole,
-                setSelectedWidgets
+                setSelectedWidgets,
             }}
         >
             {children}

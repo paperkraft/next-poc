@@ -1,6 +1,6 @@
 import { getTenantRoles, getTenantWidgetsWithAssignments } from '@/app/action/widgets'
-import { WidgetAssignmentPanel } from './WidgetAssignmentPanel'
 import { WidgetAssignmentProvider } from '@/context/WidgetAssignmentContext'
+import { WidgetAssignmentPanel } from './widget-assignment-panel'
 
 export default async function WidgetAssignmentPage({
     params
@@ -14,7 +14,6 @@ export default async function WidgetAssignmentPage({
 
     return (
         <div className="container mx-auto p-6">
-            <h1 className="text-2xl font-bold mb-6">Widget Assignment</h1>
             <WidgetAssignmentProvider
                 initialWidgets={widgets}
                 initialRoles={roles}

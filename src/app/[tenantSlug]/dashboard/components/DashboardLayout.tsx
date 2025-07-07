@@ -5,7 +5,7 @@ import WidgetContainer from './WidgetContainer'
 import AddWidgetButton from './AddWidgetButton'
 import { useDashboard } from '@/components/provider/DashboardProvider'
 import DashboardSettings from './DashboardSettings'
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { toast } from 'sonner'
 
 export default function DashboardLayout() {
@@ -13,69 +13,118 @@ export default function DashboardLayout() {
         userWidgets,
         reorderWidgets,
         isLoading,
-        error
+        error,
+        getVisibleWidgets
     } = useDashboard()
+
+    // Memoized visible widgets to prevent unnecessary recalculations
+    const visibleWidgets = useMemo(() => {
+        return getVisibleWidgets().sort((a, b) => a.sortOrder - b.sortOrder)
+    }, [getVisibleWidgets])
+
+    // Memoized sortable items for dnd-kit
+    const sortableItems = useMemo(() =>
+        visibleWidgets.map(w => w.id.toString()),
+        [visibleWidgets]
+    )
 
     const handleDragEnd = useCallback(async (event: DragEndEvent) => {
         const { active, over } = event
 
         // Early returns for invalid states
-        if (!over) return
-        if (active.id === over.id) return
-        if (isLoading) return
+        if (!over || active.id === over.id || isLoading) return
 
         try {
-            const oldIndex = userWidgets.findIndex(w => w.id.toString() === active.id)
-            const newIndex = userWidgets.findIndex(w => w.id.toString() === over.id)
+            const activeId = active.id.toString()
+            const overId = over.id.toString()
 
-            if (oldIndex === -1 || newIndex === -1) return
+            const oldIndex = visibleWidgets.findIndex(w => w.id.toString() === activeId)
+            const newIndex = visibleWidgets.findIndex(w => w.id.toString() === overId)
 
-            // Create updates for all widgets to ensure consistent ordering
-            const updatedWidgets = arrayMove(userWidgets, oldIndex, newIndex)
-            const updates = updatedWidgets.map((widget, index) => ({
-                userWidgetId: +widget.id.toString(),
+            if (oldIndex === -1 || newIndex === -1) {
+                console.warn('Invalid drag operation: widget not found')
+                return
+            }
+
+            // Calculate new sort orders for all affected widgets
+            const reorderedWidgets = arrayMove(visibleWidgets, oldIndex, newIndex)
+            const updates = reorderedWidgets.map((widget, index) => ({
+                userWidgetId: widget.id,
                 sortOrder: index
             }))
 
+            // The provider handles optimistic updates automatically
             await reorderWidgets(updates)
             toast.success('Widgets reordered successfully')
+
         } catch (err) {
+            // Error handling is already done in the provider with rollback
             toast.error('Failed to reorder widgets')
             console.error('Drag and drop error:', err)
         }
-    }, [userWidgets, reorderWidgets, isLoading])
+    }, [visibleWidgets, reorderWidgets, isLoading])
 
-    // Filter and sort widgets for display
-    const visibleWidgets = userWidgets
-        .filter(widget => !widget.isHidden)
-        .sort((a, b) => a.sortOrder - b.sortOrder)
+    // Loading skeleton component
+    const LoadingSkeleton = () => (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {[...Array(3)].map((_, i) => (
+                <div key={i} className="h-40 bg-gray-100 rounded-lg animate-pulse" />
+            ))}
+        </div>
+    )
+
+    // Empty state component
+    const EmptyState = () => (
+        <div className="flex flex-col items-center justify-center py-12 gap-4">
+            <div className="text-center">
+                <h3 className="text-lg font-medium text-gray-900">No widgets configured</h3>
+                <p className="text-muted-foreground mt-1">
+                    Get started by adding your first widget to the dashboard
+                </p>
+            </div>
+            <AddWidgetButton />
+        </div>
+    )
+
+    // Error state component
+    const ErrorState = () => (
+        <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg">
+            <div className="flex items-center justify-between">
+                <div>
+                    <h4 className="font-medium">Dashboard Error</h4>
+                    <p className="text-sm mt-1">{error}</p>
+                </div>
+                <button
+                    onClick={() => window.location.reload()}
+                    className="text-sm bg-red-100 hover:bg-red-200 px-3 py-1 rounded transition-colors"
+                >
+                    Retry
+                </button>
+            </div>
+        </div>
+    )
 
     return (
         <div className="space-y-4">
-            <div className='flex justify-end'>
+            <div className='flex justify-between items-center'>
+                <div className="flex items-center gap-2">
+                    <h2 className="text-xl font-semibold">Dashboard</h2>
+                    {isLoading && (
+                        <div className="size-4 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
+                    )}
+                </div>
                 <DashboardSettings />
             </div>
 
-            {error && (
-                <div className="bg-red-50 text-red-600 p-3 rounded-lg">
-                    {error}
-                </div>
-            )}
+            {error && <ErrorState />}
 
             {isLoading && userWidgets.length === 0 ? (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                    {[...Array(3)].map((_, i) => (
-                        <div key={i} className="h-40 bg-gray-100 rounded-lg animate-pulse" />
-                    ))}
-                </div>
+                <LoadingSkeleton />
             ) : visibleWidgets.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 gap-4">
-                    <p className="text-muted-foreground">No widgets added to your dashboard</p>
-                    <AddWidgetButton />
-                </div>
+                <EmptyState />
             ) : (
                 <DndContext onDragEnd={handleDragEnd}>
-                    <SortableContext items={visibleWidgets.map(w => w.id.toString())}>
+                    <SortableContext items={sortableItems}>
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                             {visibleWidgets.map(widget => (
                                 <WidgetContainer

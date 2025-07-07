@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 
 import { auth } from '@/auth';
 import prisma from '@/lib/prisma';
-import { RoleWidget, TenantWidget, Widget } from '@prisma/client';
+import { RoleWidget } from '@prisma/client';
 import { AvailableWidget, FullUserWidget } from '@/types/widget';
 
 export async function getUserWidgets(userId: number): Promise<FullUserWidget[]> {
@@ -22,28 +22,7 @@ export async function getUserWidgets(userId: number): Promise<FullUserWidget[]> 
     })
 
     // Map raw data to FullUserWidget interface
-    return widgets.map((uw) => ({
-        id: uw.id,
-        widgetId: uw.widgetId,
-        isPinned: uw.isPinned,
-        isHidden: uw.isHidden,
-        customSize: uw.customSize as 'small' | 'medium' | 'large', // type assertion
-        sortOrder: uw.sortOrder,
-        widget: {
-            id: uw.widget.widget.id,
-            key: uw.widget.widget.key,
-            name: uw.widget.widget.name,
-            description: uw.widget.widget.description ?? '',
-            component: uw.widget.widget.component,
-        },
-        roleWidget: {
-            id: uw.roleWidget.id,
-            roleId: uw.roleWidget.roleId,
-            widgetId: uw.roleWidget.widgetId,
-            isAssigned: uw.roleWidget.isAssigned,
-            sortOrder: uw.roleWidget.sortOrder,
-        },
-    }));
+    return widgets.map((uw) => mapToFullUserWidget(uw));
 }
 
 export async function getAvailableWidgets(tenantSlug: string, userId: number): Promise<AvailableWidget[]> {
@@ -156,29 +135,7 @@ export async function updateUserWidget({
     })
 
     revalidatePath(`/${session.user.slug}/dashboard`);
-
-    return {
-        id: updated.id,
-        widgetId: updated.widgetId,
-        isPinned: updated.isPinned,
-        isHidden: updated.isHidden,
-        customSize: updated.customSize as 'small' | 'medium' | 'large',
-        sortOrder: updated.sortOrder,
-        widget: {
-            id: updated.widget.widget.id,
-            key: updated.widget.widget.key,
-            name: updated.widget.widget.name,
-            description: updated.widget.widget.description ?? '',
-            component: updated.widget.widget.component
-        },
-        roleWidget: {
-            id: updated.roleWidget.id,
-            roleId: updated.roleWidget.roleId,
-            widgetId: updated.roleWidget.widgetId,
-            isAssigned: updated.roleWidget.isAssigned,
-            sortOrder: updated.roleWidget.sortOrder
-        }
-    };
+    return mapToFullUserWidget(updated)
 }
 
 export async function addWidgetToUser({
@@ -234,28 +191,7 @@ export async function addWidgetToUser({
     revalidatePath(`/${session.user.slug}/dashboard/widgets`)
 
     // Map to FullUserWidget type
-    return {
-        id: newWidget.id,
-        widgetId: newWidget.widgetId,
-        isPinned: newWidget.isPinned,
-        isHidden: newWidget.isHidden,
-        customSize: newWidget.customSize as 'small' | 'medium' | 'large',
-        sortOrder: newWidget.sortOrder,
-        widget: {
-            id: newWidget.widget.widget.id,
-            key: newWidget.widget.widget.key,
-            name: newWidget.widget.widget.name,
-            description: newWidget.widget.widget.description ?? '',
-            component: newWidget.widget.widget.component
-        },
-        roleWidget: {
-            id: newWidget.roleWidget.id,
-            roleId: newWidget.roleWidget.roleId,
-            widgetId: newWidget.roleWidget.widgetId,
-            isAssigned: newWidget.roleWidget.isAssigned,
-            sortOrder: newWidget.roleWidget.sortOrder
-        }
-    };
+    return mapToFullUserWidget(newWidget)
 }
 
 export async function removeWidgetFromUser({
@@ -356,40 +292,69 @@ export async function resetUserWidgets(userId: number): Promise<FullUserWidget[]
 
     revalidatePath(`/${session.user.slug}/dashboard/widgets`)
     // Map Prisma response to FullUserWidget[]
-    return created.map((uw): FullUserWidget => ({
-        id: uw.id,
-        widgetId: uw.widgetId,
-        isPinned: uw.isPinned,
-        isHidden: uw.isHidden,
-        customSize: uw.customSize as 'small' | 'medium' | 'large',
-        sortOrder: uw.sortOrder,
-        widget: {
-            id: uw.widget.widget.id,
-            key: uw.widget.widget.key,
-            name: uw.widget.widget.name,
-            description: uw.widget.widget.description ?? '',
-            component: uw.widget.widget.component
-        },
-        roleWidget: {
-            id: uw.roleWidget.id,
-            roleId: uw.roleWidget.roleId,
-            widgetId: uw.roleWidget.widgetId,
-            isAssigned: uw.roleWidget.isAssigned,
-            sortOrder: uw.roleWidget.sortOrder
-        }
-    }));
+    return created.map((uw): FullUserWidget => mapToFullUserWidget(uw));
 }
 
-// ------------------------- admin panel widgets actions ------------------------------ //
+// ------------------- FullWidget Transform function ---------------------------------- //
+
+function mapToFullUserWidget(widget: any): FullUserWidget {
+    return {
+        id: widget.id,
+        widgetId: widget.widgetId,
+        isPinned: widget.isPinned,
+        isHidden: widget.isHidden,
+        customSize: widget.customSize,
+        sortOrder: widget.sortOrder,
+        widget: {
+            id: widget.widget.widget.id,
+            key: widget.widget.widget.key,
+            name: widget.widget.widget.name,
+            description: widget.widget.widget.description ?? '',
+            component: widget.widget.widget.component
+        },
+        roleWidget: {
+            id: widget.roleWidget.id,
+            roleId: widget.roleWidget.roleId,
+            widgetId: widget.roleWidget.widgetId,
+            isAssigned: widget.roleWidget.isAssigned,
+            sortOrder: widget.roleWidget.sortOrder
+        }
+    };
+}
+
+// ------------------------- Admin panel widgets actions ------------------------------ //
+
+const roleColors = [
+    "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100",
+    "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100",
+    "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
+    "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100",
+    "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100",
+    "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-100",
+    "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-100",
+    "bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-100"
+];
+
+function getRandomColor() {
+    const index = Math.floor(Math.random() * roleColors.length);
+    return roleColors[index];
+}
 
 export async function getTenantRoles(tenantSlug: string) {
-    return prisma.role.findMany({
+    const roles = await prisma.role.findMany({
         where: { tenant: { slug: tenantSlug } },
         select: {
             id: true,
             name: true
         }
-    })
+    });
+
+    const rolesWithColor = roles.map(role => ({
+        ...role,
+        color: getRandomColor()
+    }));
+
+    return rolesWithColor;
 }
 
 export async function updateRoleWidgetAssignment({

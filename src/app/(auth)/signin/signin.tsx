@@ -9,7 +9,7 @@ import * as z from "zod";
 import { useMounted } from "@/hooks/use-mounted";
 import { signIn, useSession } from "next-auth/react";
 import { toast } from "sonner";
-import { getRecaptchaToken } from "@/app/action/auth.action";
+import { getRecaptchaToken } from "@/app/actions/auth.action";
 import { signInSchema } from "@/lib/zod";
 import Divider from "@/components/custom/divider";
 import ButtonContent from "@/components/custom/button-content";

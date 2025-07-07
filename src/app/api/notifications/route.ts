@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getAllNotifications } from '@/app/action/notifications.action';
-import { handleNoId } from '@/app/action/response.action';
+import { getAllNotifications } from '@/app/actions/notifications.action';
+import { handleNoId } from '@/app/actions/response.action';
 import { auth } from '@/auth';
 
 export async function PUT(req: Request) {

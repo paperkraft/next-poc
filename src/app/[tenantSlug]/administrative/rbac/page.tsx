@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 
-import { fetchRoles } from '@/app/action/role.action';
+import { fetchRoles } from '@/app/actions/role.action';
 import AccessDenied from '@/components/custom/access-denied';
 import NoRecordPage from '@/components/custom/no-record';
 import TitlePage from '@/components/custom/page-heading';

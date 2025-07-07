@@ -1,6 +1,6 @@
 import { headers } from 'next/headers';
 
-import { fetchModules } from '@/app/action/module.action';
+import { fetchModules } from '@/app/actions/module.action';
 import AccessDenied from '@/components/custom/access-denied';
 import NoRecordPage from '@/components/custom/no-record';
 import TitlePage from '@/components/custom/page-heading';

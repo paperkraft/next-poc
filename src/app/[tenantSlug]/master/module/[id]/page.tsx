@@ -1,7 +1,7 @@
 import { headers } from 'next/headers';
 
-import { getAllGroups } from '@/app/action/group.action';
-import { fetchUniqueModule } from '@/app/action/module.action';
+import { getAllGroups } from '@/app/actions/group.action';
+import { fetchUniqueModule } from '@/app/actions/module.action';
 import AccessDenied from '@/components/custom/access-denied';
 import NoRecordPage from '@/components/custom/no-record';
 import TitlePage from '@/components/custom/page-heading';

@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 
 import { auth } from '@/auth';
 
-import { getLastThreeLogins } from '../action/audit.action';
+import { getLastThreeLogins } from '../actions/audit.action';
 import SettingsProfilePage from './(forms)/profile/page';
 
 export const metadata: Metadata = {

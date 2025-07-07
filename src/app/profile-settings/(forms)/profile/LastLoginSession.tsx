@@ -1,5 +1,5 @@
 'use client'
-import { LoginDetail } from "@/app/action/audit.action";
+import { LoginDetail } from "@/app/actions/audit.action";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface LastLoginSessionProps {

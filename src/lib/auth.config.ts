@@ -2,8 +2,8 @@ import { NextAuthConfig, User } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import GitHub from 'next-auth/providers/github';
 
-import { getUser } from '@/app/action/auth.action';
-import { fetchModuleByRole } from '@/app/action/module.action';
+import { getUser } from '@/app/actions/auth.action';
+import { fetchModuleByRole } from '@/app/actions/module.action';
 import prisma from '@/lib/prisma';
 import { AUTH_SECRET, GITHUB_ID, GITHUB_SECRET } from '@/utils/constants';
 

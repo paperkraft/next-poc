@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMounted } from '@/hooks/use-mounted';
-import { LoginDetail } from '@/app/action/audit.action';
+import { LoginDetail } from '@/app/actions/audit.action';
 import LastLoginSession from './LastLoginSession';
 
 const profileFormSchema = z.object({

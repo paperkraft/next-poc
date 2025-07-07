@@ -322,7 +322,7 @@ function mapToFullUserWidget(widget: any): FullUserWidget {
     };
 }
 
-// ------------------------- Admin panel widgets actions ------------------------------ //
+// -------------------------Tenant Admin panel widgets actions ------------------------------ //
 
 const roleColors = [
     "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100",

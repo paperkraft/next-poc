@@ -1,6 +1,6 @@
 import { headers } from 'next/headers';
 
-import { fetchUniqueRoles } from '@/app/action/role.action';
+import { fetchUniqueRoles } from '@/app/actions/role.action';
 import AccessDenied from '@/components/custom/access-denied';
 import NoRecordPage from '@/components/custom/no-record';
 import TitlePage from '@/components/custom/page-heading';

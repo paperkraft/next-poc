@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
-import { LoginDetail } from '@/app/action/audit.action';
+import { LoginDetail } from '@/app/actions/audit.action';
 import { Separator } from '@/components/ui/separator';
 
 import { ProfileForm } from './ProfileForm';

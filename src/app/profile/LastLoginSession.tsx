@@ -1,6 +1,6 @@
 'use client'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { LoginDetail } from "../action/audit.action";
+import { LoginDetail } from "../actions/audit.action";
 
 interface LastLoginSessionProps {
     lastLogins: LoginDetail[] | null

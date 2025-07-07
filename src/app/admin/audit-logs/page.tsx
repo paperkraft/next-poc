@@ -11,7 +11,7 @@ import { getSessionModules } from '@/lib/abac/sessionModules';
 import { findModuleIdByPath } from '@/utils/helper';
 
 import AuditLogTable from './AuditLogTable';
-import { fetchAuditLogs } from '@/app/action/audit.action';
+import { fetchAuditLogs } from '@/app/actions/audit.action';
 
 export const metadata = {
     title: "Audit-log",

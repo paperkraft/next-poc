@@ -1,4 +1,4 @@
-import { createGroup, deleteGroup } from "@/app/action/group.action";
+import { createGroup, deleteGroup } from "@/app/actions/group.action";
 import { auth } from "@/auth";
 import { logAuditAction } from "@/lib/audit-log";
 import prisma from "@/lib/prisma";

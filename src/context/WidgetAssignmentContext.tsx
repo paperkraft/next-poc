@@ -1,6 +1,6 @@
 'use client'
 
-import { updateRoleWidgetAssignment } from '@/app/action/widgets'
+import { updateRoleWidgetAssignment } from '@/app/actions/widgets'
 import { createContext, useContext, useState, useMemo } from 'react'
 import { toast } from 'sonner'
 

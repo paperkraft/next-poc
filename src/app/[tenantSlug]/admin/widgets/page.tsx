@@ -1,4 +1,4 @@
-import { getTenantRoles, getTenantWidgetsWithAssignments } from '@/app/action/widgets'
+import { getTenantRoles, getTenantWidgetsWithAssignments } from '@/app/actions/widgets'
 import { WidgetAssignmentProvider } from '@/context/WidgetAssignmentContext'
 import { WidgetAssignmentPanel } from './widget-assignment-panel'
 

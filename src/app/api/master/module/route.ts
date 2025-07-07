@@ -1,4 +1,4 @@
-import { fetchModules } from "@/app/action/module.action";
+import { fetchModules } from "@/app/actions/module.action";
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";

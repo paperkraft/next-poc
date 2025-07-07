@@ -1,5 +1,5 @@
 'use client'
-import { calculateDateWiseOnlineSessions, DateWiseOnlineSession } from "@/app/action/audit.action";
+import { calculateDateWiseOnlineSessions, DateWiseOnlineSession } from "@/app/actions/audit.action";
 import { DataTable } from "@/components/_data-table/data-table";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Label } from "@/components/ui/label";

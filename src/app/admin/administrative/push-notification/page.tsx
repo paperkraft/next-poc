@@ -1,7 +1,7 @@
 import TitlePage from "@/components/custom/page-heading";
 import { Metadata } from "next";
 import SendNotificationForm from "./SendNotificationForm";
-import { getAllUser } from "@/app/action/auth.action";
+import { getAllUser } from "@/app/actions/auth.action";
 
 export const metadata: Metadata = {
   title: "Push Notification",
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 export default async function PushNotification() {
-  const users =  await getAllUser();
+  const users = await getAllUser();
   return (
     <>
       <TitlePage title={"Push Notifications"} description={"Manage notifications and subscription"} />

@@ -1,6 +1,6 @@
 import { headers } from 'next/headers';
 
-import { getGroupById } from '@/app/action/group.action';
+import { getGroupById } from '@/app/actions/group.action';
 import AccessDenied from '@/components/custom/access-denied';
 import NoRecordPage from '@/components/custom/no-record';
 import TitlePage from '@/components/custom/page-heading';

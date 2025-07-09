@@ -1,3 +1,4 @@
+import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
@@ -9,13 +10,17 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Missing roleId" }, { status: 400 });
   }
 
+  const session = await auth();
+  const tenantId = session?.user.tenantId;
+
   // Fetch all modules and role permissions
   const [modules, rolePermissions] = await Promise.all([
     prisma.menuItem.findMany({
+      where: { tenantId: tenantId },
       include: { group: true }
     }),
     prisma.rolePermission.findMany({
-      where: { roleId: +roleId },
+      where: { roleId: +roleId, tenantId: tenantId },
     }),
   ]);
 

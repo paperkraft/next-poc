@@ -220,9 +220,9 @@ model MenuItem {
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
   rolePermission RolePermission[]
+  // @@unique([tenantId, groupId, parentId])
 
   @@unique([tenantId, parentId, name])
-  @@unique([tenantId, groupId, parentId])
 }
 
 model MenuGroup {

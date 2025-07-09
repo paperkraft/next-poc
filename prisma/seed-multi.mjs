@@ -55,36 +55,36 @@ async function main() {
       name: "Tenant Management",
       icon: "Building2",
       children: [
-        { name: "All Tenants", path: "/admin/tenants" },
-        { name: "Create Tenant", path: "/admin/tenants/create" },
-        { name: "Tenant Analytics", path: "/admin/tenants/analytics" },
+        { name: "All Tenants", path: "/tenants" },
+        { name: "Create Tenant", path: "/tenants/create" },
+        { name: "Tenant Analytics", path: "/tenants/analytics" },
       ],
     },
     {
       name: "System Users",
       icon: "Users",
       children: [
-        { name: "All Users", path: "/admin/users" },
-        { name: "Global Roles", path: "/admin/global-roles" },
-        { name: "User Analytics", path: "/admin/users/analytics" },
+        { name: "All Users", path: "/users" },
+        { name: "Global Roles", path: "/global-roles" },
+        { name: "User Analytics", path: "/users/analytics" },
       ],
     },
     {
       name: "System Settings",
       icon: "Settings",
       children: [
-        { name: "Global Settings", path: "/admin/settings" },
-        { name: "System Permissions", path: "/admin/permissions" },
-        { name: "Feature Flags", path: "/admin/features" },
+        { name: "Global Settings", path: "/settings" },
+        { name: "System Permissions", path: "/permissions" },
+        { name: "Feature Flags", path: "/features" },
       ],
     },
     {
       name: "Audit & Monitoring",
       icon: "Activity",
       children: [
-        { name: "Audit Logs", path: "/admin/audit-logs" },
-        { name: "System Health", path: "/admin/health" },
-        { name: "Performance", path: "/admin/performance" },
+        { name: "Audit Logs", path: "/audit-logs" },
+        { name: "System Health", path: "/health" },
+        { name: "Performance", path: "/performance" },
       ],
     },
   ];
@@ -188,7 +188,7 @@ async function main() {
       adminUser: {
         email: "admin@sunrise.edu",
         password: "admin123",
-        firstName: "Amit",
+        firstName: "Ajit",
         lastName: "Patil",
       },
     },
@@ -269,57 +269,99 @@ async function main() {
       data: { name: "Student", tenantId: tenant.id },
     });
 
-    const groups = await prisma.menuGroup.createMany({
-      data: [
-        { name: "Home", tenantId: tenant.id, position: 1 },
-        { name: "Master", tenantId: tenant.id, position: 2 },
-      ],
+    // Create groups
+
+    const homeGroup = await prisma.menuGroup.create({
+      data: { name: "Home", tenantId: tenant.id, position: 1 },
     });
 
-    const menuGroups = await prisma.menuGroup.findMany({
+    await prisma.menuItem.create({
+      data: {
+        name: "Dashboard",
+        path: "/dashboard",
+        icon: "BarChart3",
+        groupId: homeGroup.id,
+        tenantId: tenant.id,
+      },
+    });
+
+    const managementGroup = await prisma.menuGroup.create({
+      data: { name: "Management", tenantId: tenant.id, position: 2 },
+    });
+
+    const settingsGroup = await prisma.menuGroup.create({
+      data: { name: "Settings", tenantId: tenant.id, position: 3 },
+    });
+
+    // For settings menus
+    for (const parent of tenantSettingMenus) {
+      const parentItem = await prisma.menuItem.create({
+        data: {
+          name: parent.name,
+          path: undefined,
+          icon: parent.icon,
+          tenantId: tenant.id,
+          groupId: settingsGroup.id,
+        },
+      });
+
+      for (const child of parent.children) {
+        await prisma.menuItem.create({
+          data: {
+            name: child.name,
+            path: child.path,
+            icon: undefined,
+            tenantId: tenant.id,
+            groupId: settingsGroup.id,
+            parentId: parentItem.id,
+          },
+        });
+      }
+    }
+
+    // For management menus
+    for (const parent of tenantMgmtMenus) {
+      const parentItem = await prisma.menuItem.create({
+        data: {
+          name: parent.name,
+          path: undefined,
+          icon: parent.icon,
+          tenantId: tenant.id,
+          groupId: managementGroup.id,
+        },
+      });
+
+      for (const child of parent.children) {
+        await prisma.menuItem.create({
+          data: {
+            name: child.name,
+            path: child.path,
+            icon: undefined,
+            tenantId: tenant.id,
+            groupId: managementGroup.id,
+            parentId: parentItem.id,
+          },
+        });
+      }
+    }
+
+    const tenantMenus = await prisma.menuItem.findMany({
       where: { tenantId: tenant.id },
     });
 
-    const groupMap = new Map(menuGroups.map((g) => [g.name, g.id]));
-
-    const tenantMenus = [
-      { name: "Dashboard", path: "/dashboard", group: "Home", icon: "Home" },
-      {
-        name: "Module",
-        path: "/master/module",
-        group: "Master",
-        icon: "LayoutGrid",
-      },
-      { name: "Role", path: "/master/role", group: "Master", icon: "User2" },
-      { name: "Groups", path: "/master/groups", group: "Master", icon: "Grid" },
-    ];
-
-    const insertedMenus = [];
-    for (const mod of tenantMenus) {
-      const menu = await prisma.menuItem.create({
-        data: {
-          name: mod.name,
-          path: mod.path,
-          icon: mod.icon,
-          groupId: groupMap.get(mod.group),
-          tenantId: tenant.id,
-        },
-      });
-      insertedMenus.push(menu);
-    }
-
-    for (const menu of insertedMenus) {
+    for (const menu of tenantMenus) {
       await prisma.rolePermission.create({
         data: {
           roleId: adminRole.id,
-          tenantId: tenant.id,
           menuId: menu.id,
+          tenantId: tenant.id,
           permissionBits: 15,
         },
       });
     }
 
     const hashed = await bcrypt.hash(t.adminUser.password, 10);
+
     await prisma.user.create({
       data: {
         email: t.adminUser.email,
@@ -336,8 +378,8 @@ async function main() {
       },
     });
 
-    // ➕ Seed fake teachers
-    for (let i = 1; i <= 3; i++) {
+    // Seed teachers
+    for (let i = 1; i <= 2; i++) {
       await prisma.user.create({
         data: {
           email: `teacher${i}@${t.slug}.edu`,
@@ -355,8 +397,8 @@ async function main() {
       });
     }
 
-    // ➕ Seed fake students
-    for (let i = 1; i <= 5; i++) {
+    // Seed students
+    for (let i = 1; i <= 2; i++) {
       await prisma.user.create({
         data: {
           email: `student${i}@${t.slug}.edu`,
@@ -436,3 +478,58 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
+
+const tenantMgmtMenus = [
+  {
+    name: "Academic Management",
+    icon: "GraduationCap",
+    children: [
+      { name: "Students", path: "/students" },
+      { name: "Faculty", path: "/faculty" },
+      { name: "Courses", path: "/courses" },
+      { name: "Programs", path: "/programs" },
+      { name: "Departments", path: "/departments" },
+    ],
+  },
+  {
+    name: "Administration",
+    icon: "FileText",
+    children: [
+      { name: "Admissions", path: "/admissions" },
+      { name: "Enrollment", path: "/enrollment" },
+      { name: "Scheduling", path: "/scheduling" },
+      { name: "Examinations", path: "/examinations" },
+    ],
+  },
+  {
+    name: "Financial Management",
+    icon: "DollarSign",
+    children: [
+      { name: "Fee Management", path: "/fees" },
+      { name: "Scholarships", path: "/scholarships" },
+      { name: "Payroll", path: "/payroll" },
+      { name: "Budgeting", path: "/budget" },
+    ],
+  },
+];
+
+const tenantSettingMenus = [
+  {
+    name: "User Management",
+    icon: "Users",
+    children: [
+      { name: "Users", path: "/admin/users" },
+      { name: "Roles", path: "/admin/roles" },
+      { name: "Permissions", path: "/admin/permissions" },
+    ],
+  },
+  {
+    name: "System",
+    icon: "Settings",
+    children: [
+      { name: "Menu Management", path: "/admin/menus" },
+      { name: "Tenant Settings", path: "/admin/settings" },
+      { name: "Audit Logs", path: "/admin/audit" },
+    ],
+  },
+];

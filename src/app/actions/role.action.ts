@@ -17,7 +17,8 @@ export async function fetchRoles(): Promise<FetchRolesResponse> {
         const { tenantId } = session.user;
 
         const roles = await prisma.role.findMany({
-            where: tenantId ? { tenantId, isActive: true } : undefined,
+            // where: tenantId ? { tenantId, isActive: true } : undefined,
+            where: { tenantId: tenantId, isActive: true },
             select: {
                 id: true,
                 name: true,

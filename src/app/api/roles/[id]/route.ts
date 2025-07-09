@@ -20,7 +20,7 @@ export async function POST(req: Request, { params }: { params: { id: number } })
         flattened.map(({ menuId, permissionBits }) =>
             prisma.rolePermission.upsert({
                 where: {
-                    tenantId_roleId_menuId: {
+                    role_permission_tenant_unique: {
                         roleId: +params.id,
                         menuId,
                         tenantId

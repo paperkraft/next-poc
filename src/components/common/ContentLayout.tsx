@@ -31,6 +31,8 @@ export default function ContentLayout({ children, currentTenant, menus = [], ten
 
     if (!mounted) return null
 
+    console.log('menus', menus)
+
     return (
         <>
             {(config.layout === "vertical" || isMobile) &&

@@ -126,18 +126,53 @@ export default function RolePermissionTable({ tenantId, roles }: Props) {
 
     // Helper functions
     const togglePermission = (id: number, bit: number) => {
-        setPermissions((prev) => ({
-            ...prev,
-            [id]: prev[id] ^ bit,
-        }))
+        setPermissions((prev) => {
+            const newPermissions = { ...prev }
+            const currentValue = newPermissions[id] || 0
+            const newValue = currentValue ^ bit
+
+            // Find the item to understand its relationships
+            const item = flattened.find((item) => item.id === id)
+            if (!item) return prev
+
+            // If we're enabling a permission on a child, ensure parent has the same permission
+            if ((newValue & bit) === bit && item.parentId) {
+                const parentCurrentValue = newPermissions[item.parentId] || 0
+                // If parent doesn't have this permission, enable it on parent first
+                if ((parentCurrentValue & bit) !== bit) {
+                    newPermissions[item.parentId] = parentCurrentValue | bit
+                }
+            }
+
+            // Apply the change to the target item
+            newPermissions[id] = newValue
+
+            return newPermissions
+        })
     }
 
     const toggleAllForRow = (id: number, on: boolean) => {
         const fullMask = Object.values(PERMISSION_BITS).reduce((a, b) => a | b, 0)
-        setPermissions((prev) => ({
-            ...prev,
-            [id]: on ? fullMask : 0,
-        }))
+
+        setPermissions((prev) => {
+            const newPermissions = { ...prev }
+            const item = flattened.find((item) => item.id === id)
+            if (!item) return prev
+
+            if (on) {
+                // If enabling all permissions on a child, ensure parent has all permissions
+                if (item.parentId) {
+                    newPermissions[item.parentId] = fullMask
+                }
+                newPermissions[id] = fullMask
+            } else {
+                // Simply disable all permissions on this item
+                // Children can remain enabled if needed
+                newPermissions[id] = 0
+            }
+
+            return newPermissions
+        })
     }
 
     const isAllChecked = (id: number) => {
@@ -145,8 +180,26 @@ export default function RolePermissionTable({ tenantId, roles }: Props) {
         return (permissions[id] & fullMask) === fullMask
     }
 
-    const isInherited = (item: FlattenedMenuItem, bit: number): boolean =>
-        !!item.parentId && (permissions[item.parentId] & bit) === bit && (permissions[item.id] & bit) !== bit
+    const isInherited = (item: FlattenedMenuItem, bit: number): boolean => {
+        // A permission is only inherited if:
+        // 1. The item has a parent
+        // 2. The parent has the permission
+        // 3. The child does NOT explicitly have the permission set
+        // 4. We want to show it as "inherited" (read-only)
+
+        // For our use case, we don't want to show permissions as inherited
+        // Children should always be independently controllable
+        return false
+    }
+
+    const canEnablePermission = (item: FlattenedMenuItem, bit: number): boolean => {
+        // If it's a root level item, it can always be enabled
+        if (!item.parentId) return true
+
+        // If it's a child item, parent must have the permission first
+        const parentPermissions = permissions[item.parentId] || 0
+        return (parentPermissions & bit) === bit
+    }
 
     const hasChanges = () => {
         return Object.entries(permissions).some(([id, value]) => {
@@ -197,6 +250,9 @@ export default function RolePermissionTable({ tenantId, roles }: Props) {
             toast.info("No changes to save.")
             return
         }
+
+        console.log('changes', changes);
+
 
         const res = await fetch("/api/role-permissions", {
             method: "POST",
@@ -282,6 +338,7 @@ export default function RolePermissionTable({ tenantId, roles }: Props) {
                             onToggleAllForRow={toggleAllForRow}
                             isAllChecked={isAllChecked}
                             isInherited={isInherited}
+                            canEnablePermission={canEnablePermission}
                         />
                     )
                 })

@@ -109,16 +109,24 @@ export async function getUserModules(tenantId: number | null, roleId: number): P
         },
     });
 
-    // Create a map for all menu items with their permissions
+    //------------------------------ Map Permission Bits -------------------------------
+
+    const permissionMap = new Map<number, number>();
+
+    rolePermissions.forEach((rp) => {
+        permissionMap.set(rp.menus.id, rp.permissionBits);
+    });
+
+    //------------------------------ Create Menu Map -------------------------------
+
     const menuMap = new Map<number, MenuItem>();
 
-    // First pass: process all menu items and store in map
     for (const rp of rolePermissions) {
         const menu = rp.menus;
         const group = menu.group;
         const slug = rp.tenant?.slug;
 
-        // Create or update menu item in map
+        // Only add the menu if it has valid permissionBits (permission != 0)
         if (!menuMap.has(menu.id)) {
             menuMap.set(menu.id, {
                 id: menu.id,
@@ -129,55 +137,54 @@ export async function getUserModules(tenantId: number | null, roleId: number): P
                 groupId: group?.id,
                 groupName: group?.name,
                 position: group?.position,
-                permission: rp.permissionBits,
+                permission: permissionMap.get(menu.id) || 0, // Only set permission for the current item
                 children: [],
             });
-        } else {
-            // Combine permissions if menu appears multiple times
-            const existing = menuMap.get(menu.id)!;
-            existing.permission = (existing.permission || 0) | rp.permissionBits;
         }
 
-        // Process children (second level)
+        // Process children (second level), ensure they have valid permissionBits (permission != 0)
         for (const child of menu.children) {
-            if (!menuMap.has(child.id)) {
-                menuMap.set(child.id, {
-                    id: child.id,
-                    name: child.name,
-                    icon: child.icon ?? "DotIcon",
-                    // path: child.path || undefined,
-                    path: slug ? `/${slug}${child.path}` : `/admin${child.path}` || undefined,
-                    parentId: child.parentId || undefined,
-                    groupId: group?.id,
-                    groupName: group?.name,
-                    position: group?.position,
-                    permission: rp.permissionBits,
-                    children: [],
-                });
-            }
-
-            // Process grandchildren (third level)
-            for (const grandchild of child.children) {
-                if (!menuMap.has(grandchild.id)) {
-                    menuMap.set(grandchild.id, {
-                        id: grandchild.id,
-                        name: grandchild.name,
-                        icon: grandchild.icon ?? "DotIcon",
-                        // path: grandchild.path || undefined,
-                        path: slug ? `/${slug}${grandchild.path}` : `/admin${grandchild.path}` || undefined,
-                        parentId: grandchild.parentId || undefined,
+            if (permissionMap.get(child.id) !== 0 || permissionMap.get(child.id) !== undefined) { // Only add children if they have valid permissions
+                if (!menuMap.has(child.id)) {
+                    menuMap.set(child.id, {
+                        id: child.id,
+                        name: child.name,
+                        icon: child.icon ?? "DotIcon",
+                        path: slug ? `/${slug}${child.path}` : `/admin${child.path}` || undefined,
+                        parentId: child.parentId || undefined,
                         groupId: group?.id,
                         groupName: group?.name,
                         position: group?.position,
-                        permission: rp.permissionBits,
+                        permission: permissionMap.get(child.id), // Only set permission for the child if it's valid
                         children: [],
                     });
+                }
+
+                // Process grandchildren (third level), ensure they have valid permissionBits (permission != 0)
+                for (const grandchild of child.children) {
+                    if (permissionMap.get(grandchild.id) !== 0 || permissionMap.get(grandchild.id) !== undefined) { // Only add grandchildren if they have valid permissions
+                        if (!menuMap.has(grandchild.id)) {
+                            menuMap.set(grandchild.id, {
+                                id: grandchild.id,
+                                name: grandchild.name,
+                                icon: grandchild.icon ?? "DotIcon",
+                                path: slug ? `/${slug}${grandchild.path}` : `/admin${grandchild.path}` || undefined,
+                                parentId: grandchild.parentId || undefined,
+                                groupId: group?.id,
+                                groupName: group?.name,
+                                position: group?.position,
+                                permission: permissionMap.get(grandchild.id), // Only set permission for the grandchild if it's valid
+                                children: [],
+                            });
+                        }
+                    }
                 }
             }
         }
     }
 
-    // Second pass: build the hierarchy
+    //------------------------------ Build Hierarchy -------------------------------
+
     const groupsMap = new Map<number, MenuItem[]>();
 
     for (const [menuId, menu] of menuMap) {
@@ -192,34 +199,19 @@ export async function getUserModules(tenantId: number | null, roleId: number): P
             continue;
         }
 
-        // Find the parent in our map and add as child
+        // Find the parent in our map and add as child only if valid permissions exist
         const parent = menuMap.get(menu.parentId);
-        if (parent) {
+        if (parent && parent.permission && menu.permission) {
+            // Only add the menu to its parent's children if both parent and child have valid permissions
             parent.children.push(menu);
         }
+
+        // Filter children with invalid permissions (permission = 0)
+        menu.children = menu.children.filter(child => child.permission !== 0);
     }
 
-    // Third pass: handle any remaining hierarchy (shouldn't be needed with the optimized query)
-    for (const rp of rolePermissions) {
-        const menu = rp.menus;
-        if (!menu.parentId) continue;
+    //------------------------------ Organize and Sort -------------------------------
 
-        for (const child of menu.children) {
-            const parentInMap = menuMap.get(child.id);
-            if (parentInMap) {
-                for (const grandchild of child.children) {
-                    if (menuMap.has(grandchild.id)) {
-                        const existing = parentInMap.children.find(c => c.id === grandchild.id);
-                        if (!existing) {
-                            parentInMap.children.push(menuMap.get(grandchild.id)!);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    // Organize by groups and sort
     return Array.from(groupsMap.entries())
         .map(([groupId, modules]) => {
             // Find the group info from any menu in this group

@@ -3,16 +3,10 @@
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { ChevronDown, ChevronRight, Eye, Edit, Trash2, Lock } from "lucide-react"
+import { AlertTriangle, ChevronDown, ChevronRight, Lock } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { FlattenedMenuItem, PERMISSION_BITS } from "./role-permission-types"
-
-const permissionConfig = [
-    { key: "READ", label: "Read", icon: Eye, color: "bg-blue-100 text-blue-700" },
-    { key: "WRITE", label: "Write", icon: Edit, color: "bg-green-100 text-green-700" },
-    { key: "UPDATE", label: "Update", icon: Edit, color: "bg-yellow-100 text-yellow-700" },
-    { key: "DELETE", label: "Delete", icon: Trash2, color: "bg-red-100 text-red-700" },
-] as const
+import { permissionConfig } from "@/constants/permissions"
 
 type Props = {
     item: FlattenedMenuItem
@@ -24,6 +18,7 @@ type Props = {
     onToggleAllForRow: (id: number, on: boolean) => void
     isAllChecked: (id: number) => boolean
     isInherited: (item: FlattenedMenuItem, bit: number) => boolean
+    canEnablePermission: (item: FlattenedMenuItem, bit: number) => boolean
 }
 
 export function PermissionRow({
@@ -36,6 +31,7 @@ export function PermissionRow({
     onToggleAllForRow,
     isAllChecked,
     isInherited,
+    canEnablePermission,
 }: Props) {
     const isParent = !!item.children?.length
 
@@ -62,6 +58,14 @@ export function PermissionRow({
 
     const activePermissions = getActivePermissions(item.id)
 
+    const canEnableAllPermissions = () => {
+        if (!item.parentId) return true
+
+        const fullMask = Object.values(PERMISSION_BITS).reduce((a, b) => a | b, 0)
+        const parentPermissions = permissions[item.parentId] || 0
+        return (parentPermissions & fullMask) === fullMask
+    }
+
     return (
         <div
             className={cn(
@@ -78,7 +82,7 @@ export function PermissionRow({
                 )}
                 <span className="font-medium text-gray-900">{highlightText(item.name, searchTerm)}</span>
                 {activePermissions.length > 0 && (
-                    <div className="hidden lg:flex gap-1 md:flex-wrap lg:flex-nowrap">
+                    <div className="flex gap-1">
                         {activePermissions.map((perm) => (
                             <Badge key={perm.key} variant="secondary" className={cn("text-xs", perm.color)}>
                                 {perm.label}
@@ -90,10 +94,18 @@ export function PermissionRow({
 
             {/* All Permissions Toggle */}
             <div className="col-span-2 flex items-center justify-center">
-                <Checkbox
-                    checked={isAllChecked(item.id)}
-                    onCheckedChange={(checked) => onToggleAllForRow(item.id, !!checked)}
-                />
+                <div className="relative">
+                    <Checkbox
+                        checked={isAllChecked(item.id)}
+                        disabled={!canEnableAllPermissions() && !isAllChecked(item.id)}
+                        onCheckedChange={(checked) => onToggleAllForRow(item.id, !!checked)}
+                        className={cn(!canEnableAllPermissions() && !isAllChecked(item.id) && "opacity-50")}
+                        title={!canEnableAllPermissions() && !isAllChecked(item.id) ? "Parent must have all permissions first" : ""}
+                    />
+                    {!canEnableAllPermissions() && !isAllChecked(item.id) && (
+                        <AlertTriangle className="h-3 w-3 absolute -top-1 -right-1 text-amber-500" />
+                    )}
+                </div>
             </div>
 
             {/* Individual Permissions */}
@@ -102,17 +114,28 @@ export function PermissionRow({
                     const bit = PERMISSION_BITS[config.key]
                     const inherited = isInherited(item, bit)
                     const checked = !!(permissions[item.id] & bit)
+                    const canEnable = canEnablePermission(item, bit)
 
                     return (
                         <div key={config.key} className="flex items-center justify-center">
                             <div className="relative">
                                 <Checkbox
                                     checked={checked || inherited}
-                                    disabled={inherited}
+                                    disabled={inherited || (!canEnable && !checked)}
                                     onCheckedChange={() => onTogglePermission(item.id, bit)}
-                                    className={cn(inherited && "opacity-50")}
+                                    className={cn((inherited || (!canEnable && !checked)) && "opacity-50")}
+                                    title={
+                                        inherited
+                                            ? "Inherited from parent"
+                                            : !canEnable && !checked
+                                                ? "Parent must have this permission first"
+                                                : ""
+                                    }
                                 />
                                 {inherited && <Lock className="h-3 w-3 absolute -top-1 -right-1 text-gray-400" />}
+                                {!canEnable && !checked && !inherited && (
+                                    <AlertTriangle className="h-3 w-3 absolute -top-1 -right-1 text-amber-500" />
+                                )}
                             </div>
                         </div>
                     )

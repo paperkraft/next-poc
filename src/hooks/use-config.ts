@@ -3,15 +3,19 @@ import { atomWithStorage } from 'jotai/utils';
 
 import { BaseColor } from '@/registry/registry-base-colors';
 import { Style } from '@/registry/registry-styles';
-import { ModuleNode } from '@/types/modules';
+import { GroupedMenus } from '@/lib/menus';
 
 type UserConfig = {
     id: string,
     name: string,
     email: string,
-    roleId: string,
-    permissions: number,
-    modules: ModuleNode[]
+    roleId: number,
+    role: string,
+    globalRoles: string[],
+    slug: string,
+    tenantId: number,
+    tenantName: string,
+    modules: GroupedMenus[]
 } | null;
 
 export type LayoutType = {
@@ -34,7 +38,7 @@ const themeAtom = atomWithStorage<ThemeConfig>("theme-config", {
     lang: "en",
     style: "default",
     font: "font-inter",
-    theme: "zinc",
+    theme: "blue",
     mode: "system",
     layout: "vertical",
     content: "compact",

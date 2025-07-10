@@ -2,16 +2,10 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ChevronDown, ChevronRight, Users, Eye, Edit, Trash2 } from "lucide-react"
+import { ChevronDown, ChevronRight, Users } from "lucide-react"
 import { PermissionRow } from "./permission-row"
 import { FlattenedMenuItem } from "./role-permission-types"
-
-const permissionConfig = [
-    { key: "READ", label: "Read", icon: Eye, color: "bg-blue-100 text-blue-700" },
-    { key: "WRITE", label: "Write", icon: Edit, color: "bg-green-100 text-green-700" },
-    { key: "UPDATE", label: "Update", icon: Edit, color: "bg-yellow-100 text-yellow-700" },
-    { key: "DELETE", label: "Delete", icon: Trash2, color: "bg-red-100 text-red-700" },
-] as const
+import { permissionConfig } from "@/constants/permissions"
 
 type Props = {
     groupName: string
@@ -27,6 +21,7 @@ type Props = {
     onToggleAllForRow: (id: number, on: boolean) => void
     isAllChecked: (id: number) => boolean
     isInherited: (item: FlattenedMenuItem, bit: number) => boolean
+    canEnablePermission: (item: FlattenedMenuItem, bit: number) => boolean
 }
 
 export function PermissionGroup({
@@ -43,6 +38,7 @@ export function PermissionGroup({
     onToggleAllForRow,
     isAllChecked,
     isInherited,
+    canEnablePermission,
 }: Props) {
     return (
         <Card className="overflow-hidden">
@@ -95,6 +91,7 @@ export function PermissionGroup({
                                     onToggleAllForRow={onToggleAllForRow}
                                     isAllChecked={isAllChecked}
                                     isInherited={isInherited}
+                                    canEnablePermission={canEnablePermission}
                                 />
                             )
                         })}

@@ -40,7 +40,7 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
             }
 
             <SidebarInset>
-                <Header />
+                {/* <Header /> */}
                 <div className={cn("grid grid-rows p-4 gap-4 w-full pb-10", { "container px-8": config.content === 'compact' })}>
                     {children}
                 </div>

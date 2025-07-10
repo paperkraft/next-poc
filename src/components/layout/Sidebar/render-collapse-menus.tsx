@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { ThemeWrapper } from "../theme-wrapper";
 import RenderCollapseDropdownsMenus from "./render-collapse-dropdown";
+import { useMounted } from "@/hooks/use-mounted";
 
 interface CollapseMenusProps {
     item: menuType,
@@ -31,6 +32,8 @@ export const RenderCollapseMenus = React.memo(({ item, active, submenu, dropdown
     const path = usePathname();
     const hasSubmenu = item?.submenu?.length > 0;
     const isActive = useMemo(() => checkIsActive(item, path), [item, path]);
+
+    const mounted = useMounted()
 
     const handleClick = () => {
         if (isMobile) toggleSidebar();
@@ -55,6 +58,9 @@ export const RenderCollapseMenus = React.memo(({ item, active, submenu, dropdown
             {asChild ? <Link href={item.url}>{renderIcon()}</Link> : renderIcon()}
         </SidebarMenuButton>
     );
+
+
+    if (!mounted) return null
 
     if (!hasSubmenu) {
         return (

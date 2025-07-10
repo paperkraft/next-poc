@@ -26,6 +26,7 @@ type HeaderProps = {
 const Header = React.memo(({ menus = [], currentTenant, tenants = [] }: HeaderProps) => {
     const mounted = useMounted();
     const { data: session } = useSession();
+
     const { isMobile } = useSidebar();
     const [config] = themeConfig();
     const isHorizontal = config.layout === 'horizontal';

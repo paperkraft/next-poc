@@ -275,6 +275,14 @@ async function main() {
       data: { name: "Home", tenantId: tenant.id, position: 1 },
     });
 
+    const managementGroup = await prisma.menuGroup.create({
+      data: { name: "Management", tenantId: tenant.id, position: 2 },
+    });
+
+    const settingsGroup = await prisma.menuGroup.create({
+      data: { name: "Settings", tenantId: tenant.id, position: 3 },
+    });
+
     await prisma.menuItem.create({
       data: {
         name: "Dashboard",
@@ -283,14 +291,6 @@ async function main() {
         groupId: homeGroup.id,
         tenantId: tenant.id,
       },
-    });
-
-    const managementGroup = await prisma.menuGroup.create({
-      data: { name: "Management", tenantId: tenant.id, position: 2 },
-    });
-
-    const settingsGroup = await prisma.menuGroup.create({
-      data: { name: "Settings", tenantId: tenant.id, position: 3 },
     });
 
     // For settings menus
@@ -508,7 +508,6 @@ const tenantMgmtMenus = [
       { name: "Fee Management", path: "/fees" },
       { name: "Scholarships", path: "/scholarships" },
       { name: "Payroll", path: "/payroll" },
-      { name: "Budgeting", path: "/budget" },
     ],
   },
 ];
@@ -527,8 +526,8 @@ const tenantSettingMenus = [
     name: "System",
     icon: "Settings",
     children: [
-      { name: "Menu Management", path: "/admin/menus" },
-      { name: "Tenant Settings", path: "/admin/settings" },
+      { name: "Widgets Settings", path: "/admin/widgets" },
+      { name: "Institute Settings", path: "/admin/settings" },
       { name: "Audit Logs", path: "/admin/audit" },
     ],
   },

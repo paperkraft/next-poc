@@ -17,17 +17,19 @@ import { RenderCollapseMenus } from "./render-collapse-menus";
 import { RenderCollapseSubmenus } from "./render-collapse-submenu";
 import SidebarHeaderContent from "./sidebar-header";
 import SidebarFooterContent from "./sidebar-footer";
+import { useMounted } from "@/hooks/use-mounted";
 
 
 const CollapseMenus = React.memo(() => {
     const path = usePathname();
     const [config] = themeConfig();
+    const mounted = useMounted()
 
     const { data, status } = useSession();
-    
+
     const [query, setQuery] = React.useState<string>('');
     const debouncedQuery = useDebounce(query, 300);
-    
+
     const isSearching = query.length > 0;
     const isDual = config.layout === "dual-menu";
 
@@ -64,9 +66,11 @@ const CollapseMenus = React.memo(() => {
         const lowerQuery = debouncedQuery.toLowerCase();
         return submenus.filter((item) => (
             item.title.toLowerCase().includes(lowerQuery) ||
-            searchSubmenu(item.submenu || [] , lowerQuery)
+            searchSubmenu(item.submenu || [], lowerQuery)
         ))
     }, [debouncedQuery, submenus, searchSubmenu]);
+
+    if (!mounted) return null
 
     return (
         <>
@@ -84,7 +88,7 @@ const CollapseMenus = React.memo(() => {
                                 </SidebarGroupLabel>
                                 <SidebarMenu>
                                     {group.map((item, index) => (
-                                        <RenderCollapseMenus key={index} item={item} active={setTitle} submenu={setSubmenus} dropdown={!isDual}/>
+                                        <RenderCollapseMenus key={index} item={item} active={setTitle} submenu={setSubmenus} dropdown={!isDual} />
                                     ))}
                                 </SidebarMenu>
                             </SidebarGroup>

@@ -10,6 +10,7 @@ import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { themeConfig } from "@/hooks/use-config";
 import { usePathname } from "next/navigation";
+import { useMounted } from "@/hooks/use-mounted";
 interface MenuItem {
     title: string;
     url?: string;
@@ -22,6 +23,7 @@ const DropdownMenu = ({ items }: { items: MenuItem[] }) => {
     const timeouts = useRef<Record<string, NodeJS.Timeout | null>>({});
     const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
     const path = usePathname();
+    const mounted = useMounted();
 
     const openMenu = (path: string) => {
         if (timeouts.current[path]) {
@@ -128,6 +130,7 @@ const DropdownMenu = ({ items }: { items: MenuItem[] }) => {
         });
     };
 
+    if (!mounted) return null
     return <nav className="flex space-x-4">{renderMenuItems(items)}</nav>;
 };
 

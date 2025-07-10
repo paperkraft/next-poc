@@ -14,7 +14,6 @@ import { cn } from '@/lib/utils';
 
 import TenantMenus from '../layout/Sidebar/tenant/tenant-menus';
 import FooterTag from './FooterTag';
-import { Tenant } from '@prisma/client';
 
 type ContentProps = {
     children: React.ReactNode;
@@ -30,8 +29,6 @@ export default function ContentLayout({ children, currentTenant, menus = [], ten
     const mounted = useMounted();
 
     if (!mounted) return null
-
-    console.log('menus', menus)
 
     return (
         <>

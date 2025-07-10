@@ -8,11 +8,14 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { ChevronRight, DotIcon } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { useMounted } from "@/hooks/use-mounted";
 
 export const RenderCollapseSubmenus = React.memo(({ item, isSearchActive, level }: { item: submenuType, isSearchActive: boolean, level: number }) => {
 
     const { toggleSidebar, isMobile } = useSidebar();
     const path = usePathname();
+
+    const mounted = useMounted()
 
     const hasSubmenu = Boolean(item.submenu?.length);
     const isActive = React.useMemo(() => checkIsActive(item as menuType, path), [item, path]);
@@ -49,6 +52,8 @@ export const RenderCollapseSubmenus = React.memo(({ item, isSearchActive, level 
             </CollapsibleContent>
         </Collapsible>
     )
+
+    if (!mounted) return null
 
     return hasSubmenu ? (
         renderSubmenu()

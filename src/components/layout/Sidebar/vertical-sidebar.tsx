@@ -20,6 +20,7 @@ import { checkIsActive, mapMenu, menuType, submenuType } from './helper';
 import DefaultMenu from './sidebar-default';
 import SidebarSkeleton from './sidebar-skeleton';
 import { useTenant } from '@/context/TenantProvider';
+import { useMounted } from '@/hooks/use-mounted';
 
 const VerticalMenus = React.memo(() => {
 
@@ -124,6 +125,10 @@ export const RenderMenus = React.memo(({ item, isSearchActive }: { item: menuTyp
     const hasSubmenu = item?.submenu?.length > 0;
     const isActive = useMemo(() => checkIsActive(item, path), [item, path]);
     const shouldExpand = isSearchActive ? true : isActive;
+
+    const mounted = useMounted();
+
+    if (!mounted) return null
 
     if (!hasSubmenu) {
         return (

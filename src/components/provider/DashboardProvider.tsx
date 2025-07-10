@@ -216,8 +216,6 @@ export function DashboardProvider({
                 getAvailableWidgets(tenantSlug, userId)
             ]);
 
-            console.log('Dashboard initialized:', { userWidgets, availableWidgets });
-
             dispatch({
                 type: 'INITIALIZE_SUCCESS',
                 payload: { userWidgets, availableWidgets }

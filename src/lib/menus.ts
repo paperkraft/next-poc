@@ -19,6 +19,41 @@ export async function getTenantBySlug(tenantSlug: string) {
     return tenant
 }
 
+export async function getRoleId(tenantId: number) {
+    const adminRole = await prisma.role.findFirst({
+        where: {
+            tenantId: +tenantId,
+            name: {
+                contains: 'admin',  // Match roles whose name contains 'admin'
+                mode: 'insensitive',  // Case-insensitive match (optional, can be removed if not needed)
+            },
+        }
+    })
+
+    if (!adminRole) {
+        throw new Error('Admin role not found for this tenant');
+    }
+
+    // Return the roleId of the found admin role
+    return adminRole.id;
+}
+
+export async function getRoleIdWithEmail(email: string) {
+    const adminRole = await prisma.user.findFirst({
+        where: { email },
+        select: {
+            roleId: true
+        }
+    })
+
+    if (!adminRole) {
+        throw new Error('Admin role not found for this tenant');
+    }
+
+    // Return the roleId of the found admin role
+    return adminRole.roleId;
+}
+
 export type MenuItem = {
     id: number;
     name: string;
@@ -55,6 +90,11 @@ export async function getUserModules(tenantId: number | null, roleId: number): P
         },
         select: {
             permissionBits: true,
+            tenant: {
+                select: {
+                    slug: true
+                }
+            },
             menus: {
                 select: {
                     id: true,
@@ -87,18 +127,16 @@ export async function getUserModules(tenantId: number | null, roleId: number): P
                                     parentId: true,
                                     groupId: true,
                                 },
+                                where: { isActive: true }, // Add filter for active children
                                 orderBy: { id: 'asc' }
                             },
                         },
+                        where: { isActive: true }, // Add filter for active children
                         orderBy: { id: 'asc' }
                     },
                 },
             },
-            tenant: {
-                select: {
-                    slug: true
-                }
-            }
+
         },
         orderBy: {
             menus: {
@@ -142,42 +180,38 @@ export async function getUserModules(tenantId: number | null, roleId: number): P
             });
         }
 
-        // Process children (second level), ensure they have valid permissionBits (permission != 0)
+        // Process children (second level)
         for (const child of menu.children) {
-            if (permissionMap.get(child.id) !== 0 || permissionMap.get(child.id) !== undefined) { // Only add children if they have valid permissions
-                if (!menuMap.has(child.id)) {
-                    menuMap.set(child.id, {
-                        id: child.id,
-                        name: child.name,
-                        icon: child.icon ?? "DotIcon",
-                        path: slug ? `/${slug}${child.path}` : `/admin${child.path}` || undefined,
-                        parentId: child.parentId || undefined,
+            if (!menuMap.has(child.id)) {
+                menuMap.set(child.id, {
+                    id: child.id,
+                    name: child.name,
+                    icon: child.icon ?? "DotIcon",
+                    path: slug ? `/${slug}${child.path}` : `/admin${child.path}` || undefined,
+                    parentId: child.parentId || undefined,
+                    groupId: group?.id,
+                    groupName: group?.name,
+                    position: group?.position,
+                    permission: permissionMap.get(child.id), // Only set permission for the child if it's valid
+                    children: [],
+                });
+            }
+
+            // Process grandchildren (third level)
+            for (const grandchild of child.children) {
+                if (!menuMap.has(grandchild.id)) {
+                    menuMap.set(grandchild.id, {
+                        id: grandchild.id,
+                        name: grandchild.name,
+                        icon: grandchild.icon ?? "DotIcon",
+                        path: slug ? `/${slug}${grandchild.path}` : `/admin${grandchild.path}` || undefined,
+                        parentId: grandchild.parentId || undefined,
                         groupId: group?.id,
                         groupName: group?.name,
                         position: group?.position,
-                        permission: permissionMap.get(child.id), // Only set permission for the child if it's valid
+                        permission: permissionMap.get(grandchild.id), // Only set permission for the grandchild if it's valid
                         children: [],
                     });
-                }
-
-                // Process grandchildren (third level), ensure they have valid permissionBits (permission != 0)
-                for (const grandchild of child.children) {
-                    if (permissionMap.get(grandchild.id) !== 0 || permissionMap.get(grandchild.id) !== undefined) { // Only add grandchildren if they have valid permissions
-                        if (!menuMap.has(grandchild.id)) {
-                            menuMap.set(grandchild.id, {
-                                id: grandchild.id,
-                                name: grandchild.name,
-                                icon: grandchild.icon ?? "DotIcon",
-                                path: slug ? `/${slug}${grandchild.path}` : `/admin${grandchild.path}` || undefined,
-                                parentId: grandchild.parentId || undefined,
-                                groupId: group?.id,
-                                groupName: group?.name,
-                                position: group?.position,
-                                permission: permissionMap.get(grandchild.id), // Only set permission for the grandchild if it's valid
-                                children: [],
-                            });
-                        }
-                    }
                 }
             }
         }
@@ -228,39 +262,4 @@ export async function getUserModules(tenantId: number | null, roleId: number): P
             };
         })
         .sort((a, b) => a.position - b.position);
-}
-
-export async function getRoleId(tenantId: number) {
-    const adminRole = await prisma.role.findFirst({
-        where: {
-            tenantId: +tenantId,
-            name: {
-                contains: 'admin',  // Match roles whose name contains 'admin'
-                mode: 'insensitive',  // Case-insensitive match (optional, can be removed if not needed)
-            },
-        }
-    })
-
-    if (!adminRole) {
-        throw new Error('Admin role not found for this tenant');
-    }
-
-    // Return the roleId of the found admin role
-    return adminRole.id;
-}
-
-export async function getRoleIdWithEmail(email: string) {
-    const adminRole = await prisma.user.findFirst({
-        where: { email },
-        select: {
-            roleId: true
-        }
-    })
-
-    if (!adminRole) {
-        throw new Error('Admin role not found for this tenant');
-    }
-
-    // Return the roleId of the found admin role
-    return adminRole.roleId;
 }

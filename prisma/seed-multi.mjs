@@ -28,76 +28,43 @@ async function main() {
   });
 
   console.log("📁 Seeding System Admin menu group...");
-  const sysAdminGroup = await prisma.menuGroup.create({
-    data: {
-      name: "System Administration",
-      tenantId: null,
-      position: 1,
-    },
-  });
 
-  const sysAdminMasterGroup = await prisma.menuGroup.create({
-    data: {
-      name: "Master",
-      tenantId: null,
-      position: 2,
-    },
-  });
+  const sysAdminGroups = [
+    { name: "System Administration", position: 1 },
+    { name: "Master", position: 2 },
+  ]
 
-  const systemAdminMenus = [
-    {
-      name: "Dashboard",
-      path: "/dashboard",
-      icon: "BarChart3",
-      children: [],
-    },
-    {
-      name: "Tenant Management",
-      icon: "Building2",
-      children: [
-        { name: "All Tenants", path: "/tenants" },
-        { name: "Create Tenant", path: "/tenants/create" },
-        { name: "Tenant Analytics", path: "/tenants/analytics" },
-      ],
-    },
-    {
-      name: "System Users",
-      icon: "Users",
-      children: [
-        { name: "All Users", path: "/users" },
-        { name: "Global Roles", path: "/global-roles" },
-        { name: "User Analytics", path: "/users/analytics" },
-      ],
-    },
-    {
-      name: "System Settings",
-      icon: "Settings",
-      children: [
-        { name: "Global Settings", path: "/settings" },
-        { name: "System Permissions", path: "/permissions" },
-        { name: "Feature Flags", path: "/features" },
-      ],
-    },
-    {
-      name: "Audit & Monitoring",
-      icon: "Activity",
-      children: [
-        { name: "Audit Logs", path: "/audit-logs" },
-        { name: "System Health", path: "/health" },
-        { name: "Performance", path: "/performance" },
-      ],
-    },
-  ];
+  for (const g of sysAdminGroups) {
+    await prisma.menuGroup.create({
+      data: {
+        name: g.name,
+        position: g.position,
+        tenantId: null
+      }
+    })
+  }
 
-  const defaultMaster = [
-    {
-      name: "Module",
-      path: "/master/module",
-      icon: "LayoutGrid",
-    },
-    { name: "Role", path: "/master/role", icon: "User2" },
-    { name: "Groups", path: "/master/groups", icon: "Grid" },
-  ];
+  const allSysAdminGroups = await prisma.menuGroup.findMany({
+    where: { tenantId: null }
+  })
+
+  // const sysAdminGroup = await prisma.menuGroup.create({
+  //   data: {
+  //     name: "System Administration",
+  //     tenantId: null,
+  //     position: 1,
+  //   },
+  // });
+
+  // const sysAdminMasterGroup = await prisma.menuGroup.create({
+  //   data: {
+  //     name: "Master",
+  //     tenantId: null,
+  //     position: 2,
+  //   },
+  // });
+
+
 
   console.log("🛠️ Seeding System default Master menus...");
 
@@ -107,7 +74,7 @@ async function main() {
         name: mod.name,
         path: mod.path,
         icon: mod.icon,
-        groupId: sysAdminMasterGroup.id,
+        groupId: allSysAdminGroups[1].id,
         tenantId: null,
       },
     });
@@ -122,7 +89,7 @@ async function main() {
         path: undefined,
         icon: parent.icon,
         tenantId: null,
-        groupId: sysAdminGroup.id,
+        groupId: allSysAdminGroups[0].id,
       },
     });
 
@@ -133,7 +100,7 @@ async function main() {
           path: child.path,
           icon: undefined,
           tenantId: null,
-          groupId: sysAdminGroup.id,
+          groupId: allSysAdminGroups[0].id,
           parentId: parentItem.id,
         },
       });
@@ -187,7 +154,7 @@ async function main() {
       type: "SCHOOL",
       adminUser: {
         email: "admin@sunrise.edu",
-        password: "admin123",
+        password: "admin",
         firstName: "Ajit",
         lastName: "Patil",
       },
@@ -200,7 +167,7 @@ async function main() {
       type: "COLLEGE",
       adminUser: {
         email: "admin@greenvalley.edu",
-        password: "admin123",
+        password: "admin",
         firstName: "Neha",
         lastName: "Patil",
       },
@@ -271,53 +238,48 @@ async function main() {
 
     // Create groups
 
-    const homeGroup = await prisma.menuGroup.create({
-      data: { name: "Home", tenantId: tenant.id, position: 1 },
-    });
+    // const homeGroup = await prisma.menuGroup.create({
+    //   data: { name: "Home", tenantId: tenant.id, position: 1 },
+    // });
 
-    const managementGroup = await prisma.menuGroup.create({
-      data: { name: "Management", tenantId: tenant.id, position: 2 },
-    });
+    // const managementGroup = await prisma.menuGroup.create({
+    //   data: { name: "Management", tenantId: tenant.id, position: 2 },
+    // });
 
-    const settingsGroup = await prisma.menuGroup.create({
-      data: { name: "Settings", tenantId: tenant.id, position: 3 },
-    });
+    // const settingsGroup = await prisma.menuGroup.create({
+    //   data: { name: "Settings", tenantId: tenant.id, position: 3 },
+    // });
 
+    const groups = [
+      { name: "Home", position: 1 },
+      { name: "Management", position: 2 },
+      { name: "Settings", position: 3 },
+    ]
+
+    for (const g of groups) {
+      await prisma.menuGroup.create({
+        data: {
+          name: g.name,
+          position: g.position,
+          tenantId: tenant.id
+        }
+      })
+    }
+
+    const allGroups = await prisma.menuGroup.findMany({
+      where: { tenantId: tenant.id }
+    })
+
+    // home
     await prisma.menuItem.create({
       data: {
         name: "Dashboard",
         path: "/dashboard",
         icon: "BarChart3",
-        groupId: homeGroup.id,
+        groupId: allGroups[0].id,
         tenantId: tenant.id,
       },
     });
-
-    // For settings menus
-    for (const parent of tenantSettingMenus) {
-      const parentItem = await prisma.menuItem.create({
-        data: {
-          name: parent.name,
-          path: undefined,
-          icon: parent.icon,
-          tenantId: tenant.id,
-          groupId: settingsGroup.id,
-        },
-      });
-
-      for (const child of parent.children) {
-        await prisma.menuItem.create({
-          data: {
-            name: child.name,
-            path: child.path,
-            icon: undefined,
-            tenantId: tenant.id,
-            groupId: settingsGroup.id,
-            parentId: parentItem.id,
-          },
-        });
-      }
-    }
 
     // For management menus
     for (const parent of tenantMgmtMenus) {
@@ -327,7 +289,7 @@ async function main() {
           path: undefined,
           icon: parent.icon,
           tenantId: tenant.id,
-          groupId: managementGroup.id,
+          groupId: allGroups[1].id,
         },
       });
 
@@ -338,7 +300,33 @@ async function main() {
             path: child.path,
             icon: undefined,
             tenantId: tenant.id,
-            groupId: managementGroup.id,
+            groupId: allGroups[1].id,
+            parentId: parentItem.id,
+          },
+        });
+      }
+    }
+
+    // For settings menus
+    for (const parent of tenantSettingMenus) {
+      const parentItem = await prisma.menuItem.create({
+        data: {
+          name: parent.name,
+          path: undefined,
+          icon: parent.icon,
+          tenantId: tenant.id,
+          groupId: allGroups[2].id,
+        },
+      });
+
+      for (const child of parent.children) {
+        await prisma.menuItem.create({
+          data: {
+            name: child.name,
+            path: child.path,
+            icon: undefined,
+            tenantId: tenant.id,
+            groupId: allGroups[2].id,
             parentId: parentItem.id,
           },
         });
@@ -383,7 +371,7 @@ async function main() {
       await prisma.user.create({
         data: {
           email: `teacher${i}@${t.slug}.edu`,
-          password: await bcrypt.hash("teacher123", 10),
+          password: await bcrypt.hash("teacher", 10),
           isActive: true,
           tenantId: tenant.id,
           roleId: facultyRole.id,
@@ -402,7 +390,7 @@ async function main() {
       await prisma.user.create({
         data: {
           email: `student${i}@${t.slug}.edu`,
-          password: await bcrypt.hash("student123", 10),
+          password: await bcrypt.hash("student", 10),
           isActive: true,
           tenantId: tenant.id,
           roleId: studentRole.id,
@@ -478,6 +466,61 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
+
+const defaultMaster = [
+  {
+    name: "Module",
+    path: "/master/module",
+    icon: "LayoutGrid",
+  },
+  { name: "Role", path: "/master/role", icon: "User2" },
+  { name: "Groups", path: "/master/groups", icon: "Grid" },
+];
+
+const systemAdminMenus = [
+  {
+    name: "Dashboard",
+    path: "/dashboard",
+    icon: "BarChart3",
+    children: [],
+  },
+  {
+    name: "Tenant Management",
+    icon: "Building2",
+    children: [
+      { name: "All Tenants", path: "/tenants" },
+      { name: "Create Tenant", path: "/tenants/create" },
+      { name: "Tenant Analytics", path: "/tenants/analytics" },
+    ],
+  },
+  {
+    name: "System Users",
+    icon: "Users",
+    children: [
+      { name: "All Users", path: "/users" },
+      { name: "Global Roles", path: "/global-roles" },
+      { name: "User Analytics", path: "/users/analytics" },
+    ],
+  },
+  {
+    name: "System Settings",
+    icon: "Settings",
+    children: [
+      { name: "Global Settings", path: "/settings" },
+      { name: "System Permissions", path: "/permissions" },
+      { name: "Feature Flags", path: "/features" },
+    ],
+  },
+  {
+    name: "Audit & Monitoring",
+    icon: "Activity",
+    children: [
+      { name: "Audit Logs", path: "/audit-logs" },
+      { name: "System Health", path: "/health" },
+      { name: "Performance", path: "/performance" },
+    ],
+  },
+];
 
 const tenantMgmtMenus = [
   {

@@ -35,7 +35,7 @@ export function WidgetCard({ widget }: WidgetCardProps) {
     if (!selectedRoleData) return null
 
     return (
-        <Card className={`transition-all ${isSelected ? "ring-2 ring-primary" : ""} ${isAssigned ? "bg-accent/30" : ""}`}>
+        <Card className={`transition-all ${isSelected ? "ring-2 ring-primary" : ""}`}>
             <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                     <div className="flex items-start gap-3">

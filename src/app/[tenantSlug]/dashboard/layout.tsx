@@ -18,7 +18,7 @@ export default async function DashboardRootLayout({ children, params }: Readonly
   return (
     <>
       <DashboardProvider tenantSlug={params.tenantSlug} userId={+session.user.id}>
-        {/* {children} */}
+        {children}
         <div className="p-6">
           <DashboardLayout />
         </div>

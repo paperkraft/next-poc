@@ -7,8 +7,11 @@ import { useDashboard } from '@/components/provider/DashboardProvider'
 import DashboardSettings from './DashboardSettings'
 import { useCallback, useMemo } from 'react'
 import { toast } from 'sonner'
+import { useMounted } from '@/hooks/use-mounted'
 
 export default function DashboardLayout() {
+
+    const mounted = useMounted();
     const {
         userWidgets,
         reorderWidgets,
@@ -103,6 +106,8 @@ export default function DashboardLayout() {
             </div>
         </div>
     )
+
+    if (!mounted) return null
 
     return (
         <div className="space-y-4">

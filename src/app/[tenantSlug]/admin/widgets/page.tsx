@@ -8,12 +8,14 @@ export default async function WidgetAssignmentPage({ params }: { params: { tenan
     ])
 
     return (
-        <div className="container mx-auto p-6">
-            <WidgetRoleAssignmentPanel
-                widgets={widgets}
-                roles={roles}
-                tenantSlug={params.tenantSlug}
-            />
+        <div className="min-h-screen bg-gray-50 rounded-lg">
+            <div className="container mx-auto p-6">
+                <WidgetRoleAssignmentPanel
+                    widgets={widgets}
+                    roles={roles}
+                    tenantSlug={params.tenantSlug}
+                />
+            </div>
         </div>
     )
 }

@@ -13,9 +13,6 @@ export default async function DashboardPage() {
     redirect('/signin')
   }
 
-  // const isAdmin = session.user?.role?.toLowerCase() === "admin" || !!session.user?.globalRoles?.includes('SYSTEM_ADMIN');
-  // const isFaculty = session.user?.role?.toLowerCase() === "faculty"
-
   const role = session?.user?.role
 
   switch (role) {

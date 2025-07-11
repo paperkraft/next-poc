@@ -6,6 +6,8 @@ import { auth } from '@/auth';
 import prisma from '@/lib/prisma';
 import { RoleWidget } from '@prisma/client';
 import { AvailableWidget, FullUserWidget } from '@/types/widget';
+import { redirect } from 'next/navigation';
+import { roleColors } from '@/constants/widget';
 
 export async function getUserWidgets(userId: number): Promise<FullUserWidget[]> {
     const widgets = await prisma.userWidget.findMany({
@@ -324,17 +326,6 @@ function mapToFullUserWidget(widget: any): FullUserWidget {
 
 // -------------------------Tenant Admin panel widgets actions ------------------------------ //
 
-const roleColors = [
-    "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100",
-    "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100",
-    "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
-    "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100",
-    "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100",
-    "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-100",
-    "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-100",
-    "bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-100"
-];
-
 function getRandomColor() {
     const index = Math.floor(Math.random() * roleColors.length);
     return roleColors[index];
@@ -357,24 +348,32 @@ export async function getTenantRoles(tenantSlug: string) {
     return rolesWithColor;
 }
 
-export async function updateRoleWidgetAssignment({
-    tenantSlug,
+export async function updateRoleWidgetAssignmentOld({
     roleId,
     widgetId,
     isAssigned
 }: {
-    tenantSlug: string
     roleId: number
     widgetId: number
     isAssigned: boolean
 }): Promise<{ success: boolean; message?: string }> {
+
+    const session = await auth();
+
+    if (!session) {
+        redirect('/signin')
+    }
+
+    const tenantId = session?.user.tenantId
+    const tenantSlug = session?.user.slug
+
     try {
         return await prisma.$transaction(async (tx) => {
             // 1. Verify the widget belongs to the tenant
             const tenantWidget = await tx.tenantWidget.findFirst({
                 where: {
                     widgetId,
-                    tenant: { slug: tenantSlug }
+                    tenantId
                 }
             });
 
@@ -431,6 +430,7 @@ export async function updateRoleWidgetAssignment({
                         })
                     )
                 );
+
             } else {
                 // Remove from all users with this role
                 await tx.userWidget.deleteMany({
@@ -438,9 +438,13 @@ export async function updateRoleWidgetAssignment({
                         roleWidgetId: roleWidget.id
                     }
                 });
+
+                await tx.roleWidget.deleteMany({
+                    where: { id: roleWidget.id }
+                })
             }
 
-            revalidatePath(`/${tenantSlug}/admin/widgets`, 'page');
+            // revalidatePath(`/${tenantSlug}/admin/widgets`, 'page');
             return { success: true };
         });
     } catch (error) {
@@ -508,4 +512,117 @@ export async function getTenantWidgetsWithAssignments(tenantSlug: string) {
             roles: roleAssignments
         };
     });
+}
+
+export async function updateRoleWidgetAssignment({
+    tenantSlug,
+    roleId,
+    widgetId,
+    isAssigned
+}: {
+    tenantSlug: string
+    roleId: number
+    widgetId: number
+    isAssigned: boolean
+}): Promise<{ success: boolean; message?: string }> {
+    try {
+        return await prisma.$transaction(async (tx) => {
+            // 1. Verify the widget belongs to the tenant
+            const tenantWidget = await tx.tenantWidget.findFirst({
+                where: {
+                    widgetId,
+                    tenant: { slug: tenantSlug }
+                }
+            });
+
+            if (!tenantWidget) {
+                throw new Error('Widget not found for this tenant');
+            }
+
+            if (isAssigned) {
+                // 2. Only create or update RoleWidget if the widget is being assigned (isAssigned = true)
+                const roleWidget = await tx.roleWidget.upsert({
+                    where: {
+                        roleId_widgetId: {
+                            roleId,
+                            widgetId: tenantWidget.id // Use tenantWidget.id instead of widgetId
+                        }
+                    },
+                    create: {
+                        isAssigned,
+                        sortOrder: await tx.roleWidget.count({ where: { roleId } }),
+                        role: { connect: { id: roleId } },
+                        widget: { connect: { id: tenantWidget.id } } // Connect to TenantWidget
+                    },
+                    update: { isAssigned }
+                });
+
+                // 3. Handle user widgets if the widget is assigned
+                const users = await tx.user.findMany({
+                    where: { roleId },
+                    select: { id: true }
+                });
+
+                await Promise.all(
+                    users.map(user =>
+                        tx.userWidget.upsert({
+                            where: {
+                                userId_widgetId: {
+                                    userId: user.id,
+                                    widgetId: tenantWidget.id // Use tenantWidget.id
+                                }
+                            },
+                            create: {
+                                isPinned: false,
+                                isHidden: false,
+                                customSize: 'small',
+                                sortOrder: roleWidget.sortOrder,
+                                user: { connect: { id: user.id } },
+                                widget: { connect: { id: tenantWidget.id } },
+                                roleWidget: { connect: { id: roleWidget.id } }
+                            },
+                            update: {
+                                isHidden: false // Unhide if previously hidden
+                            }
+                        })
+                    )
+                );
+            } else {
+                // 4. If unassigning, only delete related userWidget entries, do not create roleWidget
+                await tx.userWidget.deleteMany({
+                    where: {
+                        widgetId: tenantWidget.id,
+                        roleWidget: {
+                            roleId: roleId
+                        }
+                    }
+                });
+
+                // Optionally, delete the roleWidget if it's no longer needed (when no assignments)
+                const roleWidget = await tx.roleWidget.findFirst({
+                    where: {
+                        roleId,
+                        widgetId: tenantWidget.id
+                    }
+                });
+
+                if (roleWidget && (await tx.roleWidget.count({ where: { widgetId: tenantWidget.id } })) === 1) {
+                    await tx.roleWidget.delete({
+                        where: {
+                            id: roleWidget.id
+                        }
+                    });
+                }
+            }
+
+            // revalidatePath(`/${tenantSlug}/admin/widgets`, 'page');
+            return { success: true };
+        });
+    } catch (error) {
+        console.error('Error updating role widget assignment:', error);
+        return {
+            success: false,
+            message: error instanceof Error ? error.message : 'Failed to update assignment'
+        };
+    }
 }

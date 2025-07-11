@@ -2,7 +2,7 @@
 
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Filter } from "lucide-react"
+import { Search } from "lucide-react"
 import { useWidgetRoleAssignment } from "@/context/widget-role-assignment-context"
 
 function sentenceCase(str: string) {
@@ -10,15 +10,10 @@ function sentenceCase(str: string) {
 }
 
 export function WidgetRoleAssignmentFilters() {
-    const {
-        widgetFilter,
-        roleFilter,
-        selectedCategory,
-        categories,
-        setWidgetFilter,
-        setRoleFilter,
-        setSelectedCategory,
-    } = useWidgetRoleAssignment()
+    const { widgetFilter, selectedCategory, categories, setWidgetFilter, setSelectedCategory, selectedRole } =
+        useWidgetRoleAssignment()
+
+    if (!selectedRole) return null
 
     return (
         <div className="flex flex-col md:flex-row gap-4">
@@ -29,17 +24,6 @@ export function WidgetRoleAssignmentFilters() {
                         placeholder="Search widgets..."
                         value={widgetFilter}
                         onChange={(e) => setWidgetFilter(e.target.value)}
-                        className="pl-10"
-                    />
-                </div>
-            </div>
-            <div className="flex-1">
-                <div className="relative">
-                    <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                    <Input
-                        placeholder="Filter roles..."
-                        value={roleFilter}
-                        onChange={(e) => setRoleFilter(e.target.value)}
                         className="pl-10"
                     />
                 </div>

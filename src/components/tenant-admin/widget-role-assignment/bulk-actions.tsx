@@ -4,15 +4,13 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { Check, X } from "lucide-react"
 import { useWidgetRoleAssignment } from "@/context/widget-role-assignment-context"
 
 export function WidgetRoleAssignmentBulkActions() {
-    const { selectedWidgets, filteredRoles, isUpdating, bulkAssignToRole, handleClearSelection } =
-        useWidgetRoleAssignment()
+    const { selectedWidgets, selectedRoleData, isUpdating, bulkAssign, handleClearSelection } = useWidgetRoleAssignment()
 
-    if (selectedWidgets.length === 0) return null
+    if (selectedWidgets.length === 0 || !selectedRoleData) return null
 
     return (
         <Card>
@@ -21,36 +19,19 @@ export function WidgetRoleAssignmentBulkActions() {
                     <div className="flex items-center gap-4">
                         <Badge variant="secondary">{selectedWidgets.length} widget(s) selected</Badge>
                         <Separator orientation="vertical" className="h-6" />
-                        <span className="text-sm text-muted-foreground">Bulk assign to:</span>
+                        <span className="text-sm text-muted-foreground">
+                            Bulk assign to: <Badge className={selectedRoleData.color}>{selectedRoleData.name}</Badge>
+                        </span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <ScrollArea className="w-96">
-                            <div className="flex items-center gap-2 pb-2">
-                                {filteredRoles.map((role) => (
-                                    <div key={role.id} className="flex items-center gap-1">
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => bulkAssignToRole(role.id, true)}
-                                            disabled={isUpdating}
-                                            className="whitespace-nowrap"
-                                        >
-                                            <Check className="w-3 h-3 mr-1" />
-                                            {role.name}
-                                        </Button>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => bulkAssignToRole(role.id, false)}
-                                            disabled={isUpdating}
-                                        >
-                                            <X className="w-3 h-3" />
-                                        </Button>
-                                    </div>
-                                ))}
-                            </div>
-                            <ScrollBar orientation="horizontal" />
-                        </ScrollArea>
+                        <Button variant="outline" size="sm" onClick={() => bulkAssign(true)} disabled={isUpdating}>
+                            <Check className="w-3 h-3 mr-1" />
+                            Assign Selected
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => bulkAssign(false)} disabled={isUpdating}>
+                            <X className="w-3 h-3 mr-1" />
+                            Unassign Selected
+                        </Button>
                         <Button variant="ghost" size="sm" onClick={handleClearSelection}>
                             Clear
                         </Button>

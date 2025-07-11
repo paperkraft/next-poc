@@ -1,66 +1,56 @@
 "use client"
 
-import { WidgetRoleAssignmentProvider, useWidgetRoleAssignment } from "@/context/widget-role-assignment-context"
-import { WidgetRoleAssignmentHeader } from "./widget-role-assignment/header"
-import { WidgetRoleAssignmentFilters } from "./widget-role-assignment/filters"
-import { WidgetRoleAssignmentBulkActions } from "./widget-role-assignment/bulk-actions"
-import { TableView } from "./widget-role-assignment/views/table-view"
-import { CardsView } from "./widget-role-assignment/views/cards-view"
-import { RolesView } from "./widget-role-assignment/views/roles-view"
-import { WidgetRoleAssignmentEmptyState } from "./widget-role-assignment/empty-state"
-import { WidgetRoleAssignmentSummary } from "./widget-role-assignment/summary"
-import { ReactNode } from "react"
+import {
+    useWidgetRoleAssignment, WidgetRoleAssignmentProvider
+} from '@/context/widget-role-assignment-context';
 
-type Widget = {
-    id: number
-    name: string
-    category: string
-    roles: Array<{
-        roleId: number
-        isAssigned: boolean
-    }>
-}
-
-type Role = {
-    id: number
-    name: string
-    color: string
-}
+import { WidgetRoleAssignmentBulkActions } from './widget-role-assignment/bulk-actions';
+import { WidgetRoleAssignmentEmptyState } from './widget-role-assignment/empty-state';
+import { WidgetRoleAssignmentFilters } from './widget-role-assignment/filters';
+import { WidgetRoleAssignmentHeader } from './widget-role-assignment/header';
+import { Role, Widget } from './widget-role-assignment/role-assignment-types';
+import { RoleSelector } from './widget-role-assignment/role-selector';
+import { WidgetRoleAssignmentSummary } from './widget-role-assignment/summary';
+import { CardsView } from './widget-role-assignment/views/cards-view';
+import { CategoryView } from './widget-role-assignment/views/category-view';
+import { TableView } from './widget-role-assignment/views/table-view';
 
 function WidgetRoleAssignmentContent() {
-    const { viewMode } = useWidgetRoleAssignment()
+    const { viewMode, selectedRole } = useWidgetRoleAssignment()
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col gap-4">
-                <WidgetRoleAssignmentHeader />
-                <WidgetRoleAssignmentFilters />
-            </div>
+            <WidgetRoleAssignmentHeader />
+            <RoleSelector />
 
-            <WidgetRoleAssignmentBulkActions />
+            {selectedRole && (
+                <>
+                    <WidgetRoleAssignmentFilters />
+                    <WidgetRoleAssignmentBulkActions />
+                </>
+            )}
 
             <div className="min-h-[360px]">
                 {viewMode === "table" && <TableView />}
                 {viewMode === "cards" && <CardsView />}
-                {viewMode === "roles" && <RolesView />}
+                {viewMode === "category" && <CategoryView />}
                 <WidgetRoleAssignmentEmptyState />
             </div>
 
-            <WidgetRoleAssignmentSummary />
+            {selectedRole && <WidgetRoleAssignmentSummary />}
         </div>
     )
 }
 
 interface WidgetRoleAssignmentPanelProps {
-    // children: ReactNode
-    initialWidgets: Widget[]
-    initialRoles: Role[]
     tenantSlug: string
+    widgets: Widget[]
+    roles: Role[]
 }
 
-export function WidgetRoleAssignmentPanel(props: WidgetRoleAssignmentPanelProps) {
+export function WidgetRoleAssignmentPanel({ widgets, roles, tenantSlug }: WidgetRoleAssignmentPanelProps) {
     return (
-        <WidgetRoleAssignmentProvider {...props}>
+        <WidgetRoleAssignmentProvider initialWidgets={widgets} roles={roles} tenantSlug={tenantSlug}>
             <WidgetRoleAssignmentContent />
         </WidgetRoleAssignmentProvider>
     )

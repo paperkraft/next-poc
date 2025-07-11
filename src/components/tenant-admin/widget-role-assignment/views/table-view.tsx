@@ -4,18 +4,21 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
 import { useWidgetRoleAssignment } from "@/context/widget-role-assignment-context"
+import { successBadge } from "@/constants/widget"
 
 export function TableView() {
     const {
         filteredWidgets,
-        filteredRoles,
         selectedWidgets,
+        selectedRoleData,
         isUpdating,
         handleSelectAll,
         toggleWidgetSelection,
         toggleAssignment,
         getAssignmentStatus,
     } = useWidgetRoleAssignment()
+
+    if (!selectedRoleData) return null
 
     return (
         <div className="overflow-x-auto">
@@ -28,21 +31,21 @@ export function TableView() {
                                 onCheckedChange={() => handleSelectAll(filteredWidgets)}
                             />
                         </th>
-                        <th className="px-4 py-3 text-left min-w-[200px] sticky left-0 bg-background">Widget</th>
-                        {filteredRoles.map((role) => (
-                            <th key={role.id} className="px-4 py-3 text-center min-w-[120px]">
-                                <Badge variant="secondary" className={role.color}>
-                                    {role.name}
-                                </Badge>
-                            </th>
-                        ))}
+                        <th className="px-4 py-3 text-left min-w-[200px]">Widget</th>
+                        <th className="px-4 py-3 text-center">Category</th>
+                        <th className="px-4 py-3 text-center">Status</th>
+                        <th className="px-4 py-3 text-center">
+                            <Badge className={selectedRoleData.color}>{selectedRoleData.name}</Badge>
+                        </th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
                     {filteredWidgets.map((widget) => {
                         const isSelected = selectedWidgets.includes(widget.id)
+                        const isAssigned = getAssignmentStatus(widget)
+
                         return (
-                            <tr key={widget.id} className={isSelected ? "bg-accent/50" : undefined}>
+                            <tr key={widget.id} className={`${isSelected ? "bg-accent/50" : ""} ${isAssigned ? "bg-accent/20" : ""}`}>
                                 <td className="px-4 py-4">
                                     <Checkbox
                                         checked={isSelected}
@@ -50,21 +53,26 @@ export function TableView() {
                                         disabled={isUpdating}
                                     />
                                 </td>
-                                <td className="px-4 py-4 sticky left-0 bg-background">
-                                    <div>
+                                <td className="px-4 py-4">
+                                    <div className="flex items-center gap-2">
                                         <div className="font-medium">{widget.name}</div>
-                                        <div className="text-sm text-muted-foreground">{widget.category}</div>
                                     </div>
                                 </td>
-                                {filteredRoles.map((role) => (
-                                    <td key={role.id} className="px-4 py-4 text-center">
-                                        <Switch
-                                            checked={getAssignmentStatus(widget, role.id)}
-                                            onCheckedChange={(checked) => toggleAssignment(widget.id, role.id, checked)}
-                                            disabled={isUpdating}
-                                        />
-                                    </td>
-                                ))}
+                                <td className="px-4 py-4 text-center">
+                                    <Badge variant="outline">{widget.category}</Badge>
+                                </td>
+                                <td className="px-4 py-4 text-center">
+                                    <Badge variant={isAssigned ? "default" : "secondary"} className={isAssigned ? successBadge : ""}>
+                                        {isAssigned ? "Assigned" : "Not Assigned"}
+                                    </Badge>
+                                </td>
+                                <td className="px-4 py-4 text-center">
+                                    <Switch
+                                        checked={isAssigned}
+                                        onCheckedChange={(checked) => toggleAssignment(widget.id, checked)}
+                                        disabled={isUpdating}
+                                    />
+                                </td>
                             </tr>
                         )
                     })}

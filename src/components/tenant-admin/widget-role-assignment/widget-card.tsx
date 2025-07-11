@@ -5,8 +5,9 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { useWidgetRoleAssignment } from "@/context/widget-role-assignment-context"
+import { successBadge } from "@/constants/widget"
 
-interface WidgetRoleCardProps {
+interface WidgetCardProps {
     widget: {
         id: number
         name: string
@@ -18,23 +19,23 @@ interface WidgetRoleCardProps {
     }
 }
 
-export function WidgetRoleCard({ widget }: WidgetRoleCardProps) {
+export function WidgetCard({ widget }: WidgetCardProps) {
     const {
         selectedWidgets,
-        filteredRoles,
-        roles,
+        selectedRoleData,
         isUpdating,
         toggleWidgetSelection,
         toggleAssignment,
         getAssignmentStatus,
-        getAssignedRolesCount,
     } = useWidgetRoleAssignment()
 
     const isSelected = selectedWidgets.includes(widget.id)
-    const assignedCount = getAssignedRolesCount(widget)
+    const isAssigned = getAssignmentStatus(widget)
+
+    if (!selectedRoleData) return null
 
     return (
-        <Card className={`transition-all ${isSelected ? "ring-2 ring-primary" : ""}`}>
+        <Card className={`transition-all ${isSelected ? "ring-2 ring-primary" : ""} ${isAssigned ? "bg-accent/30" : ""}`}>
             <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                     <div className="flex items-start gap-3">
@@ -44,31 +45,30 @@ export function WidgetRoleCard({ widget }: WidgetRoleCardProps) {
                             disabled={isUpdating}
                         />
                         <div>
-                            <CardTitle className="text-base">{widget.name}</CardTitle>
+                            <CardTitle className="text-base flex items-center gap-2">
+                                {widget.name}
+                            </CardTitle>
                             <Badge variant="outline" className="mt-1">
                                 {widget.category}
                             </Badge>
                         </div>
                     </div>
-                    <Badge variant="secondary">
-                        {assignedCount}/{roles.length} roles
+                    <Badge variant={isAssigned ? "default" : "secondary"} className={isAssigned ? successBadge : ""}>
+                        {isAssigned ? "Assigned" : "Not Assigned"}
                     </Badge>
                 </div>
             </CardHeader>
             <CardContent>
-                <div className="space-y-3">
-                    {filteredRoles.map((role) => (
-                        <div key={role.id} className="flex items-center justify-between">
-                            <Badge variant="outline" className={`${role.color} text-xs`}>
-                                {role.name}
-                            </Badge>
-                            <Switch
-                                checked={getAssignmentStatus(widget, role.id)}
-                                onCheckedChange={(checked) => toggleAssignment(widget.id, role.id, checked)}
-                                disabled={isUpdating}
-                            />
-                        </div>
-                    ))}
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium">Assign to</span>
+                        <Badge className={selectedRoleData.color}>{selectedRoleData.name}</Badge>
+                    </div>
+                    <Switch
+                        checked={isAssigned}
+                        onCheckedChange={(checked) => toggleAssignment(widget.id, checked)}
+                        disabled={isUpdating}
+                    />
                 </div>
             </CardContent>
         </Card>

@@ -1,34 +1,12 @@
-export const DEFAULT_WIDGETS = [
-    {
-        id: '1',
-        key: 'STATS',
-        name: 'Statistics',
-        component: 'StatsWidget',
-        description: 'Key metrics and numbers',
-        category: 'analytics'
-    },
-    {
-        id: '2',
-        key: 'TIMETABLE',
-        name: 'Time Table',
-        component: 'TimetableWidget',
-        description: 'Class schedule',
-        category: 'organization'
-    },
-    {
-        id: '3',
-        key: 'ASSIGNMENTS',
-        name: 'Assignments',
-        component: 'AssignmentsWidget',
-        description: 'Assignments',
-        category: 'organization'
-    },
-    {
-        id: '4',
-        key: 'NOTICES',
-        name: 'Notices',
-        component: 'NoticesWidget',
-        description: 'Notification',
-        category: 'organization'
-    }
+export const roleColors = [
+    "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100 hover:bg-current",
+    "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100 hover:bg-current",
+    "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100 hover:bg-current",
+    "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100 hover:bg-current",
+    "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100 hover:bg-current",
+    "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-100 hover:bg-current",
+    "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-100 hover:bg-current",
+    "bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-100 hover:bg-current"
 ] as const
+
+export const successBadge = "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100 hover:bg-current"

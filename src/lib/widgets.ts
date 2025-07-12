@@ -1,35 +1,3 @@
-export const availableWidgets = [
-    {
-        key: 'STATS',
-        name: 'Statistics',
-        component: 'StatsWidget',
-        description: 'Key metrics and numbers',
-        category: 'analytics'
-    },
-    {
-        key: 'TIMETABLE',
-        name: 'Time Table',
-        component: 'TimetableWidget',
-        description: 'Class schedule and timings',
-        category: 'organization'
-    },
-    {
-        key: 'ASSIGNMENTS',
-        name: 'Assignments',
-        component: 'AssignmentsWidget',
-        description: 'Upcoming and pending work',
-        category: 'academics'
-    },
-    {
-        key: 'NOTICES',
-        name: 'Notices',
-        component: 'NoticesWidget',
-        description: 'Important announcements',
-        category: 'communication'
-    }
-] as const
-
-
 import { lazy } from 'react'
 import type { ComponentType } from 'react'
 

@@ -48,24 +48,6 @@ async function main() {
     where: { tenantId: null }
   })
 
-  // const sysAdminGroup = await prisma.menuGroup.create({
-  //   data: {
-  //     name: "System Administration",
-  //     tenantId: null,
-  //     position: 1,
-  //   },
-  // });
-
-  // const sysAdminMasterGroup = await prisma.menuGroup.create({
-  //   data: {
-  //     name: "Master",
-  //     tenantId: null,
-  //     position: 2,
-  //   },
-  // });
-
-
-
   console.log("🛠️ Seeding System default Master menus...");
 
   for (const mod of defaultMaster) {
@@ -82,11 +64,11 @@ async function main() {
 
   console.log("🛠️ Seeding System Admin menus...");
 
-  for (const parent of systemAdminMenus) {
+  for (const parent of SystemAdminMenus) {
     const parentItem = await prisma.menuItem.create({
       data: {
         name: parent.name,
-        path: undefined,
+        path: parent.path ? parent.path : undefined,
         icon: parent.icon,
         tenantId: null,
         groupId: allSysAdminGroups[0].id,
@@ -238,18 +220,6 @@ async function main() {
 
     // Create groups
 
-    // const homeGroup = await prisma.menuGroup.create({
-    //   data: { name: "Home", tenantId: tenant.id, position: 1 },
-    // });
-
-    // const managementGroup = await prisma.menuGroup.create({
-    //   data: { name: "Management", tenantId: tenant.id, position: 2 },
-    // });
-
-    // const settingsGroup = await prisma.menuGroup.create({
-    //   data: { name: "Settings", tenantId: tenant.id, position: 3 },
-    // });
-
     const groups = [
       { name: "Home", position: 1 },
       { name: "Management", position: 2 },
@@ -270,66 +240,50 @@ async function main() {
       where: { tenantId: tenant.id }
     })
 
+    const groupMap = Object.fromEntries(allGroups.map(group => [group.name, group.id]));
+
     // home
     await prisma.menuItem.create({
       data: {
         name: "Dashboard",
         path: "/dashboard",
         icon: "BarChart3",
-        groupId: allGroups[0].id,
+        groupId: groupMap['Home'],
         tenantId: tenant.id,
       },
     });
 
-    // For management menus
-    for (const parent of tenantMgmtMenus) {
-      const parentItem = await prisma.menuItem.create({
-        data: {
-          name: parent.name,
-          path: undefined,
-          icon: parent.icon,
-          tenantId: tenant.id,
-          groupId: allGroups[1].id,
-        },
-      });
 
-      for (const child of parent.children) {
-        await prisma.menuItem.create({
-          data: {
-            name: child.name,
-            path: child.path,
-            icon: undefined,
-            tenantId: tenant.id,
-            groupId: allGroups[1].id,
-            parentId: parentItem.id,
-          },
-        });
-      }
-    }
+    for (const section of TenantMenus) {
+      for (const key of Object.keys(section)) {
 
-    // For settings menus
-    for (const parent of tenantSettingMenus) {
-      const parentItem = await prisma.menuItem.create({
-        data: {
-          name: parent.name,
-          path: undefined,
-          icon: parent.icon,
-          tenantId: tenant.id,
-          groupId: allGroups[2].id,
-        },
-      });
+        const groupName = key === "management" ? "Management" : key === "settings" ? "Settings" : "Home";
+        const groupId = groupMap[groupName];
+        const menuGroups = section[key];
 
-      for (const child of parent.children) {
-        await prisma.menuItem.create({
-          data: {
-            name: child.name,
-            path: child.path,
-            icon: undefined,
-            tenantId: tenant.id,
-            groupId: allGroups[2].id,
-            parentId: parentItem.id,
-          },
-        });
+        for (const parent of menuGroups) {
+          const parentItem = await prisma.menuItem.create({
+            data: {
+              name: parent.name,
+              path: undefined, // no direct path for parent
+              icon: parent.icon,
+              tenantId: tenant.id,
+              groupId,
+            },
+          });
+          for (const child of parent.children) {
+            await prisma.menuItem.create({
+              data: {
+                name: child.name,
+                path: child.path,
+                icon: undefined,
+                tenantId: tenant.id,
+                groupId,
+                parentId: parentItem.id,
+              },
+            });
+          }
+        }
       }
     }
 
@@ -408,53 +362,18 @@ async function main() {
   }
 
   console.log("🛠️ Seeding sample widgets");
-  await prisma.widget.createMany({
-    data: [
-      {
-        key: "STATS",
-        name: "Statistics",
-        component: "StatsWidget",
-        description: "Key metrics and numbers",
-        category: "analytics",
-      },
-      {
-        key: "TIMETABLE",
-        name: "Time Table",
-        component: "TimetableWidget",
-        description: "Class schedule",
-        category: "organization",
-      },
-      {
-        key: "ATTENDANCE",
-        name: "Attendance Tracker",
-        component: "AttendanceWidget",
-        description: "Attendance Tracker",
-        category: "management",
-      },
-      {
-        key: "ASSIGNMENTS",
-        name: "Assignments",
-        component: "AssignmentsWidget",
-        description: "Assignments",
-        category: "academics",
-      },
-      {
-        key: "GRADES",
-        name: "Gradebook",
-        component: "GradesWidget",
-        description: "Gradebook",
-        category: "academics",
-      },
-      {
-        key: "NOTICES",
-        name: "Announcements",
-        component: "NoticesWidget",
-        description: "Notification",
-        category: "communication",
-      },
-    ],
-  });
 
+  for (const w of Widgets) {
+    await prisma.widget.create({
+      data: {
+        name: w.name,
+        key: w.key,
+        component: w.component,
+        description: w.description,
+        category: w.category,
+      }
+    })
+  }
   console.log("🎉 All data seeded successfully!");
 }
 
@@ -477,7 +396,7 @@ const defaultMaster = [
   { name: "Groups", path: "/master/groups", icon: "Grid" },
 ];
 
-const systemAdminMenus = [
+export const SystemAdminMenus = [
   {
     name: "Dashboard",
     path: "/dashboard",
@@ -520,58 +439,108 @@ const systemAdminMenus = [
       { name: "Performance", path: "/performance" },
     ],
   },
-];
+]
 
-const tenantMgmtMenus = [
+export const TenantMenus = [
   {
-    name: "Academic Management",
-    icon: "GraduationCap",
-    children: [
-      { name: "Students", path: "/students" },
-      { name: "Faculty", path: "/faculty" },
-      { name: "Courses", path: "/courses" },
-      { name: "Programs", path: "/programs" },
-      { name: "Departments", path: "/departments" },
-    ],
+    management: [
+      {
+        name: "Academic Management",
+        icon: "GraduationCap",
+        children: [
+          { name: "Students", path: "/students" },
+          { name: "Faculty", path: "/faculty" },
+          { name: "Courses", path: "/courses" },
+          { name: "Programs", path: "/programs" },
+          { name: "Departments", path: "/departments" },
+        ],
+      },
+      {
+        name: "Administration",
+        icon: "FileText",
+        children: [
+          { name: "Admissions", path: "/admissions" },
+          { name: "Enrollment", path: "/enrollment" },
+          { name: "Scheduling", path: "/scheduling" },
+          { name: "Examinations", path: "/examinations" },
+        ],
+      },
+      {
+        name: "Financial Management",
+        icon: "DollarSign",
+        children: [
+          { name: "Fee Management", path: "/fees" },
+          { name: "Scholarships", path: "/scholarships" },
+          { name: "Payroll", path: "/payroll" },
+        ],
+      },
+    ]
   },
   {
-    name: "Administration",
-    icon: "FileText",
-    children: [
-      { name: "Admissions", path: "/admissions" },
-      { name: "Enrollment", path: "/enrollment" },
-      { name: "Scheduling", path: "/scheduling" },
-      { name: "Examinations", path: "/examinations" },
-    ],
-  },
-  {
-    name: "Financial Management",
-    icon: "DollarSign",
-    children: [
-      { name: "Fee Management", path: "/fees" },
-      { name: "Scholarships", path: "/scholarships" },
-      { name: "Payroll", path: "/payroll" },
-    ],
-  },
-];
+    settings: [
+      {
+        name: "User Management",
+        icon: "Users",
+        children: [
+          { name: "Users", path: "/admin/users" },
+          { name: "Roles", path: "/admin/roles" },
+          { name: "Permissions", path: "/admin/permissions" },
+        ],
+      },
+      {
+        name: "System",
+        icon: "Settings",
+        children: [
+          { name: "Widgets Settings", path: "/admin/widgets" },
+          { name: "Institute Settings", path: "/admin/settings" },
+          { name: "Audit Logs", path: "/admin/audit" },
+        ],
+      },
+    ]
+  }
+]
 
-const tenantSettingMenus = [
+export const Widgets = [
   {
-    name: "User Management",
-    icon: "Users",
-    children: [
-      { name: "Users", path: "/admin/users" },
-      { name: "Roles", path: "/admin/roles" },
-      { name: "Permissions", path: "/admin/permissions" },
-    ],
+    key: "STATS",
+    name: "Statistics",
+    component: "StatsWidget",
+    description: "Key metrics and numbers",
+    category: "analytics",
   },
   {
-    name: "System",
-    icon: "Settings",
-    children: [
-      { name: "Widgets Settings", path: "/admin/widgets" },
-      { name: "Institute Settings", path: "/admin/settings" },
-      { name: "Audit Logs", path: "/admin/audit" },
-    ],
+    key: "TIMETABLE",
+    name: "Time Table",
+    component: "TimetableWidget",
+    description: "Class schedule and timings",
+    category: "organization",
   },
-];
+  {
+    key: "ATTENDANCE",
+    name: "Attendance Tracker",
+    component: "AttendanceWidget",
+    description: "Attendance Tracker",
+    category: "management",
+  },
+  {
+    key: "ASSIGNMENTS",
+    name: "Assignments",
+    component: "AssignmentsWidget",
+    description: "Upcoming and pending work",
+    category: "academics",
+  },
+  {
+    key: "GRADES",
+    name: "Gradebook",
+    component: "GradesWidget",
+    description: "Gradebook",
+    category: "academics",
+  },
+  {
+    key: "NOTICES",
+    name: "Announcements",
+    component: "NoticesWidget",
+    description: "Important announcements",
+    category: "communication",
+  },
+]

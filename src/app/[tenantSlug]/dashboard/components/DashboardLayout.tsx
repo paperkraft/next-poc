@@ -1,13 +1,15 @@
 'use client'
-import { DndContext, DragEndEvent } from '@dnd-kit/core'
-import { SortableContext, arrayMove } from '@dnd-kit/sortable'
-import WidgetContainer from './WidgetContainer'
-import AddWidgetButton from './AddWidgetButton'
-import { useDashboard } from '@/components/provider/DashboardProvider'
-import DashboardSettings from './DashboardSettings'
-import { useCallback, useMemo } from 'react'
-import { toast } from 'sonner'
-import { useMounted } from '@/hooks/use-mounted'
+import { useCallback, useMemo } from 'react';
+import { toast } from 'sonner';
+
+import { useDashboard } from '@/components/provider/DashboardProvider';
+import { useMounted } from '@/hooks/use-mounted';
+import { DndContext, DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext } from '@dnd-kit/sortable';
+
+import AddWidgetButton from './AddWidgetButton';
+import DashboardSettings from './DashboardSettings';
+import WidgetContainer from './WidgetContainer';
 
 export default function DashboardLayout() {
 

@@ -154,11 +154,27 @@ export function PermissionProvider({ children, tenantId, roles }: Props) {
       const item = flattened.find((item) => item.id === id)
       if (!item) return prev
 
+      // If enabling a permission on a child, ensure parent has the same permission
       if ((newValue & bit) === bit && item.parentId) {
         const parentCurrentValue = newPermissions[item.parentId] || 0
         if ((parentCurrentValue & bit) !== bit) {
           newPermissions[item.parentId] = parentCurrentValue | bit
         }
+      }
+
+      // If disabling a permission on a parent, disable it on all children recursively
+      if ((newValue & bit) !== bit && item.children && item.children.length > 0) {
+        const disableChildrenRecursively = (children: MenuItem[]) => {
+          children.forEach((child) => {
+            const childCurrentValue = newPermissions[child.id] || 0
+            newPermissions[child.id] = childCurrentValue & ~bit // Remove the bit
+
+            if (child.children && child.children.length > 0) {
+              disableChildrenRecursively(child.children)
+            }
+          })
+        }
+        disableChildrenRecursively(item.children)
       }
 
       newPermissions[id] = newValue
@@ -175,11 +191,24 @@ export function PermissionProvider({ children, tenantId, roles }: Props) {
       if (!item) return prev
 
       if (on) {
+        // If enabling all permissions on a child, ensure parent has all permissions
         if (item.parentId) {
           newPermissions[item.parentId] = fullMask
         }
         newPermissions[id] = fullMask
       } else {
+        // If disabling all permissions on a parent, disable all permissions on children recursively
+        if (item.children && item.children.length > 0) {
+          const disableChildrenRecursively = (children: MenuItem[]) => {
+            children.forEach((child) => {
+              newPermissions[child.id] = 0 // Set to 0 (no permissions)
+              if (child.children && child.children.length > 0) {
+                disableChildrenRecursively(child.children)
+              }
+            })
+          }
+          disableChildrenRecursively(item.children)
+        }
         newPermissions[id] = 0
       }
 
@@ -188,42 +217,51 @@ export function PermissionProvider({ children, tenantId, roles }: Props) {
   }
 
   const assignPermissionSet = (moduleId: number, permissionSet: "none" | "read" | "write" | "full") => {
-    const item = flattened.find((item) => item.id === moduleId)
-    if (!item) return
-
-    let newPermissionBits = 0
-    switch (permissionSet) {
-      case "read":
-        newPermissionBits = PERMISSION_BITS.READ
-        break
-      case "write":
-        newPermissionBits = PERMISSION_BITS.READ | PERMISSION_BITS.WRITE
-        break
-      case "full":
-        newPermissionBits = Object.values(PERMISSION_BITS).reduce((a, b) => a | b, 0)
-        break
-      case "none":
-      default:
-        newPermissionBits = 0
-        break
-    }
-
     setPermissions((prev) => {
       const newPermissions = { ...prev }
+      const item = flattened.find((item) => item.id === moduleId)
+      if (!item) return prev
 
-      // If enabling permissions on child, ensure parent has them
-      if (newPermissionBits > 0 && item.parentId) {
-        const parentCurrentValue = newPermissions[item.parentId] || 0
-        newPermissions[item.parentId] = parentCurrentValue | newPermissionBits
+      let newPermissionBits = 0
+      switch (permissionSet) {
+        case "read":
+          newPermissionBits = PERMISSION_BITS.READ
+          break
+        case "write":
+          newPermissionBits = PERMISSION_BITS.READ | PERMISSION_BITS.WRITE
+          break
+        case "full":
+          newPermissionBits = Object.values(PERMISSION_BITS).reduce((a, b) => a | b, 0)
+          break
+        case "none":
+        default:
+          newPermissionBits = 0
+          break
       }
 
-      newPermissions[moduleId] = newPermissionBits
+      // Recursive helper to apply permission set to an item and its children
+      const applyRecursive = (currentId: number, bitsToApply: number) => {
+        const currentItem = flattened.find((fItem) => fItem.id === currentId)
+        if (!currentItem) return
+
+        newPermissions[currentId] = bitsToApply
+
+        if (currentItem.children && currentItem.children.length > 0) {
+          currentItem.children.forEach((child) => {
+            applyRecursive(child.id, bitsToApply)
+          })
+        }
+      }
+
+      // Start recursive application from the target module
+      applyRecursive(moduleId, newPermissionBits)
+
       return newPermissions
     })
   }
 
   const bulkAssignToGroup = (groupName: string, permissionSet: "none" | "read" | "write" | "full") => {
-    const groupItems = flattened.filter((item) => item.groupName === groupName)
+    const groupItems = flattened.filter((item) => item.groupName === groupName && item.level === 0)// Only target top-level items in the group
     groupItems.forEach((item) => {
       assignPermissionSet(item.id, permissionSet)
     })

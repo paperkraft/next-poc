@@ -1,9 +1,7 @@
 "use client";
 import React, { memo, useEffect } from "react";
 import {
-  BellIcon,
   PowerIcon,
-  UserIcon
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -86,17 +84,13 @@ const UserAction = () => {
             <DropdownMenuSeparator />
 
             <DropdownMenuGroup className="space-y-1">
-
-              {
-                UserActions.map((item) => (
-                  <DropdownMenuItem key={item.label} asChild>
-                    <Link href={`/${slug}${item.url}`} className="flex flex-1 items-center cursor-pointer hover:!text-primary">
-                      {item.icon && <item.icon className="size-4 mr-2" />}{item.label}
-                    </Link>
-                  </DropdownMenuItem>
-                ))
-              }
-
+              {UserActions.map((item) => (
+                <DropdownMenuItem key={item.label} asChild>
+                  <Link href={`/${slug}${item.url}`} className="flex flex-1 items-center cursor-pointer hover:!text-primary">
+                    {item.icon && <item.icon className="size-4 mr-2" />}{item.label}
+                  </Link>
+                </DropdownMenuItem>
+              ))}
             </DropdownMenuGroup>
 
             <DropdownMenuSeparator />

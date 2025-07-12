@@ -53,7 +53,7 @@ export default function ThemeCustomizer() {
         setConfig({
             ...config,
             font: "font-inter",
-            theme: "zinc",
+            theme: "blue",
             radius: 0.5,
             layout: 'vertical',
             content: 'compact',

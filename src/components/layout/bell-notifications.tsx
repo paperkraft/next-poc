@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { BellIcon, BellOffIcon, CheckCheck, SettingsIcon, X } from 'lucide-react';
+import { BellOffIcon, CheckCheck, SettingsIcon, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';

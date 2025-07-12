@@ -1,8 +1,6 @@
 'use client'
 
 import Header from '@/components/layout/Header';
-import SidebarFooterContent from '@/components/layout/Sidebar/sidebar-footer';
-import SidebarHeaderContent from '@/components/layout/Sidebar/sidebar-header';
 import {
     Sidebar, SidebarFooter, SidebarHeader, SidebarInset, useSidebar
 } from '@/components/ui/sidebar';
@@ -14,6 +12,8 @@ import { cn } from '@/lib/utils';
 import AppSidebarMenus from '../sidebar-layout/app-sidebar';
 import SidebarCollapseMenus from '../sidebar-layout/app-sidebar-collapsed';
 import FooterTag from './FooterTag';
+import SidebarHeaderContent from '../sidebar-layout/app-sidebar-header';
+import SidebarFooterContent from '../sidebar-layout/app-sidebar-footer';
 
 type ContentProps = {
     children: React.ReactNode;

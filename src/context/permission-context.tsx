@@ -2,7 +2,6 @@
 
 import { FlattenedMenuItem, MenuItem, PERMISSION_BITS, Role } from "@/components/tenant-admin/role-permission/role-permission-types"
 import { createContext, useContext, useState, useRef, useEffect, type ReactNode } from "react"
-// import { type MenuItem, type FlattenedMenuItem, type Role, PERMISSION_BITS } from "../types"
 
 type PermissionContextType = {
   // State
@@ -261,7 +260,7 @@ export function PermissionProvider({ children, tenantId, roles }: Props) {
   }
 
   const bulkAssignToGroup = (groupName: string, permissionSet: "none" | "read" | "write" | "full") => {
-    const groupItems = flattened.filter((item) => item.groupName === groupName && item.level === 0)// Only target top-level items in the group
+    const groupItems = flattened.filter((item) => item.groupName === groupName && item.level === 0)
     groupItems.forEach((item) => {
       assignPermissionSet(item.id, permissionSet)
     })

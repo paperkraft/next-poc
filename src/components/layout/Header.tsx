@@ -11,10 +11,10 @@ import { cn } from '@/lib/utils';
 
 import { TenantSwitcher } from '../common/tenant-switcher';
 import AppNavbar from '../sidebar-layout/app-navbar';
-import { useSidebar } from '../ui/sidebar';
+import { useSidebar } from '@/components/ui/sidebar';
 import BellNotifications from './bell-notifications';
 import LocaleSwitcher from './locale-switcher';
-import { CustomTrigger } from './Sidebar/custom-trigger';
+import { CustomTrigger } from './custom-trigger';
 import UserAction from './UserAction';
 
 type HeaderProps = {

@@ -5,14 +5,13 @@ import { toast } from 'sonner';
 
 import { DataTable } from '@/components/_data-table/data-table';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { ModuleNode } from '@/types/modules';
 
-import { groupModules } from '../../administrative/rbac/helper';
 import GroupTable from './components/GroupedTable';
 import { ModuleMasterColumns } from './module-list-column';
+import { GroupedMenus, MenuItem } from '@/lib/menus';
 
 interface ModuleMasterProps {
-  data: ModuleNode[];
+  data: MenuItem[];
   moduleId?: number
 }
 
@@ -72,3 +71,24 @@ const ModuleMasterList = ({ data, moduleId }: ModuleMasterProps) => {
 };
 
 export default ModuleMasterList;
+
+export const groupModules = (modules: MenuItem[]): GroupedMenus[] => {
+  const groupMap = new Map<number, GroupedMenus>();
+
+  for (const mod of modules) {
+    if (!groupMap.has(+mod?.groupId!)) {
+      groupMap.set(+mod?.groupId!, {
+        groupId: +mod?.groupId!,
+        groupName: mod.groupName as string,
+        modules: [],
+        position: Number(mod.position)
+      });
+    }
+
+    groupMap.get(mod?.groupId!)!.modules.push(mod);
+  }
+  return Array.from(groupMap.values()).map((group) => ({
+    ...group,
+    modules: group.modules.sort((a, b) => (a.position ?? Infinity) - (b.position ?? Infinity)),
+  }));
+};

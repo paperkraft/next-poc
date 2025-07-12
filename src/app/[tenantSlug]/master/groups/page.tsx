@@ -6,7 +6,7 @@ import NoRecordPage from '@/components/custom/no-record';
 import TitlePage from '@/components/custom/page-heading';
 import SomethingWentWrong from '@/components/custom/somthing-wrong';
 import { getSessionModules } from '@/lib/abac/sessionModules';
-import { findModuleIdByPathNew } from '@/utils/helper';
+import { findModuleIdByPath } from '@/utils/helper';
 
 import GroupMasterList from './GroupMasterList';
 import { useTenant } from '@/context/TenantProvider';
@@ -32,7 +32,7 @@ export default async function GroupPage() {
 
     const menus = await getUserModules(session.user?.tenantId, session.user?.roleId);
 
-    const moduleId = findModuleIdByPathNew(menus, currentPath);
+    const moduleId = findModuleIdByPath(menus, currentPath);
     const response = await getAllGroups();
 
     return (

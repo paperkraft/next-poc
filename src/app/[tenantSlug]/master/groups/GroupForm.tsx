@@ -25,9 +25,9 @@ const groupSchema = z.object({
 export type GroupFormValues = z.infer<typeof groupSchema>;
 
 type GroupFormProps = {
-    id?: string;
+    id?: number;
     data?: {
-        id: string;
+        id: number;
         name: string;
     }
 }
@@ -92,7 +92,7 @@ export default function GroupForm({ id, data }: GroupFormProps) {
         }
     }
 
-    const handleDelete = async (ids: string[]) => {
+    const handleDelete = async (ids: number[]) => {
         try {
             setLoading(true);
             const res = await fetch("/api/master/group", {
@@ -174,7 +174,7 @@ export default function GroupForm({ id, data }: GroupFormProps) {
                     open={open}
                     itemName={data?.name || ''}
                     loading={loading}
-                    onConfirm={() => handleDelete([id as string])}
+                    onConfirm={() => id && handleDelete([id])}
                     onCancel={() => setOpen(false)}
                 />
             )}

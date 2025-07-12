@@ -11,11 +11,10 @@ export async function GET(request: Request) {
         const session = await auth();
 
         if (!session) {
-            return {
-                success: false,
-                message: "User session not found.",
-                data: [],
-            };
+            return NextResponse.json(
+                { success: false, message: "User session not found", data: [] },
+                { status: 400 }
+            );
         }
 
         const { tenantId } = session.user;

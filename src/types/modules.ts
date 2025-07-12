@@ -1,4 +1,5 @@
-import type { MenuItem, MenuGroup } from '@prisma/client';
+import type { MenuGroup } from '@prisma/client';
+import { MenuItem } from '@/lib/menus';
 
 export type ModuleWithRelations = MenuItem & {
     group: MenuGroup | null;
@@ -10,6 +11,7 @@ export type ModuleNode = {
     id: number;
     name: string;
     path?: string;
+    icon?: string;
     parentId?: number;
     groupId?: number;
     groupName?: string;
@@ -21,7 +23,7 @@ export type ModuleNode = {
 export type FetchModulesResponse = {
     success: boolean;
     message: string;
-    data?: ModuleNode[] | null;
+    data?: MenuItem[] | null;
 };
 
 // Unique Module

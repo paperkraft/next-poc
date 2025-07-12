@@ -1,10 +1,11 @@
 import { auth } from "@/auth";
+import { MenuItem } from "@/lib/menus";
 import prisma from "@/lib/prisma";
 import { FetchModuleResponse, FetchModulesResponse, ModuleNode, ModuleWithChildren, ModuleWithRelations } from "@/types/modules";
 import { NextResponse } from "next/server";
 
 // Recursive sort by name or custom logic
-function sortModules(modules: ModuleNode[]): ModuleNode[] {
+function sortModules(modules: MenuItem[]): MenuItem[] {
     return modules
         .sort((a, b) => {
             // First sort by group position (nulls last), then by name
@@ -35,7 +36,7 @@ export async function fetchModules(): Promise<FetchModulesResponse> {
 
         const { tenantId } = session.user;
 
-        const allModules: ModuleWithRelations[] = await prisma.menuItem.findMany({
+        const allModules: any[] = await prisma.menuItem.findMany({
             where: tenantId ? { tenantId, isActive: true } : undefined,
             include: {
                 children: true,
@@ -45,12 +46,13 @@ export async function fetchModules(): Promise<FetchModulesResponse> {
         });
 
         // Build a map for quick lookups
-        const moduleMap = new Map<number, ModuleNode>();
+        const moduleMap = new Map<number, MenuItem>();
 
         for (const mod of allModules) {
             moduleMap.set(mod.id, {
                 id: mod.id,
                 name: mod.name,
+                icon: mod.icon ?? "",
                 path: mod.path ?? undefined,
                 parentId: mod.parentId ?? undefined,
                 groupId: mod.groupId ?? undefined,
@@ -68,7 +70,7 @@ export async function fetchModules(): Promise<FetchModulesResponse> {
         }
 
         // Extract top-level modules (no parent)
-        const rootModules: ModuleNode[] = Array.from(moduleMap.values()).filter(
+        const rootModules: MenuItem[] = Array.from(moduleMap.values()).filter(
             (mod) => !mod.parentId
         );
 

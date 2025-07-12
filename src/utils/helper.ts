@@ -15,20 +15,6 @@ export const findModuleId = (modules: ModuleNode[], moduleName: string): number 
     return undefined;
 };
 
-export const findModuleIdByPathOld = (modules: MenuItem[], path: string): number | undefined => {
-    for (const module of modules) {
-        if (module.path === path) {
-            return module.id;
-        }
-
-        if (module.children && module.children.length > 0) {
-            const subModuleId = findModuleIdByPath(module.children, path);
-            if (subModuleId) return subModuleId;
-        }
-    }
-    return undefined;
-}
-
 export const findModuleIdByPath = (groups: GroupedMenus[], path: string): number | undefined => {
     for (const group of groups) {
         const found = searchInModules(group.modules, path);

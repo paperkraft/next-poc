@@ -12,7 +12,7 @@ const GroupMasterList = ({ data, moduleId }: GroupListProps) => {
 
   const { columns } = GroupsMasterColumns();
 
-  const deleteRecord = async (id: string | string[]) => {
+  const deleteRecord = async (id: number | number[]) => {
     const ids = Array.isArray(id) ? id : [id];
     try {
       const response = await fetch("/api/master/group", {

@@ -6,7 +6,7 @@ import { useMounted } from '@/hooks/use-mounted';
 import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { cn } from '@/lib/utils';
-import { getBreadcrumbs, mapMenu } from './Sidebar/helper';
+import { getBreadcrumbs, mapMenu } from './helper';
 
 export default function HeaderBreadcrumb() {
     const mounted = useMounted();

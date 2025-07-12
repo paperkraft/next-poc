@@ -9,13 +9,13 @@ import { useMounted } from '@/hooks/use-mounted';
 import { GroupedMenus } from '@/lib/menus';
 import { cn } from '@/lib/utils';
 
+import { TenantSwitcher } from '../common/tenant-switcher';
+import AppNavbar from '../sidebar-layout/app-navbar';
 import { useSidebar } from '../ui/sidebar';
 import BellNotifications from './bell-notifications';
 import LocaleSwitcher from './locale-switcher';
 import { CustomTrigger } from './Sidebar/custom-trigger';
-import TenantNavbar from './Sidebar/tenant/tenant-navbar';
 import UserAction from './UserAction';
-import { TenantSwitcher } from '../common/tenant-switcher';
 
 type HeaderProps = {
     menus: GroupedMenus[];
@@ -77,7 +77,7 @@ const Header = React.memo(({ menus = [], currentTenant, tenants = [] }: HeaderPr
 
             {!isMobile && isHorizontal && (
                 <div className="border-b py-1">
-                    <TenantNavbar menus={menus} />
+                    <AppNavbar menus={menus} />
                 </div>
             )}
         </>

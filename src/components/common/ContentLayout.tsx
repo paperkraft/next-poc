@@ -11,9 +11,9 @@ import { useMounted } from '@/hooks/use-mounted';
 import { GroupedMenus } from '@/lib/menus';
 import { cn } from '@/lib/utils';
 
+import AppSidebarMenus from '../sidebar-layout/app-sidebar';
+import SidebarCollapseMenus from '../sidebar-layout/app-sidebar-collapsed';
 import FooterTag from './FooterTag';
-import TenantMenus from '../layout/Sidebar/tenant/tenant-menus';
-import TenantCollapseMenus from '../layout/Sidebar/tenant/collapse/tenant-collapse-sidebar';
 
 type ContentProps = {
     children: React.ReactNode;
@@ -38,7 +38,7 @@ export default function ContentLayout({ children, currentTenant, menus = [], ten
                         <SidebarHeaderContent />
                     </SidebarHeader>
 
-                    <TenantMenus menus={menus} />
+                    <AppSidebarMenus menus={menus} />
 
                     <SidebarFooter>
                         <SidebarFooterContent />
@@ -47,7 +47,7 @@ export default function ContentLayout({ children, currentTenant, menus = [], ten
             }
 
             {(config.layout === "collapsed" || config.layout === "dual-menu") && !isMobile &&
-                <TenantCollapseMenus menus={menus} />
+                <SidebarCollapseMenus menus={menus} />
             }
 
             <SidebarInset>

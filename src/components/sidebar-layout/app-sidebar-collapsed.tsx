@@ -89,7 +89,7 @@ const SidebarCollapseMenus = React.memo(({ menus = [] }: { menus: GroupedMenus[]
                         <SidebarHeaderContent />
                     </SidebarHeader>
                     <SidebarContent>
-                        {menus?.map((group, index) => (
+                        {menus.map((group, index) => (
                             <SidebarGroup key={index} className="svclass">
                                 <SidebarGroupLabel title={group.groupName} className="group-data-[collapsible=icon]:opacity-100 group-data-[collapsible=icon]:mt-auto">
                                     <EllipsisIcon />
@@ -125,9 +125,10 @@ const SidebarCollapseMenus = React.memo(({ menus = [] }: { menus: GroupedMenus[]
                         <div className="relative px-2">
                             <SidebarInput
                                 id="search"
-                                placeholder={`Search for ${title}`}
+                                placeholder={`Search`}
                                 className="focus-within:!ring-primary"
                                 value={query ?? ""}
+                                maxLength={20}
                                 onChange={(e) => setQuery(e.target.value)}
                             />
                             {query &&

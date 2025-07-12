@@ -1,7 +1,6 @@
 'use client'
 
 import Header from '@/components/layout/Header';
-import CollapseMenus from '@/components/layout/Sidebar/collapse-sidebar';
 import SidebarFooterContent from '@/components/layout/Sidebar/sidebar-footer';
 import SidebarHeaderContent from '@/components/layout/Sidebar/sidebar-header';
 import {
@@ -12,8 +11,9 @@ import { useMounted } from '@/hooks/use-mounted';
 import { GroupedMenus } from '@/lib/menus';
 import { cn } from '@/lib/utils';
 
-import TenantMenus from '../layout/Sidebar/tenant/tenant-menus';
 import FooterTag from './FooterTag';
+import TenantMenus from '../layout/Sidebar/tenant/tenant-menus';
+import TenantCollapseMenus from '../layout/Sidebar/tenant/collapse/tenant-collapse-sidebar';
 
 type ContentProps = {
     children: React.ReactNode;
@@ -47,7 +47,7 @@ export default function ContentLayout({ children, currentTenant, menus = [], ten
             }
 
             {(config.layout === "collapsed" || config.layout === "dual-menu") && !isMobile &&
-                <CollapseMenus />
+                <TenantCollapseMenus menus={menus} />
             }
 
             <SidebarInset>

@@ -23,8 +23,6 @@ import { GroupedMenus, MenuItem } from '@/lib/menus';
 import { useMounted } from '@/hooks/use-mounted';
 
 const TenantMenus = React.memo(({ menus = [] }: { menus: GroupedMenus[] }) => {
-
-
     const mounted = useMounted();
     const { status } = useSession();
     const [query, setQuery] = React.useState<string>('');
@@ -104,9 +102,9 @@ export default TenantMenus;
 
 export const RenderMenus = React.memo(({ item, isSearchActive }: { item: MenuItem, isSearchActive: boolean }) => {
 
-    const mounted = useMounted();
     const { toggleSidebar, isMobile } = useSidebar();
     const path = usePathname();
+    const mounted = useMounted();
     const hasSubmenu = item?.children?.length > 0;
     const isActive = useMemo(() => checkIsActive(item, path), [item, path]);
     const shouldExpand = isSearchActive ? true : isActive;

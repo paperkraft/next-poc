@@ -1,51 +1,59 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
+import {
+    Breadcrumb,
+    BreadcrumbItem,
+    BreadcrumbLink,
+    BreadcrumbList,
+    BreadcrumbPage,
+    BreadcrumbSeparator
+} from '@/components/ui/breadcrumb';
 import { useMounted } from '@/hooks/use-mounted';
 import { usePathname } from 'next/navigation';
-import { useSession } from 'next-auth/react';
-import { cn } from '@/lib/utils';
-import { getBreadcrumbs, mapMenu } from './helper';
+import { GroupedMenus } from '@/lib/menus';
+import { getBreadcrumbsFromGroupedMenus } from './getBreadcrums';
 
-export default function HeaderBreadcrumb() {
+function truncate(text: string, maxLength: number = 20): string {
+    return text.length > maxLength ? `${text.slice(0, maxLength)}…` : text;
+}
+
+export default function HeaderBreadcrumb({ menus = [] }: { menus: GroupedMenus[] }) {
     const mounted = useMounted();
     const path = usePathname();
-    const { data: session } = useSession();
 
-    const menus = session?.user?.modules;
-    const formattedMenus = menus ? mapMenu(menus) : [];
     const breadcrumb = useMemo(() => {
-        return path && formattedMenus ? getBreadcrumbs(formattedMenus, path) : [];
-    }, [formattedMenus, path]);
+        if (!mounted || !path || menus.length === 0) return [];
+        return getBreadcrumbsFromGroupedMenus(menus, path);
+    }, [menus, path, mounted]);
 
-    if (!mounted) return null;
-
-    const firstBreadcrumb = breadcrumb?.[0];
+    if (!mounted || breadcrumb.length === 0) return null;
 
     return (
         <Breadcrumb>
             <BreadcrumbList>
-                <BreadcrumbItem className="hidden md:block">
-                    <BreadcrumbLink href="#">{firstBreadcrumb?.label ?? "Home"}</BreadcrumbLink>
+                {breadcrumb.map((item, idx) => {
+                    const isLast = idx === breadcrumb.length - 1;
+                    const name = truncate(item.name);
+                    return (
+                        <React.Fragment key={idx}>
+                            {idx > 0 && <BreadcrumbSeparator className="hidden md:block" />}
+                            <BreadcrumbItem className="hidden md:block">
+                                {isLast ? (
+                                    <BreadcrumbPage title={item.name}>{name}</BreadcrumbPage>
+                                ) : (
+                                    <BreadcrumbLink href={"#"} title={item.name}>{name}</BreadcrumbLink>
+                                )}
+                            </BreadcrumbItem>
+                        </React.Fragment>
+                    );
+                })}
+
+                {/* Mobile-only: show only last item */}
+                <BreadcrumbItem className="md:hidden">
+                    <BreadcrumbPage>{truncate(breadcrumb[breadcrumb.length - 1].name)}</BreadcrumbPage>
                 </BreadcrumbItem>
-
-                {breadcrumb?.map((item, idx) => (
-                    <React.Fragment key={idx}>
-                        <BreadcrumbSeparator className="hidden md:block" />
-                        <BreadcrumbItem className={cn("hidden md:block", { "": breadcrumb.length - 1 })}>
-                            <BreadcrumbLink href="#">{item.title}</BreadcrumbLink>
-                        </BreadcrumbItem>
-                    </React.Fragment>
-                ))}
-
-                {breadcrumb && breadcrumb?.length > 0 && (
-                    <BreadcrumbItem className="md:hidden">
-                        <BreadcrumbPage>{breadcrumb[breadcrumb.length - 1]?.title}</BreadcrumbPage>
-                    </BreadcrumbItem>
-                )}
             </BreadcrumbList>
         </Breadcrumb>
     );
 }
-

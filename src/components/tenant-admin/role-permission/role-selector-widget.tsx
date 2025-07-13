@@ -17,7 +17,7 @@ export function RoleSelectorWidget({ roles }: Props) {
     <Card className="h-fit">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-lg">
-          <Crown className="h-5 w-5 text-purple-600" />
+          <Crown className="size-5 text-primary" />
           Role Assignment
         </CardTitle>
       </CardHeader>
@@ -28,17 +28,17 @@ export function RoleSelectorWidget({ roles }: Props) {
               key={role.id}
               onClick={() => setSelectedRole(role)}
               className={`p-3 rounded-lg border-2 cursor-pointer transition-all hover:shadow-md ${selectedRole?.id === role.id
-                ? "border-purple-500 bg-purple-50"
-                : "border-gray-200 hover:border-purple-300"
+                ? "border-primary bg-primary/10"
+                : "border-gray-200 hover:border-primary dark:border-gray-600 dark:hover:border-primary/80"
                 }`}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-gray-500" />
+                  <Users className="size-4 text-gray-500" />
                   <span className="font-medium">{role.name}</span>
                 </div>
                 {selectedRole?.id === role.id && (
-                  <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+                  <Badge variant="secondary" className="bg-primary/20 text-primary hover:bg-current/20">
                     Active
                   </Badge>
                 )}

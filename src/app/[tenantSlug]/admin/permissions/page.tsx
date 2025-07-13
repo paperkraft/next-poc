@@ -27,7 +27,7 @@ export default async function Page() {
     return (
         <div className='max-w-7xl'>
             <PermissionProvider tenantId={+session?.user.tenantId} roles={roles}>
-                <div className="min-h-screen bg-gray-50 rounded-lg">
+                <div className="min-h-screen bg-gray-50 dark:bg-gray-900 rounded-lg">
                     <div className="container mx-auto p-6">
                         <div className="mb-6">
                             <h1 className="text-2xl font-bold">Permission Management</h1>

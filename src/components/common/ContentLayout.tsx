@@ -14,6 +14,7 @@ import SidebarCollapseMenus from '../sidebar-layout/app-sidebar-collapsed';
 import FooterTag from './FooterTag';
 import SidebarHeaderContent from '../sidebar-layout/app-sidebar-header';
 import SidebarFooterContent from '../sidebar-layout/app-sidebar-footer';
+import HeaderBreadcrumb from '../layout/breadcrum-nav';
 
 type ContentProps = {
     children: React.ReactNode;
@@ -53,6 +54,9 @@ export default function ContentLayout({ children, currentTenant, menus = [], ten
             <SidebarInset>
                 <Header menus={menus} currentTenant={currentTenant} tenants={tenants} />
                 <div className={cn("grid grid-rows p-4 gap-4 w-full pb-12", { "container px-8": config.content === 'compact' })}>
+                    {config.layout !== "horizontal" && (
+                        <HeaderBreadcrumb menus={menus} />
+                    )}
                     {children}
                 </div>
                 <FooterTag />

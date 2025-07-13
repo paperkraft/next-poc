@@ -11,14 +11,14 @@ export function SaveWidget() {
   if (!selectedRole) return null
 
   return (
-    <Card className={hasChanges ? "border-orange-200 bg-orange-50" : ""}>
+    <Card className={hasChanges ? "border-orange-200 bg-orange-50 dark:border-orange-50/10 dark:bg-orange-50/5" : ""}>
       <CardContent className="p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {hasChanges ? (
               <>
-                <AlertTriangle className="h-4 w-4 text-orange-600" />
-                <span className="font-medium text-orange-700">You have unsaved changes</span>
+                <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-amber-600" />
+                <span className="font-medium text-orange-700 dark:text-amber-600">You have unsaved changes</span>
               </>
             ) : (
               <>

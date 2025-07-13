@@ -23,17 +23,17 @@ function searchSubmenuRecursive(items: MenuItem[], parent: MenuItem | null, path
 
 
 export function checkIsActive(item: MenuItem, pathname: string): boolean {
-    const isSubmenuActive = (submenu: MenuItem[]): boolean => {
-        return submenu.some(sub =>
-            sub?.path === pathname ||
-            pathname.startsWith(sub?.path as string) ||
-            (sub.children ? isSubmenuActive(sub.children) : false)
+    const isChildActive = (children: MenuItem[]): boolean => {
+        return children.some(child =>
+            child?.path === pathname ||
+            child?.path && pathname.startsWith(child?.path) ||
+            (child?.children ? isChildActive(child.children) : false)
         );
     };
 
     return (
         item?.path === pathname ||
-        pathname.startsWith(item?.path as string) ||
-        isSubmenuActive(item.children)
+        item?.path && pathname.startsWith(item.path) ||
+        isChildActive(item.children)
     );
 }

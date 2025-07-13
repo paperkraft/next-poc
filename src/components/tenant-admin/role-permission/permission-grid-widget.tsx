@@ -41,7 +41,7 @@ export function PermissionGridWidget() {
       <Card>
         <CardContent className="p-8 text-center text-gray-500">
           <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Select a Role</h3>
+          <h3 className="text-lg font-medium mb-2">Select a Role</h3>
           <p>Choose a role from the sidebar to manage its permissions.</p>
         </CardContent>
       </Card>
@@ -52,8 +52,8 @@ export function PermissionGridWidget() {
     return (
       <Card>
         <CardContent className="p-8 text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Loading Permissions</h3>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <h3 className="text-lg font-medium mb-2">Loading Permissions</h3>
           <p className="text-gray-600">Fetching permission data for {selectedRole.name}...</p>
         </CardContent>
       </Card>
@@ -84,7 +84,7 @@ export function PermissionGridWidget() {
       <Card>
         <CardContent className="p-8 text-center text-gray-500">
           <AlertTriangle className="h-12 w-12 mx-auto mb-4 opacity-50" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No Results Found</h3>
+          <h3 className="text-lg font-medium mb-2">No Results Found</h3>
           <p>Try adjusting your search terms or clear the search to see all modules.</p>
         </CardContent>
       </Card>
@@ -102,7 +102,7 @@ export function PermissionGridWidget() {
         return (
           <Card key={groupName} className="overflow-hidden">
             <CardHeader
-              className="cursor-pointer hover:bg-gray-50 transition-colors pb-3"
+              className="cursor-pointer transition-colors pb-3"
               onClick={() => toggleGroupExpanded(groupName)}
             >
               <CardTitle className="flex items-center gap-3 mb-4">
@@ -111,7 +111,7 @@ export function PermissionGridWidget() {
                 ) : (
                   <ChevronRight className="size-5 text-gray-500" />
                 )}
-                <Users className="size-4 text-blue-600" />
+                <Users className="size-4 text-primary" />
                 <span>{groupName}</span>
                 <Badge variant="secondary" className="ml-auto">
                   {searchTerm ? `${filteredItems.length} of ${groupItems.length}` : `${groupItems.length}`} modules
@@ -123,7 +123,7 @@ export function PermissionGridWidget() {
               <CardContent className="p-0">
                 <div className="border-t">
                   {/* Header */}
-                  <div className="grid grid-cols-12 gap-4 p-4 bg-gray-50 border-b font-medium text-sm text-gray-700">
+                  <div className="grid grid-cols-12 gap-4 p-4 border-b font-medium text-sm text-gray-700 dark:text-gray-400">
                     <div className="col-span-4">Module</div>
                     <div className="col-span-2 text-center">All Permissions</div>
                     <div className="col-span-6 grid grid-cols-4 gap-2">
@@ -155,7 +155,7 @@ export function PermissionGridWidget() {
                       <div
                         key={item.id}
                         className={cn(
-                          "grid grid-cols-12 gap-4 p-4 border-b hover:bg-gray-50 transition-colors",
+                          "grid grid-cols-12 gap-4 p-4 border-b hover:bg-gray-50 transition-colors dark:hover:bg-slate-900",
                           item.level > 0 && "bg-gray-25",
                         )}
                       >
@@ -178,7 +178,7 @@ export function PermissionGridWidget() {
                               )}
                             </Button>
                           )}
-                          <span className="text-gray-900 text-sm">{highlightText(item.name, searchTerm)}</span>
+                          <span className="text-gray-900 dark:text-gray-400 text-sm">{highlightText(item.name, searchTerm)}</span>
                           {activePermissions.length > 0 && (
                             <div className="flex gap-1 flex-wrap lg:flex-nowrap">
                               {activePermissions.map((perm) => (

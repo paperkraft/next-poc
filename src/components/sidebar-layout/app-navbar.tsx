@@ -92,7 +92,7 @@ const DropdownMenu = ({ items }: { items: GroupedMenus[] }) => {
                         {item.path ? (
                             <Link href={item.path} className="flex gap-2 [&>svg]:size-4 items-center w-full p-2" onClick={() => setOpenPaths([])}>
                                 <LucideIcon />
-                                <span>{item.name}</span>
+                                <span className=''>{item.name}</span>
                             </Link>
                         ) : (
                             <div className="flex gap-2 [&>svg]:size-5 w-full">
@@ -161,7 +161,7 @@ const DropdownMenu = ({ items }: { items: GroupedMenus[] }) => {
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: 10 }}
                                     transition={{ duration: 0.2 }}
-                                    className={`absolute min-w-56 bg-background shadow-lg border rounded-lg p-1 z-50 space-y-1  ${getMenuPosition(level, currentPath)}`}
+                                    className={`absolute min-w-60 bg-background shadow-lg border rounded-lg p-1 z-50 space-y-1  ${getMenuPosition(level, currentPath)}`}
                                 >
                                     {renderMenuItems(item.modules, currentPath, level + 1)}
                                 </motion.div>

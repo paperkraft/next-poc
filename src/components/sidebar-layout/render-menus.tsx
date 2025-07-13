@@ -55,7 +55,12 @@ export const RenderMenus = React.memo(({ item, isSearchActive }: { item: MenuIte
                 className="group/collapsible [&[data-state=open]>button>svg:not(:first-child)]:rotate-90"
             >
                 <CollapsibleTrigger asChild>
-                    <SidebarMenuButton tooltip={item.name} className="focus-within:!ring-primary">
+                    <SidebarMenuButton tooltip={item.name}
+                        className={cn(
+                            "focus-within:!ring-primary",
+                            { "bg-muted text-primary hover:!text-primary hover:bg-muted": isActive }
+                        )}
+                    >
                         <LucideIcon />
                         <span>{item.name}</span>
                         <Icons.ChevronRight className="ml-auto transition-transform duration-200" />

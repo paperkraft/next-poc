@@ -147,8 +147,6 @@ const SidebarFooterContent = React.memo(() => {
                     </DropdownMenu>
                 </SidebarMenuItem>
             </SidebarMenu>
-
-
         </>
     )
 });

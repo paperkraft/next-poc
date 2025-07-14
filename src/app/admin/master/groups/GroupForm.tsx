@@ -11,7 +11,7 @@ import ConfirmDeleteDialog from '@/components/common/confirm-delete-dialog';
 import FormButtons from '@/components/common/form-buttons';
 import TitlePage from '@/components/custom/page-heading';
 import { Form } from '@/components/ui/form';
-import { useMounted } from '@/hooks/use-mounted';
+import { useMount } from '@/hooks/use-mount';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 const groupSchema = z.object({
@@ -35,7 +35,7 @@ type GroupFormProps = {
 export default function GroupForm({ id, data }: GroupFormProps) {
 
     const router = useRouter();
-    const mounted = useMounted();
+    const isMount = useMount();
 
     const [show, setShow] = useState(false);
     const [open, setOpen] = useState(false);
@@ -136,7 +136,7 @@ export default function GroupForm({ id, data }: GroupFormProps) {
     const title = id ? "Group" : "Create Group";
 
     return (
-        mounted &&
+        isMount &&
         <>
             {/* Title and action buttons */}
             <TitlePage

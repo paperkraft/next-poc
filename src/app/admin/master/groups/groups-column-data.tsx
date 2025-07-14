@@ -5,12 +5,12 @@ import { usePathname } from 'next/navigation';
 import { useMemo } from 'react';
 
 import { Checkbox } from '@/components/ui/checkbox';
-import { useMounted } from '@/hooks/use-mounted';
+import { useMount } from '@/hooks/use-mount';
 import { ColumnDef } from '@tanstack/react-table';
 
 export const GroupsMasterColumns = () => {
 
-  const mounted = useMounted();
+  const isMount = useMount();
   const path = usePathname();
 
   const columns: ColumnDef<any>[] = useMemo(() => [
@@ -53,5 +53,5 @@ export const GroupsMasterColumns = () => {
     }
   ], [path]);
 
-  return mounted ? { columns } : { columns: [] };
+  return isMount ? { columns } : { columns: [] };
 };

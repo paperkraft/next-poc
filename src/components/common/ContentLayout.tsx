@@ -5,7 +5,7 @@ import {
     Sidebar, SidebarFooter, SidebarHeader, SidebarInset, useSidebar
 } from '@/components/ui/sidebar';
 import { themeConfig } from '@/hooks/use-config';
-import { useMounted } from '@/hooks/use-mounted';
+import { useMount } from '@/hooks/use-mount';
 import { GroupedMenus } from '@/lib/menus';
 import { cn } from '@/lib/utils';
 
@@ -27,13 +27,16 @@ export default function ContentLayout({ children, currentTenant, menus = [], ten
 
     const [config] = themeConfig();
     const { isMobile } = useSidebar();
-    const mounted = useMounted();
+    const isMount = useMount();
 
-    if (!mounted) return null
+    const isVertical = config.layout === "vertical";
+    const isCollapse = config.layout === "collapsed" || config.layout === "dual-menu";
+
+    if (!isMount) return null
 
     return (
         <>
-            {(config.layout === "vertical" || isMobile) &&
+            {(isVertical || isMobile) &&
                 <Sidebar>
                     <SidebarHeader className="h-16 border-b justify-center">
                         <SidebarHeaderContent />
@@ -47,16 +50,14 @@ export default function ContentLayout({ children, currentTenant, menus = [], ten
                 </Sidebar>
             }
 
-            {(config.layout === "collapsed" || config.layout === "dual-menu") && !isMobile &&
+            {isCollapse && !isMobile &&
                 <SidebarCollapseMenus menus={menus} />
             }
 
             <SidebarInset>
                 <Header menus={menus} currentTenant={currentTenant} tenants={tenants} />
                 <div className={cn("grid grid-rows p-4 gap-4 w-full pb-12", { "container px-8": config.content === 'compact' })}>
-                    {config.layout !== "horizontal" && (
-                        <HeaderBreadcrumb menus={menus} />
-                    )}
+                    {isCollapse && (<HeaderBreadcrumb menus={menus} />)}
                     {children}
                 </div>
                 <FooterTag />

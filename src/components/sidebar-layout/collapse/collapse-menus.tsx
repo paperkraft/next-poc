@@ -14,7 +14,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu"
-import { useMounted } from "@/hooks/use-mounted";
+import { useMount } from '@/hooks/use-mount';
 import { ThemeWrapper } from "@/components/layout/theme-wrapper";
 import { MenuItem } from "@/lib/menus";
 import { CollapseDropdownsMenus } from "./collapse-dropdown";
@@ -34,7 +34,7 @@ export const CollapseMenus = React.memo(({ item, active, submenu, dropdown }: Co
     const hasSubmenu = item?.children?.length > 0;
     const isActive = useMemo(() => checkIsActive(item, path), [item, path]);
 
-    const mounted = useMounted()
+    const isMount = useMount()
 
     const handleClick = () => {
         if (isMobile) toggleSidebar();
@@ -66,7 +66,7 @@ export const CollapseMenus = React.memo(({ item, active, submenu, dropdown }: Co
     );
 
 
-    if (!mounted) return null
+    if (!isMount) return null
 
     if (!hasSubmenu) {
         return (

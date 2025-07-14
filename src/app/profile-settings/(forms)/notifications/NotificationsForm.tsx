@@ -5,13 +5,13 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { availableTopics } from '@/constants';
 import { useNotifications } from '@/context/notification-context';
-import { useMounted } from '@/hooks/use-mounted';
+import { useMount } from '@/hooks/use-mount';
 
 import TopicManagement from './TopicManagement';
 import { useRouter } from 'next/navigation';
 
 export function NotificationsForm() {
-  const mounted = useMounted();
+  const isMount = useMount();
   const router = useRouter();
   const t = useTranslations('setting');
   const { subscription, loading, unsubscribe, requestPermission } = useNotifications();
@@ -26,7 +26,7 @@ export function NotificationsForm() {
   }
 
   return (
-    mounted &&
+    isMount &&
     <>
       <div className="space-y-4">
         <div>

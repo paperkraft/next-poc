@@ -9,7 +9,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from '@/components/ui/table';
-import { useMounted } from '@/hooks/use-mounted';
+import { useMount } from '@/hooks/use-mount';
 import { cn } from '@/lib/utils';
 import { ModuleNode } from '@/types/modules';
 import { IGroupedModule } from '@/types/permissions';
@@ -63,12 +63,12 @@ export default function GroupTable({ groupedModules }: { groupedModules: IGroupe
 
 const Tree = React.memo(({ data, level }: { data: ModuleNode, level: number }) => {
 
-    const mounted = useMounted();
+    const isMount = useMount();
     const path = usePathname();
 
     const hasSubModules = data && data?.children?.length > 0;
 
-    if (!mounted) return null;
+    if (!isMount) return null;
 
     return (
         <Collapsible asChild>

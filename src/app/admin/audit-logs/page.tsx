@@ -1,6 +1,8 @@
 import { headers } from 'next/headers';
 import { Suspense } from 'react';
 
+import AuditLogUI from '@/app/[tenantSlug]/admin/audit/audit-log-ui';
+import { fetchAuditLogs } from '@/app/actions/audit.action';
 import Loading from '@/app/loading';
 import AccessDenied from '@/components/custom/access-denied';
 import NoRecordPage from '@/components/custom/no-record';
@@ -8,14 +10,10 @@ import TitlePage from '@/components/custom/page-heading';
 import SomethingWentWrong from '@/components/custom/somthing-wrong';
 import { can } from '@/lib/abac/checkPermissions';
 import { getSessionModules } from '@/lib/abac/sessionModules';
-import { findModuleIdByPath } from '@/utils/helper';
-
-import AuditLogTable from './AuditLogTable';
-import { fetchAuditLogs } from '@/app/actions/audit.action';
 
 export const metadata = {
     title: "Audit-log",
-    description: "Audit log for recently activities",
+    description: "Track all system activities and changes.",
 };
 
 export default function AuditLog() {
@@ -30,9 +28,6 @@ async function AuditLogContent() {
     const headersList = headers();
     const currentPath = headersList.get('x-current-path') || '';
 
-    console.log('current-path', currentPath);
-
-
     try {
         const { session, modules } = await getSessionModules();
         if (!session) return <AccessDenied />;
@@ -45,8 +40,6 @@ async function AuditLogContent() {
 
         if (!hasPermission) return <AccessDenied />;
 
-        const moduleId = findModuleIdByPath(modules, currentPath);
-
         const { success, data, message } = await fetchAuditLogs().then((res) => res.json());
 
         return (
@@ -56,7 +49,8 @@ async function AuditLogContent() {
                 {!success ? (
                     <SomethingWentWrong message={message} />
                 ) : data.length ? (
-                    <AuditLogTable data={data} moduleId={moduleId} />
+                    // <AuditLogTable data={data} moduleId={moduleId} />
+                    <AuditLogUI data={data} />
                 ) : (
                     <NoRecordPage text="audit logs" />
                 )}
@@ -74,10 +68,4 @@ async function AuditLogContent() {
             </>
         )
     }
-
-
-
-
-
-
 }

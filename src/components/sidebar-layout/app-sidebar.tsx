@@ -9,7 +9,7 @@ import {
     SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarInput, SidebarMenu
 } from '@/components/ui/sidebar';
 import { useDebounce } from '@/hooks/use-debounce';
-import { useMounted } from '@/hooks/use-mounted';
+import { useMount } from '@/hooks/use-mount';
 import { GroupedMenus, MenuItem } from '@/lib/menus';
 
 import { RenderMenus } from './render-menus';
@@ -17,7 +17,7 @@ import DefaultMenu from './sidebar-default';
 import SidebarSkeleton from './sidebar-skeleton';
 
 const AppSidebarMenus = React.memo(({ menus = [] }: { menus: GroupedMenus[] }) => {
-    const mounted = useMounted();
+    const isMount = useMount();
     const { status } = useSession();
     const [query, setQuery] = React.useState<string>('');
     const debouncedQuery = useDebounce(query, 300);
@@ -38,7 +38,7 @@ const AppSidebarMenus = React.memo(({ menus = [] }: { menus: GroupedMenus[] }) =
         return menus.filter((group) => group.groupName.toLowerCase().includes(lowerQuery) || searchModules(group.modules, lowerQuery))
     }, [debouncedQuery, menus, searchModules]);
 
-    if (!mounted) return null
+    if (!isMount) return null
 
     return (
         <SidebarContent className="gap-0">

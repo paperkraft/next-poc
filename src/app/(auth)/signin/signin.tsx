@@ -6,7 +6,7 @@ import { Form } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { useMounted } from "@/hooks/use-mounted";
+import { useMount } from '@/hooks/use-mount';
 import { signIn, useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { getRecaptchaToken } from "@/app/actions/auth.action";
@@ -23,7 +23,7 @@ export default function SignInPage() {
   const [loading, setLoading] = useState(false);
   const [callbackUrl, setCallbackUrl] = useState<string | null>(null);
 
-  const mounted = useMounted();
+  const isMount = useMount();
 
   const form = useForm<signInT>({
     resolver: zodResolver(signInSchema),
@@ -80,7 +80,7 @@ export default function SignInPage() {
     }
   };
 
-  if (!mounted) return null;
+  if (!isMount) return null;
 
   return (
     <>

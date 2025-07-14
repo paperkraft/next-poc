@@ -10,7 +10,7 @@ import React, { useRef, useState } from 'react';
 import { themeConfig } from '@/hooks/use-config';
 import { GroupedMenus, MenuItem } from '@/lib/menus';
 import { cn } from '@/lib/utils';
-import { useMounted } from '@/hooks/use-mounted';
+import { useMount } from '@/hooks/use-mount';
 
 const DropdownMenu = ({ items }: { items: GroupedMenus[] }) => {
 
@@ -18,7 +18,7 @@ const DropdownMenu = ({ items }: { items: GroupedMenus[] }) => {
     const timeouts = useRef<Record<string, NodeJS.Timeout | null>>({});
     const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
     const path = usePathname();
-    const mounted = useMounted();
+    const isMount = useMount();
 
     const openMenu = (path: string) => {
 
@@ -173,7 +173,7 @@ const DropdownMenu = ({ items }: { items: GroupedMenus[] }) => {
         })
     }
 
-    if (!mounted) return null;
+    if (!isMount) return null;
 
     return <nav className="flex space-x-4">{renderGroups(items, path)}</nav>;
 };

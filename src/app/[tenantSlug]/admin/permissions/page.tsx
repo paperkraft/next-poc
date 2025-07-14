@@ -10,6 +10,12 @@ import { PermissionOverviewWidget } from '@/components/tenant-admin/role-permiss
 import { SearchWidget } from '@/components/tenant-admin/role-permission/search-widget';
 import { SaveWidget } from '@/components/tenant-admin/role-permission/save-widget';
 import { PermissionGridWidget } from '@/components/tenant-admin/role-permission/permission-grid-widget';
+import TitlePage from '@/components/custom/page-heading';
+
+export const metadata = {
+    title: "Permission Management",
+    description: "Assign and manage role-based permissions",
+};
 
 export default async function Page() {
 
@@ -25,15 +31,12 @@ export default async function Page() {
     });
 
     return (
-        <div className='max-w-7xl'>
+        <>
+            <TitlePage {...metadata} />
+
             <PermissionProvider tenantId={+session?.user.tenantId} roles={roles}>
                 <div className="min-h-screen bg-gray-50 dark:bg-gray-900 rounded-lg">
                     <div className="container mx-auto p-6">
-                        <div className="mb-6">
-                            <h1 className="text-2xl font-bold">Permission Management</h1>
-                            <p className="text-muted-foreground">Assign and manage role-based permissions with our widget-based interface</p>
-                        </div>
-
                         <div className="grid grid-cols-12 gap-6">
                             {/* Left Sidebar */}
                             <div className="col-span-3 space-y-6">
@@ -52,7 +55,6 @@ export default async function Page() {
                     </div>
                 </div>
             </PermissionProvider>
-
-        </div>
+        </>
     );
 }

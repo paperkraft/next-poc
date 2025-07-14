@@ -6,7 +6,7 @@ import { Form } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod"
 import { useForm } from 'react-hook-form'
-import { useMounted } from "@/hooks/use-mounted";
+import { useMount } from '@/hooks/use-mount';
 import OrganizationPage from "./organization";
 import ButtonContent from "@/components/custom/button-content";
 import { signUpSchema } from "@/lib/zod";
@@ -16,7 +16,7 @@ import ToggleButtons from "@/components/layout/ToggleButtons";
 export type signUp = z.infer<typeof signUpSchema>;
 
 export default function SignUpPage() {
-    const mounted = useMounted();
+    const isMount = useMount();
     const [loading, setLoading] = useState(false);
 
     const [data, setData] = useState<signUp>()
@@ -39,7 +39,7 @@ export default function SignUpPage() {
         }, 2000)
     }
 
-    if (!mounted) return null;
+    if (!isMount) return null;
 
     return (
         <>

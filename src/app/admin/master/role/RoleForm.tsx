@@ -11,7 +11,7 @@ import ConfirmDeleteDialog from '@/components/common/confirm-delete-dialog';
 import FormButtons from '@/components/common/form-buttons';
 import TitlePage from '@/components/custom/page-heading';
 import { Form } from '@/components/ui/form';
-import { useMounted } from '@/hooks/use-mounted';
+import { useMount } from '@/hooks/use-mount';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 export const roleFormSchema = z.object({
@@ -35,7 +35,7 @@ type RoleFormProps = {
 export default function RoleForm({ id, data }: RoleFormProps) {
 
   const router = useRouter();
-  const mounted = useMounted();
+  const isMount = useMount();
 
   const [show, setShow] = useState(false);
   const [open, setOpen] = useState(false);
@@ -136,7 +136,7 @@ export default function RoleForm({ id, data }: RoleFormProps) {
 
   const title = id ? "Role" : "Create Role";
 
-  if (!mounted) return null;
+  if (!isMount) return null;
 
   return (
     <>

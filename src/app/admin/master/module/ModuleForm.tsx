@@ -16,7 +16,7 @@ import ConfirmDeleteDialog from '@/components/common/confirm-delete-dialog';
 import FormButtons from '@/components/common/form-buttons';
 import TitlePage from '@/components/custom/page-heading';
 import { Form } from '@/components/ui/form';
-import { useMounted } from '@/hooks/use-mounted';
+import { useMount } from '@/hooks/use-mount';
 
 import { RecursiveModuleForm } from './RecursiveModules';
 import { ModuleWithChildren } from '@/types/modules';
@@ -54,7 +54,7 @@ export default function ModuleForm({ id, module, groupOptions, isChild = false }
 
     const isEdit = !!id;
 
-    const mounted = useMounted();
+    const isMount = useMount();
     const router = useRouter();
 
     const [show, setShow] = useState(false);
@@ -181,7 +181,7 @@ export default function ModuleForm({ id, module, groupOptions, isChild = false }
 
     const readOnly = !show && !!id;
 
-    if (!mounted) return null;
+    if (!isMount) return null;
 
     return (
         <>

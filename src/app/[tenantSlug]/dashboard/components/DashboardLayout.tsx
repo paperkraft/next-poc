@@ -3,7 +3,7 @@ import { useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
 
 import { useDashboard } from '@/components/provider/DashboardProvider';
-import { useMounted } from '@/hooks/use-mounted';
+import { useMount } from '@/hooks/use-mount';
 import { DndContext, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext } from '@dnd-kit/sortable';
 
@@ -13,7 +13,7 @@ import WidgetContainer from './WidgetContainer';
 
 export default function DashboardLayout() {
 
-    const mounted = useMounted();
+    const isMount = useMount();
     const {
         userWidgets,
         reorderWidgets,
@@ -109,7 +109,7 @@ export default function DashboardLayout() {
         </div>
     )
 
-    if (!mounted) return null
+    if (!isMount) return null
 
     return (
         <div className="space-y-4">

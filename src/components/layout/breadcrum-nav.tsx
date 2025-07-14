@@ -9,7 +9,7 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator
 } from '@/components/ui/breadcrumb';
-import { useMounted } from '@/hooks/use-mounted';
+import { useMount } from '@/hooks/use-mount';
 import { usePathname } from 'next/navigation';
 import { GroupedMenus } from '@/lib/menus';
 import { getBreadcrumbsFromGroupedMenus } from './getBreadcrums';
@@ -19,15 +19,15 @@ function truncate(text: string, maxLength: number = 20): string {
 }
 
 export default function HeaderBreadcrumb({ menus = [] }: { menus: GroupedMenus[] }) {
-    const mounted = useMounted();
+    const isMount = useMount();
     const path = usePathname();
 
     const breadcrumb = useMemo(() => {
-        if (!mounted || !path || menus.length === 0) return [];
+        if (!isMount || !path || menus.length === 0) return [];
         return getBreadcrumbsFromGroupedMenus(menus, path);
-    }, [menus, path, mounted]);
+    }, [menus, path, isMount]);
 
-    if (!mounted || breadcrumb.length === 0) return null;
+    if (!isMount || breadcrumb.length === 0) return null;
 
     return (
         <Breadcrumb>

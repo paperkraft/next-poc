@@ -7,7 +7,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { ChevronRight, DotIcon } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { useMounted } from "@/hooks/use-mounted";
+import { useMount } from '@/hooks/use-mount';
 import { MenuItem } from "@/lib/menus";
 import { checkIsActive } from "../helper";
 
@@ -16,7 +16,7 @@ export const CollapseSubmenus = React.memo(({ item, isSearchActive, level }: { i
     const { toggleSidebar, isMobile } = useSidebar();
     const path = usePathname();
 
-    const mounted = useMounted()
+    const isMount = useMount()
 
     const hasSubmenu = Boolean(item.children?.length);
     const isActive = React.useMemo(() => checkIsActive(item as MenuItem, path), [item, path]);
@@ -54,7 +54,7 @@ export const CollapseSubmenus = React.memo(({ item, isSearchActive, level }: { i
         </Collapsible>
     )
 
-    if (!mounted) return null
+    if (!isMount) return null
 
     return hasSubmenu ? (
         renderSubmenu()

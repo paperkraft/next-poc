@@ -12,12 +12,32 @@ export async function fetchAuditLogs() {
 
         const auditLog = await prisma.auditLog.findMany({
             where: tenantId ? { tenantId } : undefined,
-            include: {
+            select: {
+                id: true,
+                action: true,
                 user: {
                     select: {
-                        profile: true
+                        id: true,
+                        profile: {
+                            select: {
+                                firstName: true,
+                                lastName: true,
+                            }
+                        }
                     }
                 },
+                tenant: {
+                    select: {
+                        id: true,
+                        name: true,
+                        slug: true
+                    }
+                },
+                entity: true,
+                details: true,
+                device: true,
+                createdAt: true,
+                metadata: true
             },
             orderBy: {
                 createdAt: 'desc'

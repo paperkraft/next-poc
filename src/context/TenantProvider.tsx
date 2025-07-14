@@ -1,6 +1,6 @@
 'use client';
 
-import { useMounted } from '@/hooks/use-mounted';
+import { useMount } from '@/hooks/use-mount';
 import { GroupedMenus } from '@/lib/menus';
 import { Tenant } from '@prisma/client';
 import { createContext, useContext } from 'react';
@@ -20,9 +20,9 @@ type TenantProviderProps = {
 
 export function TenantProvider({ children, tenant, menus }: TenantProviderProps) {
 
-    const mounted = useMounted();
+    const isMount = useMount();
 
-    if (!mounted) return null
+    if (!isMount) return null
 
     return (
         <TenantContext.Provider value={{ tenant, menus }}>

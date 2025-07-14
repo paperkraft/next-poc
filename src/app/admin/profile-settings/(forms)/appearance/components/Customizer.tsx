@@ -8,11 +8,11 @@ import { Label } from "recharts"
 import { cn } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ThemeWrapper } from "@/components/layout/theme-wrapper"
-import { useMounted } from "@/hooks/use-mounted"
+import { useMount } from '@/hooks/use-mount'
 import { BaseColor, baseColors } from "@/registry/registry-base-colors"
 
 export function Customizer() {
-    const mounted = useMounted();
+    const isMount = useMount();
     const { setTheme: setMode, resolvedTheme: mode } = useTheme()
     const [config, setConfig] = themeConfig();
 
@@ -58,7 +58,7 @@ export function Customizer() {
                             .map(({ name, label, activeColor }) => {
                                 const isActive = config.theme === name
 
-                                return mounted ? (
+                                return isMount ? (
                                     <Button
                                         variant={"outline"}
                                         size="sm"
@@ -110,7 +110,7 @@ export function Customizer() {
                 <div className="space-y-1.5">
                     <Label className="text-xs">Mode</Label>
                     <div className="grid grid-cols-3 gap-2">
-                        {mounted ? (
+                        {isMount ? (
                             <>
                                 <Button
                                     variant={"outline"}

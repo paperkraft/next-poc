@@ -5,7 +5,7 @@ import React from 'react';
 import ThemeConfig from '@/components/layout/ThemeCustomizer';
 import { Separator } from '@/components/ui/separator';
 import { themeConfig } from '@/hooks/use-config';
-import { useMounted } from '@/hooks/use-mounted';
+import { useMount } from '@/hooks/use-mount';
 import { GroupedMenus } from '@/lib/menus';
 import { cn } from '@/lib/utils';
 
@@ -24,7 +24,7 @@ type HeaderProps = {
 }
 
 const Header = React.memo(({ menus = [], currentTenant, tenants = [] }: HeaderProps) => {
-    const mounted = useMounted();
+    const isMount = useMount();
     const { data: session } = useSession();
 
     const { isMobile } = useSidebar();
@@ -33,7 +33,7 @@ const Header = React.memo(({ menus = [], currentTenant, tenants = [] }: HeaderPr
     const isSystemAdmin = session?.user?.globalRoles.includes("SYSTEM_ADMIN");
     const tenantName = session?.user?.tenantName;
 
-    if (!mounted) return null;
+    if (!isMount) return null;
 
     return (
         <>

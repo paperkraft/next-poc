@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
-import { useMounted } from "@/hooks/use-mounted"
+import { useMount } from '@/hooks/use-mount'
 
 interface SidebarNavProps extends React.HTMLAttributes<HTMLElement> {
   items: {
@@ -14,10 +14,10 @@ interface SidebarNavProps extends React.HTMLAttributes<HTMLElement> {
 }
 
 export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
-  const mounted = useMounted();
+  const isMount = useMount();
   const pathname = usePathname();
 
-  if (!mounted) return null;
+  if (!isMount) return null;
 
   return (
     <nav

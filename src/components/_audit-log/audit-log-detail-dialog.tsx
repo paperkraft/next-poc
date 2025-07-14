@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils"
 import { useAuditLog } from "@/context/audit-log-context" // Import the hook
 
 export function AuditLogDetailDialog() {
-    const { open, setOpen, selectedLog, setSelectedLog, getActionIcon, getActionColor, formatDate } = useAuditLog()
+    const { open, setOpen, selectedLog, getActionIcon, getActionColor, formatDate } = useAuditLog()
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -31,19 +31,19 @@ export function AuditLogDetailDialog() {
 
                                 <div className="font-medium text-gray-700">User:</div>
                                 <div className="text-gray-900">
-                                    {selectedLog.user.name} (ID: {selectedLog.userId})
+                                    {selectedLog.user.name} (ID: {selectedLog?.user?.id})
                                 </div>
 
                                 <div className="font-medium text-gray-700">Tenant:</div>
                                 <div className="text-gray-900">
-                                    {selectedLog.tenant?.name || "N/A"} (ID: {selectedLog.tenantId || "N/A"})
+                                    {selectedLog.tenant?.name || "N/A"} (ID: {selectedLog?.tenant?.id || "N/A"})
                                 </div>
 
                                 <div className="font-medium text-gray-700">Entity:</div>
                                 <div className="text-gray-900">{selectedLog.entity}</div>
 
                                 <div className="font-medium text-gray-700">Slug:</div>
-                                <div className="text-gray-900">{selectedLog.slug || "N/A"}</div>
+                                <div className="text-gray-900">{selectedLog?.tenant?.slug || "N/A"}</div>
 
                                 <div className="font-medium text-gray-700">Timestamp:</div>
                                 <div className="text-gray-900">{formatDate(selectedLog.createdAt)}</div>
@@ -63,7 +63,7 @@ export function AuditLogDetailDialog() {
                                 <div className="text-gray-900">{selectedLog.device?.browser || "N/A"}</div>
 
                                 <div className="font-medium text-gray-700">IP Address:</div>
-                                <div className="text-gray-900">{selectedLog.metadata?.ip || "N/A"}</div>
+                                <div className="text-gray-900">{selectedLog.device?.ip || "N/A"}</div>
                             </div>
                         </div>
 
@@ -71,13 +71,6 @@ export function AuditLogDetailDialog() {
                             <h3 className="text-lg font-semibold text-gray-900">Details</h3>
                             <pre className="bg-gray-50 rounded-lg p-4 text-sm text-gray-800 overflow-x-auto border">
                                 {JSON.stringify(selectedLog.details, null, 2)}
-                            </pre>
-                        </div>
-
-                        <div className="md:col-span-2 space-y-4">
-                            <h3 className="text-lg font-semibold text-gray-900">Metadata</h3>
-                            <pre className="bg-gray-50 rounded-lg p-4 text-sm text-gray-800 overflow-x-auto border">
-                                {JSON.stringify(selectedLog.metadata, null, 2)}
                             </pre>
                         </div>
                     </div>

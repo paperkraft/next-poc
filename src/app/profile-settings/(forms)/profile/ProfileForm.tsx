@@ -10,7 +10,7 @@ import { InputController } from '@/components/_form-controls/InputController';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMounted } from '@/hooks/use-mounted';
+import { useMount } from '@/hooks/use-mount';
 import { LoginDetail } from '@/app/actions/audit.action';
 import LastLoginSession from './LastLoginSession';
 
@@ -40,7 +40,7 @@ const defaultValues: Partial<ProfileFormValues> = {
 }
 
 export function ProfileForm({ lastLogins }: { lastLogins: LoginDetail[] | null }) {
-  const mounted = useMounted();
+  const isMount = useMount();
   const t = useTranslations('setting');
 
   const { data: session } = useSession();
@@ -88,7 +88,7 @@ export function ProfileForm({ lastLogins }: { lastLogins: LoginDetail[] | null }
     }
   }
 
-  if (!mounted) return null;
+  if (!isMount) return null;
 
   return (
     <Form {...form}>

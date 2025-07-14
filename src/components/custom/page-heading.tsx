@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { memo } from 'react';
 
 import { Separator } from '@/components/ui/separator';
-import { useMounted } from '@/hooks/use-mounted';
+import { useMount } from '@/hooks/use-mount';
 
 import { IconTooltipButton } from '../common/IconTooltipButton';
 import { PermissionGuard } from '../PermissionGuard';
@@ -36,11 +36,11 @@ const TitlePage = memo(({
     onEdit,
     onDelete,
 }: Props) => {
-    const mounted = useMounted();
+    const isMount = useMount();
     const path = usePathname();
     const router = useRouter();
 
-    if (!mounted) return null;
+    if (!isMount) return null;
 
     const showAddButton = listPage
     const showBackButton = createPage || viewPage

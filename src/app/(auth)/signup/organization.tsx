@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod"
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
-import { useMounted } from "@/hooks/use-mounted";
+import { useMount } from '@/hooks/use-mount';
 import { signUp } from "./signup";
 import { toast } from "sonner";
 import ButtonContent from "@/components/custom/button-content";
@@ -18,7 +18,7 @@ type orgType = z.infer<typeof OrganizationSchema>;
 
 export default function OrganizationPage(signupData: signUp) {
     const router = useRouter();
-    const mounted = useMounted();
+    const isMount = useMount();
     const [loading, setLoading] = useState(false);
 
     const form = useForm<orgType>({
@@ -56,7 +56,7 @@ export default function OrganizationPage(signupData: signUp) {
         }
     }
 
-    if (!mounted) return null;
+    if (!isMount) return null;
 
     return (
         <Form {...form}>

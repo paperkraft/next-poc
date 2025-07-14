@@ -1,33 +1,31 @@
 "use client"
 
 import { User, Database, Calendar, Eye } from "lucide-react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { useAuditLog } from "@/context/audit-log-context"
+import { AuditLogFilters } from "./audit-log-filters"
 
 export function AuditLogTable() {
     const { paginatedLogs, filteredLogs, getActionIcon, getActionColor, formatDate, setSelectedLog, setOpen } = useAuditLog()
 
     return (
         <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-lg">Audit Log Entries</CardTitle>
-                <CardDescription className="text-sm text-gray-500">{filteredLogs.length} total entries</CardDescription>
-            </CardHeader>
+            <AuditLogFilters />
             <CardContent>
                 <div className="overflow-x-auto">
                     <Table>
-                        <TableHeader>
+                        <TableHeader className="bg-primary-foreground">
                             <TableRow>
                                 <TableHead className="w-[120px]">Action</TableHead>
                                 <TableHead>User</TableHead>
                                 <TableHead>Tenant</TableHead>
                                 <TableHead>Entity</TableHead>
                                 <TableHead>Date & Time</TableHead>
-                                <TableHead className="text-right">Details</TableHead>
+                                <TableHead>Details</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -45,13 +43,13 @@ export function AuditLogTable() {
                                                 <User className="w-4 h-4 text-gray-400 mr-2" />
                                                 <div>
                                                     <div className="font-medium">{log.user.name}</div>
-                                                    <div className="text-sm text-muted-foreground">ID: {log.userId}</div>
+                                                    <div className="text-sm text-muted-foreground">ID: {log.user?.id}</div>
                                                 </div>
                                             </div>
                                         </TableCell>
                                         <TableCell>
                                             <div className="font-medium">{log.tenant?.name || "N/A"}</div>
-                                            <div className="text-sm text-muted-foreground">ID: {log.tenantId || "N/A"}</div>
+                                            <div className="text-sm text-muted-foreground">ID: {log.tenant?.id || "N/A"}</div>
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex items-center">

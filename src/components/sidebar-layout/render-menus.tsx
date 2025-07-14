@@ -7,7 +7,7 @@ import React from 'react';
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, useSidebar } from '@/components/ui/sidebar';
-import { useMounted } from '@/hooks/use-mounted';
+import { useMount } from '@/hooks/use-mount';
 import { MenuItem } from '@/lib/menus';
 import { cn } from '@/lib/utils';
 
@@ -17,14 +17,14 @@ export const RenderMenus = React.memo(({ item, isSearchActive }: { item: MenuIte
 
     const { toggleSidebar, isMobile } = useSidebar();
     const path = usePathname();
-    const mounted = useMounted();
+    const isMount = useMount();
     const hasSubmenu = item?.children?.length > 0;
     const isActive = React.useMemo(() => checkIsActive(item, path), [item, path]);
     const shouldExpand = isSearchActive ? true : isActive;
 
     const LucideIcon = Icons[item.icon as keyof typeof Icons] as React.ElementType ?? Icons.DotIcon;
 
-    if (!mounted) return null
+    if (!isMount) return null
 
     if (!hasSubmenu) {
         return (

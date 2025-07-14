@@ -17,7 +17,7 @@ import { RadioButton } from '@/components/_form-controls/radio-button';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import { availableTopics } from '@/constants';
-import { useMounted } from '@/hooks/use-mounted';
+import { useMount } from '@/hooks/use-mount';
 import { ISendNotificationForm, SendNotificationFormSchema } from '@/types/notifications';
 import { zodResolver } from '@hookform/resolvers/zod';
 
@@ -27,7 +27,7 @@ type FormProps = {
 
 export default function SendNotificationForm({ users }: FormProps) {
 
-    const mounted = useMounted();
+    const isMount = useMount();
     const [loading, setLoading] = useState(false);
 
     const form = useForm<ISendNotificationForm>({
@@ -86,7 +86,7 @@ export default function SendNotificationForm({ users }: FormProps) {
         }
     }
 
-    if (!mounted) return null;
+    if (!isMount) return null;
 
     return (
         <Form {...form}>

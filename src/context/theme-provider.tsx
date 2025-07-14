@@ -4,7 +4,7 @@ import { ThemeProvider as NextThemesProvider } from 'next-themes';
 import { createContext, useEffect, useState } from 'react';
 
 import { ThemeWrapper } from '@/components/layout/theme-wrapper';
-import { useMounted } from '@/hooks/use-mounted';
+import { useMount } from '@/hooks/use-mount';
 
 export type ThemeProps = {
     toggleTheme: () => void;
@@ -14,7 +14,7 @@ export type ThemeProps = {
 export const ThemeContext = createContext<ThemeProps | null>(null);
 
 const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-    const isMounted = useMounted();
+    const isisMount = useMount();
 
     const [currentTheme, setCurrentTheme] = useState('light');
 
@@ -26,9 +26,9 @@ const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     useEffect(() => {
         const themeLocalStorage = localStorage.getItem('theme');
         if (themeLocalStorage) setCurrentTheme(themeLocalStorage);
-    }, [isMounted]);
+    }, [isisMount]);
 
-    if (!isMounted) return null;
+    if (!isisMount) return null;
 
     return (
 
@@ -41,7 +41,7 @@ const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
                     disableTransitionOnChange
                 >
                     <>
-                        {isMounted && children}
+                        {isisMount && children}
                         <ProgressBar
                             height="4px"
                             color="rgb(26 139 244)"

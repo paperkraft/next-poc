@@ -8,14 +8,13 @@ interface AuditLog {
     id: number
     action: string
     user: { id: number; name: string }
-    userId: number
-    tenant: { id: number; name: string } | null
-    tenantId: number | null
-    slug: string
-    metadata: Record<string, any>
+    tenant: { id: number; name: string; slug: string } | null
+    // userId: number
+    // tenantId: number | null
+    // slug: string
     entity: string
     details: Record<string, any>
-    device: { type: string; os: string; browser: string } | null
+    device: { type: string; os: string; browser: string, ip: string } | null
     createdAt: string
 }
 
@@ -61,9 +60,10 @@ const AuditLogContext = createContext<AuditLogContextType | undefined>(undefined
 // 5. Create the Provider Component
 interface AuditLogProviderProps {
     children: ReactNode
+    data: any[]
 }
 
-export function AuditLogProvider({ children }: AuditLogProviderProps) {
+export function AuditLogProvider({ children, data }: AuditLogProviderProps) {
     const [logs, setLogs] = useState<AuditLog[]>([])
     const [filteredLogs, setFilteredLogs] = useState<AuditLog[]>([])
     const [loading, setLoading] = useState(true)
@@ -100,14 +100,10 @@ export function AuditLogProvider({ children }: AuditLogProviderProps) {
                 id: i,
                 action,
                 user: { id: Math.floor(Math.random() * 100), name: user },
-                userId: Math.floor(Math.random() * 100),
-                tenant: { id: Math.floor(Math.random() * 50), name: tenant },
-                tenantId: Math.floor(Math.random() * 50),
-                slug: `${entity.toLowerCase()}-${i}`,
-                metadata: {
-                    userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-                    ip: `192.168.1.${Math.floor(Math.random() * 255)}`,
-                },
+                // userId: Math.floor(Math.random() * 100),
+                tenant: { id: Math.floor(Math.random() * 50), name: tenant, slug: `${entity.toLowerCase()}-${i}` },
+                // tenantId: Math.floor(Math.random() * 50),
+                // slug: `${entity.toLowerCase()}-${i}`,
                 entity,
                 details: {
                     changes: action === "UPDATE" ? { name: "Updated value", status: "active" } : {},
@@ -118,6 +114,7 @@ export function AuditLogProvider({ children }: AuditLogProviderProps) {
                     type: "desktop",
                     os: "Windows 10",
                     browser: "Chrome",
+                    ip: `192.168.1.${Math.floor(Math.random() * 255)}`
                 },
                 createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
             })
@@ -127,27 +124,58 @@ export function AuditLogProvider({ children }: AuditLogProviderProps) {
 
     useEffect(() => {
         // Simulate API call
-        setTimeout(() => {
-            const mockData = generateMockLogs()
-            setLogs(mockData)
-            setFilteredLogs(mockData)
+        // setTimeout(() => {
+        //     const mockData = generateMockLogs()
+        //     setLogs(mockData)
+        //     setFilteredLogs(mockData)
+        //     setLoading(false)
+        // }, 1000)
+
+        if (data) {
+            const format = data.map((item) => {
+                return {
+                    id: item?.id,
+                    action: item?.action,
+                    user: {
+                        id: item?.user?.id,
+                        name: item?.user?.profile?.firstName + " " + item?.user?.profile?.lastName
+                    },
+                    tenant: {
+                        id: item?.tenant?.id,
+                        name: item?.tenant?.name,
+                        slug: item?.tenant?.slug,
+                    },
+                    entity: item?.entity,
+                    details: item?.details,
+                    device: {
+                        type: item?.device?.type ?? item?.device?.device,
+                        os: item?.device?.os,
+                        browser: item?.device?.browser,
+                        ip: item?.device?.ip
+                    },
+                    createdAt: item?.createdAt
+                }
+            })
+            setLogs(format)
+            setFilteredLogs(format)
             setLoading(false)
-        }, 1000)
-    }, [generateMockLogs])
+        }
+
+    }, [data])
 
     const applyFilters = useCallback(() => {
         let filtered = [...logs]
         if (filters.action !== "All Actions") {
-            filtered = filtered.filter((log) => log.action === filters.action)
+            filtered = filtered.filter((log) => log?.action === filters.action)
         }
         if (filters.userId) {
-            filtered = filtered.filter((log) => log.userId.toString().includes(filters.userId))
+            filtered = filtered.filter((log) => log?.user?.id.toString().includes(filters.userId))
         }
         if (filters.tenantId) {
-            filtered = filtered.filter((log) => log.tenantId?.toString().includes(filters.tenantId))
+            filtered = filtered.filter((log) => log?.tenant?.id?.toString().includes(filters.tenantId))
         }
         if (filters.entity) {
-            filtered = filtered.filter((log) => log.entity.toLowerCase().includes(filters.entity.toLowerCase()))
+            filtered = filtered.filter((log) => log?.entity?.toLowerCase().includes(filters.entity.toLowerCase()))
         }
         if (filters.dateFrom) {
             filtered = filtered.filter((log) => new Date(log.createdAt) >= new Date(filters.dateFrom))
@@ -158,11 +186,11 @@ export function AuditLogProvider({ children }: AuditLogProviderProps) {
         if (filters.search) {
             filtered = filtered.filter(
                 (log) =>
-                    log.user.name.toLowerCase().includes(filters.search.toLowerCase()) ||
-                    log.entity.toLowerCase().includes(filters.search.toLowerCase()) ||
-                    log.tenant?.name.toLowerCase().includes(filters.search.toLowerCase()) ||
-                    JSON.stringify(log.details).toLowerCase().includes(filters.search.toLowerCase()) ||
-                    JSON.stringify(log.metadata).toLowerCase().includes(filters.search.toLowerCase()),
+                    log?.user?.name?.toLowerCase().includes(filters.search.toLowerCase()) ||
+                    log?.entity?.toLowerCase().includes(filters.search.toLowerCase()) ||
+                    log?.tenant?.name?.toLowerCase().includes(filters.search.toLowerCase()) ||
+                    JSON.stringify(log?.details)?.toLowerCase().includes(filters.search.toLowerCase())
+                // JSON.stringify(log.metadata).toLowerCase().includes(filters.search.toLowerCase()),
             )
         }
         setFilteredLogs(filtered)

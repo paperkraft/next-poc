@@ -17,13 +17,13 @@ import { CollapseSubmenus } from "./collapse/collapse-submenu";
 import SidebarHeaderContent from "./app-sidebar-header";
 import SidebarFooterContent from "./app-sidebar-footer";
 
-import { useMounted } from "@/hooks/use-mounted";
+import { useMount } from '@/hooks/use-mount';
 import { GroupedMenus, MenuItem } from "@/lib/menus";
 import { findTopParent } from "./helper";
 
 
 const SidebarCollapseMenus = React.memo(({ menus = [] }: { menus: GroupedMenus[] }) => {
-    const mounted = useMounted();
+    const isMount = useMount();
 
     const path = usePathname();
     const [config] = themeConfig();
@@ -78,7 +78,7 @@ const SidebarCollapseMenus = React.memo(({ menus = [] }: { menus: GroupedMenus[]
         ))
     }, [debouncedQuery, submenus, searchModules]);
 
-    if (!mounted) return null
+    if (!isMount) return null
 
     return (
         <>

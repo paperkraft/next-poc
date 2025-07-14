@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { baseColors } from "@/registry/registry-base-colors";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useMounted } from "@/hooks/use-mounted";
+import { useMount } from '@/hooks/use-mount';
 import { ThemeConfig, themeConfig } from "@/hooks/use-config";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CheckIcon, Monitor, Moon, Repeat, Sun } from "lucide-react";
@@ -44,7 +44,7 @@ const OptionButton = ({ isActive, onClick, children, className, asChild = false 
 }
 
 export default function ThemeCustomizer() {
-    const mounted = useMounted();
+    const isMount = useMount();
     const { setOpen } = useSidebar();
     const { setTheme: setMode, resolvedTheme: mode, theme } = useTheme();
     const [config, setConfig] = themeConfig();
@@ -126,7 +126,7 @@ export default function ThemeCustomizer() {
                                 <Label className="text-xs">Primary Color</Label>
                                 <div className="grid grid-cols-3 gap-2">
                                     {filteredColors.map(({ name, label, activeColor }) => (
-                                        mounted ? (
+                                        isMount ? (
                                             <OptionButton
                                                 key={name}
                                                 isActive={config.theme === name}

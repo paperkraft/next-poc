@@ -5,7 +5,7 @@ import { ReactNode, useMemo } from 'react';
 
 import { isABACAllowed } from '@/lib/abac/isABACAllowed';
 import { ActionParam } from '@/types/permissions';
-import { useMounted } from '@/hooks/use-mounted';
+import { useMount } from '@/hooks/use-mount';
 
 interface PermissionGuardProps {
     action: ActionParam;
@@ -24,7 +24,7 @@ export function PermissionGuard({
     children,
     fallback = null,
 }: PermissionGuardProps) {
-    const mounted = useMounted();
+    const isMount = useMount();
     const { data: session, status } = useSession();
 
     // Return the fallback content while loading or if no session exists
@@ -43,7 +43,7 @@ export function PermissionGuard({
         modules
     }), [action, moduleId, path, name, modules]);
 
-    if (!mounted) return null
+    if (!isMount) return null
 
     // Render children if permission is granted, otherwise fallback
     return isAllowed ? <>{children}</> : <>{fallback}</>;

@@ -11,13 +11,13 @@ import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { useMounted } from '@/hooks/use-mounted';
+import { useMount } from '@/hooks/use-mount';
 
 export default function Student() {
-    const mounted = useMounted();
+    const isMount = useMount();
     const [showBanner, setShowBanner] = useState(true);
 
-    if (!mounted) return null;
+    if (!isMount) return null;
 
     return (
         <section className="overflow-auto">

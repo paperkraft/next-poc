@@ -9,16 +9,16 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { SidebarMenuButton, SidebarMenuSub, SidebarMenuSubItem } from "@/components/ui/sidebar";
 import { checkIsActive } from "../helper";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { useMounted } from "@/hooks/use-mounted";
+import { useMount } from '@/hooks/use-mount';
 import { MenuItem } from "@/lib/menus";
 
 export const CollapseDropdownsMenus = React.memo(({ item }: { item: MenuItem }) => {
     const path = usePathname();
     const hasSubmenu = item?.children && item?.children?.length > 0;
     const isActive = useMemo(() => checkIsActive(item as MenuItem, path), [item, path]);
-    const mounted = useMounted()
+    const isMount = useMount()
 
-    if (!mounted) return null
+    if (!isMount) return null
 
     return hasSubmenu ? (
         <Collapsible defaultOpen={isActive} asChild className="group/collapsible">

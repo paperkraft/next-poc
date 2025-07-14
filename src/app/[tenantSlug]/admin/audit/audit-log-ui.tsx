@@ -11,9 +11,9 @@ const AuditLogContent = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
                     <p className="text-gray-600">Loading audit logs...</p>
                 </div>
             </div>
@@ -21,9 +21,9 @@ const AuditLogContent = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-100 py-8">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-                <AuditLogFilters />
+        <div>
+            <div className="space-y-6">
+                {/* <AuditLogFilters /> */}
                 <AuditLogTable />
                 <AuditLogPagination />
             </div>
@@ -32,9 +32,9 @@ const AuditLogContent = () => {
     )
 }
 
-const AuditLogUI = () => {
+const AuditLogUI = ({ data }: { data: any[] }) => {
     return (
-        <AuditLogProvider>
+        <AuditLogProvider data={data}>
             <AuditLogContent />
         </AuditLogProvider>
     )

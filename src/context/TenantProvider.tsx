@@ -20,9 +20,9 @@ type TenantProviderProps = {
 
 export function TenantProvider({ children, tenant, menus }: TenantProviderProps) {
 
-    const isMount = useMount();
+    const isMounted = useMount();
 
-    if (!isMount) return null
+    if (!isMounted) return null
 
     return (
         <TenantContext.Provider value={{ tenant, menus }}>

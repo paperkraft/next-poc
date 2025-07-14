@@ -17,14 +17,14 @@ export const RenderMenus = React.memo(({ item, isSearchActive }: { item: MenuIte
 
     const { toggleSidebar, isMobile } = useSidebar();
     const path = usePathname();
-    const isMount = useMount();
+    const isMounted = useMount();
     const hasSubmenu = item?.children?.length > 0;
     const isActive = React.useMemo(() => checkIsActive(item, path), [item, path]);
     const shouldExpand = isSearchActive ? true : isActive;
 
     const LucideIcon = Icons[item.icon as keyof typeof Icons] as React.ElementType ?? Icons.DotIcon;
 
-    if (!isMount) return null
+    if (!isMounted) return null
 
     if (!hasSubmenu) {
         return (

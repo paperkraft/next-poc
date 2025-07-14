@@ -12,7 +12,7 @@ import { useMount } from '@/hooks/use-mount'
 import { BaseColor, baseColors } from "@/registry/registry-base-colors"
 
 export function Customizer() {
-    const isMount = useMount();
+    const isMounted = useMount();
     const { setTheme: setMode, resolvedTheme: mode } = useTheme()
     const [config, setConfig] = themeConfig();
 
@@ -58,7 +58,7 @@ export function Customizer() {
                             .map(({ name, label, activeColor }) => {
                                 const isActive = config.theme === name
 
-                                return isMount ? (
+                                return isMounted ? (
                                     <Button
                                         variant={"outline"}
                                         size="sm"
@@ -110,7 +110,7 @@ export function Customizer() {
                 <div className="space-y-1.5">
                     <Label className="text-xs">Mode</Label>
                     <div className="grid grid-cols-3 gap-2">
-                        {isMount ? (
+                        {isMounted ? (
                             <>
                                 <Button
                                     variant={"outline"}

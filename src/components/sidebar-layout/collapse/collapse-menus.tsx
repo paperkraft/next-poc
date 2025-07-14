@@ -34,7 +34,7 @@ export const CollapseMenus = React.memo(({ item, active, submenu, dropdown }: Co
     const hasSubmenu = item?.children?.length > 0;
     const isActive = useMemo(() => checkIsActive(item, path), [item, path]);
 
-    const isMount = useMount()
+    const isMounted = useMount()
 
     const handleClick = () => {
         if (isMobile) toggleSidebar();
@@ -66,7 +66,7 @@ export const CollapseMenus = React.memo(({ item, active, submenu, dropdown }: Co
     );
 
 
-    if (!isMount) return null
+    if (!isMounted) return null
 
     if (!hasSubmenu) {
         return (

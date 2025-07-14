@@ -35,7 +35,7 @@ type RoleFormProps = {
 export default function RoleForm({ id, data }: RoleFormProps) {
 
   const router = useRouter();
-  const isMount = useMount();
+  const isMounted = useMount();
 
   const [show, setShow] = useState(false);
   const [open, setOpen] = useState(false);
@@ -136,7 +136,7 @@ export default function RoleForm({ id, data }: RoleFormProps) {
 
   const title = id ? "Role" : "Create Role";
 
-  if (!isMount) return null;
+  if (!isMounted) return null;
 
   return (
     <>

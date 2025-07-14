@@ -14,7 +14,7 @@ export type ThemeProps = {
 export const ThemeContext = createContext<ThemeProps | null>(null);
 
 const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-    const isisMount = useMount();
+    const isMounted = useMount();
 
     const [currentTheme, setCurrentTheme] = useState('light');
 
@@ -26,9 +26,9 @@ const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     useEffect(() => {
         const themeLocalStorage = localStorage.getItem('theme');
         if (themeLocalStorage) setCurrentTheme(themeLocalStorage);
-    }, [isisMount]);
+    }, [isMounted]);
 
-    if (!isisMount) return null;
+    if (!isMounted) return null;
 
     return (
 
@@ -41,7 +41,7 @@ const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
                     disableTransitionOnChange
                 >
                     <>
-                        {isisMount && children}
+                        {isMounted && children}
                         <ProgressBar
                             height="4px"
                             color="rgb(26 139 244)"

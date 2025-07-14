@@ -17,7 +17,7 @@ interface ModuleNode {
 
 export const ModuleMasterColumns = () => {
 
-    const isMount = useMount();
+    const isMounted = useMount();
     const path = usePathname();
 
     const columns: ColumnDef<ModuleNode>[] = useMemo(() => [
@@ -81,5 +81,5 @@ export const ModuleMasterColumns = () => {
         }
     ], [path]);
 
-    return isMount ? { columns } : { columns: [] };
+    return isMounted ? { columns } : { columns: [] };
 };

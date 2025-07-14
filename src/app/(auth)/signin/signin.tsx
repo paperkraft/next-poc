@@ -23,7 +23,7 @@ export default function SignInPage() {
   const [loading, setLoading] = useState(false);
   const [callbackUrl, setCallbackUrl] = useState<string | null>(null);
 
-  const isMount = useMount();
+  const isMounted = useMount();
 
   const form = useForm<signInT>({
     resolver: zodResolver(signInSchema),
@@ -80,7 +80,7 @@ export default function SignInPage() {
     }
   };
 
-  if (!isMount) return null;
+  if (!isMounted) return null;
 
   return (
     <>

@@ -16,7 +16,7 @@ import ToggleButtons from "@/components/layout/ToggleButtons";
 export type signUp = z.infer<typeof signUpSchema>;
 
 export default function SignUpPage() {
-    const isMount = useMount();
+    const isMounted = useMount();
     const [loading, setLoading] = useState(false);
 
     const [data, setData] = useState<signUp>()
@@ -39,7 +39,7 @@ export default function SignUpPage() {
         }, 2000)
     }
 
-    if (!isMount) return null;
+    if (!isMounted) return null;
 
     return (
         <>

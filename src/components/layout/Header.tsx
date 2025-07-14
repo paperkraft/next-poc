@@ -24,7 +24,7 @@ type HeaderProps = {
 }
 
 const Header = React.memo(({ menus = [], currentTenant, tenants = [] }: HeaderProps) => {
-    const isMount = useMount();
+    const isMounted = useMount();
     const { data: session } = useSession();
 
     const { isMobile } = useSidebar();
@@ -33,7 +33,7 @@ const Header = React.memo(({ menus = [], currentTenant, tenants = [] }: HeaderPr
     const isSystemAdmin = session?.user?.globalRoles.includes("SYSTEM_ADMIN");
     const tenantName = session?.user?.tenantName;
 
-    if (!isMount) return null;
+    if (!isMounted) return null;
 
     return (
         <>

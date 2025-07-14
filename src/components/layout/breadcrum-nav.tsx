@@ -19,15 +19,15 @@ function truncate(text: string, maxLength: number = 20): string {
 }
 
 export default function HeaderBreadcrumb({ menus = [] }: { menus: GroupedMenus[] }) {
-    const isMount = useMount();
+    const isMounted = useMount();
     const path = usePathname();
 
     const breadcrumb = useMemo(() => {
-        if (!isMount || !path || menus.length === 0) return [];
+        if (!isMounted || !path || menus.length === 0) return [];
         return getBreadcrumbsFromGroupedMenus(menus, path);
-    }, [menus, path, isMount]);
+    }, [menus, path, isMounted]);
 
-    if (!isMount || breadcrumb.length === 0) return null;
+    if (!isMounted || breadcrumb.length === 0) return null;
 
     return (
         <Breadcrumb>

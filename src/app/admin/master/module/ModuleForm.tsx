@@ -54,7 +54,7 @@ export default function ModuleForm({ id, module, groupOptions, isChild = false }
 
     const isEdit = !!id;
 
-    const isMount = useMount();
+    const isMounted = useMount();
     const router = useRouter();
 
     const [show, setShow] = useState(false);
@@ -181,7 +181,7 @@ export default function ModuleForm({ id, module, groupOptions, isChild = false }
 
     const readOnly = !show && !!id;
 
-    if (!isMount) return null;
+    if (!isMounted) return null;
 
     return (
         <>

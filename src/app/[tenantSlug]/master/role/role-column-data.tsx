@@ -10,7 +10,7 @@ import { ColumnDef } from '@tanstack/react-table';
 
 export const RoleMasterColumns = () => {
 
-  const isMount = useMount();
+  const isMounted = useMount();
   const path = usePathname();
 
   const columns: ColumnDef<any>[] = useMemo(() => [
@@ -53,5 +53,5 @@ export const RoleMasterColumns = () => {
     }
   ], [path]);
 
-  return isMount ? { columns } : { columns: [] };
+  return isMounted ? { columns } : { columns: [] };
 };

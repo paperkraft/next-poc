@@ -63,12 +63,12 @@ export default function GroupTable({ groupedModules }: { groupedModules: IGroupe
 
 const Tree = React.memo(({ data, level }: { data: ModuleNode, level: number }) => {
 
-    const isMount = useMount();
+    const isMounted = useMount();
     const path = usePathname();
 
     const hasSubModules = data && data?.children?.length > 0;
 
-    if (!isMount) return null;
+    if (!isMounted) return null;
 
     return (
         <Collapsible asChild>

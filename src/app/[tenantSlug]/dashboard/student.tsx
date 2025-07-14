@@ -14,10 +14,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { useMount } from '@/hooks/use-mount';
 
 export default function Student() {
-    const isMount = useMount();
+    const isMounted = useMount();
     const [showBanner, setShowBanner] = useState(true);
 
-    if (!isMount) return null;
+    if (!isMounted) return null;
 
     return (
         <section className="overflow-auto">

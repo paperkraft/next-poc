@@ -58,7 +58,7 @@ export function DataTable<TData extends { subModules?: TData[] }, TValue>({
     const [density, setDensity] = useState<DensityState>("sm");
     const [expanded, setExpanded] = React.useState<ExpandedState>({});
 
-    const isMount = useMount();
+    const isMounted = useMount();
 
     const table = useReactTable({
         // debugTable: true,
@@ -117,7 +117,7 @@ export function DataTable<TData extends { subModules?: TData[] }, TValue>({
     }, [globalFilter]);
 
     return (
-        isMount &&
+        isMounted &&
         <div className="rounded-md border">
             {isLoading ? (
                 <div className="flex items-center justify-center h-64">Loading...</div>

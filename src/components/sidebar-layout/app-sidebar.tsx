@@ -17,7 +17,7 @@ import DefaultMenu from './sidebar-default';
 import SidebarSkeleton from './sidebar-skeleton';
 
 const AppSidebarMenus = React.memo(({ menus = [] }: { menus: GroupedMenus[] }) => {
-    const isMount = useMount();
+    const isMounted = useMount();
     const { status } = useSession();
     const [query, setQuery] = React.useState<string>('');
     const debouncedQuery = useDebounce(query, 300);
@@ -38,7 +38,7 @@ const AppSidebarMenus = React.memo(({ menus = [] }: { menus: GroupedMenus[] }) =
         return menus.filter((group) => group.groupName.toLowerCase().includes(lowerQuery) || searchModules(group.modules, lowerQuery))
     }, [debouncedQuery, menus, searchModules]);
 
-    if (!isMount) return null
+    if (!isMounted) return null
 
     return (
         <SidebarContent className="gap-0">

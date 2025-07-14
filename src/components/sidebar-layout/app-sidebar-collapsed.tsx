@@ -23,7 +23,7 @@ import { findTopParent } from "./helper";
 
 
 const SidebarCollapseMenus = React.memo(({ menus = [] }: { menus: GroupedMenus[] }) => {
-    const isMount = useMount();
+    const isMounted = useMount();
 
     const path = usePathname();
     const [config] = themeConfig();
@@ -78,7 +78,7 @@ const SidebarCollapseMenus = React.memo(({ menus = [] }: { menus: GroupedMenus[]
         ))
     }, [debouncedQuery, submenus, searchModules]);
 
-    if (!isMount) return null
+    if (!isMounted) return null
 
     return (
         <>

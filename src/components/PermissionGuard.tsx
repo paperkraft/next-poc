@@ -24,7 +24,7 @@ export function PermissionGuard({
     children,
     fallback = null,
 }: PermissionGuardProps) {
-    const isMount = useMount();
+    const isMounted = useMount();
     const { data: session, status } = useSession();
 
     // Return the fallback content while loading or if no session exists
@@ -43,7 +43,7 @@ export function PermissionGuard({
         modules
     }), [action, moduleId, path, name, modules]);
 
-    if (!isMount) return null
+    if (!isMounted) return null
 
     // Render children if permission is granted, otherwise fallback
     return isAllowed ? <>{children}</> : <>{fallback}</>;

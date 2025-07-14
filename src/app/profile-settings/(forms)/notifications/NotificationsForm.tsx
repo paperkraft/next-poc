@@ -11,7 +11,7 @@ import TopicManagement from './TopicManagement';
 import { useRouter } from 'next/navigation';
 
 export function NotificationsForm() {
-  const isMount = useMount();
+  const isMounted = useMount();
   const router = useRouter();
   const t = useTranslations('setting');
   const { subscription, loading, unsubscribe, requestPermission } = useNotifications();
@@ -26,7 +26,7 @@ export function NotificationsForm() {
   }
 
   return (
-    isMount &&
+    isMounted &&
     <>
       <div className="space-y-4">
         <div>

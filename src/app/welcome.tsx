@@ -5,15 +5,15 @@ import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 
 export default function WelcomePage() {
-  const isMount = useMount();
+  const isMounted = useMount();
   const route = useRouter();
   const { data, status } = useSession();
 
   useEffect(() => {
-    if (isMount && status !== "authenticated") {
+    if (isMounted && status !== "authenticated") {
       route.refresh();
     }
-  }, [isMount, status, route]);
+  }, [isMounted, status, route]);
 
   // useEffect(() => {
   //   async function fetchDeviceInfo() {
@@ -34,7 +34,7 @@ export default function WelcomePage() {
   // }, []);
 
   return (
-    isMount && data &&
+    isMounted && data &&
     <>
       <div>
         <p>Welcome, {data?.user?.name ?? data?.user?.email}</p>

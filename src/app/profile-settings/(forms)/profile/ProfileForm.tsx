@@ -40,7 +40,7 @@ const defaultValues: Partial<ProfileFormValues> = {
 }
 
 export function ProfileForm({ lastLogins }: { lastLogins: LoginDetail[] | null }) {
-  const isMount = useMount();
+  const isMounted = useMount();
   const t = useTranslations('setting');
 
   const { data: session } = useSession();
@@ -88,7 +88,7 @@ export function ProfileForm({ lastLogins }: { lastLogins: LoginDetail[] | null }
     }
   }
 
-  if (!isMount) return null;
+  if (!isMounted) return null;
 
   return (
     <Form {...form}>

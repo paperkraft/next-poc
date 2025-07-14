@@ -36,11 +36,11 @@ const TitlePage = memo(({
     onEdit,
     onDelete,
 }: Props) => {
-    const isMount = useMount();
+    const isMounted = useMount();
     const path = usePathname();
     const router = useRouter();
 
-    if (!isMount) return null;
+    if (!isMounted) return null;
 
     const showAddButton = listPage
     const showBackButton = createPage || viewPage

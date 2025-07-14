@@ -27,7 +27,7 @@ type FormProps = {
 
 export default function SendNotificationForm({ users }: FormProps) {
 
-    const isMount = useMount();
+    const isMounted = useMount();
     const [loading, setLoading] = useState(false);
 
     const form = useForm<ISendNotificationForm>({
@@ -86,7 +86,7 @@ export default function SendNotificationForm({ users }: FormProps) {
         }
     }
 
-    if (!isMount) return null;
+    if (!isMounted) return null;
 
     return (
         <Form {...form}>

@@ -18,7 +18,7 @@ const DropdownMenu = ({ items }: { items: GroupedMenus[] }) => {
     const timeouts = useRef<Record<string, NodeJS.Timeout | null>>({});
     const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
     const path = usePathname();
-    const isMount = useMount();
+    const isMounted = useMount();
 
     const openMenu = (path: string) => {
 
@@ -173,7 +173,7 @@ const DropdownMenu = ({ items }: { items: GroupedMenus[] }) => {
         })
     }
 
-    if (!isMount) return null;
+    if (!isMounted) return null;
 
     return <nav className="flex space-x-4">{renderGroups(items, path)}</nav>;
 };

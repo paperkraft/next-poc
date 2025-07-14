@@ -14,10 +14,10 @@ interface SidebarNavProps extends React.HTMLAttributes<HTMLElement> {
 }
 
 export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
-  const isMount = useMount();
+  const isMounted = useMount();
   const pathname = usePathname();
 
-  if (!isMount) return null;
+  if (!isMounted) return null;
 
   return (
     <nav

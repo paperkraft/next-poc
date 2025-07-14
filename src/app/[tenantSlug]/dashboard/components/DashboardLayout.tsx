@@ -13,7 +13,7 @@ import WidgetContainer from './WidgetContainer';
 
 export default function DashboardLayout() {
 
-    const isMount = useMount();
+    const isMounted = useMount();
     const {
         userWidgets,
         reorderWidgets,
@@ -109,7 +109,7 @@ export default function DashboardLayout() {
         </div>
     )
 
-    if (!isMount) return null
+    if (!isMounted) return null
 
     return (
         <div className="space-y-4">

@@ -16,7 +16,7 @@ export const CollapseSubmenus = React.memo(({ item, isSearchActive, level }: { i
     const { toggleSidebar, isMobile } = useSidebar();
     const path = usePathname();
 
-    const isMount = useMount()
+    const isMounted = useMount()
 
     const hasSubmenu = Boolean(item.children?.length);
     const isActive = React.useMemo(() => checkIsActive(item as MenuItem, path), [item, path]);
@@ -54,7 +54,7 @@ export const CollapseSubmenus = React.memo(({ item, isSearchActive, level }: { i
         </Collapsible>
     )
 
-    if (!isMount) return null
+    if (!isMounted) return null
 
     return hasSubmenu ? (
         renderSubmenu()

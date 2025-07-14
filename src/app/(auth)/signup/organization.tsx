@@ -18,7 +18,7 @@ type orgType = z.infer<typeof OrganizationSchema>;
 
 export default function OrganizationPage(signupData: signUp) {
     const router = useRouter();
-    const isMount = useMount();
+    const isMounted = useMount();
     const [loading, setLoading] = useState(false);
 
     const form = useForm<orgType>({
@@ -56,7 +56,7 @@ export default function OrganizationPage(signupData: signUp) {
         }
     }
 
-    if (!isMount) return null;
+    if (!isMounted) return null;
 
     return (
         <Form {...form}>

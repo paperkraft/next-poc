@@ -6,9 +6,9 @@ import { useMount } from '@/hooks/use-mount';
 
 export default function BackButton() {
   const router = useRouter();
-  const isMount = useMount();
+  const isMounted = useMount();
   return (
-    isMount &&
+    isMounted &&
     <Button variant="outline" onClick={() => router.back()} className="mt-4">
       Back
     </Button>

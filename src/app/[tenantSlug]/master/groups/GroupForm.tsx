@@ -35,7 +35,7 @@ type GroupFormProps = {
 export default function GroupForm({ id, data }: GroupFormProps) {
 
     const router = useRouter();
-    const isMount = useMount();
+    const isMounted = useMount();
 
     const [show, setShow] = useState(false);
     const [open, setOpen] = useState(false);
@@ -136,7 +136,7 @@ export default function GroupForm({ id, data }: GroupFormProps) {
     const title = id ? "Group" : "Create Group";
 
     return (
-        isMount &&
+        isMounted &&
         <>
             {/* Title and action buttons */}
             <TitlePage

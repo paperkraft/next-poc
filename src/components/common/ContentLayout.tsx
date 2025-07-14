@@ -27,12 +27,12 @@ export default function ContentLayout({ children, currentTenant, menus = [], ten
 
     const [config] = themeConfig();
     const { isMobile } = useSidebar();
-    const isMount = useMount();
+    const isMounted = useMount();
 
     const isVertical = config.layout === "vertical";
     const isCollapse = config.layout === "collapsed" || config.layout === "dual-menu";
 
-    if (!isMount) return null
+    if (!isMounted) return null
 
     return (
         <>

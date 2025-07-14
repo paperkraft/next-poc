@@ -16,9 +16,9 @@ export const CollapseDropdownsMenus = React.memo(({ item }: { item: MenuItem }) 
     const path = usePathname();
     const hasSubmenu = item?.children && item?.children?.length > 0;
     const isActive = useMemo(() => checkIsActive(item as MenuItem, path), [item, path]);
-    const isMount = useMount()
+    const isMounted = useMount()
 
-    if (!isMount) return null
+    if (!isMounted) return null
 
     return hasSubmenu ? (
         <Collapsible defaultOpen={isActive} asChild className="group/collapsible">

@@ -44,7 +44,7 @@ const OptionButton = ({ isActive, onClick, children, className, asChild = false 
 }
 
 export default function ThemeCustomizer() {
-    const isMount = useMount();
+    const isMounted = useMount();
     const { setOpen } = useSidebar();
     const { setTheme: setMode, resolvedTheme: mode, theme } = useTheme();
     const [config, setConfig] = themeConfig();
@@ -126,7 +126,7 @@ export default function ThemeCustomizer() {
                                 <Label className="text-xs">Primary Color</Label>
                                 <div className="grid grid-cols-3 gap-2">
                                     {filteredColors.map(({ name, label, activeColor }) => (
-                                        isMount ? (
+                                        isMounted ? (
                                             <OptionButton
                                                 key={name}
                                                 isActive={config.theme === name}

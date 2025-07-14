@@ -8,12 +8,11 @@ body {
 
 @layer base {
   :root {
-
-    --font-inter: 'Inter', sans-serif;
-    --font-roboto: 'Roboto', sans-serif;
-    --font-inconsolata: 'Inconsolata', monospace;
-    --font-montserrat: 'Montserrat', sans-serif;
-    --font-poppins: 'Poppins', sans-serif;
+    --font-inter: "Inter", sans-serif;
+    --font-roboto: "Roboto", sans-serif;
+    --font-inconsolata: "Inconsolata", monospace;
+    --font-montserrat: "Montserrat", sans-serif;
+    --font-poppins: "Poppins", sans-serif;
 
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
@@ -744,7 +743,6 @@ body {
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
   }
-
 }
 
 @layer base {
@@ -763,20 +761,19 @@ body {
   }
 
   input:-webkit-autofill {
-    background-color: theme('colors.background') !important;
-    -webkit-box-shadow: 0 0 0px 1000px theme('colors.background') inset !important;
-    box-shadow: 0 0 0px 1000px theme('colors.background') inset !important;
+    background-color: theme("colors.background") !important;
+    -webkit-box-shadow: 0 0 0px 1000px theme("colors.background") inset !important;
+    box-shadow: 0 0 0px 1000px theme("colors.background") inset !important;
     color: inherit !important;
   }
 }
 
 ::-webkit-scrollbar {
   @apply w-2.5 h-2.5;
-
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-transparent
+  @apply bg-transparent;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -786,7 +783,6 @@ body {
 @keyframes progress {
   from {
     clip-path: inset(0 100% 0 0);
-
   }
 
   to {
@@ -797,4 +793,10 @@ body {
 .animate-progress {
   animation: progress linear forwards;
   will-change: clip-path;
+}
+
+/* Smooth transitions for theme changes */
+* {
+  transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out,
+    border-color 0.2s ease-in-out;
 }

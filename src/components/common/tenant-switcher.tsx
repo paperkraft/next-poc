@@ -8,45 +8,20 @@ import { Button } from "@/components/ui/button"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Badge } from "@/components/ui/badge"
-import { useRouter } from "next/navigation"
-import { useSession } from "next-auth/react"
+import { Tenant, useTenant } from "@/context/TenantProvider"
 
-interface Tenant {
-    id: number;
-    slug: string;
-    name: string;
-    type: string;
-}
+export function TenantSwitcher() {
 
-interface TenantSwitcherProps {
-    currentTenant?: Tenant | null
-    tenants?: Tenant[] | null
-}
-
-export function TenantSwitcher({ currentTenant, tenants = [] }: TenantSwitcherProps) {
-    const router = useRouter();
-    const { data: session } = useSession();
-    const sessionTenantId = session?.user?.tenantId;
-
-    // STATE
     const [open, setOpen] = React.useState(false);
-    const [loading, setLoading] = React.useState(false);
-    const [selectedTenant, setSelectedTenant] = React.useState<Tenant | null>(currentTenant ?? null);
-    const [activeView, setActiveView] = React.useState<"system" | "tenant">(
-        currentTenant ? "tenant" : "system"
-    );
 
-    // On session or tenant prop change, adjust the view
-    React.useEffect(() => {
-        if (!sessionTenantId || !currentTenant) {
-            setActiveView("system");
-            setSelectedTenant(null);
-        } else {
-            setActiveView("tenant");
-            setSelectedTenant(currentTenant);
-        }
-    }, [sessionTenantId, currentTenant]);
-
+    const {
+        currentTenant,
+        tenants,
+        activeView,
+        loading,
+        setActiveView,
+        switchTenant
+    } = useTenant();
 
     const viewOptions = [
         {
@@ -57,38 +32,21 @@ export function TenantSwitcher({ currentTenant, tenants = [] }: TenantSwitcherPr
         },
         {
             value: "tenant",
-            label: selectedTenant?.name || "Select Tenant",
+            label: currentTenant?.name || "Select Tenant",
             icon: Building2,
-            description: selectedTenant?.slug || "Select a tenant to manage",
+            description: currentTenant?.slug || "Select a tenant to manage",
         },
     ]
 
     const currentView = viewOptions.find((option) => option.value === activeView)
 
-    const switchTenant = async (tenantId: number) => {
-        setLoading(true)
-        try {
-            const response = await fetch('/api/switch-tenant', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ tenantId }),
-            })
-
-            if (!response.ok) {
-                throw new Error('Failed to switch tenant')
-            }
-
-            // Force refresh to update session-dependent components
-            const result = await response.json();
-            const slug = result?.tenant?.slug ?? "admin"; // fallback to system slug
-            router.replace(`/${slug}/dashboard`);
-        } catch (error) {
-            console.error('Tenant switch failed:', error)
-        } finally {
-            setLoading(false)
-            // router.refresh();
+    const handleTenant = (tenant?: Tenant | null) => {
+        if (tenant) {
+            setActiveView('tenant');
+            switchTenant(tenant.id);
+        } else {
+            setActiveView('system')
+            switchTenant(0)
         }
     }
 
@@ -120,10 +78,8 @@ export function TenantSwitcher({ currentTenant, tenants = [] }: TenantSwitcherPr
                             <CommandGroup heading="Views">
                                 <CommandItem
                                     onSelect={() => {
-                                        setActiveView("system");
-                                        setSelectedTenant(null);
-                                        setOpen(false)
-                                        switchTenant(0)
+                                        setOpen(false);
+                                        handleTenant()
                                     }}
                                 >
                                     <Settings className="mr-2 size-4" />
@@ -142,10 +98,8 @@ export function TenantSwitcher({ currentTenant, tenants = [] }: TenantSwitcherPr
                                     <CommandItem
                                         key={tenant.id}
                                         onSelect={() => {
-                                            setSelectedTenant(tenant)
-                                            setActiveView("tenant")
-                                            setOpen(false)
-                                            switchTenant(tenant.id)
+                                            setOpen(false);
+                                            handleTenant(tenant);
                                         }}
                                     >
                                         <Building2 className="mr-2 h-4 w-4" />
@@ -162,7 +116,7 @@ export function TenantSwitcher({ currentTenant, tenants = [] }: TenantSwitcherPr
                                             className={cn(
                                                 "ml-auto h-4 w-4",
                                                 activeView === "tenant" &&
-                                                    selectedTenant?.id === tenant.id
+                                                    currentTenant?.id === tenant.id
                                                     ? "opacity-100"
                                                     : "opacity-0",
                                             )}

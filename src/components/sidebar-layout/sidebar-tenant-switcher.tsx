@@ -27,47 +27,24 @@ import AppLogo from "../custom/app-initial"
 import { cn } from "@/lib/utils"
 import { Badge } from "../ui/badge"
 import { themeConfig } from "@/hooks/use-config"
-import { useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { Tenant, useTenant } from "@/context/TenantProvider"
 
-interface Tenant {
-    id: number;
-    slug: string;
-    name: string;
-    type: string;
-}
-
-interface TenantSwitcherProps {
-    currentTenant?: Tenant | null
-    tenants?: Tenant[] | null
-}
-
-export function HeaderTeamSwitcher({ currentTenant, tenants = [] }: TenantSwitcherProps) {
-    const router = useRouter();
-    const [config] = themeConfig();
-    const { isMobile } = useSidebar();
-    const { data: session } = useSession();
-    const sessionTenantId = session?.user?.tenantId;
+export function HeaderTeamSwitcher() {
 
     const [open, setOpen] = React.useState(false);
-    const [loading, setLoading] = React.useState(false);
-    const [selectedTenant, setSelectedTenant] = React.useState<Tenant | null>(currentTenant ?? null);
-    const [activeView, setActiveView] = React.useState<"system" | "tenant">(
-        currentTenant ? "tenant" : "system"
-    );
+    const { isMobile } = useSidebar();
 
+    const [config] = themeConfig();
     const isDual = (config.layout === "collapsed" || config.layout === "dual-menu") && !isMobile
 
-    // On session or tenant prop change, adjust the view
-    React.useEffect(() => {
-        if (!sessionTenantId || !currentTenant) {
-            setActiveView("system");
-            setSelectedTenant(null);
-        } else {
-            setActiveView("tenant");
-            setSelectedTenant(currentTenant);
-        }
-    }, [sessionTenantId, currentTenant]);
+    const {
+        loading,
+        tenants,
+        activeView,
+        currentTenant,
+        switchTenant,
+        setActiveView,
+    } = useTenant();
 
     const viewOptions = [
         {
@@ -77,47 +54,19 @@ export function HeaderTeamSwitcher({ currentTenant, tenants = [] }: TenantSwitch
         },
         {
             value: "tenant",
-            label: selectedTenant?.name || "Select Tenant",
-            slug: selectedTenant?.slug || ""
+            label: currentTenant?.name || "Switching Tenant",
+            slug: currentTenant?.slug || ""
         },
     ]
 
     const currentView = viewOptions.find((option) => option.value === activeView);
 
-    const switchTenant = async (tenantId: number) => {
-        setLoading(true)
-        try {
-            const response = await fetch('/api/switch-tenant', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ tenantId }),
-            })
-
-            if (!response.ok) {
-                throw new Error('Failed to switch tenant')
-            }
-
-            // Force refresh to update session-dependent components
-            const result = await response.json();
-            const slug = result?.tenant?.slug ?? "admin"; // fallback to system slug
-            router.replace(`/${slug}/dashboard`);
-        } catch (error) {
-            console.error('Tenant switch failed:', error)
-        } finally {
-            setLoading(false)
-        }
-    }
-
     const handleTenant = (tenant?: Tenant | null) => {
         if (tenant) {
             setActiveView('tenant');
-            setSelectedTenant(tenant);
             switchTenant(tenant.id);
         } else {
             setActiveView('system')
-            setSelectedTenant(null);
             switchTenant(0)
         }
     }
@@ -191,7 +140,7 @@ export function HeaderTeamSwitcher({ currentTenant, tenants = [] }: TenantSwitch
                                                 </div>
                                                 <span className="text-xs text-muted-foreground">{tenant.slug}</span>
                                             </div>
-                                            <Check className={cn("ml-1 size-4", activeView === "tenant" && selectedTenant?.id === tenant.id ? "opacity-100" : "opacity-0")} />
+                                            <Check className={cn("ml-1 size-4", activeView === "tenant" && currentTenant?.id === tenant.id ? "opacity-100" : "opacity-0")} />
                                         </CommandItem>
                                     ))}
 

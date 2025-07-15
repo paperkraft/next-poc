@@ -15,10 +15,13 @@ import { GroupedMenus, MenuItem } from '@/lib/menus';
 import { RenderMenus } from './render-menus';
 import DefaultMenu from './sidebar-default';
 import SidebarSkeleton from './sidebar-skeleton';
+import { useTenant } from '@/context/TenantProvider';
 
-const AppSidebarMenus = React.memo(({ menus = [] }: { menus: GroupedMenus[] }) => {
+const AppSidebarMenus = React.memo(() => {
     const isMounted = useMount();
+    const { menus } = useTenant();
     const { status } = useSession();
+
     const [query, setQuery] = React.useState<string>('');
     const debouncedQuery = useDebounce(query, 300);
     const isSearching = query.length > 0;

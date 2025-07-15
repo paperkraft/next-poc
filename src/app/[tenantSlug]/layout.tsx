@@ -31,9 +31,9 @@ export default async function TenantRootLayout({ children, params }: TenantLayou
 
     return (
         <>
-            <TenantProvider tenant={tenant} menus={userMenus}>
+            <TenantProvider currentTenant={tenant} tenants={tenants} menus={userMenus}>
                 <SidebarProvider>
-                    <ContentLayout currentTenant={tenant} menus={userMenus} tenants={tenants}>
+                    <ContentLayout>
                         {children}
                     </ContentLayout>
                 </SidebarProvider>

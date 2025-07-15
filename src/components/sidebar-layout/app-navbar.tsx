@@ -1,7 +1,6 @@
 "use client";
 
 import { AnimatePresence, motion } from 'framer-motion';
-import _ from 'lodash';
 import * as Icons from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -11,6 +10,7 @@ import { themeConfig } from '@/hooks/use-config';
 import { GroupedMenus, MenuItem } from '@/lib/menus';
 import { cn } from '@/lib/utils';
 import { useMount } from '@/hooks/use-mount';
+import { useTenant } from '@/context/TenantProvider';
 
 const DropdownMenu = ({ items }: { items: GroupedMenus[] }) => {
 
@@ -18,7 +18,7 @@ const DropdownMenu = ({ items }: { items: GroupedMenus[] }) => {
     const timeouts = useRef<Record<string, NodeJS.Timeout | null>>({});
     const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
     const path = usePathname();
-    const isMounted = useMount();
+
 
     const openMenu = (path: string) => {
 
@@ -173,21 +173,8 @@ const DropdownMenu = ({ items }: { items: GroupedMenus[] }) => {
         })
     }
 
-    if (!isMounted) return null;
-
     return <nav className="flex space-x-4">{renderGroups(items, path)}</nav>;
 };
-
-const AppNavbar = (({ menus }: { menus: GroupedMenus[] }) => {
-    const [config] = themeConfig();
-    return (
-        <div className={cn("flex items-center px-8", { "container mx-auto": config.content === 'compact' })}>
-            <DropdownMenu items={menus} />
-        </div>
-    );
-})
-
-export default AppNavbar;
 
 const isMenuItemActive = (item: MenuItem, currentPath: string): boolean => {
     if (item.path && currentPath.startsWith(item.path)) {
@@ -200,3 +187,17 @@ const isMenuItemActive = (item: MenuItem, currentPath: string): boolean => {
 
     return false;
 };
+
+const AppNavbar = () => {
+    const [config] = themeConfig();
+    const { menus } = useTenant();
+    const isMounted = useMount();
+    if (!isMounted) return null;
+    return (
+        <div className={cn("flex items-center px-8", { "container mx-auto": config.content === 'compact' })}>
+            <DropdownMenu items={menus} />
+        </div>
+    );
+}
+
+export default AppNavbar;

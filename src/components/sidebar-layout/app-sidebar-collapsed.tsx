@@ -14,16 +14,19 @@ import { Button } from "@/components/ui/button";
 import { CollapseMenus } from "./collapse/collapse-menus";
 import { CollapseSubmenus } from "./collapse/collapse-submenu";
 
-import SidebarHeaderContent from "./app-sidebar-header";
 import SidebarFooterContent from "./app-sidebar-footer";
 
 import { useMount } from '@/hooks/use-mount';
-import { GroupedMenus, MenuItem } from "@/lib/menus";
+import { MenuItem } from "@/lib/menus";
 import { findTopParent } from "./helper";
+import { HeaderTeamSwitcher } from "./sidebar-tenant-switcher";
+import { useTenant } from "@/context/TenantProvider";
 
 
-const SidebarCollapseMenus = React.memo(({ menus = [] }: { menus: GroupedMenus[] }) => {
+const SidebarCollapseMenus = React.memo(() => {
+
     const isMounted = useMount();
+    const { menus } = useTenant()
 
     const path = usePathname();
     const [config] = themeConfig();
@@ -86,7 +89,7 @@ const SidebarCollapseMenus = React.memo(({ menus = [] }: { menus: GroupedMenus[]
                 {/* Icons */}
                 <Sidebar collapsible="none" className="!w-[calc(var(--sidebar-width-icon)_+_1px)] border-r">
                     <SidebarHeader className="h-16 border-b justify-center">
-                        <SidebarHeaderContent />
+                        <HeaderTeamSwitcher />
                     </SidebarHeader>
                     <SidebarContent>
                         {menus.map((group, index) => (

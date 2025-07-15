@@ -6,7 +6,6 @@ import {
 } from '@/components/ui/sidebar';
 import { themeConfig } from '@/hooks/use-config';
 import { useMount } from '@/hooks/use-mount';
-import { GroupedMenus } from '@/lib/menus';
 import { cn } from '@/lib/utils';
 
 import AppSidebarMenus from '../sidebar-layout/app-sidebar';
@@ -16,18 +15,15 @@ import SidebarHeaderContent from '../sidebar-layout/app-sidebar-header';
 import SidebarFooterContent from '../sidebar-layout/app-sidebar-footer';
 import HeaderBreadcrumb from '../layout/breadcrum-nav';
 import { HeaderTeamSwitcher } from '../sidebar-layout/sidebar-tenant-switcher';
+import { useTenant } from '@/context/TenantProvider';
+import { ReactNode } from 'react';
 
-type ContentProps = {
-    children: React.ReactNode;
-    currentTenant?: { id: number; slug: string; name: string, type: string } | null;
-    tenants?: Array<{ id: number; slug: string; name: string, type: string }> | null
-    menus?: GroupedMenus[]
-}
-
-export default function ContentLayout({ children, currentTenant, menus = [], tenants = [] }: ContentProps) {
+export default function ContentLayout({ children }: { children: ReactNode }) {
 
     const [config] = themeConfig();
+    const { tenants } = useTenant();
     const { isMobile } = useSidebar();
+
     const isMounted = useMount();
 
     const isVertical = config.layout === "vertical";
@@ -41,13 +37,13 @@ export default function ContentLayout({ children, currentTenant, menus = [], ten
                 <Sidebar>
                     <SidebarHeader className="h-16 border-b justify-center">
                         {tenants && tenants.length > 0 ? (
-                            <HeaderTeamSwitcher currentTenant={currentTenant} tenants={tenants} />
+                            <HeaderTeamSwitcher />
                         ) : (
                             <SidebarHeaderContent />
                         )}
                     </SidebarHeader>
 
-                    <AppSidebarMenus menus={menus} />
+                    <AppSidebarMenus />
 
                     <SidebarFooter>
                         <SidebarFooterContent />
@@ -56,13 +52,13 @@ export default function ContentLayout({ children, currentTenant, menus = [], ten
             }
 
             {isCollapse && !isMobile &&
-                <SidebarCollapseMenus menus={menus} />
+                <SidebarCollapseMenus />
             }
 
             <SidebarInset>
-                <Header menus={menus} currentTenant={currentTenant} tenants={tenants} />
+                <Header />
                 <div className={cn("grid grid-rows p-4 gap-4 w-full pb-12", { "container px-8": config.content === 'compact' })}>
-                    {isCollapse && (<HeaderBreadcrumb menus={menus} />)}
+                    {isCollapse && (<HeaderBreadcrumb />)}
                     {children}
                 </div>
                 <FooterTag />

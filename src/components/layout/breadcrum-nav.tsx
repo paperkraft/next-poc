@@ -11,16 +11,18 @@ import {
 } from '@/components/ui/breadcrumb';
 import { useMount } from '@/hooks/use-mount';
 import { usePathname } from 'next/navigation';
-import { GroupedMenus } from '@/lib/menus';
 import { getBreadcrumbsFromGroupedMenus } from './getBreadcrums';
+import { useTenant } from '@/context/TenantProvider';
 
 function truncate(text: string, maxLength: number = 20): string {
     return text.length > maxLength ? `${text.slice(0, maxLength)}…` : text;
 }
 
-export default function HeaderBreadcrumb({ menus = [] }: { menus: GroupedMenus[] }) {
+export default function HeaderBreadcrumb() {
     const isMounted = useMount();
     const path = usePathname();
+
+    const { menus } = useTenant();
 
     const breadcrumb = useMemo(() => {
         if (!isMounted || !path || menus.length === 0) return [];

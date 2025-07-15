@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import Content from "@/components/common/ContentLayout";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { TenantProvider } from "@/context/TenantProvider";
 import { getUserModules } from "@/lib/menus";
 import { getTenantsForAdmin } from "@/lib/tenants";
 import { redirect } from "next/navigation";
@@ -17,10 +18,12 @@ export default async function AdminRootLayout({ children }: { children: React.Re
     const tenants = await getTenantsForAdmin();
 
     return (
-        <SidebarProvider>
-            <Content menus={menus} tenants={tenants}>
-                {children}
-            </Content>
-        </SidebarProvider>
+        <TenantProvider menus={menus} tenants={tenants}>
+            <SidebarProvider>
+                <Content>
+                    {children}
+                </Content>
+            </SidebarProvider>
+        </TenantProvider>
     )
 }

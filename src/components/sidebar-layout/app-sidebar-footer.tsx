@@ -1,8 +1,7 @@
 'use client'
 
-import { logAuditAction } from "@/lib/audit-log";
 import { EllipsisVerticalIcon, LogOutIcon } from "lucide-react";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
@@ -18,13 +17,11 @@ import {
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { themeConfig } from "@/hooks/use-config";
-import { AuditAction } from "@prisma/client";
-import { useRouter } from "next/navigation";
 import { UserActions } from "@/config/user-action";
 import { ThemeWrapper } from "@/components/layout/theme-wrapper";
+import { LogoutDialog } from "../common/LogoutDialog";
 
 const SidebarFooterContent = React.memo(() => {
-    const router = useRouter();
     const { data } = useSession();
     const [config] = themeConfig();
     const { isMobile, toggleSidebar } = useSidebar();
@@ -36,26 +33,7 @@ const SidebarFooterContent = React.memo(() => {
     const slug = data?.user?.slug ?? "admin";
     const initials = user && user?.name?.split(' ').map((word: any[]) => word[0]).join('').toUpperCase();
 
-    const logout = async () => {
-        setIsLoggingOut(true);
-        try {
-            await signOut({ redirect: true });
-            await logAuditAction({
-                action: AuditAction.LOGOUT,
-                entity: 'auth/signout',
-                details: { data: { user: `${user?.name}` } },
-                userId: +user.id,
-                tenantId: user?.tenantId,
-                slug: user?.slug
-            });
-        } catch (error) {
-            console.error("Logout failed", error);
-        } finally {
-            setIsLoggingOut(false);
-            handleClose();
-            router.replace('/signin');
-        }
-    }
+    const logout = () => setIsLoggingOut(true);
 
     // shortcut key to logout ctrl + q
     React.useEffect(() => {
@@ -147,6 +125,11 @@ const SidebarFooterContent = React.memo(() => {
                     </DropdownMenu>
                 </SidebarMenuItem>
             </SidebarMenu>
+
+            <LogoutDialog
+                open={isLoggingOut}
+                onOpenChange={setIsLoggingOut}
+            />
         </>
     )
 });

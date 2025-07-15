@@ -4,6 +4,7 @@ import { AuditAction, Prisma } from '@prisma/client';
 import { headers } from 'next/headers';
 import { getDeviceDetails } from './utils';
 import prisma from './prisma';
+
 interface AuditProps {
     action: AuditAction,
     entity: string,
@@ -34,6 +35,8 @@ export async function logAuditAction({ action, entity, details, userId, tenantId
             ipAddress = 'Localhost';
         }
 
+        const data = action === 'LOGOUT' ? { data: session?.user?.name } : info
+
         await unstable_update({ ...session?.user });
 
         await prisma.auditLog.create({
@@ -43,7 +46,7 @@ export async function logAuditAction({ action, entity, details, userId, tenantId
                 userId: userId ?? +session?.user?.id,
                 tenantId: tenantId ?? session?.user?.tenantId,
                 slug: slug ?? session?.user?.slug,
-                details: info,
+                details: data,
                 device: {
                     ...deviceDetails,
                     ip: ipAddress,

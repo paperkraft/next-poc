@@ -1,18 +1,12 @@
 import { auth } from '@/auth';
 
+import FacultyDashboard from './faculty';
 import Student from './student';
 import TenantAdminDashboard from './tenant-admin';
-import { redirect } from 'next/navigation';
-import FacultyDashboard from './faculty';
 
 export default async function DashboardPage() {
 
   const session = await auth();
-
-  if (!session) {
-    redirect('/signin')
-  }
-
   const role = session?.user?.role
 
   switch (role) {

@@ -55,7 +55,7 @@ const Header = React.memo(({ menus = [], currentTenant, tenants = [] }: HeaderPr
                         <span className='font-medium'>{tenantName ?? 'System'}</span>
                     )}
 
-                    {isSystemAdmin && (
+                    {isSystemAdmin && isHorizontal && (
                         <TenantSwitcher
                             currentTenant={currentTenant}
                             tenants={tenants}

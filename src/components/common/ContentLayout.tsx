@@ -15,6 +15,7 @@ import FooterTag from './FooterTag';
 import SidebarHeaderContent from '../sidebar-layout/app-sidebar-header';
 import SidebarFooterContent from '../sidebar-layout/app-sidebar-footer';
 import HeaderBreadcrumb from '../layout/breadcrum-nav';
+import { HeaderTeamSwitcher } from '../sidebar-layout/sidebar-tenant-switcher';
 
 type ContentProps = {
     children: React.ReactNode;
@@ -39,7 +40,11 @@ export default function ContentLayout({ children, currentTenant, menus = [], ten
             {(isVertical || isMobile) &&
                 <Sidebar>
                     <SidebarHeader className="h-16 border-b justify-center">
-                        <SidebarHeaderContent />
+                        {tenants && tenants.length > 0 ? (
+                            <HeaderTeamSwitcher currentTenant={currentTenant} tenants={tenants} />
+                        ) : (
+                            <SidebarHeaderContent />
+                        )}
                     </SidebarHeader>
 
                     <AppSidebarMenus menus={menus} />

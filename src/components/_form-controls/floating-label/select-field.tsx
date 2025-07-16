@@ -1,6 +1,5 @@
 'use client'
 
-import { customStyle } from "@/config/styles/colors";
 import { cn } from "@/lib/utils"
 import React from "react";
 import {
@@ -82,7 +81,6 @@ export const SelectField = ({
                             role="combobox"
                             aria-expanded={open}
                             className={cn(
-                                customStyle,
                                 "w-full h-[40px] justify-between pl-3 pr-3 text-left",
                                 value ? "pt-2" : ""
                             )}

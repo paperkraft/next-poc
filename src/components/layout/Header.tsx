@@ -20,13 +20,12 @@ import UserAction from './UserAction';
 const Header = React.memo(() => {
     const isMounted = useMount();
 
-    const { session, currentTenant } = useTenant();
+    const { session, currentTenant, isSystem } = useTenant();
     const { isMobile } = useSidebar();
 
     const [config] = themeConfig();
 
     const isHorizontal = config.layout === 'horizontal';
-    const isSystemAdmin = session?.user?.globalRoles.includes("SYSTEM_ADMIN");
     const tenantName = session?.user?.tenantName;
 
     if (!isMounted) return null;
@@ -47,13 +46,13 @@ const Header = React.memo(() => {
                         </>
                     )}
 
-                    {!isMobile && (
+                    {!isMobile && !isSystem && (
                         <span className='font-medium'>
                             {currentTenant?.name ?? tenantName ?? 'System'}
                         </span>
                     )}
 
-                    {isSystemAdmin && isHorizontal && (
+                    {isSystem && isHorizontal && (
                         <TenantSwitcher />
                     )}
 

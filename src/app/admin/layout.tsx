@@ -18,7 +18,7 @@ export default async function AdminRootLayout({ children }: { children: React.Re
     const tenants = await getTenantsForAdmin();
 
     return (
-        <TenantProvider menus={menus} tenants={tenants}>
+        <TenantProvider menus={menus} tenants={tenants} isSystem={true}>
             <SidebarProvider>
                 <Content>
                     {children}

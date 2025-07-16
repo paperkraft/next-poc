@@ -21,6 +21,7 @@ export type TenantContextType = {
     loading: boolean;
     session: Session | null;
     activeView: "system" | "tenant";
+    isSystem: boolean;
 
     switchTenant: (tenantId: number) => void
     setActiveView: React.Dispatch<React.SetStateAction<"system" | "tenant">>
@@ -32,11 +33,11 @@ type TenantProviderProps = {
     currentTenant?: Tenant | null;
     tenants?: Tenant[] | null;
     menus: GroupedMenus[];
-
     children: React.ReactNode;
+    isSystem: boolean;
 }
 
-export function TenantProvider({ currentTenant, children, tenants, menus = [] }: TenantProviderProps) {
+export function TenantProvider({ currentTenant, children, tenants, menus = [], isSystem = false }: TenantProviderProps) {
 
     const router = useRouter();
     const { data: session } = useSession();
@@ -84,6 +85,7 @@ export function TenantProvider({ currentTenant, children, tenants, menus = [] }:
         loading,
         session,
         activeView,
+        isSystem,
         currentTenant,
 
         switchTenant,

@@ -20,6 +20,8 @@ export default async function TenantRootLayout({ children, params }: TenantLayou
         redirect('/signin')
     }
 
+    const isSystem = session?.user?.globalRoles?.includes('SYSTEM_ADMIN');
+
     const { isValid, redirectPath, tenant } = await validateTenantAccess(params.tenantSlug);
 
     if (!isValid && redirectPath) {
@@ -31,7 +33,7 @@ export default async function TenantRootLayout({ children, params }: TenantLayou
 
     return (
         <>
-            <TenantProvider currentTenant={tenant} tenants={tenants} menus={userMenus}>
+            <TenantProvider currentTenant={tenant} tenants={tenants} menus={userMenus} isSystem={isSystem}>
                 <SidebarProvider>
                     <ContentLayout>
                         {children}

@@ -1,22 +1,23 @@
 'use client'
 
+import { ReactNode } from 'react';
+
 import Header from '@/components/layout/Header';
 import {
     Sidebar, SidebarFooter, SidebarHeader, SidebarInset, useSidebar
 } from '@/components/ui/sidebar';
+import { useTenant } from '@/context/TenantProvider';
 import { themeConfig } from '@/hooks/use-config';
 import { useMount } from '@/hooks/use-mount';
 import { cn } from '@/lib/utils';
 
+import HeaderBreadcrumb from '../layout/breadcrum-nav';
 import AppSidebarMenus from '../sidebar-layout/app-sidebar';
 import SidebarCollapseMenus from '../sidebar-layout/app-sidebar-collapsed';
-import FooterTag from './FooterTag';
-import SidebarHeaderContent from '../sidebar-layout/app-sidebar-header';
 import SidebarFooterContent from '../sidebar-layout/app-sidebar-footer';
-import HeaderBreadcrumb from '../layout/breadcrum-nav';
+import SidebarHeaderContent from '../sidebar-layout/app-sidebar-header';
 import { HeaderTeamSwitcher } from '../sidebar-layout/sidebar-tenant-switcher';
-import { useTenant } from '@/context/TenantProvider';
-import { ReactNode } from 'react';
+import FooterTag from './FooterTag';
 
 export default function ContentLayout({ children }: { children: ReactNode }) {
 
@@ -57,7 +58,10 @@ export default function ContentLayout({ children }: { children: ReactNode }) {
 
             <SidebarInset>
                 <Header />
-                <div className={cn("grid grid-rows p-4 gap-4 w-full pb-12", { "container px-8": config.content === 'compact' })}>
+                <div className={cn(
+                    "grid grid-rows p-4 gap-4 w-full pb-12",
+                    config.content === 'compact' && "container px-8"
+                )}>
                     {isCollapse && (<HeaderBreadcrumb />)}
                     {children}
                 </div>

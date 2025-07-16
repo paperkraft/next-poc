@@ -1,4 +1,4 @@
-import { sendNotification } from "@/app/action/notifications.action";
+import { sendNotification } from "@/app/actions/notifications.action";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {

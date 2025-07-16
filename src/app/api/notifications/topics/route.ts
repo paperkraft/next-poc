@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Invalid input" }, { status: 400 });
     }
 
-    const subscription = await prisma.subscription.findUnique({
+    const subscription = await prisma.pushSubscription.findUnique({
         where: { endpoint },
     });
 
@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
 
     if (action === "subscribe") {
         if (!subscription.topics.includes(topic)) {
-            await prisma.subscription.update({
+            await prisma.pushSubscription.update({
                 where: { endpoint },
                 data: {
                     topics: {
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
             });
         }
     } else if (action === "unsubscribe") {
-        await prisma.subscription.update({
+        await prisma.pushSubscription.update({
             where: { endpoint },
             data: {
                 topics: {

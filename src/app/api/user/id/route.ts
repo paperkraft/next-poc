@@ -7,12 +7,10 @@ export async function POST(request: Request) {
     try {
         const user = await prisma.user.findUnique({
             where: { id },
-            select:{
-                id:true,
-                email:true,
-                lastName:true,
-                firstName:true,
-                username:true
+            select: {
+                id: true,
+                email: true,
+                profile: true,
             }
         });
 
@@ -20,8 +18,8 @@ export async function POST(request: Request) {
             return NextResponse.json({ message: 'User doesnot exists' }, { status: 500 });
         }
 
-        return NextResponse.json({ ...user },{ status: 200 });
-    } catch (error:any) {
+        return NextResponse.json({ ...user }, { status: 200 });
+    } catch (error: any) {
         return NextResponse.json({ ...error });
     }
 }

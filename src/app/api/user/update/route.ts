@@ -13,10 +13,13 @@ export async function POST(request: Request) {
         await prisma.user.update({
             where: { email },
             data: {
-                username,
                 email,
-                firstName,
-                lastName,
+                profile: {
+                    update: {
+                        firstName,
+                        lastName
+                    }
+                }
             }
         });
 

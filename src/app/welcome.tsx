@@ -1,19 +1,19 @@
 "use client";
-import { useMounted } from "@/hooks/use-mounted";
+import { useMount } from '@/hooks/use-mount';
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 
 export default function WelcomePage() {
-  const mounted = useMounted();
+  const isMounted = useMount();
   const route = useRouter();
   const { data, status } = useSession();
 
   useEffect(() => {
-    if (mounted && status !== "authenticated") {
+    if (isMounted && status !== "authenticated") {
       route.refresh();
     }
-  }, [mounted, status, route]);
+  }, [isMounted, status, route]);
 
   // useEffect(() => {
   //   async function fetchDeviceInfo() {
@@ -33,10 +33,8 @@ export default function WelcomePage() {
   //   fetchDeviceInfo();
   // }, []);
 
-  
-
   return (
-    mounted && data &&
+    isMounted && data &&
     <>
       <div>
         <p>Welcome, {data?.user?.name ?? data?.user?.email}</p>

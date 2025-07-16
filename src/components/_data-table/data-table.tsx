@@ -22,7 +22,7 @@ import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar, ToolbarOptions } from "./data-table-toolbar";
 import { DensityFeature, DensityState } from "@/utils/tanstack-utils";
 import { cn } from "@/lib/utils";
-import { useMounted } from "@/hooks/use-mounted";
+import { useMount } from '@/hooks/use-mount';
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[];
@@ -30,8 +30,8 @@ interface DataTableProps<TData, TValue> {
     pageSize?: number;
     getRowCanExpand?: (row: Row<TData>) => boolean;
     isLoading?: boolean;
-    deleteRecord?: (id: string | string[]) => Promise<void>;
-    moduleId?: string;
+    deleteRecord?: (id: number | number[]) => Promise<void>;
+    moduleId?: number;
     toolbar?: ToolbarOptions[];
 }
 
@@ -58,7 +58,7 @@ export function DataTable<TData extends { subModules?: TData[] }, TValue>({
     const [density, setDensity] = useState<DensityState>("sm");
     const [expanded, setExpanded] = React.useState<ExpandedState>({});
 
-    const mounted = useMounted();
+    const isMounted = useMount();
 
     const table = useReactTable({
         // debugTable: true,
@@ -117,7 +117,7 @@ export function DataTable<TData extends { subModules?: TData[] }, TValue>({
     }, [globalFilter]);
 
     return (
-        mounted &&
+        isMounted &&
         <div className="rounded-md border">
             {isLoading ? (
                 <div className="flex items-center justify-center h-64">Loading...</div>

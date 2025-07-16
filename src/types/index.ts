@@ -2,7 +2,7 @@ import * as Locales from 'date-fns/locale'
 
 export type Options = {
     label: string;
-    value: string;
+    value: number;
 }
 export type FormFieldType = {
     label: string

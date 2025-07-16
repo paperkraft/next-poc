@@ -1,12 +1,15 @@
-import { NextAuthConfig, User } from "next-auth"
-import prisma from "@/lib/prisma";
-import Credentials from "next-auth/providers/credentials";
-import GitHub from "next-auth/providers/github";
-import { AUTH_SECRET, GITHUB_ID, GITHUB_SECRET } from "@/utils/constants";
-import { getIpAddress } from "./utils";
-import { fetchModuleByRole } from "@/app/action/module.action";
-import { signInSchema } from "./zod";
-import { getUser } from "@/app/action/auth.action";
+import { NextAuthConfig, User } from 'next-auth';
+import Credentials from 'next-auth/providers/credentials';
+import GitHub from 'next-auth/providers/github';
+
+import { getUser } from '@/app/actions/auth.action';
+import { fetchModuleByRole } from '@/app/actions/module.action';
+import prisma from '@/lib/prisma';
+import { AUTH_SECRET, GITHUB_ID, GITHUB_SECRET } from '@/utils/constants';
+
+import { getIpAddress } from './utils';
+import { signInSchema } from './zod';
+import { auth } from '@/auth';
 
 const authConfig: NextAuthConfig = {
     secret: AUTH_SECRET,
@@ -25,7 +28,7 @@ const authConfig: NextAuthConfig = {
 
                     // GET User details
                     await getUser(email, password).then((data) => {
-                        return data ? user = data : null
+                        return data ? user = data as any : null
                     })
 
                     if (!user) {
@@ -68,9 +71,9 @@ const authConfig: NextAuthConfig = {
 
             if (trigger === "update" && session) {
                 // Fetch menu based on roleId from session
-                const menu = await fetchModuleByRole(session.roleId).then((d) => d.json());
-                const updateSession = { ...session, modules: menu.data }
-                token = { ...token, user: updateSession }
+                // const menu = await fetchModuleByRole(+session.roleId).then((d) => d.json());
+                // const updateSession = { ...session, modules: menu.data }
+                token = { ...token, user: session }
                 return token;
             };
             return token;
@@ -99,16 +102,32 @@ const authConfig: NextAuthConfig = {
 
         async redirect({ url, baseUrl }) {
 
-            // Check if the callbackUrl exists in the URL
-            const urlObj  = new URL(url);
+            // // Check if the callbackUrl exists in the URL
+            // const urlObj = new URL(url);
 
-            // If the callbackUrl is present, return it as the redirect destination
-            if (urlObj .searchParams.has('callbackUrl')) {
-                const callbackUrl = urlObj.searchParams.get('callbackUrl')!;
-                return callbackUrl; // Redirect to the original requested URL (callbackUrl)
+            // // If the callbackUrl is present, return it as the redirect destination
+            // if (urlObj.searchParams.has('callbackUrl')) {
+            //     const callbackUrl = urlObj.searchParams.get('callbackUrl')!;
+            //     return callbackUrl; // Redirect to the original requested URL (callbackUrl)
+            // }
+            // // If no callbackUrl exists, redirect to the dashboard
+            // return `${baseUrl}/dashboard`;
+
+            // Handle OAuth callback redirects
+            if (url.startsWith(baseUrl)) return url;
+
+            // Redirect to tenant dashboard after successful login
+            if (url.includes('/api/auth')) {
+                // Extract default tenant from session (set in jwt callback)
+                const session = await auth();
+                const slug = session?.user?.slug;
+
+                return slug
+                    ? `${baseUrl}/${slug}/dashboard`
+                    : `${baseUrl}/select-tenant`; // Fallback
             }
-            // If no callbackUrl exists, redirect to the dashboard
-            return `${baseUrl}/dashboard`;
+
+            return url.startsWith('/') ? `${baseUrl}${url}` : url;
         },
     },
 

@@ -4,7 +4,7 @@ import { ThemeProvider as NextThemesProvider } from 'next-themes';
 import { createContext, useEffect, useState } from 'react';
 
 import { ThemeWrapper } from '@/components/layout/theme-wrapper';
-import { useMounted } from '@/hooks/use-mounted';
+import { useMount } from '@/hooks/use-mount';
 
 export type ThemeProps = {
     toggleTheme: () => void;
@@ -14,7 +14,7 @@ export type ThemeProps = {
 export const ThemeContext = createContext<ThemeProps | null>(null);
 
 const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-    const isMounted = useMounted();
+    const isMounted = useMount();
 
     const [currentTheme, setCurrentTheme] = useState('light');
 

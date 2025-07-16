@@ -1,0 +1,33 @@
+export interface AvailableWidget {
+    id: number; // TenantWidget.id
+    widget: {
+        id: number; // Widget.id
+        key: string;
+        name: string;
+        description: string;
+        component: string;
+    };
+}
+
+export interface FullUserWidget {
+    id: number;
+    widgetId: number;
+    isPinned: boolean;
+    isHidden: boolean;
+    customSize: string;
+    sortOrder: number;
+    widget: {
+        id: number;
+        key: string;
+        name: string;
+        description: string;
+        component: string;
+    };
+    roleWidget: {
+        id: number;
+        roleId: number;
+        widgetId: number;
+        isAssigned: boolean;
+        sortOrder: number;
+    };
+}

@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { logAuditAction } from '@/lib/audit-log';
 import prisma from '@/lib/prisma';
+import { AuditAction } from '@prisma/client';
+import { auth } from '@/auth';
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: { id: number } }) {
     const { id } = params;
 
     if (!id) {
@@ -24,11 +26,15 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         }
 
         const data = await prisma.role.update({
-            where: { id },
+            where: { id: +id },
             data: { name }
         });
 
-        await logAuditAction('Update', 'master/role', { data: data });
+        await logAuditAction({
+            action: AuditAction.UPDATE,
+            entity: 'master/role',
+            details: { data: data },
+        });
 
         return NextResponse.json(
             { success: true, message: "Role updated", data: data },
@@ -36,7 +42,11 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         );
     } catch (error) {
         console.error(error);
-        await logAuditAction('Error', 'master/role', { error: 'Failed to update role' });
+        await logAuditAction({
+            action: AuditAction.ERROR,
+            entity: 'master/role',
+            details: { error: 'Failed to update role' }
+        });
         return NextResponse.json(
             { success: false, message: "Error updating role" },
             { status: 500 }
@@ -44,7 +54,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
 }
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: { id: number } }) {
     const { id } = params;
 
     if (!id) {
@@ -56,7 +66,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
     try {
         const data = await prisma.role.findUnique({
-            where: { id: id },
+            where: { id: +id },
             select: {
                 id: true,
                 name: true

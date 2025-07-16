@@ -1,4 +1,5 @@
-import { fetchModules } from "@/app/action/module.action";
+import { fetchModules } from "@/app/actions/module.action";
+import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
@@ -20,7 +21,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-async function createModuleRecursive(data: any, parentId?: string, depth: number = 0): Promise<any> {
+async function createModuleRecursive(data: any, parentId?: number, depth: number = 0): Promise<any> {
   const { name, path, groupId, children = [] } = data;
 
   if (depth > 2) {
@@ -28,12 +29,26 @@ async function createModuleRecursive(data: any, parentId?: string, depth: number
   }
 
   try {
-    const module = await prisma.module.create({
+
+    const session = await auth();
+
+    if (!session) {
+      return {
+        success: false,
+        message: "User session not found.",
+        data: [],
+      };
+    }
+
+    const { tenantId } = session.user;
+
+    const module = await prisma.menuItem.create({
       data: {
         name,
         path,
-        groupId,
+        groupId: +groupId,
         parentId,
+        tenantId
       },
     });
 
@@ -63,7 +78,7 @@ export async function DELETE(request: Request) {
 
   if (!ids || !Array.isArray(ids)) {
     return NextResponse.json(
-      { success: false, message: "Module Id is required" },
+      { success: false, message: "Module Id is required route" },
       { status: 400 }
     );
   }
@@ -71,7 +86,7 @@ export async function DELETE(request: Request) {
   try {
 
     // Step 1: Check if any module has children
-    // const modulesWithChildren = await prisma.module.findMany({
+    // const modulesWithChildren = await prisma.menuItem.findMany({
     //   where: {
     //     id: { in: ids },
     //     children: { some: { isDeleted: false } }, // Only check active children
@@ -96,18 +111,18 @@ export async function DELETE(request: Request) {
     // Step 2: Check if any module is assigned to roles
     const assigned = await prisma.rolePermission.findMany({
       where: {
-        moduleId: { in: ids },
+        menuId: { in: ids },
       },
       select: {
-        moduleId: true,
-        module: { select: { name: true } },
+        menuId: true,
+        menus: { select: { name: true } },
         role: { select: { name: true } },
       },
     });
 
     if (assigned.length > 0) {
       const grouped = assigned.reduce<Record<string, string[]>>((acc, curr) => {
-        const moduleName = curr.module.name || 'Unknown';
+        const moduleName = curr.menus.name || 'Unknown';
         const roleName = curr.role.name || 'Unknown';
         if (!acc[moduleName]) acc[moduleName] = [];
         acc[moduleName].push(roleName);
@@ -125,13 +140,19 @@ export async function DELETE(request: Request) {
     }
 
     // Step 3: Soft delete (mark as isDeleted: true)
-    const data = await prisma.module.updateMany({
+    // const data = await prisma.menuItem.updateMany({
+    //   where: {
+    //     id: { in: ids },
+    //   },
+    //   data: {
+    //     isActive: false,
+    //   },
+    // });
+
+    const data = await prisma.menuItem.deleteMany({
       where: {
         id: { in: ids },
-      },
-      data: {
-        isActive: true,
-      },
+      }
     });
 
     revalidatePath('/master/module');

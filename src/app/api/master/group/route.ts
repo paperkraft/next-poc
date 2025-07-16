@@ -1,12 +1,25 @@
-import { createGroup, deleteGroup } from "@/app/action/group.action";
+import { auth } from "@/auth";
 import { logAuditAction } from "@/lib/audit-log";
 import prisma from "@/lib/prisma";
+import { AuditAction } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
 export async function GET() {
     try {
-        const data = await prisma.group.findMany({
+        const session = await auth();
+
+        if (!session) {
+            return NextResponse.json(
+                { success: false, message: "User session not found", data: [] },
+                { status: 400 }
+            );
+        }
+
+        const { tenantId } = session.user;
+
+        const data = await prisma.menuGroup.findMany({
+            where: tenantId ? { tenantId, isActive: true } : undefined,
             select: {
                 id: true,
                 name: true
@@ -23,44 +36,65 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-    const { name } = await request.json();
-    try {
-        if (!name) {
-            return NextResponse.json(
-                { success: false, message: 'Group name is required' },
-                { status: 400 }
-            );
-        }
+  const session = await auth();
+  const { name } = await request.json();
 
-        const exist = await prisma.group.findFirst({
-            where: { name }
-        });
-
-        if (exist) {
-            return NextResponse.json(
-                { success: false, message: 'Group already exist', data: exist },
-                { status: 200 }
-            );
-        }
-
-        const data = await prisma.group.create({
-            data: { name }
-        });
-
-        await logAuditAction('Create', 'master/groups', { data });
-
-        return NextResponse.json(
-            { success: true, message: 'Group created', data },
-            { status: 200 }
-        );
-    } catch (error) {
-        await logAuditAction('Error', 'master/groups', { error: "Error creating group" });
-        return NextResponse.json(
-            { success: false, message: 'Error in creating group' },
-            { status: 400 }
-        );
+  try {
+    if (!name) {
+      return NextResponse.json(
+        { success: false, message: 'Group name is required' },
+        { status: 400 }
+      );
     }
+
+    if (!session) {
+      return NextResponse.json(
+        { success: false, message: "User session not found", data: [] },
+        { status: 400 }
+      );
+    }
+
+    const { tenantId } = session.user;
+
+    const exist = await prisma.menuGroup.findFirst({
+      where: { name, tenantId }
+    });
+
+    if (exist) {
+      return NextResponse.json(
+        { success: false, message: 'Group already exist', data: exist },
+        { status: 200 }
+      );
+    }
+
+    const data = await prisma.menuGroup.create({
+      data: { name, tenantId }
+    });
+
+    await logAuditAction({
+      action: AuditAction.CREATE,
+      entity: 'master/groups',
+      details: { data }
+    });
+
+    return NextResponse.json(
+      { success: true, message: 'Group created', data },
+      { status: 200 }
+    );
+
+  } catch (error) {
+    await logAuditAction({
+      action: AuditAction.ERROR,
+      entity: 'master/groups',
+      details: { error: "Error creating group" }
+    });
+    return NextResponse.json(
+      { success: false, message: 'Error in creating group' },
+      { status: 400 }
+    );
+  }
 }
+
 
 export async function DELETE(request: Request) {
     const { ids } = await request.json();
@@ -74,10 +108,10 @@ export async function DELETE(request: Request) {
 
     try {
         // Check if any group is assigned to a module
-        const groupsWithModules = await prisma.group.findMany({
+        const groupsWithModules = await prisma.menuGroup.findMany({
             where: {
                 id: { in: ids },
-                modules: { some: {} },  // Check if the group has any associated modules
+                menus: { some: {} },  // Check if the group has any associated modules
             }
         });
 
@@ -88,7 +122,7 @@ export async function DELETE(request: Request) {
             );
         }
 
-        const existingRecords = await prisma.group.findMany({
+        const existingRecords = await prisma.menuGroup.findMany({
             where: { id: { in: ids } }
         });
 
@@ -96,11 +130,15 @@ export async function DELETE(request: Request) {
             return NextResponse.json({ success: false, message: 'Some records were not found' }, { status: 404 });
         }
 
-        const record = await prisma.group.deleteMany({
+        const record = await prisma.menuGroup.deleteMany({
             where: { id: { in: ids } },
         });
 
-        await logAuditAction('Delete', 'master/groups', { data: existingRecords });
+        await logAuditAction({
+            action: AuditAction.DELETE,
+            entity: 'master/groups',
+            details: { data: existingRecords }
+        });
 
         revalidatePath('/master/groups');
 
@@ -110,7 +148,11 @@ export async function DELETE(request: Request) {
         );
     } catch (error) {
         console.error(error);
-        await logAuditAction('Error', 'master/groups', { error: "Error deleting group" });
+        await logAuditAction({
+            action: AuditAction.ERROR,
+            entity: 'master/groups',
+            details: { error: "Error deleting group" }
+        });
         return NextResponse.json(
             { success: false, message: "Error deleting group" },
             { status: 500 }

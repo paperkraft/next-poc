@@ -1,17 +1,19 @@
-import type { Module, Group } from '@prisma/client';
+import type { MenuGroup } from '@prisma/client';
+import { MenuItem } from '@/lib/menus';
 
-export type ModuleWithRelations = Module & {
-    group: Group | null;
-    children: Module[];
-    parent: Module | null;
+export type ModuleWithRelations = MenuItem & {
+    group: MenuGroup | null;
+    children: MenuItem[];
+    parent: MenuItem | null;
 }
 
 export type ModuleNode = {
-    id: string;
+    id: number;
     name: string;
     path?: string;
-    parentId?: string;
-    groupId?: string;
+    icon?: string;
+    parentId?: number;
+    groupId?: number;
     groupName?: string;
     position?: number;
     permissions?: number;
@@ -21,27 +23,27 @@ export type ModuleNode = {
 export type FetchModulesResponse = {
     success: boolean;
     message: string;
-    data?: ModuleNode[] | null;
+    data?: MenuItem[] | null;
 };
 
 // Unique Module
 export type ChildModule = {
-    id: string;
+    id: number;
     name: string;
     path: string | null;
     children: {
-        id: string;
+        id: number;
         name: string;
         path: string | null;
     }[];
 };
 
 export type ModuleWithChildren = {
-    id: string;
+    id: number;
     name: string;
     path: string | null;
-    parentId: string | null;
-    groupId: string | null;
+    parentId: number | null;
+    groupId: number | null;
     groupName?: string;
     children: ChildModule[];
 };

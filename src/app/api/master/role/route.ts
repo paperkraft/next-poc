@@ -1,11 +1,26 @@
+import { auth } from "@/auth";
 import { logAuditAction } from "@/lib/audit-log";
 import prisma from "@/lib/prisma";
+import { AuditAction } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
     try {
+
+        const session = await auth();
+
+        if (!session) {
+            return NextResponse.json(
+                { success: false, message: "User session not found", data: [] },
+                { status: 400 }
+            );
+        }
+
+        const { tenantId } = session.user;
+
         const roles = await prisma.role.findMany({
+            where: tenantId ? { tenantId, isActive: true } : undefined,
             select: {
                 id: true,
                 name: true,
@@ -28,8 +43,12 @@ export async function POST(request: Request) {
         const data = await prisma.role.create({
             data: { name }
         });
-        
-        await logAuditAction('Create', 'master/role', { data });
+
+        await logAuditAction({
+            action: AuditAction.CREATE,
+            entity: 'master/role',
+            details: { data }
+        });
 
         return NextResponse.json(
             { success: true, message: 'Role created', data },
@@ -37,7 +56,11 @@ export async function POST(request: Request) {
         );
     } catch (error) {
         console.error(error);
-        await logAuditAction('Error', 'master/role', { error: 'Failed to create role' });
+        await logAuditAction({
+            action: AuditAction.ERROR,
+            entity: 'master/role',
+            details: { error: 'Failed to create role' }
+        });
         return NextResponse.json(
             { success: false, message: 'Error in creating role' },
             { status: 400 }
@@ -84,7 +107,11 @@ export async function DELETE(request: Request) {
             where: { id: { in: ids } },
         });
 
-        await logAuditAction('Delete', 'master/role', { data: existingRecords });
+        await logAuditAction({
+            action: AuditAction.DELETE,
+            entity: 'master/role',
+            details: { data: existingRecords }
+        });
 
         revalidatePath('/master/role');
 
@@ -94,7 +121,11 @@ export async function DELETE(request: Request) {
         );
     } catch (error) {
         console.error(error);
-        await logAuditAction('Error', 'master/role', { error: 'Failed to delete role' });
+        await logAuditAction({
+            action: AuditAction.ERROR,
+            entity: 'master/role',
+            details: { error: 'Failed to delete role' }
+        });
         return NextResponse.json(
             { success: false, message: "Error deleting role" },
             { status: 500 }

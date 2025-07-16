@@ -13,9 +13,5 @@ export const metadata: Metadata = {
 
 export default async function Page() {
     const session = await auth();
-    return (
-        <>
-            <AccessDenied session={session}/>
-        </>
-    );
+    return (<AccessDenied session={session} />);
 }

@@ -1,3 +1,4 @@
+import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
@@ -9,23 +10,28 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Missing roleId" }, { status: 400 });
   }
 
+  const session = await auth();
+  const tenantId = session?.user.tenantId;
+
   // Fetch all modules and role permissions
   const [modules, rolePermissions] = await Promise.all([
-    prisma.module.findMany({
+    prisma.menuItem.findMany({
+      where: { tenantId: tenantId },
       include: { group: true }
     }),
     prisma.rolePermission.findMany({
-      where: { roleId },
+      where: { roleId: +roleId, tenantId: tenantId },
     }),
   ]);
 
-  const permissionMap = new Map<string, number>();
+  const permissionMap = new Map<number, number>();
+
   rolePermissions.forEach((rp) => {
-    permissionMap.set(rp.moduleId, rp.permissionBits);
+    permissionMap.set(rp.menuId, rp.permissionBits);
   });
 
   // Attach permissions and build id map
-  const moduleMap = new Map<string, any>();
+  const moduleMap = new Map<number, any>();
   modules.forEach((mod) => {
     moduleMap.set(mod.id, {
       id: mod.id,

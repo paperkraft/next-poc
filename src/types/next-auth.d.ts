@@ -3,27 +3,39 @@ import { User as NextAuthUser } from "next-auth";
 
 declare module "next-auth" {
     interface User extends NextAuthUser {
-        roleId?: string;
-        permissions?: any;
+        id: number | string;
+        email: string;
+        name?: string;
+        roleId?: number;
+        tenantId?: number;
+        slug?: string;
+        tenantName?: string;
         modules?: any;
+        permissions?: number;
     }
-    
+
     interface Session {
         user: {
-            id: string;
+            id: number | string;
             email: string;
             name?: string;
-            image?: string;
-            roleId?: string;
-            permissions?: any;
+            roleId?: number;
+            tenantId?: number;
+            slug?: string;
+            tenantName?: string;
             modules?: any;
         } & DefaultSession["user"];
     }
 
     interface Token {
-        id: string;
-        roleId?: string;
-        permissions?: any;
+        id: number | string;
+        email: string;
+        name?: string;
+        roleId?: number;
+        tenantId?: number;
+        slug?: string;
+        tenantName?: string;
         modules?: any;
+        permissions?: number;
     }
 }

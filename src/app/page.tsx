@@ -3,11 +3,9 @@
 import LandingPage from "./landing";
 import Loading from "./loading";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function Home() {
-  const route = useRouter();
   const { status } = useSession();
   const [isClient, setIsClient] = useState(false);
 
@@ -26,12 +24,6 @@ export default function Home() {
         });
     }
   }, []);
-
-  useEffect(() => {
-    if (status === "authenticated") {
-      route.replace("/dashboard");
-    }
-  }, [status, route]);
 
   if (!isClient) return null;
 

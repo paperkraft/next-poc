@@ -1,5 +1,5 @@
 export type Role = {
-    id: string;
+    id: number;
     name: string;
 };
 
@@ -17,5 +17,5 @@ export type FetchRoleResponse = {
 
 export type RoleListProps = {
     data: Role[];
-    moduleId?: string;
+    moduleId?: number;
 }

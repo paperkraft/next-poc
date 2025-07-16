@@ -6,19 +6,19 @@ export async function POST(req: NextRequest) {
 
     try {
         const session = await auth();
-        const userId: string = session?.user?.id;
+        const userId = session?.user?.id;
 
         if (!userId) {
             return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
         }
-        
+
         const { endpoint } = await req.json();
 
         if (!endpoint) {
             return NextResponse.json({ success: false, message: "Invalid subscription object" }, { status: 400 });
         }
 
-        const existingSubscription = await prisma.subscription.findFirst({
+        const existingSubscription = await prisma.pushSubscription.findFirst({
             where: { userId, endpoint },
         });
 

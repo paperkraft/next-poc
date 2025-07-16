@@ -1,31 +1,34 @@
 'use client'
-import { useSession } from 'next-auth/react';
+
 import React from 'react';
 
 import ThemeConfig from '@/components/layout/ThemeCustomizer';
 import { Separator } from '@/components/ui/separator';
+import { useSidebar } from '@/components/ui/sidebar';
+import { useTenant } from '@/context/TenantProvider';
 import { themeConfig } from '@/hooks/use-config';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { useMounted } from '@/hooks/use-mounted';
+import { useMount } from '@/hooks/use-mount';
 import { cn } from '@/lib/utils';
 
-import AppLogo from '../custom/app-initial';
+import { TenantSwitcher } from '../common/tenant-switcher';
+import AppNavbar from '../sidebar-layout/app-navbar';
 import BellNotifications from './bell-notifications';
-import HeaderBreadcrumb from './breadcrum-nav';
+import { CustomTrigger } from './custom-trigger';
 import LocaleSwitcher from './locale-switcher';
-import Navbar from './navbar';
-import { CustomTrigger } from './Sidebar/custom-trigger';
 import UserAction from './UserAction';
 
-const Header: React.FC = React.memo(() => {
-    const mounted = useMounted();
-    const isMobile = useIsMobile();
-    const [config] = themeConfig();
-    const { data: session } = useSession();
+const Header = React.memo(() => {
+    const isMounted = useMount();
 
-    if (!mounted) return null;
+    const { session, currentTenant, isSystem } = useTenant();
+    const { isMobile } = useSidebar();
+
+    const [config] = themeConfig();
 
     const isHorizontal = config.layout === 'horizontal';
+    const tenantName = session?.user?.tenantName;
+
+    if (!isMounted) return null;
 
     return (
         <>
@@ -43,10 +46,14 @@ const Header: React.FC = React.memo(() => {
                         </>
                     )}
 
-                    {/* {!isMobile && !isHorizontal && <HeaderBreadcrumb />} */}
-                    {/* {!isMobile && isHorizontal && <AppLogo />} */}
-                    {!isMobile && (
-                        <span className='font-medium'>{session?.user?.tenantName ?? ''}</span>
+                    {!isMobile && !isSystem && (
+                        <span className='font-medium'>
+                            {currentTenant?.name ?? tenantName ?? 'System'}
+                        </span>
+                    )}
+
+                    {isSystem && isHorizontal && (
+                        <TenantSwitcher />
                     )}
 
                     <div className='ml-auto flex gap-2'>
@@ -64,7 +71,7 @@ const Header: React.FC = React.memo(() => {
 
             {!isMobile && isHorizontal && (
                 <div className="border-b py-1">
-                    <Navbar />
+                    <AppNavbar />
                 </div>
             )}
         </>

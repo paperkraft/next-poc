@@ -6,7 +6,7 @@ import prisma from '@/lib/prisma';
 export async function POST(req: NextRequest) {
     try {
         const session = await auth();
-        const userId: string = session?.user?.id;
+        const userId = session?.user?.id;
 
         if (!userId) {
             return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
@@ -20,17 +20,17 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ success: false, message: "Invalid subscription object" }, { status: 400 });
         }
 
-        const existing = await prisma.subscription.findUnique({
+        const existing = await prisma.pushSubscription.findUnique({
             where: { userId, endpoint },
         });
 
         if (existing) {
             // Update the topic if needed
-            await prisma.subscription.update({
+            await prisma.pushSubscription.update({
                 where: { id: existing.id },
                 data: {
                     subscription,
-                    topics:{
+                    topics: {
                         set: Array.from(new Set([...existing.topics, ...topics]))
                     }
                 },
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
         }
 
         // Store the new subscription in the database
-        await prisma.subscription.create({
+        await prisma.pushSubscription.create({
             data: {
                 userId,
                 subscription,
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
     try {
         const session = await auth();
-        const userId: string | undefined = session?.user?.id;
+        const userId = session?.user?.id;
 
         if (!userId) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -71,7 +71,7 @@ export async function DELETE(req: NextRequest) {
             return NextResponse.json({ error: "Endpoint is required" }, { status: 400 });
         }
 
-        await prisma.subscription.deleteMany({
+        await prisma.pushSubscription.deleteMany({
             where: { userId, endpoint },
         });
 

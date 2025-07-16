@@ -1,85 +1,47 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { auth, unstable_update } from '@/auth';
-import prisma from '@/lib/prisma';
-import { logAuditAction } from '@/lib/audit-log';
-
-type Payload = {
-  roleId: string;
-  modules: ModulePermissionInput[];
-};
-
-type ModulePermissionInput = {
-  moduleId: string;
-  permissions: number;
-  children?: ModulePermissionInput[];
-};
-
-async function flattenModules(modules: ModulePermissionInput[]): Promise<ModulePermissionInput[]> {
-  const result: ModulePermissionInput[] = [];
-  const recurse = (mod: ModulePermissionInput) => {
-    result.push({ moduleId: mod.moduleId, permissions: mod.permissions });
-    mod.children?.forEach(recurse);
-  };
-  modules.forEach(recurse);
-  return result;
-}
+import { logAuditAction } from "@/lib/audit-log";
+import prisma from "@/lib/prisma";
+import { AuditAction } from "@prisma/client";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
-  const { roleId, modules }: Payload = await req.json();
-  const session = await auth();
-  const tenantId = session?.user?.tenantId;
+    const body = await req.json();
 
-  const flatModules = await flattenModules(modules);
+    const { roleId, tenantId, permissions } = body;
 
-  // Step 1: Get current permissions from DB
-  const existingPermissions = await prisma.rolePermission.findMany({
-    where: { roleId },
-    select: { id: true, moduleId: true },
-  });
+    // permissions: Array<{ menuId: number, permissionBits: number }> 
 
-  const incomingModuleMap = new Map(flatModules.map(m => [m.moduleId, m.permissions]));
-  const existingModuleMap = new Map(existingPermissions.map(p => [p.moduleId, p.id]));
+    try {
+        for (const { menuId, permissionBits } of permissions) {
+            if (permissionBits === 0) {
+                // DELETE if exists
+                await prisma.rolePermission.deleteMany({
+                    where: {
+                        roleId,
+                        menuId,
+                        tenantId,
+                    },
+                });
+            } else {
+                // UPSERT at role_permission_tenant_unique
+                await prisma.rolePermission.upsert({
+                    where: {
+                        role_permission_tenant_unique: { roleId, menuId, tenantId },
+                    },
+                    update: { permissionBits },
+                    create: { roleId, menuId, tenantId, permissionBits },
+                });
+            }
+        }
 
-  const upserts = [];
-  const deletes = [];
+        await logAuditAction({
+            action: AuditAction.UPDATE,
+            entity: 'RBAC',
+            details: { data: permissions }
+        });
 
-  // Step 2: Handle upserts
-  for (const mod of flatModules) {
-    const existingId = existingModuleMap.get(mod.moduleId);
-    if (mod.permissions > 0) {
-      upserts.push(
-        prisma.rolePermission.upsert({
-          where: { tenantId_roleId_moduleId: { roleId, moduleId: mod.moduleId, tenantId } },
-
-          update: { permissionBits: mod.permissions },
-          create: {
-            roleId,
-            moduleId: mod.moduleId,
-            permissionBits: mod.permissions,
-          },
-        })
-      );
-    } else if (existingId) {
-      // If permissionBits is 0, delete this record
-      deletes.push(prisma.rolePermission.delete({ where: { id: existingId } }));
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error("Error saving role permissions:", error);
+        return NextResponse.json({ error: "Failed to save permissions" }, { status: 500 });
     }
-  }
-
-  // Step 3: Delete missing modules (i.e. removed ones not even sent)
-  for (const [existingModuleId, id] of existingModuleMap.entries()) {
-    if (!incomingModuleMap.has(existingModuleId)) {
-      deletes.push(prisma.rolePermission.delete({ where: { id } }));
-    }
-  }
-
-  // Step 4: Execute
-  const data = await prisma.$transaction([...upserts, ...deletes]);
-
-  // Step 5: Update session
-
-  await unstable_update({ ...session?.user });
-
-  await logAuditAction('Upsert', 'RBAC', { data: data });
-
-  return NextResponse.json({ success: true });
 }

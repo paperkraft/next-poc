@@ -3,11 +3,11 @@ import { revalidatePath } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 
 interface Params {
-    params: { id: string };
+    params: { id: number };
 }
 
 type ModuleInput = {
-    id?: string;
+    id?: number;
     name: string;
     path?: string;
     groupId?: string;
@@ -18,7 +18,7 @@ const maxDepth = 2; // Maximum depth allowed for modules
 
 export async function GET(req: NextRequest, { params }: Params) {
     try {
-        const module = await prisma.module.findUnique({
+        const module = await prisma.menuItem.findUnique({
             where: { id: params.id },
             include: {
                 children: {
@@ -57,13 +57,13 @@ export async function PUT(req: NextRequest, { params }: Params) {
         const url = path === "" ? undefined : path.startsWith('/') ? path : path.startsWith('#') ? undefined : `/${path}`;
 
         // Step 1: Update parent module
-        await prisma.module.update({
-            where: { id: params.id },
-            data: { name, path: url, groupId: groupId ? groupId : undefined, isActive: true },
+        await prisma.menuItem.update({
+            where: { id: +params.id },
+            data: { name, path: url, groupId: groupId ? +groupId : undefined, isActive: true },
         });
 
         // Step 2: Recursive handler to sync children
-        await syncChildren(children, params.id);
+        await syncChildren(children, +params.id);
 
         return NextResponse.json({ success: true, message: 'Module and children updated successfully' });
     } catch (error) {
@@ -77,13 +77,13 @@ export async function DELETE(req: NextRequest, { params }: Params) {
     if (!id) {
         return NextResponse.json({
             success: false,
-            message: 'Module ID is required'
+            message: 'Module ID is required [id]'
         }, { status: 400 });
     }
 
     try {
         // Collect all IDs in the hierarchy
-        await deleteModuleAndDescendants(id);
+        await deleteModuleAndDescendants(+id);
 
         revalidatePath('/master/module');
 
@@ -107,18 +107,18 @@ export async function DELETE(req: NextRequest, { params }: Params) {
 }
 
 
-async function syncChildren(children: ModuleInput[], parentId: string, depth: number = 1) {
+async function syncChildren(children: ModuleInput[], parentId: number, depth: number = 1) {
 
     if (depth > maxDepth) {
         throw new ModuleDepthError(depth);
     }
 
-    const existingChildren = await prisma.module.findMany({
-        where: { parentId },
+    const existingChildren = await prisma.menuItem.findMany({
+        where: { parentId: +parentId },
         select: { id: true },
     });
 
-    const existingIds = existingChildren.map((c) => c.id);
+    const existingIds = existingChildren.map((c) => +c.id);
     const submittedIds = children.map((c) => c.id).filter(Boolean);
 
     // Delete removed children
@@ -133,7 +133,7 @@ async function syncChildren(children: ModuleInput[], parentId: string, depth: nu
     await Promise.all(
         children.map(async (child) => {
             const childUrl = child.path === "" ? "#" : child.path?.startsWith('/') ? child.path : child.path?.startsWith('#') ? undefined : `/${child.path}`;
-            const groupId = child.groupId || undefined;
+            const groupId = child.groupId;
 
             if (depth > maxDepth) {
                 throw new ModuleDepthError(depth);
@@ -141,36 +141,36 @@ async function syncChildren(children: ModuleInput[], parentId: string, depth: nu
 
             if (child.id) {
                 // Update existing
-                await prisma.module.update({
-                    where: { id: child.id },
+                await prisma.menuItem.update({
+                    where: { id: +child.id },
                     data: {
                         name: child.name,
                         path: childUrl,
-                        groupId,
+                        groupId: Number(groupId),
                         parentId,
                         isActive: true
                     },
                 });
 
                 if (child.children && child.children.length > 0) {
-                    await syncChildren(child.children, child.id, depth + 1);
+                    await syncChildren(child.children, +child.id, depth + 1);
                 } else {
                     // Remove nested children from DB if none provided
-                    await prisma.module.deleteMany({ where: { parentId: child.id } });
+                    await prisma.menuItem.deleteMany({ where: { parentId: +child.id } });
                 }
             } else {
                 // Create new
-                const created = await prisma.module.create({
+                const created = await prisma.menuItem.create({
                     data: {
                         name: child.name,
                         path: childUrl,
-                        groupId,
+                        groupId: Number(groupId),
                         parentId,
                     },
                 });
 
                 if (child.children && child.children.length > 0) {
-                    await syncChildren(child.children, created.id, depth + 1);
+                    await syncChildren(child.children, +created.id, depth + 1);
                 }
             }
         })
@@ -178,20 +178,20 @@ async function syncChildren(children: ModuleInput[], parentId: string, depth: nu
 }
 
 // Delete removed children and all its nested children
-async function deleteModuleAndDescendants(moduleId: string) {
+async function deleteModuleAndDescendants(menuId: number) {
 
     const assigned = await prisma.rolePermission.findMany({
-        where: { moduleId },
+        where: { menuId: +menuId },
         select: {
-            moduleId: true,
-            module: { select: { name: true } },
+            menuId: true,
+            menus: { select: { name: true } },
             role: { select: { name: true } },
         },
     });
 
     if (assigned.length > 0) {
         const grouped = assigned.reduce<Record<string, string[]>>((acc, curr) => {
-            const moduleName = curr.module.name || 'Unknown';
+            const moduleName = curr.menus.name || 'Unknown';
             const roleName = curr.role.name || 'Unknown';
             if (!acc[moduleName]) acc[moduleName] = [];
             acc[moduleName].push(roleName);
@@ -206,15 +206,15 @@ async function deleteModuleAndDescendants(moduleId: string) {
     }
 
     // Delete children recursively
-    const childModules = await prisma.module.findMany({
-        where: { parentId: moduleId },
+    const childModules = await prisma.menuItem.findMany({
+        where: { parentId: +menuId },
         select: { id: true },
     });
 
-    await Promise.all(childModules.map((c) => deleteModuleAndDescendants(c.id)));
+    await Promise.all(childModules.map((c) => deleteModuleAndDescendants(+c.id)));
 
     // Delete this module
-    await prisma.module.delete({ where: { id: moduleId } });
+    await prisma.menuItem.delete({ where: { id: +menuId } });
 }
 
 class ModuleDepthError extends Error {

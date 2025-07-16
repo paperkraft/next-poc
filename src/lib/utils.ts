@@ -78,7 +78,7 @@ export function getDeviceDetails(userAgent: string | null): Record<string, strin
   return {
     browser: parser.getBrowser().name,
     os: parser.getOS().name,
-    device: getDeviceType(userAgent as string),
+    type: getDeviceType(userAgent as string),
   };
 }
 

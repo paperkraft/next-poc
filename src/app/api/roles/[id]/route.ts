@@ -1,15 +1,15 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: { id: number } }) {
     const permissions = await prisma.rolePermission.findMany({
-        where: { roleId: params.id },
-        select: { moduleId: true, permissionBits: true },
+        where: { roleId: +params.id },
+        select: { menuId: true, permissionBits: true },
     });
     return Response.json(permissions);
 }
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: { id: number } }) {
     const { modules } = await req.json();
     const flattened = flattenPermissions(modules);
     const session = await auth();
@@ -17,17 +17,17 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
     // upsert
     await Promise.all(
-        flattened.map(({ moduleId, permissionBits }) =>
+        flattened.map(({ menuId, permissionBits }) =>
             prisma.rolePermission.upsert({
                 where: {
-                    tenantId_roleId_moduleId: {
-                        roleId: params.id,
-                        moduleId,
+                    role_permission_tenant_unique: {
+                        roleId: +params.id,
+                        menuId,
                         tenantId
                     },
                 },
                 update: { permissionBits },
-                create: { roleId: params.id, moduleId, permissionBits },
+                create: { roleId: params.id, menuId, permissionBits },
             })
         )
     );
@@ -35,9 +35,9 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     return Response.json({ success: true });
 }
 
-function flattenPermissions(modules: any[]): { moduleId: string; permissionBits: number }[] {
-    return modules.flatMap((m) => [
-        { moduleId: m.moduleId, permissionBits: m.permissionBits },
+function flattenPermissions(menus: any[]): { menuId: number; permissionBits: number }[] {
+    return menus.flatMap((m) => [
+        { menuId: m.menuId, permissionBits: m.permissionBits },
         ...flattenPermissions(m.children || []),
     ]);
 }

@@ -1,12 +1,13 @@
-import { ModuleNode } from "@/types/modules";
 import { ActionParam, ALL_PERMISSIONS } from "@/types/permissions";
+import { GroupedMenus } from "../menus";
+import { findMatchingMenuItem } from "./find-modules";
 
 interface ABACCheck {
     action: ActionParam;
-    modules: ModuleNode[];
+    modules: GroupedMenus[];
     path?: string;
     name?: string;
-    moduleId?: string;
+    moduleId?: number;
     requireAll?: boolean;
 }
 
@@ -25,30 +26,6 @@ function normalizeActions(action: ActionParam): number[] {
     return actions.map(getPermissionBit);
 }
 
-function matchPath(target: string, modulePath: string) {
-    if (!modulePath) return false;
-    if (target === modulePath) return true;
-
-    const dynamicPattern = modulePath
-        .replace(/\[.*?\]/g, "[^/]+")
-        .replace(/\//g, "\\/");
-
-    const exact = new RegExp(`^${dynamicPattern}$`);
-    const nested = new RegExp(`^${dynamicPattern}(/.*)?$`);
-
-    return exact.test(target) || nested.test(target);
-}
-
-function findMatchingModule(
-    modules: ModuleNode[],
-    { moduleId, path, name }: Pick<ABACCheck, "moduleId" | "path" | "name">
-): ModuleNode | undefined {
-    if (moduleId) return modules.find((m) => m.id === moduleId);
-    if (path) return modules.find((m) => m.path && matchPath(path, m.path));
-    if (name) return modules.find((m) => m.name === name);
-    return undefined;
-};
-
 export function isABACAllowed({
     action,
     modules,
@@ -59,13 +36,10 @@ export function isABACAllowed({
 }: ABACCheck): boolean {
 
     if (!modules) return false;
-
     const requiredBits = normalizeActions(action);
-    const matchedModule = findMatchingModule(modules, { moduleId, path, name });
-
+    const matchedModule = findMatchingMenuItem(modules, { id: moduleId, name, path });
     if (!matchedModule) return false;
-
-    const permissions = matchedModule.permissions;
+    const permissions = matchedModule.permission;
 
     return requireAll
         ? requiredBits.every((bit) => (permissions && permissions & bit) === bit)

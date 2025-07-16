@@ -4,7 +4,7 @@ import { Button } from "../ui/button";
 
 type FromButtonsProps = {
     loading: boolean;
-    id?: string
+    id?: number
 }
 
 export default function FormButtons({ loading, id }: FromButtonsProps) {

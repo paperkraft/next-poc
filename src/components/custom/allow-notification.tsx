@@ -5,7 +5,7 @@ import { useState } from 'react';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useNotifications } from '@/context/notification-context';
-import { useMounted } from '@/hooks/use-mounted';
+import { useMount } from '@/hooks/use-mount';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 
 export default function AllowNotification() {
@@ -19,7 +19,7 @@ export default function AllowNotification() {
 
     const [showAlert, setShowAlert] = useState(true);
 
-    const mounted = useMounted();
+    const isMounted = useMount();
 
     if (loading) return null; // Avoid rendering while loading
     if (!showAlert) return null;
@@ -27,7 +27,7 @@ export default function AllowNotification() {
     // If notifications were denied by the user
     if (permissionDenied) {
         return (
-            mounted &&
+            isMounted &&
             <Alert variant="default" className='bg-yellow-50 border border-yellow-300 text-yellow-900 dark:bg-yellow-50/5 dark:border-accent dark:text-yellow-600'>
                 <AlertCircleIcon className="size-4 !text-inherit" />
                 <AlertTitle className='flex'>
@@ -48,7 +48,7 @@ export default function AllowNotification() {
     // If the user is not subscribed to notifications
     if (!subscription) {
         return (
-            mounted &&
+            isMounted &&
             <Alert variant="default" className='bg-yellow-50 border border-yellow-300 text-yellow-900 dark:bg-yellow-50/5 dark:border-accent dark:text-yellow-600'>
                 <AlertCircleIcon className="size-4 !text-inherit" />
                 <AlertTitle className='flex'>
@@ -65,7 +65,7 @@ export default function AllowNotification() {
 
     // If the user is subscribed to notifications
     return (
-        mounted &&
+        isMounted &&
         <Alert variant="default" className='hidden bg-yellow-50 border border-yellow-300 text-yellow-900 dark:bg-yellow-50/5 dark:border-accent dark:text-yellow-600'>
             <AlertCircleIcon className="size-4 !text-inherit" />
             <AlertTitle className='flex'>

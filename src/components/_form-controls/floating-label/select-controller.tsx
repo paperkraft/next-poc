@@ -54,7 +54,7 @@ export const FloatingSelectController = <T extends FieldValues>({ options, name,
                         <SelectContent>
                             {
                                 options?.map((item, i) => (
-                                    <SelectItem value={item?.value as any} key={`${i}.${item?.value}`}>{item?.label}</SelectItem>
+                                    <SelectItem value={String(item?.value)} key={`${i}.${item?.value}`}>{item?.label}</SelectItem>
                                 ))
                             }
                         </SelectContent>

@@ -10,7 +10,7 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 
 interface DeleteToolbarProps<TData> {
     table: Table<TData>;
-    deleteRecord?: (id: string | string[]) => Promise<void>;
+    deleteRecord?: (id: number | number[]) => Promise<void>;
 }
 
 export default function DeleteRecordDialog<TData>({ table, deleteRecord }: DeleteToolbarProps<TData>) {
@@ -20,9 +20,9 @@ export default function DeleteRecordDialog<TData>({ table, deleteRecord }: Delet
     const router = useRouter();
 
     const selectedRows = table.getFilteredSelectedRowModel().rows as any[];
-    const selectedIds = selectedRows.map((row: any) => row.original.id);
+    const selectedIds = selectedRows.map((row: any) => +row.original.id);
     const selectedCount = selectedRows.length;
-    const selectedName = selectedCount === 1 ? selectedRows[0].original?.name  : null;
+    const selectedName = selectedCount === 1 ? selectedRows[0].original?.name : null;
 
     const onDelete = async () => {
 
@@ -58,7 +58,7 @@ export default function DeleteRecordDialog<TData>({ table, deleteRecord }: Delet
                     Delete ({table.getFilteredSelectedRowModel().rows.length})
                 </Button>
             </DialogTrigger>
-            
+
             <DialogContent>
                 <ThemeWrapper>
                     <DialogHeader>

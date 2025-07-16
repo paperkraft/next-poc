@@ -1,10 +1,7 @@
 "use client";
 import React, { memo, useEffect } from "react";
 import {
-  BellIcon,
   PowerIcon,
-  Settings2Icon,
-  UserIcon
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -22,10 +19,12 @@ import { Button } from "@/components/ui/button";
 import { signOut, useSession } from "next-auth/react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { ThemeWrapper } from "./theme-wrapper";
+import { UserActions } from "@/config/user-action";
 
 const UserAction = () => {
   const { data } = useSession();
   const user = data && data?.user;
+  const slug = data?.user?.slug ?? "admin"
   const initials = user && user?.name?.split(' ').map((word: any[]) => word[0]).join('').toUpperCase();
 
   // shortcut key to logout ctrl + q
@@ -64,24 +63,6 @@ const UserAction = () => {
     )
   }
 
-  const options = [
-    {
-      label: 'Profile',
-      url: '/profile',
-      icon: UserIcon
-    },
-    {
-      label: 'Setting',
-      url: '/profile-settings',
-      icon: Settings2Icon
-    },
-    {
-      label: 'Notifications',
-      url: '/notifications',
-      icon: BellIcon
-    },
-  ]
-
   return (
     <div className="flex items-center">
       <DropdownMenu>
@@ -103,17 +84,13 @@ const UserAction = () => {
             <DropdownMenuSeparator />
 
             <DropdownMenuGroup className="space-y-1">
-
-              {
-                options.map((item) => (
-                  <DropdownMenuItem key={item.label} asChild>
-                    <Link href={item.url} className="flex flex-1 items-center cursor-pointer hover:!text-primary">
-                      {item.icon && <item.icon className="size-4 mr-2" />}{item.label}
-                    </Link>
-                  </DropdownMenuItem>
-                ))
-              }
-
+              {UserActions.map((item) => (
+                <DropdownMenuItem key={item.label} asChild>
+                  <Link href={`/${slug}${item.url}`} className="flex flex-1 items-center cursor-pointer hover:!text-primary">
+                    {item.icon && <item.icon className="size-4 mr-2" />}{item.label}
+                  </Link>
+                </DropdownMenuItem>
+              ))}
             </DropdownMenuGroup>
 
             <DropdownMenuSeparator />

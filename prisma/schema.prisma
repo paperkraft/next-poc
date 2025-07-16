@@ -3,182 +3,296 @@ generator client {
 }
 
 datasource db {
-  provider = "mongodb"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 enum TenantType {
-  SCHOOL
+  UNIVERSITY
+  SOCIETY
   COLLEGE
+  SCHOOL
 }
 
 model Tenant {
-  id           String     @id @default(auto()) @map("_id") @db.ObjectId
-  name         String     @unique
-  type         TenantType
-  code         String     @unique
-  address      String?
-  city         String?
-  state        String?
-  country      String?
-  contactEmail String?
-  contactPhone String?
-  description  String?
-  isActive     Boolean    @default(true)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  id             Int              @id @default(autoincrement())
+  name           String           @unique
+  description    String?
+  slug           String           @unique
+  type           TenantType
+  parent         Tenant?          @relation("TenantHierarchy", fields: [parentId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  parentId       Int?
+  children       Tenant[]         @relation("TenantHierarchy")
+  address        Json             @default("{}")
+  settings       Json             @default("{}")
+  contact        Json             @default("{}")
+  limits         Json             @default("{}")
+  branding       Json             @default("{}")
+  customField    Json             @default("{}")
+  features       String[]         @default([])
+  isActive       Boolean          @default(true)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
   users          User[]
   roles          Role[]
-  groups         Group[]
-  modules        Module[]
-  RolePermission RolePermission[]
-  AuditLog       AuditLog[]
+  groups         MenuGroup[]
+  menus          MenuItem[]
+  permissions    Permission[]
+  rolePermission RolePermission[]
+  auditLogs      AuditLog[]
+  widgets        TenantWidget[]
+
+  @@index([type])
 }
 
-// ABAC-style Role
+model User {
+  id               Int                @id @default(autoincrement())
+  email            String             @unique
+  password         String
+  role             Role               @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  roleId           Int
+  globalRoles      Json               @default("[]")
+  tenant           Tenant?            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId         Int?
+  isActive         Boolean            @default(true)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  ip               String?
+  customFields     Json               @default("{}")
+  profile          Profile?
+  auditLog         AuditLog[]
+  widgets          UserWidget[]
+  notification     Notification[]
+  pushSubscription PushSubscription[]
+
+  @@index([tenantId, email])
+}
+
+enum GlobalRole {
+  SUPER_ADMIN
+  SYSTEM_ADMIN
+  SUPPORT
+}
+
+model Profile {
+  id           Int       @id @default(autoincrement())
+  firstName    String
+  middleName   String?
+  lastName     String
+  dateOfBirth  DateTime?
+  avatar       String?
+  phone        String?
+  address      Json?     @default("{}")
+  customFields Json      @default("{}")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  user         User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       Int?      @unique
+
+  @@index([firstName, lastName])
+}
+
 model Role {
-  id          String           @id @default(auto()) @map("_id") @db.ObjectId
-  tenantId    String?          @db.ObjectId
-  tenant      Tenant?          @relation(fields: [tenantId], references: [id])
-  name        String           @unique
-  users       User[]
+  id          Int              @id @default(autoincrement())
+  name        String
+  description String?
+  tenantId    Int?
+  tenant      Tenant?          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   permissions RolePermission[]
   isActive    Boolean          @default(true)
-  description String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  users       User[]
+  widgets     RoleWidget[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  @@unique([tenantId, name])
 }
 
-// Permissions associated with a specific Role and Module
 model RolePermission {
-  id             String  @id @default(auto()) @map("_id") @db.ObjectId
-  tenantId       String? @db.ObjectId
-  tenant         Tenant? @relation(fields: [tenantId], references: [id])
-  roleId         String  @db.ObjectId
-  moduleId       String  @db.ObjectId
-  permissionBits Int // Bitmask permissions
+  id             Int      @id @default(autoincrement())
+  tenantId       Int?
+  tenant         Tenant?  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  roleId         Int
+  menuId         Int
+  permissionBits Int
+  role           Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  menus          MenuItem @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  role   Role   @relation(fields: [roleId], references: [id])
-  module Module @relation(fields: [moduleId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([tenantId, roleId, moduleId])
+  @@unique([roleId, menuId, tenantId], name: "role_permission_tenant_unique")
+  @@unique([roleId, menuId], name: "role_permission_global_unique")
+  @@index([tenantId, roleId])
+  @@index([tenantId, menuId])
 }
 
-// Individual permission definitions (view, edit, delete, etc.)
 model Permission {
-  id      String @id @default(auto()) @map("_id") @db.ObjectId
-  name    String @unique
-  bitmask Int
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-// Modular structure (with self-referencing for hierarchy)
-model Module {
-  id       String   @id @default(auto()) @map("_id") @db.ObjectId
-  tenantId String?  @db.ObjectId
-  tenant   Tenant?  @relation(fields: [tenantId], references: [id])
-  name     String   @unique
-  path     String?
-  parentId String?  @db.ObjectId
-  parent   Module?  @relation("ModuleParent", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  children Module[] @relation("ModuleParent")
-  groupId  String?  @db.ObjectId
-  group    Group?   @relation(fields: [groupId], references: [id])
-
-  isActive  Boolean  @default(true)
+  id        Int      @id @default(autoincrement())
+  name      String
+  bitmask   Int
+  tenantId  Int?
+  tenant    Tenant?  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  isGlobal  Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  RolePermission RolePermission[]
+  @@unique([name, tenantId], name: "permission_name_tenant")
+  @@index([tenantId, name])
 }
 
-// Users
-model User {
-  id           String         @id @default(auto()) @map("_id") @db.ObjectId
-  email        String         @unique
-  tenantId     String?        @db.ObjectId
-  tenant       Tenant?        @relation(fields: [tenantId], references: [id])
-  roleId       String         @db.ObjectId
-  role         Role           @relation(fields: [roleId], references: [id])
-  auditLog     AuditLog[]
-  subscription Subscription[]
-  Notification Notification[]
-
-  // Optional fields
-  firstName    String?
-  lastName     String?
-  username     String?
-  password     String?
-  phone        String?
-  organization String?
-  state        String?
-  city         String?
-  ip           String?
-
-  isSuperAdmin Boolean  @default(false) // Super-admin flag
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+model Widget {
+  id          Int            @id @default(autoincrement())
+  key         String         @unique
+  name        String
+  description String?
+  component   String
+  category    String
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  tenants     TenantWidget[]
 }
 
-// Grouping of modules (e.g. Dashboard, Settings, etc.)
-model Group {
-  id       String   @id @default(auto()) @map("_id") @db.ObjectId
-  tenantId String?  @db.ObjectId
-  tenant   Tenant?  @relation(fields: [tenantId], references: [id])
-  name     String   @unique
-  position Int      @default(999) // <- Add this for ordering
-  modules  Module[]
-
-  isActive  Boolean  @default(true)
+model TenantWidget {
+  id        Int      @id @default(autoincrement())
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId  Int
+  widget    Widget   @relation(fields: [widgetId], references: [id], onDelete: Cascade)
+  widgetId  Int
+  isDefault Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  roleWidget RoleWidget[]
+  userWidget UserWidget[]
+
+  @@unique([tenantId, widgetId])
+}
+
+model RoleWidget {
+  id         Int          @id @default(autoincrement())
+  isAssigned Boolean      @default(false)
+  sortOrder  Int          @default(0)
+  role       Role         @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  roleId     Int
+  widget     TenantWidget @relation(fields: [widgetId], references: [id], onDelete: Cascade)
+  widgetId   Int
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  userWidgetConfigs UserWidget[]
+
+  @@unique([roleId, widgetId])
+}
+
+model UserWidget {
+  id           Int          @id @default(autoincrement())
+  isPinned     Boolean      @default(false)
+  isHidden     Boolean      @default(false)
+  customSize   String       @default("small")
+  sortOrder    Int
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       Int
+  widget       TenantWidget @relation(fields: [widgetId], references: [id], onDelete: Cascade)
+  widgetId     Int
+  roleWidget   RoleWidget   @relation(fields: [roleWidgetId], references: [id], onDelete: Cascade)
+  roleWidgetId Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, widgetId])
+  @@index([userId])
+}
+
+model MenuItem {
+  id             Int              @id @default(autoincrement())
+  tenantId       Int?
+  tenant         Tenant?          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name           String
+  path           String?
+  icon           String?
+  parentId       Int?
+  parent         MenuItem?        @relation("MenuParent", fields: [parentId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  children       MenuItem[]       @relation("MenuParent")
+  groupId        Int?
+  group          MenuGroup?       @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  isActive       Boolean          @default(true)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  rolePermission RolePermission[]
+  // @@unique([tenantId, groupId, parentId])
+
+  @@unique([tenantId, parentId, name])
+}
+
+model MenuGroup {
+  id        Int        @id @default(autoincrement())
+  name      String
+  position  Int        @default(0)
+  tenantId  Int?
+  tenant    Tenant?    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  menus     MenuItem[]
+  isActive  Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@unique([tenantId, name])
 }
 
 model AuditLog {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  tenantId  String?  @db.ObjectId
-  tenant    Tenant?  @relation(fields: [tenantId], references: [id])
-  action    String
+  id        Int         @id @default(autoincrement())
+  action    AuditAction
+  user      User        @relation(fields: [userId], references: [id])
+  userId    Int
+  tenant    Tenant?     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId  Int?
+  slug      String?
+  metadata  Json        @default("{}")
   entity    String
-  userId    String   @db.ObjectId
   details   Json
   device    Json?
-  timestamp DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime    @default(now())
+
+  @@index([action, createdAt])
+  @@index([tenantId, createdAt])
+  @@index([userId, createdAt])
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  ERROR
 }
 
 model Notification {
-  id      String  @id @default(auto()) @map("_id") @db.ObjectId
-  userId  String  @db.ObjectId
-  topic   String?
-  title   String?
-  message String
-  status  String
-  read    Boolean @default(false)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id])
+  id        Int                @id @default(autoincrement())
+  userId    Int
+  topic     String?
+  title     String?
+  message   String
+  status    NotificationStatus
+  read      Boolean            @default(false)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model Subscription {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId       String   @db.ObjectId
+enum NotificationStatus {
+  SENT
+  DELIVERED
+  FAILED
+}
+
+model PushSubscription {
+  id           Int      @id @default(autoincrement())
+  userId       Int
   endpoint     String   @unique
   subscription Json
   topics       String[]
-  user         User     @relation(fields: [userId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }

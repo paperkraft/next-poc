@@ -2,18 +2,19 @@
 import { Session } from 'next-auth';
 import { useRouter } from 'next/navigation';
 
-import { useMounted } from '@/hooks/use-mounted';
+import { useMount } from '@/hooks/use-mount';
 import { cn } from '@/lib/utils';
 
 import { Button } from '../ui/button';
 
 export default function AccessDenied({ session }: { session?: Session | null }) {
     const router = useRouter();
-    const mounted = useMounted();
-    if (!mounted) return null
+    const isMounted = useMount();
+
     return (
-        <div className={cn("flex flex-col gap-2 items-center justify-center p-6 bg-accent rounded-md ",
-            session ? "h-[calc(100svh-100px)]" : "h-screen"
+        isMounted &&
+        <div className={cn("flex flex-col gap-2 items-center justify-center p-6 bg-accent rounded-md h-svh",
+            // session ? "h-[calc(100svh-100px)]" : "h-screen"
         )}>
             <div className="max-w-md space-y-4 text-center">
                 <h1 className="text-xl font-semibold tracking-tight sm:text-4xl">Access Denied</h1>

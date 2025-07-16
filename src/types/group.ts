@@ -1,5 +1,5 @@
 export type Group = {
-    id: string;
+    id: number;
     name: string;
 };
 
@@ -17,5 +17,5 @@ export type FetchGroupResponse = {
 
 export type GroupListProps = {
     data: Group[];
-    moduleId?: string;
+    moduleId?: number;
 }

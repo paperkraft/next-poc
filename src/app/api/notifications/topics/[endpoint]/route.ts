@@ -6,7 +6,7 @@ import prisma from '@/lib/prisma';
 export async function POST(request: NextRequest) {
     const { endpoint } = await request.json();
     const session = await auth();
-    const userId: string | undefined = session?.user?.id;
+    const userId = session?.user?.id;
 
     if (!endpoint) {
         return NextResponse.json(
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-        const data = await prisma.subscription.findUnique({
+        const data = await prisma.pushSubscription.findUnique({
             where: { userId, endpoint },
             select: {
                 topics: true

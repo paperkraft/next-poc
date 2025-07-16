@@ -6,10 +6,10 @@ import { Label } from "@/components/ui/label";
 import { baseColors } from "@/registry/registry-base-colors";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useMounted } from "@/hooks/use-mounted";
+import { useMount } from '@/hooks/use-mount';
 import { ThemeConfig, themeConfig } from "@/hooks/use-config";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CheckIcon, Monitor, Moon, PaletteIcon, Repeat, Sun } from "lucide-react";
+import { CheckIcon, Monitor, Moon, Repeat, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { ThemeWrapper } from "@/components/layout/theme-wrapper";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -44,7 +44,7 @@ const OptionButton = ({ isActive, onClick, children, className, asChild = false 
 }
 
 export default function ThemeCustomizer() {
-    const mounted = useMounted();
+    const isMounted = useMount();
     const { setOpen } = useSidebar();
     const { setTheme: setMode, resolvedTheme: mode, theme } = useTheme();
     const [config, setConfig] = themeConfig();
@@ -53,7 +53,7 @@ export default function ThemeCustomizer() {
         setConfig({
             ...config,
             font: "font-inter",
-            theme: "zinc",
+            theme: "blue",
             radius: 0.5,
             layout: 'vertical',
             content: 'compact',
@@ -93,124 +93,122 @@ export default function ThemeCustomizer() {
     ]
 
     return (
-        <>
-            <Sheet>
-                <SheetTrigger asChild>
-                    <TooltipWrapper tooltip="Customize Theme">
-                        <ThemeConfigButton />
-                    </TooltipWrapper>
-                </SheetTrigger>
+        <Sheet>
+            <SheetTrigger asChild>
+                <TooltipWrapper tooltip="Customize Theme">
+                    <ThemeConfigButton />
+                </TooltipWrapper>
+            </SheetTrigger>
 
-                <SheetContent className="h-[calc(100vh-32px)] p-4 [&>button:first-child]:hidden m-4 rounded-lg">
-                    <ThemeWrapper>
-                        <SheetHeader>
-                            <SheetTitle asChild className="text-md font-normal">
-                                <div className="flex">
-                                    <div>
-                                        <p>Theme Customizer</p>
-                                        <p className="text-muted-foreground text-xs">Customize & Preview in Real Time</p>
-                                    </div>
-                                    <Button variant="ghost" size="icon" className="ml-auto rounded-[0.5rem]" onClick={resetConfig}>
-                                        <Repeat />
-                                        <span className="sr-only">Reset</span>
-                                    </Button>
+            <SheetContent className="h-[calc(100vh-32px)] p-4 [&>button:first-child]:hidden m-4 rounded-lg">
+                <ThemeWrapper>
+                    <SheetHeader>
+                        <SheetTitle asChild className="text-md font-normal">
+                            <div className="flex">
+                                <div>
+                                    <p>Theme Customizer</p>
+                                    <p className="text-muted-foreground text-xs">Customize & Preview in Real Time</p>
                                 </div>
-                            </SheetTitle>
-                        </SheetHeader>
-
-                        <Separator className="my-2" />
-
-                        <ScrollArea className="h-[calc(100vh-110px)]">
-                            <div className="flex flex-col space-y-4">
-                                {/* Primary Color */}
-                                <div className="space-y-1.5">
-                                    <Label className="text-xs">Primary Color</Label>
-                                    <div className="grid grid-cols-3 gap-2">
-                                        {filteredColors.map(({ name, label, activeColor }) => (
-                                            mounted ? (
-                                                <OptionButton
-                                                    key={name}
-                                                    isActive={config.theme === name}
-                                                    onClick={() => handleChange("theme", name)}
-                                                    className="justify-start"
-                                                >
-                                                    <span
-                                                        className="mr-1  size-5 shrink-0 rounded-full flex -translate-x-1 items-center justify-center"
-                                                        style={{ backgroundColor: `hsl(${activeColor[mode === "dark" ? "dark" : "light"]})` }}
-                                                    >
-                                                        {config.theme === name && <CheckIcon className="h-4 w-4 text-white" />}
-                                                    </span>
-                                                    {label}
-                                                </OptionButton>
-                                            ) : (
-                                                <Skeleton key={name} className="h-8 w-full" />
-                                            )
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Border Radius */}
-                                <div className="space-y-1.5">
-                                    <Label className="text-xs">Border Radius</Label>
-                                    <div className="grid grid-cols-5 gap-2">
-                                        {[0, 0.3, 0.5, 0.75, 1.0].map((value) => (
-                                            <OptionButton
-                                                key={value}
-                                                isActive={config.radius === value}
-                                                onClick={() => handleChange("radius", value)}
-                                            >
-                                                {value}
-                                            </OptionButton>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Mode */}
-                                <div className="space-y-1.5">
-                                    <Label className="text-xs">Mode</Label>
-                                    <div className="grid grid-cols-3 gap-2">
-                                        {["light", "dark", "system"].map((modeOption) => (
-                                            <OptionButton
-                                                key={modeOption}
-                                                isActive={theme === modeOption}
-                                                onClick={() => setMode(modeOption)}
-                                            >
-                                                {modeOption === "light" && <Sun className="mr-1" />}
-                                                {modeOption === "dark" && <Moon className="mr-1" />}
-                                                {modeOption === "system" && <Monitor className="mr-1" />}
-                                                {modeOption.charAt(0).toUpperCase() + modeOption.slice(1)}
-                                            </OptionButton>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Layout and Content*/}
-                                {layout.map((type, idx) => (
-                                    <div className="space-y-1.5" key={idx}>
-                                        <Label className="text-xs">{type.label}</Label>
-                                        <div className="flex flex-wrap gap-2">
-                                            {type.options.map(({ key, label, icon }) => (
-                                                <div className="flex flex-col items-center gap-2" key={key}>
-                                                    <OptionButton
-                                                        key={key}
-                                                        isActive={config.content === key || config.layout === key}
-                                                        onClick={() => handleChange(type.label.toLowerCase() as keyof ThemeConfig, key)}
-                                                        className="w-24 h-16 p-1"
-                                                        asChild
-                                                    >
-                                                        {icon}
-                                                    </OptionButton>
-                                                    <Label className="text-xs">{label}</Label>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                ))}
+                                <Button variant="ghost" size="icon" className="ml-auto rounded-[0.5rem]" onClick={resetConfig}>
+                                    <Repeat />
+                                    <span className="sr-only">Reset</span>
+                                </Button>
                             </div>
-                        </ScrollArea>
-                    </ThemeWrapper>
-                </SheetContent>
-            </Sheet>
-        </>
+                        </SheetTitle>
+                    </SheetHeader>
+
+                    <Separator className="my-2" />
+
+                    <ScrollArea className="h-[calc(100vh-110px)]">
+                        <div className="flex flex-col space-y-4 pb-6 px-1">
+                            {/* Primary Color */}
+                            <div className="space-y-1.5">
+                                <Label className="text-xs">Primary Color</Label>
+                                <div className="grid grid-cols-3 gap-2">
+                                    {filteredColors.map(({ name, label, activeColor }) => (
+                                        isMounted ? (
+                                            <OptionButton
+                                                key={name}
+                                                isActive={config.theme === name}
+                                                onClick={() => handleChange("theme", name)}
+                                                className="justify-start"
+                                            >
+                                                <span
+                                                    className="mr-1  size-5 shrink-0 rounded-full flex -translate-x-1 items-center justify-center"
+                                                    style={{ backgroundColor: `hsl(${activeColor[mode === "dark" ? "dark" : "light"]})` }}
+                                                >
+                                                    {config.theme === name && <CheckIcon className="h-4 w-4 text-white" />}
+                                                </span>
+                                                {label}
+                                            </OptionButton>
+                                        ) : (
+                                            <Skeleton key={name} className="h-8 w-full" />
+                                        )
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Border Radius */}
+                            <div className="space-y-1.5">
+                                <Label className="text-xs">Border Radius</Label>
+                                <div className="grid grid-cols-5 gap-2">
+                                    {[0, 0.3, 0.5, 0.75, 1.0].map((value) => (
+                                        <OptionButton
+                                            key={value}
+                                            isActive={config.radius === value}
+                                            onClick={() => handleChange("radius", value)}
+                                        >
+                                            {value}
+                                        </OptionButton>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Mode */}
+                            <div className="space-y-1.5">
+                                <Label className="text-xs">Mode</Label>
+                                <div className="grid grid-cols-3 gap-2">
+                                    {["light", "dark", "system"].map((modeOption) => (
+                                        <OptionButton
+                                            key={modeOption}
+                                            isActive={theme === modeOption}
+                                            onClick={() => setMode(modeOption)}
+                                        >
+                                            {modeOption === "light" && <Sun className="mr-1" />}
+                                            {modeOption === "dark" && <Moon className="mr-1" />}
+                                            {modeOption === "system" && <Monitor className="mr-1" />}
+                                            {modeOption.charAt(0).toUpperCase() + modeOption.slice(1)}
+                                        </OptionButton>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Layout and Content*/}
+                            {layout.map((type, idx) => (
+                                <div className="space-y-1.5" key={idx}>
+                                    <Label className="text-xs">{type.label}</Label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {type.options.map(({ key, label, icon }) => (
+                                            <div className="flex flex-col items-center gap-2" key={key}>
+                                                <OptionButton
+                                                    key={key}
+                                                    isActive={config.content === key || config.layout === key}
+                                                    onClick={() => handleChange(type.label.toLowerCase() as keyof ThemeConfig, key)}
+                                                    className="w-24 h-16 p-1"
+                                                    asChild
+                                                >
+                                                    {icon}
+                                                </OptionButton>
+                                                <Label className="text-xs">{label}</Label>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </ScrollArea>
+                </ThemeWrapper>
+            </SheetContent>
+        </Sheet>
     );
 }

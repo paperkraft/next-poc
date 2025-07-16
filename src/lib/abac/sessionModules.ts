@@ -1,9 +1,9 @@
 import { auth } from '@/auth';
-import { ModuleNode } from '@/types/modules';
 import { Session } from 'next-auth';
+import { GroupedMenus } from '../menus';
 
 type SessionModules = {
-    modules: ModuleNode[];
+    modules: GroupedMenus[];
     session: Session | null;
 }
 

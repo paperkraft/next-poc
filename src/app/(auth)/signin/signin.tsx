@@ -6,10 +6,10 @@ import { Form } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { useMounted } from "@/hooks/use-mounted";
+import { useMount } from '@/hooks/use-mount';
 import { signIn, useSession } from "next-auth/react";
 import { toast } from "sonner";
-import { getRecaptchaToken } from "@/app/action/auth.action";
+import { getRecaptchaToken } from "@/app/actions/auth.action";
 import { signInSchema } from "@/lib/zod";
 import Divider from "@/components/custom/divider";
 import ButtonContent from "@/components/custom/button-content";
@@ -23,7 +23,7 @@ export default function SignInPage() {
   const [loading, setLoading] = useState(false);
   const [callbackUrl, setCallbackUrl] = useState<string | null>(null);
 
-  const mounted = useMounted();
+  const isMounted = useMount();
 
   const form = useForm<signInT>({
     resolver: zodResolver(signInSchema),
@@ -59,10 +59,15 @@ export default function SignInPage() {
         body: JSON.stringify({ ...data, token }),
       }).then((res) => res.json());
 
-      if (response.success) {
-        // Redirect to the callbackUrl if it exists, otherwise redirect to the dashboard
-        window.location.href = callbackUrl || "/dashboard";
-      }
+      console.log('res', response);
+
+
+      // if (response.success) {
+      //   // Redirect to the callbackUrl if it exists, otherwise redirect to the dashboard
+      //   window.location.href = callbackUrl || "/dashboard";
+      // }
+
+      window.location.reload()
 
       if (response.type === "CredentialsSignin" || response.code === "credentials") {
         toast.error("Invalid credentials");
@@ -75,7 +80,7 @@ export default function SignInPage() {
     }
   };
 
-  if (!mounted) return null;
+  if (!isMounted) return null;
 
   return (
     <>

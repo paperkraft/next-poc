@@ -4,7 +4,6 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
 import { Inter } from 'next/font/google';
 
-import AppLayout from '@/components/layout/app-layout';
 import { Toaster } from '@/components/ui/sonner';
 import { NextAuthProvider } from '@/context/auth-provider';
 import ThemeProvider from '@/context/theme-provider';
@@ -14,6 +13,9 @@ import { ChildProps } from '@/types';
 import type { Metadata } from "next";
 import { auth } from '@/auth';
 import StoreProvider from '@/context/store-provider';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { NotificationsProvider } from '@/context/notification-context';
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -36,9 +38,11 @@ export default async function RootLayout({ children }: ChildProps) {
           <NextAuthProvider session={session}>
             <NextIntlClientProvider messages={messages}>
               <ThemeProvider>
-                <AppLayout>
-                  {children}
-                </AppLayout>
+                <NotificationsProvider>
+                  <TooltipProvider>
+                    {children}
+                  </TooltipProvider>
+                </NotificationsProvider>
                 <Toaster richColors position="top-center" />
               </ThemeProvider>
             </NextIntlClientProvider>

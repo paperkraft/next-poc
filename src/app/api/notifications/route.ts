@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getAllNotifications } from '@/app/action/notifications.action';
-import { handleNoId } from '@/app/action/response.action';
+import { getAllNotifications } from '@/app/actions/notifications.action';
+import { handleNoId } from '@/app/actions/response.action';
 import { auth } from '@/auth';
 
 export async function PUT(req: Request) {
@@ -33,13 +33,13 @@ export async function GET(req: Request) {
     if (!userId) {
         return await handleNoId("UserId required")
     }
-    return await getAllNotifications(userId);
+    return await getAllNotifications(+userId);
 }
 
 export async function POST(req: Request) {
     try {
         const session = await auth();
-        const userId: string = session?.user?.id;
+        const userId = session?.user?.id;
 
         const { subscription } = await req.json();
 
@@ -50,13 +50,13 @@ export async function POST(req: Request) {
         const subscriptionString = JSON.stringify(subscription);
 
         // Check if the user already has a subscription using JSON comparison
-        const existingSubscription = await prisma.subscription.findFirst({
-            where: { 
+        const existingSubscription = await prisma.pushSubscription.findFirst({
+            where: {
                 userId,
-                subscription:{
+                subscription: {
                     equals: subscriptionString
                 }
-             },
+            },
         });
 
         if (existingSubscription) {

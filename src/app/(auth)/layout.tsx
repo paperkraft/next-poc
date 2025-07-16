@@ -1,11 +1,12 @@
-import AppLogo from "@/components/custom/app-initial";
-import { CarouselPlugin } from "@/components/custom/carousel-content";
-import { Button } from "@/components/ui/button";
-import { ChildProps } from "@/types";
-import { RECAPTCHA_SITE_KEY } from "@/utils/constants";
-import { ChevronLeft } from "lucide-react";
-import Link from "next/link";
-import Script from "next/script";
+import { ChevronLeft } from 'lucide-react';
+import Link from 'next/link';
+import Script from 'next/script';
+
+import AppLogo from '@/components/custom/app-initial';
+import { CarouselPlugin } from '@/components/custom/carousel-content';
+import { Button } from '@/components/ui/button';
+import { ChildProps } from '@/types';
+import { RECAPTCHA_SITE_KEY } from '@/utils/constants';
 
 export default function AuthLayout({ children }: ChildProps) {
   return (
@@ -15,7 +16,7 @@ export default function AuthLayout({ children }: ChildProps) {
         src={`https://www.google.com/recaptcha/api.js?render=${RECAPTCHA_SITE_KEY}`}
         strategy="afterInteractive"
       />
-      
+
       <div className="flex h-screen justify-center bg-slate-50 dark:bg-sidebar-accent">
         <div className="w-full flex justify-center items-center h-screen max-w-screen-md">
           <div className="w-full lg:flex rounded-xl bg-card text-card-foreground md:border md:shadow-xl md:max-w-md lg:max-w-3xl">
@@ -34,7 +35,7 @@ export default function AuthLayout({ children }: ChildProps) {
                     © {new Date().getFullYear().toString()}. All Rights Reserved.
                   </p>
 
-                 
+
                 </div>
               </div>
             </div>
@@ -56,7 +57,7 @@ export default function AuthLayout({ children }: ChildProps) {
       </div>
 
       <div className="w-full flex justify-center items-center absolute bottom-5">
-          <p className="text-muted-foreground text-sm"><span className="text-xs">Designed by:</span> Sannake.Vishal #SV</p>
+        <p className="text-muted-foreground text-sm"><span className="text-xs">Designed by:</span> Sannake.Vishal #SV</p>
       </div>
     </>
   );

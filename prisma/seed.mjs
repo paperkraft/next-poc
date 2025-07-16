@@ -7,13 +7,12 @@ async function main() {
   console.log("🧹 Clearing existing data...");
 
   // Order matters (due to relations)
-  await prisma.notification.deleteMany();
-  await prisma.subscription.deleteMany();
+  await prisma.pushSubscription.deleteMany();
   await prisma.auditLog.deleteMany();
   await prisma.rolePermission.deleteMany();
   await prisma.user.deleteMany();
-  await prisma.module.deleteMany();
-  await prisma.group.deleteMany();
+  await prisma.menuItem.deleteMany();
+  await prisma.menuGroup.deleteMany();
   await prisma.role.deleteMany();
   await prisma.permission.deleteMany();
   await prisma.tenant.deleteMany();
@@ -23,113 +22,187 @@ async function main() {
   console.log("🏫 Seeding default tenant (school)...");
   const tenant = await prisma.tenant.create({
     data: {
-      name: "Green Valley School",
+      name: "Sunrise Public School",
+      description: "A leading educational institution",
+      slug: "sunrise",
       type: "SCHOOL",
-      code: "GVS001",
+      address: {
+        street: "123 Education Lane",
+        city: "Kolhapur",
+        state: "Maharashtra",
+        zipCode: "416001",
+        country: "India",
+      },
+      contact: {
+        phone: "+91-9876543210",
+        email: "info@sunrisepublicschool.edu",
+        website: "https://sunrisepublicschool.edu",
+      },
+      settings: {
+        timezone: "America/Los_Angeles",
+        academicYear: "2024-2025",
+      },
+      limits: {
+        maxUsers: 1000,
+        maxStorage: "10GB",
+      },
+      branding: {
+        primaryColor: "#2E7D32",
+        secondaryColor: "#66BB6A",
+        logo: "/logo.png",
+      },
+      features: ["attendance", "exams", "notifications"],
     },
   });
 
-  console.log("🔐 Seeding permissions...");
   const permissions = [
     { name: "view", bitmask: 1 },
     { name: "create", bitmask: 2 },
-    { name: "edit", bitmask: 4 },
+    { name: "update", bitmask: 4 },
     { name: "delete", bitmask: 8 },
   ];
 
-  for (const p of permissions) {
-    await prisma.permission.upsert({
-      where: { name: p.name },
-      update: {},
-      create: p,
+  console.log("🔐 Seeding permissions...");
+  for (const perm of permissions) {
+    await prisma.permission.create({
+      data: {
+        ...perm,
+        tenantId: tenant.id,
+      },
     });
   }
 
   console.log("🎭 Seeding roles...");
-  const roles = [
-    { name: "super-admin", tenantId: null }, // global
-    { name: "organization-admin", tenantId: tenant.id },
-    { name: "guest", tenantId: tenant.id },
-  ];
-
-  for (const role of roles) {
-    await prisma.role.create({ data: role });
-  }
+  const roles = await prisma.$transaction([
+    prisma.role.create({
+      data: {
+        name: "Super Admin",
+        tenantId: null,
+      },
+    }),
+    prisma.role.create({
+      data: {
+        name: "Admin",
+        tenantId: tenant.id,
+      },
+    }),
+    prisma.role.create({
+      data: {
+        name: "Faculty",
+        tenantId: tenant.id,
+      },
+    }),
+    prisma.role.create({
+      data: {
+        name: "Student",
+        tenantId: tenant.id,
+      },
+    }),
+  ]);
 
   const superAdminRole = await prisma.role.findFirst({
-    where: { name: "super-admin" },
+    where: { name: "Super Admin" },
   });
+
   const orgAdminRole = await prisma.role.findFirst({
-    where: { name: "organization-admin" },
+    where: { name: "Admin" },
   });
-  const guestRole = await prisma.role.findFirst({ where: { name: "guest" } });
+
+  const facultyRole = await prisma.role.findFirst({
+    where: { name: "Faculty" },
+  });
+
+  const studentRole = await prisma.role.findFirst({
+    where: { name: "Student" },
+  });
 
   console.log("📦 Seeding groups...");
-  const groups = [
-    { name: "Home", position: 1, tenantId: tenant.id },
-    { name: "Master", position: 2, tenantId: tenant.id },
-    { name: "Administrative", position: 3, tenantId: tenant.id },
-  ];
+  const menuGroups = await prisma.menuGroup.createMany({
+    data: [
+      { name: "Home", tenantId: tenant.id, position: 1 },
+      { name: "Master", tenantId: tenant.id, position: 2 },
+      // { name: "Administrative", tenantId: tenant.id, position: 3 },
+    ],
+  });
 
-  for (const group of groups) {
-    await prisma.group.create({ data: group });
-  }
+  const systemGroup = await prisma.menuGroup.create({
+    data: {
+      name: "System Administration",
+      position: 3,
+      tenantId: null, // Global group
+    }
+  })
 
-  const allGroups = await prisma.group.findMany({
+  const allGroups = await prisma.menuGroup.findMany({
     where: { tenantId: tenant.id },
   });
 
   const groupMap = new Map(allGroups.map((g) => [g.name, g.id]));
 
-  console.log("📁 Seeding modules...");
-  
-  const modules = [
-    { name: "Dashboard", path: "/dashboard", group: "Home" },
-    { name: "Module", path: "/master/module", group: "Master" },
-    { name: "Role", path: "/master/role", group: "Master" },
-    { name: "Groups", path: "/master/groups", group: "Master" },
-    { name: "RBAC", path: "/administrative/rbac", group: "Administrative" },
-    {
-      name: "Audit Logs",
-      path: "/administrative/audit-logs",
-      group: "Administrative",
-    },
+  console.log("📁 Seeding menus...");
+
+  const menuItems = [
+    { name: "Dashboard", path: "/dashboard", group: "Home", icon: "Home" },
+    { name: "Module", path: "/master/module", group: "Master", icon: "LayoutGrid" },
+    { name: "Role", path: "/master/role", group: "Master", icon: "User2" },
+    { name: "Groups", path: "/master/groups", group: "Master", icon: "Grid" },
+    // { name: "RBAC", path: "/administrative/rbac", group: "Administrative", icon: "Shield" },
+    // {
+    //   name: "Audit Logs",
+    //   path: "/administrative/audit-logs",
+    //   group: "Administrative",
+    //   icon: "Logs"
+    // },
   ];
 
-  for (const mod of modules) {
-    await prisma.module.create({
+  for (const mod of menuItems) {
+    await prisma.menuItem.create({
       data: {
         name: mod.name,
         path: mod.path,
+        icon: mod.icon,
         groupId: groupMap.get(mod.group),
         tenantId: tenant.id,
       },
     });
   }
 
-  const allModules = await prisma.module.findMany({
+  const allMenus = await prisma.menuItem.findMany({
     where: { tenantId: tenant.id },
   });
 
   console.log("🔧 Assigning role permissions...");
-  for (const mod of allModules) {
-    // Full access to organization-admin
+
+  // Assign full permission (1|2|4|8 = 15) to Admin role for all menu items
+  for (const menu of allMenus) {
     await prisma.rolePermission.create({
       data: {
         roleId: orgAdminRole.id,
-        moduleId: mod.id,
         tenantId: tenant.id,
+        menuId: menu.id,
         permissionBits: 15,
       },
     });
 
-    // Guest: view-only for dashboard
-    if (mod.name === "Dashboard") {
+    // Teachers: only view and update
+    if (menu.name === "Dashboard" || menu.name === "Module") {
       await prisma.rolePermission.create({
         data: {
-          roleId: guestRole.id,
-          moduleId: mod.id,
+          roleId: facultyRole.id,
           tenantId: tenant.id,
+          menuId: menu.id,
+          permissionBits: 1 | 4,
+        },
+      });
+    }
+
+    // Students: view only
+    if (menu.name === "Dashboard") {
+      await prisma.rolePermission.create({
+        data: {
+          roleId: studentRole.id,
+          tenantId: tenant.id,
+          menuId: menu.id,
           permissionBits: 1,
         },
       });
@@ -137,56 +210,173 @@ async function main() {
   }
 
   // Global access for super-admin to all tenant modules
-  for (const mod of allModules) {
+  for (const menu of allMenus) {
     await prisma.rolePermission.create({
       data: {
         roleId: superAdminRole.id,
-        moduleId: mod.id,
-        tenantId: tenant.id,
+        menuId: menu.id,
+        tenantId: null,
         permissionBits: 15,
       },
     });
   }
 
-  console.log("👤 Creating users...");
+  console.log("🛠️ Seeding nested System Admin menus...");
 
-  const salt = await bcrypt.genSalt(10);
-  const hash = await bcrypt.hash("105105", salt);
+  for (const parent of SystemAdminMenus) {
+    const parentItem = await prisma.menuItem.create({
+      data: {
+        name: parent.name,
+        path: undefined,
+        icon: parent.icon,
+        tenantId: null,
+        groupId: systemGroup.id,
+        parentId: null,
+      },
+    });
+
+    for (const child of parent.children) {
+      await prisma.menuItem.create({
+        data: {
+          name: child.name,
+          path: child.path,
+          icon: undefined,
+          tenantId: null,
+          groupId: systemGroup.id,
+          parentId: parentItem.id,
+        },
+      });
+    }
+  }
+
+  const systemMenus = await prisma.menuItem.findMany({
+    where: { tenantId: null },
+  });
+
+  for (const menu of systemMenus) {
+    await prisma.rolePermission.create({
+      data: {
+        roleId: superAdminRole.id,
+        menuId: menu.id,
+        tenantId: null,
+        permissionBits: 15,
+      },
+    });
+  }
+
+  const hashedPassword = await bcrypt.hash("123123", 10);
+
+  console.log("👤 Creating users...");
 
   await prisma.user.create({
     data: {
       email: "superadmin@email.com",
-      username: "super",
-      password: hash,
-      firstName: "Super",
-      lastName: "Admin",
+      password: hashedPassword,
+      isActive: true,
+      globalRoles: ["SYSTEM_ADMIN"],
       roleId: superAdminRole.id,
-      isActive: true,
-      isSuperAdmin: true,
+      profile: {
+        create: {
+          firstName: "Super",
+          lastName: "Admin",
+        },
+      },
     },
   });
 
-  await prisma.user.create({
-    data: {
-      email: "admin@email.com",
-      username: "admin",
-      password: hash,
-      firstName: "Org",
-      lastName: "Admin",
-      roleId: orgAdminRole.id,
-      isActive: true,
-      tenantId: tenant.id,
+  const tenantUsers = [
+    {
+      email: "admin@sunrise.edu",
+      password: "admin",
+      roleName: "Admin",
+      firstName: "Amit",
+      lastName: "Singh",
     },
-  });
+    {
+      email: "teacher@sunrise.edu",
+      password: "teacher",
+      roleName: "Faculty",
+      firstName: "Rina",
+      lastName: "Kumar",
+    },
+    {
+      email: "student@sunrise.edu",
+      password: "student",
+      roleName: "Student",
+      firstName: "Rahul",
+      lastName: "Verma",
+    },
+  ];
 
-  console.log("🌱 Seeding complete.");
+  for (const u of tenantUsers) {
+    const role = roles.find((r) => r.name === u.roleName);
+    const hashed = await bcrypt.hash(u.password, 10);
+
+    await prisma.user.create({
+      data: {
+        email: u.email,
+        password: hashed,
+        tenantId: tenant.id,
+        isActive: true,
+        roleId: role.id,
+        profile: {
+          create: {
+            firstName: u.firstName,
+            lastName: u.lastName,
+          },
+        },
+      },
+    });
+  }
+
+  console.log("✅ Seed data inserted successfully.");
 }
 
 main()
   .catch((e) => {
-    console.error("❌ Seed error:", e);
+    console.error("❌ Error while seeding:", e);
     process.exit(1);
   })
   .finally(async () => {
     await prisma.$disconnect();
   });
+
+
+const SystemAdminMenus = [
+  {
+    name: "Tenant Management",
+    icon: "Building2",
+    children: [
+      { name: "All Tenants", path: "/admin/tenants" },
+      { name: "Create Tenant", path: "/admin/tenants/create" },
+      { name: "Tenant Analytics", path: "/admin/tenants/analytics" },
+    ],
+  },
+  {
+    name: "System Users",
+    icon: "Users",
+    children: [
+      { name: "All Users", path: "/admin/users" },
+      { name: "Global Roles", path: "/admin/global-roles" },
+      { name: "User Analytics", path: "/admin/users/analytics" },
+    ],
+  },
+  {
+    name: "System Settings",
+    icon: "Settings",
+    children: [
+      { name: "Global Settings", path: "/admin/settings" },
+      { name: "System Permissions", path: "/admin/permissions" },
+      { name: "Feature Flags", path: "/admin/features" },
+    ],
+  },
+  {
+    name: "Audit & Monitoring",
+    icon: "Activity",
+    children: [
+      { name: "Audit Logs", path: "/admin/audit-logs" },
+      { name: "System Health", path: "/admin/health" },
+      { name: "Performance", path: "/admin/performance" },
+    ],
+  },
+]

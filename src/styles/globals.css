@@ -8,12 +8,11 @@ body {
 
 @layer base {
   :root {
-
-    --font-inter: 'Inter', sans-serif;
-    --font-roboto: 'Roboto', sans-serif;
-    --font-inconsolata: 'Inconsolata', monospace;
-    --font-montserrat: 'Montserrat', sans-serif;
-    --font-poppins: 'Poppins', sans-serif;
+    --font-inter: "Inter", sans-serif;
+    --font-roboto: "Roboto", sans-serif;
+    --font-inconsolata: "Inconsolata", monospace;
+    --font-montserrat: "Montserrat", sans-serif;
+    --font-poppins: "Poppins", sans-serif;
 
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
@@ -112,6 +111,7 @@ body {
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
   }
+
   .dark .theme-zinc {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
@@ -166,6 +166,7 @@ body {
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
   }
+
   .dark .theme-slate {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
@@ -220,6 +221,7 @@ body {
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
   }
+
   .dark .theme-stone {
     --background: 20 14.3% 4.1%;
     --foreground: 60 9.1% 97.8%;
@@ -274,6 +276,7 @@ body {
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
   }
+
   .dark .theme-gray {
     --background: 224 71.4% 4.1%;
     --foreground: 210 20% 98%;
@@ -328,6 +331,7 @@ body {
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
   }
+
   .dark .theme-neutral {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
@@ -382,6 +386,7 @@ body {
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
   }
+
   .dark .theme-red {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
@@ -436,6 +441,7 @@ body {
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
   }
+
   .dark .theme-rose {
     --background: 20 14.3% 4.1%;
     --foreground: 0 0% 95%;
@@ -490,6 +496,7 @@ body {
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
   }
+
   .dark .theme-orange {
     --background: 20 14.3% 4.1%;
     --foreground: 60 9.1% 97.8%;
@@ -544,6 +551,7 @@ body {
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
   }
+
   .dark .theme-green {
     --background: 20 14.3% 4.1%;
     --foreground: 0 0% 95%;
@@ -598,6 +606,7 @@ body {
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
   }
+
   .dark .theme-blue {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
@@ -652,6 +661,7 @@ body {
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
   }
+
   .dark .theme-yellow {
     --background: 20 14.3% 4.1%;
     --foreground: 60 9.1% 97.8%;
@@ -706,6 +716,7 @@ body {
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
   }
+
   .dark .theme-violet {
     --background: 224 71.4% 4.1%;
     --foreground: 210 20% 98%;
@@ -732,13 +743,13 @@ body {
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
   }
-  
 }
 
 @layer base {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -748,27 +759,32 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+
+  input:-webkit-autofill {
+    background-color: theme("colors.background") !important;
+    -webkit-box-shadow: 0 0 0px 1000px theme("colors.background") inset !important;
+    box-shadow: 0 0 0px 1000px theme("colors.background") inset !important;
+    color: inherit !important;
+  }
 }
 
 ::-webkit-scrollbar {
   @apply w-2.5 h-2.5;
- 
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-transparent
+  @apply bg-transparent;
 }
 
 ::-webkit-scrollbar-thumb {
   @apply rounded-full bg-border border-[1px] border-transparent border-solid bg-clip-padding;
 }
 
-
 @keyframes progress {
   from {
     clip-path: inset(0 100% 0 0);
-
   }
+
   to {
     clip-path: inset(0 0 0 0);
   }
@@ -779,11 +795,8 @@ body {
   will-change: clip-path;
 }
 
-@layer utilities {
-  input:-webkit-autofill {
-    background-color: theme('colors.background') !important;
-    -webkit-box-shadow: 0 0 0px 1000px theme('colors.background') inset !important;
-    box-shadow: 0 0 0px 1000px theme('colors.background') inset !important;
-    color: inherit !important;
-  }
+/* Smooth transitions for theme changes */
+* {
+  transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out,
+    border-color 0.2s ease-in-out;
 }

@@ -541,6 +541,8 @@ export async function updateRoleWidgetAssignment({
 
             if (isAssigned) {
                 // 2. Only create or update RoleWidget if the widget is being assigned (isAssigned = true)
+                const sortOrder = await tx.roleWidget.count({ where: { roleId } });
+
                 const roleWidget = await tx.roleWidget.upsert({
                     where: {
                         roleId_widgetId: {
@@ -550,43 +552,49 @@ export async function updateRoleWidgetAssignment({
                     },
                     create: {
                         isAssigned,
-                        sortOrder: await tx.roleWidget.count({ where: { roleId } }),
+                        sortOrder,
                         role: { connect: { id: roleId } },
                         widget: { connect: { id: tenantWidget.id } } // Connect to TenantWidget
                     },
                     update: { isAssigned }
                 });
 
-                // 3. Handle user widgets if the widget is assigned
+                // 3. Upsert userWidgets in batches
                 const users = await tx.user.findMany({
                     where: { roleId },
                     select: { id: true }
                 });
 
-                await Promise.all(
-                    users.map(user =>
-                        tx.userWidget.upsert({
-                            where: {
-                                userId_widgetId: {
-                                    userId: user.id,
-                                    widgetId: tenantWidget.id // Use tenantWidget.id
+                const chunkSize = 20;
+
+                for (let i = 0; i < users.length; i += chunkSize) {
+                    const chunk = users.slice(i, i + chunkSize);
+                    await Promise.all(
+                        chunk.map(user =>
+                            tx.userWidget.upsert({
+                                where: {
+                                    userId_widgetId: {
+                                        userId: user.id,
+                                        widgetId: tenantWidget.id
+                                    }
+                                },
+                                create: {
+                                    isPinned: false,
+                                    isHidden: false,
+                                    customSize: 'small',
+                                    sortOrder: roleWidget.sortOrder,
+                                    user: { connect: { id: user.id } },
+                                    widget: { connect: { id: tenantWidget.id } },
+                                    roleWidget: { connect: { id: roleWidget.id } }
+                                },
+                                update: {
+                                    isHidden: false
                                 }
-                            },
-                            create: {
-                                isPinned: false,
-                                isHidden: false,
-                                customSize: 'small',
-                                sortOrder: roleWidget.sortOrder,
-                                user: { connect: { id: user.id } },
-                                widget: { connect: { id: tenantWidget.id } },
-                                roleWidget: { connect: { id: roleWidget.id } }
-                            },
-                            update: {
-                                isHidden: false // Unhide if previously hidden
-                            }
-                        })
-                    )
-                );
+                            })
+                        )
+                    );
+                }
+
             } else {
                 // 4. If unassigning, only delete related userWidget entries, do not create roleWidget
                 await tx.userWidget.deleteMany({
@@ -617,6 +625,8 @@ export async function updateRoleWidgetAssignment({
 
             // revalidatePath(`/${tenantSlug}/admin/widgets`, 'page');
             return { success: true };
+        }, {
+            timeout: 15000 // Increase from default 5000ms
         });
     } catch (error) {
         console.error('Error updating role widget assignment:', error);

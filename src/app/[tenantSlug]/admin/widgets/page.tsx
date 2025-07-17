@@ -1,4 +1,4 @@
-import { getTenantRoles, getTenantWidgetsWithAssignments } from '@/app/actions/widgets'
+import { getTenantRoles, getTenantWidgetsWithAssignments } from '@/app/actions/widgets.action'
 import TitlePage from '@/components/custom/page-heading'
 import { WidgetRoleAssignmentPanel } from '@/components/tenant-admin/widget-role-assignment-panel'
 
@@ -17,7 +17,7 @@ export default async function WidgetAssignmentPage({ params }: { params: { tenan
         <>
             <TitlePage {...metadata} />
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900 rounded-lg">
-                <div className="container mx-auto p-6">
+                <div className="container mx-auto">
                     <WidgetRoleAssignmentPanel
                         widgets={widgets}
                         roles={roles}

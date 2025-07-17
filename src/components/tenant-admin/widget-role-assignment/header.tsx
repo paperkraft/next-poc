@@ -8,7 +8,7 @@ export function WidgetRoleAssignmentHeader() {
     const { viewMode, setViewMode, selectedRole } = useWidgetRoleAssignment()
 
     return (
-        <div className="flex items-center justify-end">
+        <div className="flex items-center justify-end pt-6">
             {selectedRole && (
                 <div className="flex items-center gap-2">
                     <Button variant={viewMode === "table" ? "default" : "outline"} size="sm" onClick={() => setViewMode("table")}>

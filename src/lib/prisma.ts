@@ -3,9 +3,6 @@ import { PrismaClient } from "@prisma/client";
 // export default prisma;
 
 const prismaClientSingleton = () => {
-    // return new PrismaClient({
-    //     log: ['query', 'info', 'warn', 'error'],
-    // })
     return new PrismaClient();
 }
 

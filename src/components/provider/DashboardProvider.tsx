@@ -8,7 +8,7 @@ import {
     reorderUserWidgets as serverReorderUserWidgets,
     resetUserWidgets as serverResetUserWidgets,
     updateUserWidget as serverUpdateUserWidget
-} from '@/app/actions/widgets';
+} from '@/app/actions/widgets.action';
 import { AvailableWidget, FullUserWidget } from '@/types/widget';
 
 // Enhanced types for better type safety

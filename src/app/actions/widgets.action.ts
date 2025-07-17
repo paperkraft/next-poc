@@ -8,6 +8,7 @@ import { RoleWidget } from '@prisma/client';
 import { AvailableWidget, FullUserWidget } from '@/types/widget';
 import { redirect } from 'next/navigation';
 import { roleColors } from '@/constants/widget';
+import { forEach } from 'lodash';
 
 export async function getUserWidgets(userId: number): Promise<FullUserWidget[]> {
     const widgets = await prisma.userWidget.findMany({
@@ -326,11 +327,6 @@ function mapToFullUserWidget(widget: any): FullUserWidget {
 
 // -------------------------Tenant Admin panel widgets actions ------------------------------ //
 
-function getRandomColor() {
-    const index = Math.floor(Math.random() * roleColors.length);
-    return roleColors[index];
-}
-
 export async function getTenantRoles(tenantSlug: string) {
     const roles = await prisma.role.findMany({
         where: { tenant: { slug: tenantSlug } },
@@ -340,9 +336,9 @@ export async function getTenantRoles(tenantSlug: string) {
         }
     });
 
-    const rolesWithColor = roles.map(role => ({
+    const rolesWithColor = roles.map((role, i) => ({
         ...role,
-        color: getRandomColor()
+        color: roleColors[i % roleColors.length]
     }));
 
     return rolesWithColor;
@@ -532,12 +528,17 @@ export async function updateRoleWidgetAssignment({
                 where: {
                     widgetId,
                     tenant: { slug: tenantSlug }
+                },
+                select: {
+                    id: true
                 }
             });
 
             if (!tenantWidget) {
                 throw new Error('Widget not found for this tenant');
             }
+
+            const tenantWidgetId = tenantWidget.id;
 
             if (isAssigned) {
                 // 2. Only create or update RoleWidget if the widget is being assigned (isAssigned = true)
@@ -547,14 +548,14 @@ export async function updateRoleWidgetAssignment({
                     where: {
                         roleId_widgetId: {
                             roleId,
-                            widgetId: tenantWidget.id // Use tenantWidget.id instead of widgetId
+                            widgetId: tenantWidgetId
                         }
                     },
                     create: {
                         isAssigned,
                         sortOrder,
                         role: { connect: { id: roleId } },
-                        widget: { connect: { id: tenantWidget.id } } // Connect to TenantWidget
+                        widget: { connect: { id: tenantWidgetId } } // Connect to TenantWidget
                     },
                     update: { isAssigned }
                 });
@@ -575,7 +576,7 @@ export async function updateRoleWidgetAssignment({
                                 where: {
                                     userId_widgetId: {
                                         userId: user.id,
-                                        widgetId: tenantWidget.id
+                                        widgetId: tenantWidgetId
                                     }
                                 },
                                 create: {
@@ -584,7 +585,7 @@ export async function updateRoleWidgetAssignment({
                                     customSize: 'small',
                                     sortOrder: roleWidget.sortOrder,
                                     user: { connect: { id: user.id } },
-                                    widget: { connect: { id: tenantWidget.id } },
+                                    widget: { connect: { id: tenantWidgetId } },
                                     roleWidget: { connect: { id: roleWidget.id } }
                                 },
                                 update: {
@@ -596,10 +597,11 @@ export async function updateRoleWidgetAssignment({
                 }
 
             } else {
+
                 // 4. If unassigning, only delete related userWidget entries, do not create roleWidget
                 await tx.userWidget.deleteMany({
                     where: {
-                        widgetId: tenantWidget.id,
+                        widgetId: tenantWidgetId,
                         roleWidget: {
                             roleId: roleId
                         }
@@ -610,11 +612,12 @@ export async function updateRoleWidgetAssignment({
                 const roleWidget = await tx.roleWidget.findFirst({
                     where: {
                         roleId,
-                        widgetId: tenantWidget.id
-                    }
+                        widgetId: tenantWidgetId
+                    },
+                    select: { id: true }
                 });
 
-                if (roleWidget && (await tx.roleWidget.count({ where: { widgetId: tenantWidget.id } })) === 1) {
+                if (roleWidget && (await tx.roleWidget.count({ where: { widgetId: tenantWidgetId } })) === 1) {
                     await tx.roleWidget.delete({
                         where: {
                             id: roleWidget.id

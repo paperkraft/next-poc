@@ -32,21 +32,21 @@ async function main() {
   const sysAdminGroups = [
     { name: "System Administration", position: 1 },
     { name: "Master", position: 2 },
-  ]
+  ];
 
   for (const g of sysAdminGroups) {
     await prisma.menuGroup.create({
       data: {
         name: g.name,
         position: g.position,
-        tenantId: null
-      }
-    })
+        tenantId: null,
+      },
+    });
   }
 
   const allSysAdminGroups = await prisma.menuGroup.findMany({
-    where: { tenantId: null }
-  })
+    where: { tenantId: null },
+  });
 
   console.log("🛠️ Seeding System default Master menus...");
 
@@ -224,23 +224,25 @@ async function main() {
       { name: "Home", position: 1 },
       { name: "Management", position: 2 },
       { name: "Settings", position: 3 },
-    ]
+    ];
 
     for (const g of groups) {
       await prisma.menuGroup.create({
         data: {
           name: g.name,
           position: g.position,
-          tenantId: tenant.id
-        }
-      })
+          tenantId: tenant.id,
+        },
+      });
     }
 
     const allGroups = await prisma.menuGroup.findMany({
-      where: { tenantId: tenant.id }
-    })
+      where: { tenantId: tenant.id },
+    });
 
-    const groupMap = Object.fromEntries(allGroups.map(group => [group.name, group.id]));
+    const groupMap = Object.fromEntries(
+      allGroups.map((group) => [group.name, group.id])
+    );
 
     // home
     await prisma.menuItem.create({
@@ -248,16 +250,19 @@ async function main() {
         name: "Dashboard",
         path: "/dashboard",
         icon: "BarChart3",
-        groupId: groupMap['Home'],
+        groupId: groupMap["Home"],
         tenantId: tenant.id,
       },
     });
 
-
     for (const section of TenantMenus) {
       for (const key of Object.keys(section)) {
-
-        const groupName = key === "management" ? "Management" : key === "settings" ? "Settings" : "Home";
+        const groupName =
+          key === "management"
+            ? "Management"
+            : key === "settings"
+            ? "Settings"
+            : "Home";
         const groupId = groupMap[groupName];
         const menuGroups = section[key];
 
@@ -371,8 +376,8 @@ async function main() {
         component: w.component,
         description: w.description,
         category: w.category,
-      }
-    })
+      },
+    });
   }
   console.log("🎉 All data seeded successfully!");
 }
@@ -428,6 +433,7 @@ export const SystemAdminMenus = [
       { name: "Global Settings", path: "/settings" },
       { name: "System Permissions", path: "/permissions" },
       { name: "Feature Flags", path: "/features" },
+      { name: "Push Notifications", path: "/push-notification" },
     ],
   },
   {
@@ -439,7 +445,7 @@ export const SystemAdminMenus = [
       { name: "Performance", path: "/performance" },
     ],
   },
-]
+];
 
 export const TenantMenus = [
   {
@@ -474,7 +480,7 @@ export const TenantMenus = [
           { name: "Payroll", path: "/payroll" },
         ],
       },
-    ]
+    ],
   },
   {
     settings: [
@@ -496,9 +502,9 @@ export const TenantMenus = [
           { name: "Audit Logs", path: "/admin/audit" },
         ],
       },
-    ]
-  }
-]
+    ],
+  },
+];
 
 export const Widgets = [
   {
@@ -543,4 +549,4 @@ export const Widgets = [
     description: "Important announcements",
     category: "communication",
   },
-]
+];

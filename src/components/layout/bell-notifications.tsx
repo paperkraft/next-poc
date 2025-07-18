@@ -10,6 +10,7 @@ import { useNotifications } from '@/context/notification-context';
 import React from 'react';
 import BellNotificationsButton from './BellNotificationsButton';
 import TooltipWrapper from '../common/tootip-wrapper';
+import { useSession } from 'next-auth/react';
 
 const BellNotifications = () => {
     const [open, setOpen] = React.useState(false);
@@ -40,6 +41,9 @@ const BellNotifications = () => {
         }
     };
 
+    const { data } = useSession();
+    const slug = data?.user?.slug;
+
     return (
         <DropdownMenu open={open} onOpenChange={(isOpen) => setOpen(isOpen)}>
             <DropdownMenuTrigger asChild>
@@ -58,7 +62,7 @@ const BellNotifications = () => {
                 <DropdownMenuLabel className='p-2 text-lg font-normal flex items-center'>
                     <p className='ml-1'>Notifications</p>
                     <Button variant='ghost' size="icon" className='text-muted-foreground ml-auto' asChild onClick={() => setOpen(false)}>
-                        <Link href={'/profile-settings/notifications'}>
+                        <Link href={`/${slug}/profile-settings/notifications`}>
                             <SettingsIcon className='size-5' />
                         </Link>
                     </Button>
@@ -115,7 +119,7 @@ const BellNotifications = () => {
                                 <small className='flex items-center cursor-pointer text-muted-foreground hover:text-blue-600' onClick={() => handleMarkAsRead()}>
                                     <CheckCheck className='size-4 mr-1' /> Mark all as read
                                 </small>
-                                <Link href='/notifications' className='ml-auto text-muted-foreground hover:text-blue-600 text-xs' onClick={() => setOpen(false)}>
+                                <Link href={`/${slug}/notifications`} className='ml-auto text-muted-foreground hover:text-blue-600 text-xs' onClick={() => setOpen(false)}>
                                     View all
                                 </Link>
                             </div>

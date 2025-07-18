@@ -64,6 +64,9 @@ export function ProfileForm({ lastLogins }: { lastLogins: LoginDetail[] | null }
 
         const data = await response.json();
 
+        console.log('data', data);
+
+
         if (data?.profile) {
           form.setValue("firstName", data?.profile?.firstName)
           form.setValue("lastName", data?.profile?.lastName)

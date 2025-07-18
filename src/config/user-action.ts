@@ -3,7 +3,7 @@ import { BellIcon, UserIcon } from "lucide-react";
 export const UserActions = [
     {
         label: 'Profile',
-        url: '/profile',
+        url: '/profile-settings',
         icon: UserIcon
     },
     {

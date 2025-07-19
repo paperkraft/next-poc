@@ -75,16 +75,16 @@ export async function sendNotification(input: SendNotificationInput) {
             select: { userId: true },
         });
 
-        userIds = Array.from(new Set(subscriptions.map((s) => s.userId)));
+        userIds = Array.from(new Set(subscriptions.map((s) => +s.userId)));
     } else if (input.userId) {
-        userIds = [input.userId];
+        userIds = [+input.userId];
     }
 
     const notifications = userIds.map((userId) => ({
         title: input.title,
         message: input.message,
         topic: input.topics ? input.topics.join(",") : undefined,
-        userId: userId,
+        userId: +userId,
         status: NotificationStatus.SENT,
     }));
 

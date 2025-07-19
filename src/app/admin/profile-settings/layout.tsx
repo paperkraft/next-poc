@@ -10,7 +10,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
   const sidebarNavItems = [
     {
       title: t('profile.title'),
-      href: "/profile-settings",
+      href: "/admin/profile-settings",
     },
     // {
     //   title: t('account.title'),
@@ -18,11 +18,11 @@ export default async function Layout({ children }: { children: ReactNode }) {
     // },
     {
       title: t('appearance.title'),
-      href: "/profile-settings/appearance",
+      href: "/admin/profile-settings/appearance",
     },
     {
       title: t('notifications.title'),
-      href: "/profile-settings/notifications",
+      href: "/admin/profile-settings/notifications",
     },
   ]
 

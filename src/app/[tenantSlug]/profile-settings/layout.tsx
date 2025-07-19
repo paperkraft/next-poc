@@ -1,28 +1,27 @@
 import TitlePage from "@/components/custom/page-heading";
-import { ReactNode } from "react";
 import { SidebarNav } from "./components/sidebar-nav";
 import { getTranslations } from "next-intl/server";
+import { auth } from "@/auth";
 
-export default async function Layout({ children }: { children: ReactNode }) {
+export default async function Layout({ children }: { children: React.ReactNode, }) {
+
+  const session = await auth();
+  const slug = session?.user?.slug;
 
   const t = await getTranslations('setting');
 
   const sidebarNavItems = [
     {
       title: t('profile.title'),
-      href: "/profile-settings",
+      href: `/${slug}/profile-settings`,
     },
-    // {
-    //   title: t('account.title'),
-    //   href: "/profile-settings/account",
-    // },
     {
       title: t('appearance.title'),
-      href: "/profile-settings/appearance",
+      href: `/${slug}/profile-settings/appearance`,
     },
     {
       title: t('notifications.title'),
-      href: "/profile-settings/notifications",
+      href: `/${slug}/profile-settings/notifications`,
     },
   ]
 

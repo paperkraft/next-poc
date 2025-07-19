@@ -445,6 +445,15 @@ export const SystemAdminMenus = [
       { name: "Performance", path: "/performance" },
     ],
   },
+  {
+    name: "UI Blocks",
+    icon: "BlocksIcon",
+    children: [
+      { name: "Stepper Form", path: "/ui-blocks/stepper-form" },
+      { name: "Form Builder", path: "/ui-blocks/form-builder" },
+      { name: "Full Calendar", path: "/ui-blocks/full-calendar" },
+    ],
+  },
 ];
 
 export const TenantMenus = [

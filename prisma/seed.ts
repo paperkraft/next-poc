@@ -1,11 +1,13 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, TenantType } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { Masters, SystemAdminMenus, TenantMenus, Widgets } from "./menus";
 
 const prisma = new PrismaClient();
 
+type scetionKey = "management" | "settings";
+
 async function main() {
   console.log("🧹 Clearing existing data...");
-
   await prisma.pushSubscription.deleteMany();
   await prisma.auditLog.deleteMany();
   await prisma.rolePermission.deleteMany();
@@ -14,8 +16,8 @@ async function main() {
   await prisma.menuGroup.deleteMany();
   await prisma.role.deleteMany();
   await prisma.permission.deleteMany();
-  await prisma.tenant.deleteMany();
   await prisma.widget.deleteMany();
+  await prisma.tenant.deleteMany();
 
   console.log("✅ Database cleared.");
 
@@ -28,7 +30,6 @@ async function main() {
   });
 
   console.log("📁 Seeding System Admin menu group...");
-
   const sysAdminGroups = [
     { name: "System Administration", position: 1 },
     { name: "Master", position: 2 },
@@ -50,16 +51,29 @@ async function main() {
 
   console.log("🛠️ Seeding System default Master menus...");
 
-  for (const mod of defaultMaster) {
-    await prisma.menuItem.create({
+  for (const parent of Masters) {
+    const parentItem = await prisma.menuItem.create({
       data: {
-        name: mod.name,
-        path: mod.path,
-        icon: mod.icon,
+        name: parent.name,
+        path: undefined,
+        icon: parent.icon,
         groupId: allSysAdminGroups[1].id,
         tenantId: null,
       },
     });
+
+    for (const child of parent.children) {
+      await prisma.menuItem.create({
+        data: {
+          name: child.name,
+          path: child.path,
+          icon: undefined,
+          tenantId: null,
+          groupId: allSysAdminGroups[1].id,
+          parentId: parentItem.id,
+        },
+      });
+    }
   }
 
   console.log("🛠️ Seeding System Admin menus...");
@@ -162,7 +176,7 @@ async function main() {
         name: t.name,
         slug: t.slug,
         description: `${t.name} is a reputed educational institute.`,
-        type: t.type,
+        type: t.type as TenantType,
         address: {
           street: "123 School St",
           city: t.city,
@@ -261,12 +275,13 @@ async function main() {
           key === "management"
             ? "Management"
             : key === "settings"
-            ? "Settings"
-            : "Home";
-        const groupId = groupMap[groupName];
-        const menuGroups = section[key];
+              ? "Settings"
+              : "Home";
 
-        for (const parent of menuGroups) {
+        const groupId = groupMap[groupName];
+        const menuGroups = section[key as scetionKey];
+
+        for (const parent of menuGroups!) {
           const parentItem = await prisma.menuItem.create({
             data: {
               name: parent.name,
@@ -390,172 +405,3 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
-
-const defaultMaster = [
-  {
-    name: "Module",
-    path: "/master/module",
-    icon: "LayoutGrid",
-  },
-  { name: "Role", path: "/master/role", icon: "User2" },
-  { name: "Groups", path: "/master/groups", icon: "Grid" },
-];
-
-export const SystemAdminMenus = [
-  {
-    name: "Dashboard",
-    path: "/dashboard",
-    icon: "BarChart3",
-    children: [],
-  },
-  {
-    name: "Tenant Management",
-    icon: "Building2",
-    children: [
-      { name: "All Tenants", path: "/tenants" },
-      { name: "Create Tenant", path: "/tenants/create" },
-      { name: "Tenant Analytics", path: "/tenants/analytics" },
-    ],
-  },
-  {
-    name: "System Users",
-    icon: "Users",
-    children: [
-      { name: "All Users", path: "/users" },
-      { name: "Global Roles", path: "/global-roles" },
-      { name: "User Analytics", path: "/users/analytics" },
-    ],
-  },
-  {
-    name: "System Settings",
-    icon: "Settings",
-    children: [
-      { name: "Global Settings", path: "/settings" },
-      { name: "System Permissions", path: "/permissions" },
-      { name: "Feature Flags", path: "/features" },
-      { name: "Push Notifications", path: "/push-notification" },
-    ],
-  },
-  {
-    name: "Audit & Monitoring",
-    icon: "Activity",
-    children: [
-      { name: "Audit Logs", path: "/audit-logs" },
-      { name: "System Health", path: "/health" },
-      { name: "Performance", path: "/performance" },
-    ],
-  },
-  {
-    name: "UI Blocks",
-    icon: "BlocksIcon",
-    children: [
-      { name: "Stepper Form", path: "/ui-blocks/stepper-form" },
-      { name: "Form Builder", path: "/ui-blocks/form-builder" },
-      { name: "Full Calendar", path: "/ui-blocks/full-calendar" },
-    ],
-  },
-];
-
-export const TenantMenus = [
-  {
-    management: [
-      {
-        name: "Academic Management",
-        icon: "GraduationCap",
-        children: [
-          { name: "Students", path: "/students" },
-          { name: "Faculty", path: "/faculty" },
-          { name: "Courses", path: "/courses" },
-          { name: "Programs", path: "/programs" },
-          { name: "Departments", path: "/departments" },
-        ],
-      },
-      {
-        name: "Administration",
-        icon: "FileText",
-        children: [
-          { name: "Admissions", path: "/admissions" },
-          { name: "Enrollment", path: "/enrollment" },
-          { name: "Scheduling", path: "/scheduling" },
-          { name: "Examinations", path: "/examinations" },
-        ],
-      },
-      {
-        name: "Financial Management",
-        icon: "DollarSign",
-        children: [
-          { name: "Fee Management", path: "/fees" },
-          { name: "Scholarships", path: "/scholarships" },
-          { name: "Payroll", path: "/payroll" },
-        ],
-      },
-    ],
-  },
-  {
-    settings: [
-      {
-        name: "User Management",
-        icon: "Users",
-        children: [
-          { name: "Users", path: "/admin/users" },
-          { name: "Roles", path: "/admin/roles" },
-          { name: "Permissions", path: "/admin/permissions" },
-        ],
-      },
-      {
-        name: "System",
-        icon: "Settings",
-        children: [
-          { name: "Widgets Settings", path: "/admin/widgets" },
-          { name: "Institute Settings", path: "/admin/settings" },
-          { name: "Audit Logs", path: "/admin/audit" },
-        ],
-      },
-    ],
-  },
-];
-
-export const Widgets = [
-  {
-    key: "STATS",
-    name: "Statistics",
-    component: "StatsWidget",
-    description: "Key metrics and numbers",
-    category: "analytics",
-  },
-  {
-    key: "TIMETABLE",
-    name: "Time Table",
-    component: "TimetableWidget",
-    description: "Class schedule and timings",
-    category: "organization",
-  },
-  {
-    key: "ATTENDANCE",
-    name: "Attendance Tracker",
-    component: "AttendanceWidget",
-    description: "Attendance Tracker",
-    category: "management",
-  },
-  {
-    key: "ASSIGNMENTS",
-    name: "Assignments",
-    component: "AssignmentsWidget",
-    description: "Upcoming and pending work",
-    category: "academics",
-  },
-  {
-    key: "GRADES",
-    name: "Gradebook",
-    component: "GradesWidget",
-    description: "Gradebook",
-    category: "academics",
-  },
-  {
-    key: "NOTICES",
-    name: "Announcements",
-    component: "NoticesWidget",
-    description: "Important announcements",
-    category: "communication",
-  },
-];

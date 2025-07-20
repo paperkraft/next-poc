@@ -27,7 +27,7 @@ const SidebarFooterContent = React.memo(() => {
     const { isMobile, toggleSidebar } = useSidebar();
     const [isLoggingOut, setIsLoggingOut] = React.useState(false);
 
-    const isDual = (config.layout === "collapsed" || config.layout === "dual-menu") && !isMobile
+    const isDual = (config.layout === "collapsed" || config.layout === "dual-menu") && !isMobile;
 
     const user = data && data?.user;
     const slug = data?.user?.slug ?? "admin";

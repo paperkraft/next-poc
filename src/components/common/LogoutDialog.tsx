@@ -38,7 +38,7 @@ export const LogoutDialog = ({ open, onOpenChange }: LogoutDialogProps) => {
             logAuditViaBeacon();
 
             // Sign out without redirect
-            await signOut({ redirect: false });
+            await signOut();
 
             // Fast redirect
             router.replace('/signin');

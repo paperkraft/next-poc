@@ -12,7 +12,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 export interface TenantWithUsers extends Tenant {
-    users: User[];
+    users: {
+        id: number
+    }[]
 }
 
 export default function TenantsTable({ tenants }: { tenants: TenantWithUsers[] }) {

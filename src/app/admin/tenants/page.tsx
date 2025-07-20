@@ -6,21 +6,24 @@ import TenantsTable from "./component/tenants-table";
 
 async function getTenantStats() {
     try {
-        return await prisma.$transaction(async (tx) => {
-            const [tenants, tenantCount, userCount, activeUsers, totalSchools] = await Promise.all([
-                tx.tenant.findMany({ where: { isActive: true }, include: { users: true } }),
-                tx.tenant.count(),
-                tx.user.count(),
-                tx.user.count({ where: { isActive: true } }),
-                tx.tenant.count({ where: { type: 'SCHOOL' } })
-            ]);
+        const [tenants, tenantCount, userCount, activeUsers, totalSchools] = await Promise.all([
+            prisma.tenant.findMany({
+                where: { isActive: true },
+                include: { users: { select: { id: true } } }
+            }),
+            prisma.tenant.count(),
+            prisma.user.count(),
+            prisma.user.count({ where: { isActive: true } }),
+            prisma.tenant.count({ where: { type: 'SCHOOL' } })
+        ]);
 
-            return { tenants, tenantCount, userCount, activeUsers, totalSchools };
-        });
-    } finally {
-        await prisma.$disconnect();
+        return { tenants, tenantCount, userCount, activeUsers, totalSchools };
+    } catch (err) {
+        console.error("Error fetching tenant stats:", err);
+        return null;
     }
 }
+
 
 export default async function TenantsPage() {
 
@@ -47,7 +50,7 @@ export default async function TenantsPage() {
                         <Building2 className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{stats.tenantCount}</div>
+                        <div className="text-2xl font-bold">{stats?.tenantCount ?? 0}</div>
                     </CardContent>
                 </Card>
 
@@ -57,7 +60,7 @@ export default async function TenantsPage() {
                         <Building2 className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{stats.tenants.length}</div>
+                        <div className="text-2xl font-bold">{stats?.tenants.length ?? 0}</div>
                     </CardContent>
                 </Card>
 
@@ -67,7 +70,7 @@ export default async function TenantsPage() {
                         <Users className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{stats.userCount.toLocaleString()}</div>
+                        <div className="text-2xl font-bold">{stats?.userCount.toLocaleString()}</div>
                     </CardContent>
                 </Card>
 
@@ -84,7 +87,7 @@ export default async function TenantsPage() {
             </div>
 
             {/* Tenants Table */}
-            <TenantsTable tenants={stats.tenants} />
+            <TenantsTable tenants={stats?.tenants ?? []} />
 
         </div>
     )

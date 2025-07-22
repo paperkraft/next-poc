@@ -229,12 +229,15 @@ model MenuGroup {
   id        Int        @id @default(autoincrement())
   name      String
   position  Int        @default(0)
-  tenantId  Int?
-  tenant    Tenant?    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  menus     MenuItem[]
+  isSystem  Boolean    @default(false)
   isActive  Boolean    @default(true)
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
+  menus     MenuItem[]
+
+  // Relationships
+  tenantId  Int?
+  tenant    Tenant?    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@unique([tenantId, name])
 }

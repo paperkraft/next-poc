@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
 
 export const RowSchema = z.object({
-    name: z.string().min(1, "Name required"),
+    name: z.string().trim().min(1, "Name required").regex(/^[A-Za-z ]+$/, "Only letters and spaces allowed"),
     email: z.string().email("Invalid email"),
     age: z.coerce.number().int().positive("Age must be ≥1"),
 });
@@ -29,11 +29,31 @@ export default function CsvUpload() {
     const [errors, setErrors] = React.useState<RowErrors>({});
     const [duplicateEmailIndexes, setDuplicateEmailIndexes] = React.useState<Set<number>>(new Set());
 
+    const [editingRow, setEditingRow] = React.useState<number | null>(null);
+    const [editingField, setEditingField] = React.useState<keyof Row | null>(null);
 
     // Function to check for duplicate emails
     const checkDuplicateEmail = (email: string, index: number): string | null => {
         const duplicate = rows.find((row, idx) => row.email === email && idx !== index);
         return duplicate ? "Email is already taken" : null;
+    };
+
+    // Function to check for duplicate emails across all rows
+    const checkForDuplicateEmails = (rows: Row[]): Set<number> => {
+        const seenEmails: Map<string, Set<number>> = new Map();
+        const duplicateIndexes = new Set<number>();
+
+        rows.forEach((row, idx) => {
+            const email = row.email.trim().toLowerCase();
+            if (seenEmails.has(email)) {
+                seenEmails.get(email)?.add(idx);
+                duplicateIndexes.add(idx);
+            } else {
+                seenEmails.set(email, new Set([idx]));
+            }
+        });
+
+        return duplicateIndexes;
     };
 
     // Upload CSV and validate
@@ -68,6 +88,14 @@ export default function CsvUpload() {
 
                 setRows(data);
                 setErrors(fieldErrors);
+
+                // Check for duplicate emails and highlight them
+                const duplicateIndexes = checkForDuplicateEmails(data);
+                setDuplicateEmailIndexes(duplicateIndexes);
+
+                if (duplicateIndexes.size > 0) {
+                    toast.error("Duplicate emails detected in the uploaded file. Please fix the duplicates.");
+                }
             },
         });
     };
@@ -81,6 +109,7 @@ export default function CsvUpload() {
             // Revalidate the edited row
             const result = RowSchema.safeParse(updated[i]);
             let fieldErrors: Partial<Record<keyof Row, string[]>> = {};
+
             // Check for duplicate email if email field is edited
             if (field === "email") {
                 const duplicateError = checkDuplicateEmail(value, i);
@@ -113,6 +142,10 @@ export default function CsvUpload() {
                     return copy;
                 });
             }
+
+            // Check if there are duplicates after editing the email
+            const duplicateIndexes = checkForDuplicateEmails(updated);
+            setDuplicateEmailIndexes(duplicateIndexes);
 
             return updated;
         });
@@ -150,33 +183,6 @@ export default function CsvUpload() {
                     age: ["Age must be ≥1"],
                 },
         }));
-
-        // setErrors(prev => ({
-        //     ...prev,
-        //     [rows.length]: {
-        //         name: ["Name required"],
-        //         email: ["Invalid email"],
-        //         age: ["Age must be ≥1"],
-        //     },
-        // }));
-    };
-
-    // Function to check for duplicate emails across all rows
-    const checkForDuplicateEmails = (rows: Row[]): Set<number> => {
-        const seenEmails: Map<string, Set<number>> = new Map();
-        const duplicateIndexes = new Set<number>();
-
-        rows.forEach((row, idx) => {
-            const email = row.email.trim().toLowerCase();
-            if (seenEmails.has(email)) {
-                seenEmails.get(email)?.add(idx);
-                duplicateIndexes.add(idx);
-            } else {
-                seenEmails.set(email, new Set([idx]));
-            }
-        });
-
-        return duplicateIndexes;
     };
 
     // Submit/save rows
@@ -184,6 +190,7 @@ export default function CsvUpload() {
         // Check for duplicates before saving
         const duplicateIndexes = checkForDuplicateEmails(rows);
         setDuplicateEmailIndexes(duplicateIndexes);
+
         if (duplicateIndexes.size > 0) {
             toast.error("Duplicate emails detected. Please fix the duplicates.");
             return;
@@ -213,7 +220,6 @@ export default function CsvUpload() {
         (sum, rowErrs) => sum + Object.values(rowErrs).flat().length,
         0
     );
-
 
     return (
         <>
@@ -253,10 +259,20 @@ export default function CsvUpload() {
                                                     <input
                                                         value={row[f] ?? ""}
                                                         onChange={e => edit(i, f, e.target.value)}
+                                                        onFocus={() => {
+                                                            setEditingRow(i);
+                                                            setEditingField(f);
+                                                        }}
+                                                        onBlur={() => {
+                                                            setEditingRow(null);
+                                                            setEditingField(null);
+                                                        }}
                                                         className={`
                                                             w-full bg-transparent outline-none p-2
-                                                            ${errors[i]?.[f] ? 'border border-red-500 bg-red-50' : ''}
-                                                            ${f === "email" && duplicateEmailIndexes.has(i) ? 'bg-yellow-100 border border-yellow-500' : ''}
+                                                            ${duplicateEmailIndexes.has(i) && f === "email" && editingRow !== i
+                                                                ? 'bg-yellow-50 border border-yellow-400' : ''}
+                                                            ${errors[i]?.[f] ? 'border border-red-500 bg-red-100' : ''}
+                                                            ${editingRow === i && editingField === f ? "bg-background" : ""}
                                                         `}
                                                     />
                                                 </td>

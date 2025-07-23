@@ -27,6 +27,14 @@ export async function saveRows(rows: Row[]) {
 export default function CsvUpload() {
     const [rows, setRows] = React.useState<Row[]>([]);
     const [errors, setErrors] = React.useState<RowErrors>({});
+    const [duplicateEmailIndexes, setDuplicateEmailIndexes] = React.useState<Set<number>>(new Set());
+
+
+    // Function to check for duplicate emails
+    const checkDuplicateEmail = (email: string, index: number): string | null => {
+        const duplicate = rows.find((row, idx) => row.email === email && idx !== index);
+        return duplicate ? "Email is already taken" : null;
+    };
 
     // Upload CSV and validate
     const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -50,6 +58,12 @@ export default function CsvUpload() {
                         }
                         fieldErrors[index] = rowErr;
                     }
+                    // Check for duplicate email after parsing
+                    const duplicateError = checkDuplicateEmail(row.email, index);
+                    if (duplicateError) {
+                        if (!fieldErrors[index]) fieldErrors[index] = {};
+                        fieldErrors[index]!.email = [duplicateError];
+                    }
                 });
 
                 setRows(data);
@@ -66,22 +80,39 @@ export default function CsvUpload() {
 
             // Revalidate the edited row
             const result = RowSchema.safeParse(updated[i]);
+            let fieldErrors: Partial<Record<keyof Row, string[]>> = {};
+            // Check for duplicate email if email field is edited
+            if (field === "email") {
+                const duplicateError = checkDuplicateEmail(value, i);
+                if (duplicateError) {
+                    fieldErrors.email = [duplicateError];
+                }
+            }
 
-            setErrors(prevErrors => {
-                const copy = { ...prevErrors };
+            // If row validation fails, gather errors
+            if (!result.success || Object.keys(fieldErrors).length > 0) {
+                // Add schema validation errors
                 if (!result.success) {
-                    const fieldErrors: Partial<Record<keyof Row, string[]>> = {};
                     for (const err of result.error.errors) {
                         const path = err.path[0] as keyof Row;
                         fieldErrors[path] = fieldErrors[path] || [];
                         fieldErrors[path]!.push(err.message);
                     }
-                    copy[i] = fieldErrors;
-                } else {
-                    delete copy[i];
                 }
-                return copy;
-            });
+                // Set errors for this row
+                setErrors(prevErrors => {
+                    const copy = { ...prevErrors };
+                    copy[i] = fieldErrors;
+                    return copy;
+                });
+            } else {
+                // Remove errors for this row if valid
+                setErrors(prevErrors => {
+                    const copy = { ...prevErrors };
+                    delete copy[i];
+                    return copy;
+                });
+            }
 
             return updated;
         });
@@ -105,19 +136,59 @@ export default function CsvUpload() {
 
     // Add a new row
     const addRow = () => {
-        setRows(prev => [...prev, { name: "", email: "", age: 0 }]);
+        const newRow: Row = { name: "", email: "", age: 0 };
+        const duplicateError = checkDuplicateEmail(newRow.email, rows.length);
+
+        setRows(prev => [...prev, newRow]);
         setErrors(prev => ({
             ...prev,
-            [rows.length]: {
-                name: ["Name required"],
-                email: ["Invalid email"],
-                age: ["Age must be ≥1"],
-            },
+            [rows.length]: duplicateError
+                ? { email: [duplicateError] }
+                : {
+                    name: ["Name required"],
+                    email: ["Invalid email"],
+                    age: ["Age must be ≥1"],
+                },
         }));
+
+        // setErrors(prev => ({
+        //     ...prev,
+        //     [rows.length]: {
+        //         name: ["Name required"],
+        //         email: ["Invalid email"],
+        //         age: ["Age must be ≥1"],
+        //     },
+        // }));
+    };
+
+    // Function to check for duplicate emails across all rows
+    const checkForDuplicateEmails = (rows: Row[]): Set<number> => {
+        const seenEmails: Map<string, Set<number>> = new Map();
+        const duplicateIndexes = new Set<number>();
+
+        rows.forEach((row, idx) => {
+            const email = row.email.trim().toLowerCase();
+            if (seenEmails.has(email)) {
+                seenEmails.get(email)?.add(idx);
+                duplicateIndexes.add(idx);
+            } else {
+                seenEmails.set(email, new Set([idx]));
+            }
+        });
+
+        return duplicateIndexes;
     };
 
     // Submit/save rows
     const save = async () => {
+        // Check for duplicates before saving
+        const duplicateIndexes = checkForDuplicateEmails(rows);
+        setDuplicateEmailIndexes(duplicateIndexes);
+        if (duplicateIndexes.size > 0) {
+            toast.error("Duplicate emails detected. Please fix the duplicates.");
+            return;
+        }
+
         try {
             await saveRows(rows);
             toast.success('Rows saved!');
@@ -185,6 +256,7 @@ export default function CsvUpload() {
                                                         className={`
                                                             w-full bg-transparent outline-none p-2
                                                             ${errors[i]?.[f] ? 'border border-red-500 bg-red-50' : ''}
+                                                            ${f === "email" && duplicateEmailIndexes.has(i) ? 'bg-yellow-100 border border-yellow-500' : ''}
                                                         `}
                                                     />
                                                 </td>

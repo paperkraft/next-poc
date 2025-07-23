@@ -1,0 +1,237 @@
+'use client'
+
+import Papa from 'papaparse';
+import React from 'react';
+import { toast } from 'sonner';
+import { z } from 'zod';
+
+import { Button } from '@/components/ui/button';
+import { Trash2 } from 'lucide-react';
+
+export const RowSchema = z.object({
+    name: z.string().min(1, "Name required"),
+    email: z.string().email("Invalid email"),
+    age: z.coerce.number().int().positive("Age must be ≥1"),
+});
+
+export type Row = z.infer<typeof RowSchema>;
+type RowErrors = Record<number, Partial<Record<keyof Row, string[]>>>;
+
+export async function saveRows(rows: Row[]) {
+    const parsed = RowSchema.array().safeParse(rows);
+    if (!parsed.success) throw new Error("Server-side validation failed");
+    console.log("✔️ rows accepted:", parsed.data.length);
+    console.log("✔️ data:", parsed.data);
+}
+
+export default function CsvUpload() {
+    const [rows, setRows] = React.useState<Row[]>([]);
+    const [errors, setErrors] = React.useState<RowErrors>({});
+
+    // Upload CSV and validate
+    const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        Papa.parse<Row>(file, {
+            header: true,
+            skipEmptyLines: true,
+            complete: ({ data }: any) => {
+                const fieldErrors: RowErrors = {};
+
+                data.forEach((row: any, index: number) => {
+                    const result = RowSchema.safeParse(row);
+                    if (!result.success) {
+                        const rowErr: Partial<Record<keyof Row, string[]>> = {};
+                        for (const err of result.error.errors) {
+                            const key = err.path[0] as keyof Row;
+                            if (!rowErr[key]) rowErr[key] = [];
+                            rowErr[key]!.push(err.message);
+                        }
+                        fieldErrors[index] = rowErr;
+                    }
+                });
+
+                setRows(data);
+                setErrors(fieldErrors);
+            },
+        });
+    };
+
+    // Edit a specific cell
+    const edit = (i: number, field: keyof Row, value: string) => {
+        setRows(r => {
+            const updated = [...r];
+            (updated[i] as any)[field] = value;
+
+            // Revalidate the edited row
+            const result = RowSchema.safeParse(updated[i]);
+
+            setErrors(prevErrors => {
+                const copy = { ...prevErrors };
+                if (!result.success) {
+                    const fieldErrors: Partial<Record<keyof Row, string[]>> = {};
+                    for (const err of result.error.errors) {
+                        const path = err.path[0] as keyof Row;
+                        fieldErrors[path] = fieldErrors[path] || [];
+                        fieldErrors[path]!.push(err.message);
+                    }
+                    copy[i] = fieldErrors;
+                } else {
+                    delete copy[i];
+                }
+                return copy;
+            });
+
+            return updated;
+        });
+    }
+
+    // Delete a row
+    const deleteRow = (index: number) => {
+        setRows(prev => prev.filter((_, i) => i !== index));
+
+        // Also remove any errors associated with this row and reindex others
+        setErrors(prev => {
+            const updated: RowErrors = {};
+            Object.entries(prev).forEach(([key, value]) => {
+                const idx = parseInt(key);
+                if (idx < index) updated[idx] = value;
+                else if (idx > index) updated[idx - 1] = value; // shift down
+            });
+            return updated;
+        });
+    };
+
+    // Add a new row
+    const addRow = () => {
+        setRows(prev => [...prev, { name: "", email: "", age: 0 }]);
+        setErrors(prev => ({
+            ...prev,
+            [rows.length]: {
+                name: ["Name required"],
+                email: ["Invalid email"],
+                age: ["Age must be ≥1"],
+            },
+        }));
+    };
+
+    // Submit/save rows
+    const save = async () => {
+        try {
+            await saveRows(rows);
+            toast.success('Rows saved!');
+        } catch {
+            toast.error("Server validation failed");
+        }
+    };
+
+    // Export updated csv
+    const exportCSV = () => {
+        const csv = Papa.unparse(rows);
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", "updated_data.csv");
+        link.click();
+    };
+
+    // const fields = Object.keys(RowSchema.shape) as (keyof Row)[];
+    const totalErrors = Object.values(errors).reduce(
+        (sum, rowErrs) => sum + Object.values(rowErrs).flat().length,
+        0
+    );
+
+
+    return (
+        <>
+            <div className="space-y-4">
+                <div className='flex justify-between items-center'>
+                    <input type="file" accept=".csv" onChange={handleFile}
+                        className="file:px-4 file:py-1 file:rounded file:bg-blue-600 file:text-white border-0" />
+
+                    {rows.length > 0 && (
+                        <Button
+                            type='button'
+                            variant={'outline'}
+                            onClick={addRow}
+                        >
+                            Add Row
+                        </Button>
+                    )}
+                </div>
+
+                {rows.length > 0 && (
+                    <>
+                        <p>Total Errors:{totalErrors}</p>
+                        <div className="overflow-x-auto">
+                            <table className="w-full border-collapse">
+                                <thead>
+                                    <tr className="bg-gray-100">
+                                        {["Name", "Email", "Age", "Status", "Delete"].map(h => (
+                                            <th key={h} className="p-2 border text-left">{h}</th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {rows.map((row, i) => (
+                                        <tr key={i} className="odd:bg-gray-50">
+                                            {(["name", "email", "age"] as const).map(f => (
+                                                <td key={f} className="border">
+                                                    <input
+                                                        value={row[f] ?? ""}
+                                                        onChange={e => edit(i, f, e.target.value)}
+                                                        className={`
+                                                            w-full bg-transparent outline-none p-2
+                                                            ${errors[i]?.[f] ? 'border border-red-500 bg-red-50' : ''}
+                                                        `}
+                                                    />
+                                                </td>
+                                            ))}
+
+                                            {/* Status */}
+                                            <td className="border p-2">
+                                                {errors[i]
+                                                    ? <ul className="text-red-600 text-xs list-disc list-inside">
+                                                        {Object.values(errors[i]!).flat().map((err, idx) => (
+                                                            <li key={idx}>{err}</li>
+                                                        ))}
+                                                    </ul>
+                                                    : <span className="text-green-600">✔︎</span>}
+                                            </td>
+
+                                            {/* Delete button */}
+                                            <td className="border p-2 text-center">
+                                                <button onClick={() => deleteRow(i)}>
+                                                    <Trash2 size={16} className='text-destructive' />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div className='flex gap-2 justify-end'>
+                            <Button
+                                type='button'
+                                onClick={save}
+                                className="bg-emerald-600 text-white"
+                            >
+                                Save
+                            </Button>
+
+                            <Button
+                                type='button'
+                                onClick={exportCSV}
+                            >
+                                Export
+                            </Button>
+                        </div>
+                    </>
+                )}
+            </div>
+        </>
+    );
+}

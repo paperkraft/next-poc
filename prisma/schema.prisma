@@ -14,25 +14,46 @@ enum TenantType {
   SCHOOL
 }
 
+enum UserScope {
+  SYSTEM
+  TENANT
+}
+
+enum GlobalRole {
+  SUPER_ADMIN
+  SYSTEM_ADMIN
+  SUPPORT
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  ERROR
+}
+
 model Tenant {
-  id             Int              @id @default(autoincrement())
-  name           String           @unique
-  description    String?
-  slug           String           @unique
-  type           TenantType
-  parent         Tenant?          @relation("TenantHierarchy", fields: [parentId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  parentId       Int?
-  children       Tenant[]         @relation("TenantHierarchy")
-  address        Json             @default("{}")
-  settings       Json             @default("{}")
-  contact        Json             @default("{}")
-  limits         Json             @default("{}")
-  branding       Json             @default("{}")
-  customField    Json             @default("{}")
-  features       String[]         @default([])
-  isActive       Boolean          @default(true)
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
+  id          Int        @id @default(autoincrement())
+  name        String     @unique
+  description String?
+  slug        String     @unique
+  type        TenantType
+  parent      Tenant?    @relation("TenantHierarchy", fields: [parentId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  parentId    Int?
+  children    Tenant[]   @relation("TenantHierarchy")
+  address     Json       @default("{}")
+  settings    Json       @default("{}")
+  contact     Json       @default("{}")
+  limits      Json       @default("{}")
+  branding    Json       @default("{}")
+  customField Json       @default("{}")
+  features    String[]   @default([])
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
   users          User[]
   roles          Role[]
   groups         MenuGroup[]
@@ -41,6 +62,9 @@ model Tenant {
   rolePermission RolePermission[]
   auditLogs      AuditLog[]
   widgets        TenantWidget[]
+
+  addOnItems   AddOnItem[]
+  subscription Subscription? @relation("TenantSubscription")
 
   @@index([type])
 }
@@ -51,7 +75,8 @@ model User {
   password         String
   role             Role               @relation(fields: [roleId], references: [id], onDelete: Cascade)
   roleId           Int
-  globalRoles      Json               @default("[]")
+  userScope        UserScope          @default(TENANT)
+  globalRoles      GlobalRole[]
   tenant           Tenant?            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId         Int?
   isActive         Boolean            @default(true)
@@ -66,12 +91,6 @@ model User {
   pushSubscription PushSubscription[]
 
   @@index([tenantId, email])
-}
-
-enum GlobalRole {
-  SUPER_ADMIN
-  SYSTEM_ADMIN
-  SUPPORT
 }
 
 model Profile {
@@ -100,6 +119,7 @@ model Role {
   tenant      Tenant?          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   permissions RolePermission[]
   isActive    Boolean          @default(true)
+  isSystem    Boolean          @default(false)
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
   users       User[]
@@ -140,6 +160,69 @@ model Permission {
   @@index([tenantId, name])
 }
 
+model MenuItem {
+  id        Int        @id @default(autoincrement())
+  name      String
+  path      String?
+  icon      String?
+  sortOrder Int        @default(0)
+  parentId  Int? // For submenu items
+  parent    MenuItem?  @relation("MenuParent", fields: [parentId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  children  MenuItem[] @relation("MenuParent")
+  isActive  Boolean    @default(true)
+  isSystem  Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  // Relationships
+  groupId        Int?
+  group          MenuGroup?       @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  tenantId       Int?
+  tenant         Tenant?          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  rolePermission RolePermission[]
+  addOnItem      AddOnItem[]
+
+  subscriptionPlans SubscriptionPlan[] @relation("SubscriptionPlanMenuItems")
+
+  @@unique([tenantId, parentId, name])
+}
+
+model MenuGroup {
+  id        Int      @id @default(autoincrement())
+  name      String
+  sortOrder Int      @default(0)
+  isSystem  Boolean  @default(false)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  tenantId Int?
+  tenant   Tenant?    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  menus    MenuItem[]
+
+  @@unique([tenantId, name])
+}
+
+model AuditLog {
+  id        Int         @id @default(autoincrement())
+  action    AuditAction
+  user      User        @relation(fields: [userId], references: [id])
+  userId    Int
+  tenant    Tenant?     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId  Int?
+  slug      String?
+  metadata  Json        @default("{}")
+  entity    String
+  details   Json
+  device    Json?
+  createdAt DateTime    @default(now())
+
+  @@index([action, createdAt])
+  @@index([tenantId, createdAt])
+  @@index([userId, createdAt])
+}
+
 model Widget {
   id          Int            @id @default(autoincrement())
   key         String         @unique
@@ -169,27 +252,32 @@ model TenantWidget {
 }
 
 model RoleWidget {
-  id         Int          @id @default(autoincrement())
-  isAssigned Boolean      @default(false)
-  sortOrder  Int          @default(0)
-  role       Role         @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  roleId     Int
-  widget     TenantWidget @relation(fields: [widgetId], references: [id], onDelete: Cascade)
-  widgetId   Int
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
+  id         Int      @id @default(autoincrement())
+  isAssigned Boolean  @default(false)
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
+  // Relationships
+  role              Role         @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  roleId            Int
+  widget            TenantWidget @relation(fields: [widgetId], references: [id], onDelete: Cascade)
+  widgetId          Int
   userWidgetConfigs UserWidget[]
 
   @@unique([roleId, widgetId])
 }
 
 model UserWidget {
-  id           Int          @id @default(autoincrement())
-  isPinned     Boolean      @default(false)
-  isHidden     Boolean      @default(false)
-  customSize   String       @default("small")
-  sortOrder    Int
+  id         Int      @id @default(autoincrement())
+  isPinned   Boolean  @default(false)
+  isHidden   Boolean  @default(false)
+  customSize String   @default("small")
+  sortOrder  Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relationships
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId       Int
   widget       TenantWidget @relation(fields: [widgetId], references: [id], onDelete: Cascade)
@@ -197,77 +285,14 @@ model UserWidget {
   roleWidget   RoleWidget   @relation(fields: [roleWidgetId], references: [id], onDelete: Cascade)
   roleWidgetId Int
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
   @@unique([userId, widgetId])
   @@index([userId])
 }
 
-model MenuItem {
-  id             Int              @id @default(autoincrement())
-  tenantId       Int?
-  tenant         Tenant?          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  name           String
-  path           String?
-  icon           String?
-  parentId       Int?
-  parent         MenuItem?        @relation("MenuParent", fields: [parentId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  children       MenuItem[]       @relation("MenuParent")
-  groupId        Int?
-  group          MenuGroup?       @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  isActive       Boolean          @default(true)
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  rolePermission RolePermission[]
-  // @@unique([tenantId, groupId, parentId])
-
-  @@unique([tenantId, parentId, name])
-}
-
-model MenuGroup {
-  id        Int        @id @default(autoincrement())
-  name      String
-  position  Int        @default(0)
-  isSystem  Boolean    @default(false)
-  isActive  Boolean    @default(true)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  menus     MenuItem[]
-
-  // Relationships
-  tenantId  Int?
-  tenant    Tenant?    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-
-  @@unique([tenantId, name])
-}
-
-model AuditLog {
-  id        Int         @id @default(autoincrement())
-  action    AuditAction
-  user      User        @relation(fields: [userId], references: [id])
-  userId    Int
-  tenant    Tenant?     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId  Int?
-  slug      String?
-  metadata  Json        @default("{}")
-  entity    String
-  details   Json
-  device    Json?
-  createdAt DateTime    @default(now())
-
-  @@index([action, createdAt])
-  @@index([tenantId, createdAt])
-  @@index([userId, createdAt])
-}
-
-enum AuditAction {
-  CREATE
-  UPDATE
-  DELETE
-  LOGIN
-  LOGOUT
-  ERROR
+enum NotificationStatus {
+  SENT
+  DELIVERED
+  FAILED
 }
 
 model Notification {
@@ -283,12 +308,6 @@ model Notification {
   user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-enum NotificationStatus {
-  SENT
-  DELIVERED
-  FAILED
-}
-
 model PushSubscription {
   id           Int      @id @default(autoincrement())
   userId       Int
@@ -298,4 +317,66 @@ model PushSubscription {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+}
+
+enum BillingCycle {
+  MONTHLY
+  ANNUALLY
+}
+
+model SubscriptionPlan {
+  id           Int      @id @default(autoincrement())
+  name         String   @unique // e.g. "Basic", "Pro", "Enterprise"
+  description  String? // "Includes 10 users, 5 projects, basic reporting"
+  monthlyPrice Float // 9.99
+  annualPrice  Float // 99.99
+  isActive     Boolean  @default(true) // Whether plan is available for purchase
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Predefined menu items included in this plan (many-to-many)
+  menuItems  MenuItem[]     @relation("SubscriptionPlanMenuItems")
+  addOnItems AddOnItem[]
+  tenants    Subscription[]
+}
+
+model Subscription {
+  id                 Int              @id @default(autoincrement())
+  tenant             Tenant           @relation("TenantSubscription", fields: [tenantId], references: [id])
+  tenantId           Int              @unique
+  subscriptionPlan   SubscriptionPlan @relation(fields: [subscriptionPlanId], references: [id])
+  subscriptionPlanId Int
+  billingCycle       BillingCycle     @default(MONTHLY)
+
+  startDate    DateTime
+  endDate      DateTime? // When subscription expires (null for auto-renewing)
+  isActive     Boolean   @default(true) // Active or cancelled
+  isTrial      Boolean   @default(false) // Is this a trial subscription?
+  trialEndDate DateTime? // When trial period ends
+  autoRenew    Boolean   @default(true) // Whether to automatically renew
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model AddOnItem {
+  id         Int      @id @default(autoincrement())
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  menuItemId Int
+
+  subscriptionPlan   SubscriptionPlan? @relation(fields: [subscriptionPlanId], references: [id], onDelete: Cascade)
+  subscriptionPlanId Int?
+
+  tenant   Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId Int?
+
+  extraCostMonthly Float? // Extra cost for this add-on (monthly)
+  extraCostAnnual  Float? // Extra cost for this add-on (annually)
+  description      String?
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([subscriptionPlanId])
+  @@index([tenantId])
 }

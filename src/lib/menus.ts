@@ -3,7 +3,7 @@ import prisma from "./prisma";
 export async function getTenantMenu(tenantSlug: string) {
     const items = await prisma.menuItem.findMany({
         where: { tenant: { slug: tenantSlug } },
-        orderBy: { group: { position: 'asc' } }
+        orderBy: { group: { sortOrder: 'asc' } }
     });
 
     return items.map(item => ({
@@ -62,7 +62,7 @@ export type MenuItem = {
     parentId?: number;
     groupId?: number;
     groupName?: string;
-    position?: number;
+    sortOrder?: number;
     permission?: number;
     children: MenuItem[];
 };
@@ -70,7 +70,7 @@ export type MenuItem = {
 export type GroupedMenus = {
     groupId: number;
     groupName: string;
-    position: number;
+    sortOrder: number;
     modules: MenuItem[];
 }
 
@@ -107,7 +107,7 @@ export async function getUserModules(tenantId: number | null, roleId: number): P
                         select: {
                             id: true,
                             name: true,
-                            position: true,
+                            sortOrder: true,
                         }
                     },
                     children: {
@@ -141,7 +141,7 @@ export async function getUserModules(tenantId: number | null, roleId: number): P
         orderBy: {
             menus: {
                 group: {
-                    position: 'asc',
+                    sortOrder: 'asc',
                 },
             },
         },
@@ -174,7 +174,7 @@ export async function getUserModules(tenantId: number | null, roleId: number): P
                 parentId: menu.parentId || undefined,
                 groupId: group?.id,
                 groupName: group?.name,
-                position: group?.position,
+                sortOrder: group?.sortOrder,
                 permission: permissionMap.get(menu.id) || 0, // Only set permission for the current item
                 children: [],
             });
@@ -191,7 +191,7 @@ export async function getUserModules(tenantId: number | null, roleId: number): P
                     parentId: child.parentId || undefined,
                     groupId: group?.id,
                     groupName: group?.name,
-                    position: group?.position,
+                    sortOrder: group?.sortOrder,
                     permission: permissionMap.get(child.id), // Only set permission for the child if it's valid
                     children: [],
                 });
@@ -208,7 +208,7 @@ export async function getUserModules(tenantId: number | null, roleId: number): P
                         parentId: grandchild.parentId || undefined,
                         groupId: group?.id,
                         groupName: group?.name,
-                        position: group?.position,
+                        sortOrder: group?.sortOrder,
                         permission: permissionMap.get(grandchild.id), // Only set permission for the grandchild if it's valid
                         children: [],
                     });
@@ -251,15 +251,15 @@ export async function getUserModules(tenantId: number | null, roleId: number): P
             // Find the group info from any menu in this group
             const groupInfo = modules[0]?.groupId === groupId ? {
                 groupName: modules[0]?.groupName,
-                position: modules[0]?.position,
-            } : { groupName: undefined, position: undefined };
+                sortOrder: modules[0]?.sortOrder,
+            } : { groupName: undefined, sortOrder: undefined };
 
             return {
                 groupId,
                 groupName: groupInfo.groupName || '',
-                position: groupInfo.position || 0,
+                sortOrder: groupInfo.sortOrder || 0,
                 modules: modules.sort((a, b) => (a.id - b.id)),
             };
         })
-        .sort((a, b) => a.position - b.position);
+        .sort((a, b) => a.sortOrder - b.sortOrder);
 }

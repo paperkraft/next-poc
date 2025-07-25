@@ -34,7 +34,7 @@ export function FeaturesSection() {
       </CardHeader>
       <CardContent>
         {/* Bulk Selection Controls */}
-        <div className="flex items-center justify-between mb-4 p-3 bg-slate-50 rounded-lg">
+        <div className="flex items-center justify-between mb-4 p-3 bg-slate-50 dark:bg-background rounded-lg">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium">Bulk Selection:</span>
             <Button
@@ -81,7 +81,7 @@ export function FeaturesSection() {
         </div>
 
         {/* Selection Summary */}
-        <div className="mt-4 p-3 bg-slate-50 rounded-lg">
+        <div className="mt-4 p-3 bg-slate-50 dark:bg-background rounded-lg border">
           <p className="text-sm text-slate-600">{getSummaryMessage()}</p>
         </div>
       </CardContent>

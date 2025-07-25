@@ -12,7 +12,7 @@ export function PlanPreviewSidebar() {
 
     return (
         <div className="sticky top-4">
-            <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+            <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:bg-gradient-to-br dark:from-blue-950 dark:to-indigo-950 border-blue-200 dark:border-blue-900">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <Eye className="h-5 w-5" />
@@ -24,15 +24,15 @@ export function PlanPreviewSidebar() {
                     {/* Plan Header */}
                     <div className="flex items-start justify-between">
                         <div>
-                            <h3 className="text-xl font-bold text-slate-900">{name || "Plan Name"}</h3>
-                            <p className="text-sm text-slate-600 mt-1">{description || "Plan description will appear here"}</p>
+                            <h3 className="text-xl font-bold">{name || "Plan Name"}</h3>
+                            <p className="text-sm text-muted-foreground mt-1">{description || "Plan description will appear here"}</p>
                         </div>
                         <Badge variant={isActive ? "default" : "secondary"}>{isActive ? "Active" : "Inactive"}</Badge>
                     </div>
 
                     {/* Pricing Display */}
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="p-3 bg-white rounded-lg border">
+                        <div className="p-3 bg-background rounded-lg border">
                             <div className="flex items-center gap-2 mb-1">
                                 <IndianRupeeIcon className="h-4 w-4 text-slate-500" />
                                 <span className="text-sm font-medium">Monthly</span>
@@ -40,7 +40,7 @@ export function PlanPreviewSidebar() {
                             <p className="text-2xl font-bold">₹{monthlyCost.toFixed(2)}</p>
                             <p className="text-xs text-slate-500">per month</p>
                         </div>
-                        <div className="p-3 bg-white rounded-lg border">
+                        <div className="p-3 bg-background rounded-lg border">
                             <div className="flex items-center gap-2 mb-1">
                                 <IndianRupeeIcon className="h-4 w-4 text-slate-500" />
                                 <span className="text-sm font-medium">Annual</span>
@@ -52,7 +52,7 @@ export function PlanPreviewSidebar() {
                                     <p className="text-xs text-slate-600">₹{(annualCost / 12).toFixed(2)}/month</p>
                                     {monthlyCost * 12 > annualCost && (
                                         <div className="mt-1">
-                                            <Badge variant="secondary" className="text-green-700 bg-green-50 text-xs">
+                                            <Badge variant="secondary" className="text-green-700 bg-green-50 dark:bg-green-950 dark:text-green-600 text-xs">
                                                 Save ₹{(monthlyCost * 12 - annualCost).toFixed(2)} (
                                                 {Math.round(((monthlyCost * 12 - annualCost) / (monthlyCost * 12)) * 100)}%)
                                             </Badge>

@@ -16,7 +16,7 @@ interface FeatureItemProps {
 export function FeatureItem({ item, isSelected, onToggle }: FeatureItemProps) {
   return (
     <div
-      className={`flex items-start space-x-3 p-3 rounded-lg border transition-colors ${isSelected ? "bg-blue-50 border-blue-200" : "bg-white border-slate-200 hover:bg-slate-50"
+      className={`flex items-start space-x-3 p-3 rounded-lg border transition-colors ${isSelected ? "bg-blue-50 border-blue-200 dark:bg-blue-950 dark:border-blue-900" : "bg-background border hover:bg-muted"
         }`}
     >
       <Checkbox id={`menu-${item.id}`} checked={isSelected} onCheckedChange={() => onToggle(item.id)} />

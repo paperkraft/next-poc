@@ -1,3 +1,4 @@
+import AllowNotification from "@/components/custom/allow-notification";
 import { SystemAdminDashboard } from "@/components/dashboard/system-admin-dashboard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import prisma from "@/lib/prisma";
@@ -52,14 +53,15 @@ export default async function AdminDashboard() {
 
     return (
         <>
+            <AllowNotification />
             <div className="hidden">
                 <SystemAdminDashboard />
             </div>
 
             <div className="space-y-6">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Super Admin Dashboard</h1>
-                    <p className="mt-2 text-gray-600">
+                    <h1 className="text-3xl font-bold">Super Admin Dashboard</h1>
+                    <p className="mt-2 text-muted">
                         System overview and management console
                     </p>
                 </div>

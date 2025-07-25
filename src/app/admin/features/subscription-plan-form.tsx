@@ -81,7 +81,7 @@ function PlanFormContent() {
 
           {/* Preview Sidebar */}
           <div className="lg:col-span-1">
-            <div className="sticky top-4">
+            <div className="sticky top-20">
               <PlanPreviewSidebar />
             </div>
           </div>

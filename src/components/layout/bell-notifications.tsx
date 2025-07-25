@@ -42,7 +42,7 @@ const BellNotifications = () => {
     };
 
     const { data } = useSession();
-    const slug = data?.user?.slug;
+    const slug = data?.user?.slug ?? "admin";
 
     return (
         <DropdownMenu open={open} onOpenChange={(isOpen) => setOpen(isOpen)}>

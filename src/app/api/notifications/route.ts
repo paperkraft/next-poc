@@ -39,7 +39,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
     try {
         const session = await auth();
-        const userId = session?.user?.id;
+        const userId = +session?.user?.id;
 
         const { subscription } = await req.json();
 

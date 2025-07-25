@@ -3,6 +3,7 @@ import { DashboardProvider } from "@/components/provider/DashboardProvider";
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
 import DashboardLayout from "./components/DashboardLayout";
+import AllowNotification from "@/components/custom/allow-notification";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -18,6 +19,7 @@ export default async function DashboardRootLayout({ children, params }: Readonly
   return (
     <>
       <DashboardProvider tenantSlug={params.tenantSlug} userId={+session.user.id}>
+        <AllowNotification />
         {children}
         <div className="p-6">
           <DashboardLayout />

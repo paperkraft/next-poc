@@ -322,18 +322,9 @@ async function main() {
 
     for (const section of TenantMenus) {
       for (const key of Object.keys(section)) {
-
         const groupName = key.charAt(0).toUpperCase() + key.slice(1);
-        // const groupName =
-        //   key === "management"
-        //     ? "Management"
-        //     : key === "settings"
-        //       ? "Settings"
-        //       : "Home";
-
         const groupId = groupMap[groupName];
         const menuGroups = section[key as scetionKey];
-
         if (menuGroups) await createMenuItems(menuGroups, null, groupId, tenant.id);
       }
     }

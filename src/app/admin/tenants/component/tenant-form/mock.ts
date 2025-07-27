@@ -224,4 +224,3 @@ export const academicYears = [
     { value: "2025-26", label: "2025-26" },
     { value: "2026-27", label: "2026-27" },
 ]
-

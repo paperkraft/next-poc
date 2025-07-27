@@ -1,5 +1,5 @@
 import TitlePage from "@/components/custom/page-heading";
-import TenantCreation from "./tenant-creation";
+import TenantForm from "../component/tenant-form";
 
 export const metadata = {
     title: "Create New Tenant",
@@ -9,6 +9,6 @@ export const metadata = {
 export default function Page() {
     return <>
         <TitlePage {...metadata} />
-        <TenantCreation />
+        <TenantForm />
     </>
 }

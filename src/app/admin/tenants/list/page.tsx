@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Plus, Building2, Users, Calendar } from "lucide-react"
 import prisma from "@/lib/prisma"
 import { Button } from "@/components/ui/button";
-import TenantsTable from "./component/tenants-table";
+import TenantsTable from "../component/tenants-table";
 
 async function getTenantStats() {
     try {

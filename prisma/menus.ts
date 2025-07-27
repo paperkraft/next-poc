@@ -9,7 +9,7 @@ export const SystemAdminMenus = [
     name: "Tenant Management",
     icon: "Building2",
     children: [
-      { name: "All Tenants", path: "/tenants" },
+      { name: "All Tenants", path: "/tenants/list" },
       { name: "Create Tenant", path: "/tenants/create" },
       { name: "Tenant Analytics", path: "/tenants/analytics" },
     ],

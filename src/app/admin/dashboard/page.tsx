@@ -61,7 +61,7 @@ export default async function AdminDashboard() {
             <div className="space-y-6">
                 <div>
                     <h1 className="text-3xl font-bold">Super Admin Dashboard</h1>
-                    <p className="mt-2 text-muted">
+                    <p className="mt-2 text-muted-foreground">
                         System overview and management console
                     </p>
                 </div>

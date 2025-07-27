@@ -101,7 +101,7 @@ export default function TenantsTable({ tenants }: { tenants: TenantWithUsers[] }
                                                     <Eye className="mr-2 h-4 w-4" />
                                                     View Details
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => router.push(`tenants/${tenant.id}/widgets`)}>
+                                                <DropdownMenuItem onClick={() => router.push(`list/${tenant.id}/widgets`)}>
                                                     <AppWindowMacIcon className="mr-2 h-4 w-4" />
                                                     Manage Widgets
                                                 </DropdownMenuItem>

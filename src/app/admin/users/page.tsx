@@ -1,4 +1,4 @@
-import CsvUpload from "@/components/custom/csv-test";
+import { CsvUpload } from "@/components/_csv-upload/CsvUpload";
 
 export default function Page() {
     return (

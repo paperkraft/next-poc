@@ -52,3 +52,23 @@ export const parseToDate = (val: string): Date | null => {
 
   return null; // unsupported format
 };
+
+export const generateSlug = (name: string) => {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")
+}
+
+export const formatPrice = (price: number, cycle: string) => {
+  if (cycle === "ONE_TIME") return `$${price.toFixed(2)} one-time`
+  return `$${price.toFixed(2)}/${cycle.toLowerCase()}`
+}
+
+export const calculateMonthlyCost = (items: any[], billingCycleField = "billingCycle", priceField = "price") => {
+  return items.reduce((total, item) => {
+    if (item[billingCycleField] === "MONTHLY") return total + item[priceField]
+    if (item[billingCycleField] === "YEARLY") return total + item[priceField] / 12
+    return total
+  }, 0)
+}

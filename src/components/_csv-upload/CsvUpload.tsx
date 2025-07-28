@@ -122,7 +122,6 @@ export const CsvUpload: React.FC = () => {
     }
 
     const editCell = (originalIndex: number, field: string, value: string) => {
-
         setRows((prev) => {
             const updated = [...prev];
             (updated[originalIndex] as any)[field] = value

@@ -28,6 +28,7 @@ export type ValidationRuleType =
     | "regex_numbers" // New: Only numbers
     | "regex_characters" // New: Only characters (letters and spaces)
     | "regex_alphanumeric" // New: Alphanumeric (letters, numbers, and spaces)
+    | "regex_email" // New: Email Format
     | "unique" // New: Field must be unique
 
 export type CustomValidationRule = {
@@ -42,6 +43,7 @@ const PREDEFINED_REGEX: Record<string, string> = {
     regex_numbers: "^\\d+$",
     regex_characters: "^[a-zA-Z\\s]+$",
     regex_alphanumeric: "^[a-zA-Z0-9\\s]+$",
+    regex_email: "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
 }
 
 interface ValidationRuleEditorProps {
@@ -180,6 +182,7 @@ export function ValidationRuleEditor({ columnMappings, initialRules, onSave }: V
                                             <SelectItem value="regex_numbers">Regex: Only Numbers</SelectItem>
                                             <SelectItem value="regex_characters">Regex: Only Characters (A-Z, spaces)</SelectItem>
                                             <SelectItem value="regex_alphanumeric">Regex: Alphanumeric (A-Z, 0-9, spaces)</SelectItem>
+                                            <SelectItem value="regex_email">Regex: Email Format</SelectItem>
                                             <SelectItem value="minLength">Min Length</SelectItem>
                                             <SelectItem value="maxLength">Max Length</SelectItem>
                                             <SelectItem value="minValue">Min Value (Number)</SelectItem>
@@ -194,6 +197,7 @@ export function ValidationRuleEditor({ columnMappings, initialRules, onSave }: V
                                 rule.ruleType === "minValue" ||
                                 rule.ruleType === "maxValue" ||
                                 rule.ruleType === "regex_numbers" || // Include new regex types
+                                rule.ruleType === "regex_email" ||
                                 rule.ruleType === "regex_characters" ||
                                 rule.ruleType === "regex_alphanumeric") && (
                                     <div className="w-full">
@@ -237,6 +241,7 @@ export function ValidationRuleEditor({ columnMappings, initialRules, onSave }: V
                                             className="mt-1"
                                             // Disable input if it's a predefined regex type, but allow custom regex to be edited
                                             disabled={
+                                                rule.ruleType === "regex_email" ||
                                                 rule.ruleType === "regex_numbers" ||
                                                 rule.ruleType === "regex_characters" ||
                                                 rule.ruleType === "regex_alphanumeric"

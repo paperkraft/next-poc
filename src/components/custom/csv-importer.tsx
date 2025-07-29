@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Input } from "@/components/ui/input"
-import { Trash2, Upload, Plus, AlertCircle, CheckCircle2, Loader2, Info } from "lucide-react"
+import { Trash2, Upload, Plus, AlertCircle, CheckCircle2, Loader2, Info, ArrowUp, ArrowDown } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ValidationRuleEditor, type CustomValidationRule } from "./validation-rule-editor"
 
@@ -275,13 +275,13 @@ function MatchStep({
         initializeColumnMappings()
     }, [initializeColumnMappings])
 
-    const handleFieldChange = (index: number, value: "ignore" | "custom") => {
+    const handleMappingTypeChange = (index: number, value: "ignore" | "custom") => {
         setColumnMappings((prev) => {
             const newMappings = [...prev]
             newMappings[index].confirmedField = value
             // If switching to custom, ensure customFieldName is set
             if (value === "custom" && !newMappings[index].customFieldName) {
-                newMappings[index].customFieldName = newMappings[index].csvHeader
+                newMappings[index].customFieldName = cleanFieldName(newMappings[index].csvHeader) || `column_${index + 1}`
             }
             return newMappings
         })
@@ -304,8 +304,6 @@ function MatchStep({
 
     return (
         <>
-            {/* Removed: Header selection block */}
-
             {/* File name display and Validation Rules button */}
             <div className="text-sm font-medium text-gray-700 mt-6 flex justify-between items-center">
                 <span>{fileName}</span>
@@ -316,46 +314,43 @@ function MatchStep({
                 />
             </div>
 
-            {/* Removed: Duplicate Check Field Selection */}
-
             {/* Column Mapping Sections */}
-            <div className="space-y-6 mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {columnMappings.map((col, index) => (
-                    <div key={col.csvColumnIndex} className="border border-gray-200 rounded-lg p-4 bg-white">
+                    <div key={col.csvColumnIndex} className="border rounded-lg p-4">
                         <div className="flex items-center gap-4 mb-4">
-                            <div className="text-xl font-bold text-gray-700 w-8 text-center">
+                            <div className="text-xl font-bold w-8 text-center">
                                 {getColumnLetters(rawData[0].length)[col.csvColumnIndex]}
                             </div>
                             <div className="flex-1 grid grid-cols-2 gap-4 items-center">
                                 <div className="flex flex-col">
-                                    <span className="text-xs text-gray-500">CSV Column Header</span>
-                                    <span className="font-semibold text-gray-800">{col.csvHeader}</span>
+                                    <span className="text-xs text-muted-foreground">CSV Column Header</span>
+                                    <span className="font-semibold">{col.csvHeader}</span>
                                     <Badge variant="secondary" className="mt-1 w-fit capitalize">
                                         Inferred: {col.inferredDataType}
                                     </Badge>
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-xs text-gray-500">Maps to</span>
-                                    {col.confirmedField === "custom" ? (
+                                    <span className="text-xs text-muted-foreground">Maps to</span>
+                                    <Select
+                                        onValueChange={(value: "ignore" | "custom") => handleMappingTypeChange(index, value)}
+                                        value={col.confirmedField || ""}
+                                    >
+                                        <SelectTrigger className="w-full">
+                                            <SelectValue placeholder="Select mapping" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="ignore">Ignore this column</SelectItem>
+                                            <SelectItem value="custom">Map to a field</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    {col.confirmedField === "custom" && (
                                         <Input
                                             value={col.customFieldName || ""}
                                             onChange={(e) => handleCustomFieldNameChange(index, e.target.value)}
                                             placeholder="Enter custom field name"
-                                            className="mt-1"
+                                            className="mt-2"
                                         />
-                                    ) : (
-                                        <Select
-                                            onValueChange={(value: "ignore" | "custom") => handleFieldChange(index, value)}
-                                            value={col.confirmedField || ""}
-                                        >
-                                            <SelectTrigger className="w-full">
-                                                <SelectValue placeholder="Select mapping" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="ignore">Ignore this column</SelectItem>
-                                                <SelectItem value="custom">Include as custom field</SelectItem>
-                                            </SelectContent>
-                                        </Select>
                                     )}
                                 </div>
                             </div>
@@ -364,9 +359,9 @@ function MatchStep({
                         {/* Validation Status - Simplified */}
                         <div className="space-y-2 mb-4">
                             <div className="flex items-center gap-2 text-sm">
-                                {col.confirmedField === "ignore" && <span className="text-gray-500">This column will be ignored.</span>}
+                                {col.confirmedField === "ignore" && <span className="text-muted-foreground">This column will be ignored.</span>}
                                 {col.confirmedField === "custom" && (
-                                    <span className="text-gray-500">
+                                    <span className="text-muted-foreground">
                                         This column will be included as a custom field: "
                                         <span className="font-semibold">{col.customFieldName || "Unnamed Custom Field"}</span>"
                                     </span>
@@ -379,24 +374,24 @@ function MatchStep({
                                 )}
                             </div>
                             <div className="flex items-center gap-2 text-sm">
-                                <Info className="h-4 w-4 text-gray-500" />
+                                <Info className="h-4 w-4 text-muted-foreground" />
                                 <span>{col.hasValuePercentage}% of your rows have a value for this column</span>
                             </div>
                         </div>
 
                         {/* Mini Table Preview */}
-                        <div className="border border-gray-200 rounded-md overflow-hidden">
+                        <div className="border rounded-md overflow-hidden">
                             <table className="w-full table-fixed text-sm">
                                 <thead>
-                                    <tr className="bg-gray-50">
-                                        <th className="w-[50px] p-2 text-center border-r border-gray-200">#</th>
+                                    <tr className="bg-sidebar">
+                                        <th className="w-[50px] p-2 text-center border-r">#</th>
                                         <th className="p-2 text-left">{col.csvHeader}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {col.previewData.map((cell, rowIndex) => (
-                                        <tr key={rowIndex} className="border-t border-gray-100">
-                                            <td className="w-[50px] p-2 text-center text-gray-500 border-r border-gray-100">
+                                        <tr key={rowIndex} className="border-t">
+                                            <td className="w-[50px] p-2 text-center text-muted-foreground border-r">
                                                 {rowIndex + 1}
                                             </td>
                                             <td className="p-2">{cell}</td>
@@ -410,8 +405,8 @@ function MatchStep({
             </div>
 
             {/* Navigation Buttons */}
-            <div className="p-6 border-t border-gray-200 flex justify-between">
-                <Button variant="default" onClick={onGoBack} className="bg-black text-white hover:bg-gray-800">
+            <div className="p-6 border-t flex justify-between">
+                <Button variant="secondary" onClick={onGoBack}>
                     Go back
                 </Button>
                 <Button
@@ -440,6 +435,11 @@ function RepairStep({ initialMappedData, columnMappings, customValidationRules, 
     const [errors, setErrors] = React.useState<RowErrors>({})
     const [duplicateEntryErrors, setDuplicateEntryErrors] = React.useState<Set<number>>(new Set())
     const [editingCell, setEditingCell] = React.useState<{ row: number; field: string } | null>(null)
+    const [searchTerm, setSearchTerm] = React.useState<string>("")
+    const [sortConfig, setSortConfig] = React.useState<{ key: string | null; direction: "asc" | "desc" | null }>({
+        key: null,
+        direction: null,
+    })
 
     // Memoize column mappings and custom validation rules to prevent unnecessary re-renders of validation logic
     const memoizedColumnMappings = React.useMemo(() => columnMappings, [columnMappings])
@@ -502,28 +502,6 @@ function RepairStep({ initialMappedData, columnMappings, customValidationRules, 
                             }
                         }
 
-                        // 2. Custom "Name" Validation (only alphabets and spaces)
-                        const cleanedFieldName = cleanFieldName(fieldName)
-                        if (
-                            (cleanedFieldName === "name" ||
-                                cleanedFieldName === "firstname" ||
-                                cleanedFieldName === "lastname" ||
-                                cleanedFieldName === "fullname") &&
-                            cellValue !== "" &&
-                            !/^[a-zA-Z\s]*$/.test(cellValue)
-                        ) {
-                            fieldErrors.push("Name must contain only alphabets and spaces.")
-                        }
-
-                        // 3. Email Format Validation
-                        if (
-                            (cleanedFieldName === "email" || cleanedFieldName === "emailaddress") &&
-                            cellValue !== "" &&
-                            !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cellValue)
-                        ) {
-                            fieldErrors.push("Invalid email format.")
-                        }
-
                         // 4. Apply Custom Validation Rules (excluding 'unique' for now, handled separately below)
                         currentCustomValidationRules
                             .filter((rule) => rule.fieldName === fieldName && rule.ruleType !== "unique")
@@ -538,6 +516,7 @@ function RepairStep({ initialMappedData, columnMappings, customValidationRules, 
                                     case "regex_numbers":
                                     case "regex_characters":
                                     case "regex_alphanumeric":
+                                    case "regex_email":
                                         if (rule.ruleValue && cellValue && !new RegExp(String(rule.ruleValue)).test(cellValue)) {
                                             fieldErrors.push(`Does not match required format: ${rule.ruleValue}`)
                                         }
@@ -677,8 +656,51 @@ function RepairStep({ initialMappedData, columnMappings, customValidationRules, 
         setRows((prev) => [...prev, newRow])
     }
 
+    const handleSort = (key: string) => {
+        let direction: "asc" | "desc" | null = "asc"
+        if (sortConfig.key === key) {
+            if (sortConfig.direction === "asc") {
+                direction = "desc"
+            } else if (sortConfig.direction === "desc") {
+                direction = null // Cycle back to no sort
+            } else {
+                direction = "asc" // Start with asc if currently no sort
+            }
+        }
+        setSortConfig({ key, direction })
+    }
+
+    const sortedAndFilteredRows = React.useMemo(() => {
+        let currentRows = [...rows]
+
+        // Apply search filter
+        if (searchTerm) {
+            const lowerCaseSearchTerm = searchTerm.toLowerCase()
+            currentRows = currentRows.filter((row) =>
+                Object.values(row).some((value) => String(value).toLowerCase().includes(lowerCaseSearchTerm)),
+            )
+        }
+
+        // Apply sorting
+        if (sortConfig.key && sortConfig.direction) {
+            currentRows.sort((a, b) => {
+                const aValue = String(a[sortConfig.key!]).toLowerCase()
+                const bValue = String(b[sortConfig.key!]).toLowerCase()
+
+                if (aValue < bValue) {
+                    return sortConfig.direction === "asc" ? -1 : 1
+                }
+                if (aValue > bValue) {
+                    return sortConfig.direction === "asc" ? 1 : -1
+                }
+                return 0
+            })
+        }
+        return currentRows
+    }, [rows, searchTerm, sortConfig])
+
     const totalErrors = Object.keys(errors).length
-    const validRowsCount = rows.length - totalErrors
+    const validRowsCount = rows.length - totalErrors // This count is for the *original* rows, not filtered/sorted
 
     const getCellClassName = (originalIndex: number, field: string) => {
         const isEditing = editingCell?.row === originalIndex && editingCell?.field === field
@@ -686,7 +708,7 @@ function RepairStep({ initialMappedData, columnMappings, customValidationRules, 
         const isDuplicate = duplicateEntryErrors.has(originalIndex) // Check if the row itself has a duplicate email error
 
         return `
-      relative border border-gray-200 bg-white p-0
+      relative border bg-background p-0
       ${isEditing ? "border-blue-500 ring-1 ring-blue-500 z-10" : ""}
       ${hasError ? "border-red-500 ring-1 ring-red-500" : ""}
       ${isDuplicate && !hasError ? "border-yellow-500 ring-1 ring-yellow-500" : ""}
@@ -694,7 +716,7 @@ function RepairStep({ initialMappedData, columnMappings, customValidationRules, 
     }
 
     const handleNextClick = () => {
-        onNext(rows)
+        onNext(rows) // Pass the original, un-filtered/un-sorted rows for final processing
     }
 
     return (
@@ -709,7 +731,9 @@ function RepairStep({ initialMappedData, columnMappings, customValidationRules, 
                         <AlertCircle className="h-3 w-3 text-red-500" />
                         {totalErrors} Errors
                     </Badge>
-                    <Badge variant="outline">Showing {rows.length} rows</Badge>
+                    <Badge variant="outline">
+                        Showing {sortedAndFilteredRows.length} of {rows.length} rows
+                    </Badge>
                 </div>
                 <div className="flex gap-2">
                     <Button variant="outline" onClick={addRow} size="sm">
@@ -726,12 +750,22 @@ function RepairStep({ initialMappedData, columnMappings, customValidationRules, 
                 </div>
             )}
 
-            <div className="mt-6 border border-gray-300 rounded-lg overflow-hidden bg-white shadow-sm">
-                <div className="overflow-x-auto max-h-[600px]">
-                    <table className="w-full border-collapse table-fixed">
-                        <thead>
-                            <tr className="bg-gray-100 border-b-2 border-gray-300">
-                                <th className="w-[50px] p-2 border-r border-gray-300 text-xs font-medium text-gray-600 text-center bg-gray-200 sticky left-0 z-20">
+            <div className="mt-4">
+                <Input
+                    type="text"
+                    placeholder="Search rows..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full"
+                />
+            </div>
+
+            <div className="mt-6 rounded-lg overflow-hidden shadow-sm">
+                <div className="overflow-x-auto max-h-[370px]">
+                    <table className="w-full border border-collapse table-fixed relative">
+                        <thead className="sticky -top-[1px] z-50 border-b rounded-lg bg-sidebar">
+                            <tr className="[&_th]:p-2 [&_th]:border text-muted-foreground">
+                                <th className="w-[50px] text-xs font-medium text-center">
                                     #
                                 </th>
                                 {columnMappings
@@ -742,25 +776,34 @@ function RepairStep({ initialMappedData, columnMappings, customValidationRules, 
                                         return (
                                             <th
                                                 key={fieldName}
-                                                className="p-2 border-r border-gray-200 text-left font-semibold text-gray-700 relative min-w-[150px] bg-gray-100"
+                                                className="text-left font-semibold relative min-w-[150px] cursor-pointer "
+                                                onClick={() => handleSort(fieldName)}
                                             >
                                                 <div className="flex items-center justify-between gap-2">
                                                     <span className="capitalize">{fieldName}</span>
+                                                    {sortConfig.key === fieldName &&
+                                                        (sortConfig.direction === "asc" ? (
+                                                            <ArrowUp className="h-4 w-4" />
+                                                        ) : sortConfig.direction === "desc" ? (
+                                                            <ArrowDown className="h-4 w-4" />
+                                                        ) : null)}
                                                 </div>
                                             </th>
                                         )
                                     })}
-                                <th className="w-[80px] p-2 text-center font-semibold text-gray-700 bg-gray-100">Actions</th>
+                                <th className="w-[80px] text-center font-semibold">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {rows.map((row, originalIndex) => {
-                                const rowHasErrors = errors[originalIndex] && Object.keys(errors[originalIndex]).length > 0
+                            {sortedAndFilteredRows.map((row, originalIndex) => {
+                                // Find the original index of the row in the 'rows' array
+                                const actualOriginalIndex = rows.indexOf(row)
+                                const rowHasErrors = errors[actualOriginalIndex] && Object.keys(errors[actualOriginalIndex]).length > 0
                                 return (
-                                    <tr key={originalIndex} className="border-b border-gray-200">
+                                    <tr key={actualOriginalIndex} className="border-b">
                                         {/* Row Number */}
-                                        <td className="p-2 border-r border-gray-200 text-xs text-gray-500 text-center bg-gray-50 font-mono sticky left-0 z-10">
-                                            {originalIndex + 1}
+                                        <td className="p-2 border-r text-xs text-muted-foreground text-center bg-sidebar font-mono sticky left-0 z-10">
+                                            {actualOriginalIndex + 1}
                                         </td>
                                         {/* Data Cells */}
                                         {columnMappings
@@ -768,11 +811,11 @@ function RepairStep({ initialMappedData, columnMappings, customValidationRules, 
                                             .map((mapping) => {
                                                 const fieldName =
                                                     mapping.confirmedField === "custom" ? mapping.customFieldName! : mapping.confirmedField!
-                                                const cellErrors = errors[originalIndex]?.[fieldName] || []
+                                                const cellErrors = errors[actualOriginalIndex]?.[fieldName] || []
                                                 const hasCellError = cellErrors.length > 0
 
                                                 return (
-                                                    <td key={fieldName} className={getCellClassName(originalIndex, fieldName)}>
+                                                    <td key={fieldName} className={getCellClassName(actualOriginalIndex, fieldName)}>
                                                         <div className="relative h-full w-full">
                                                             <Tooltip>
                                                                 <TooltipTrigger asChild>
@@ -780,12 +823,11 @@ function RepairStep({ initialMappedData, columnMappings, customValidationRules, 
                                                                     <span className="w-full h-full block">
                                                                         <input
                                                                             value={row[fieldName] ?? ""}
-                                                                            onChange={(e) => editCell(originalIndex, fieldName, e.target.value)}
-                                                                            onFocus={() => setEditingCell({ row: originalIndex, field: fieldName })}
+                                                                            onChange={(e) => editCell(actualOriginalIndex, fieldName, e.target.value)}
+                                                                            onFocus={() => setEditingCell({ row: actualOriginalIndex, field: fieldName })}
                                                                             onBlur={() => setEditingCell(null)}
-                                                                            className="w-full h-full px-2 py-1 bg-transparent outline-none border-none focus:ring-0 focus:border-0"
+                                                                            className="w-full h-full px-2 py-1 bg-background outline-none border-none focus:ring-0 focus:border-0"
                                                                             placeholder={`Enter ${fieldName}`}
-                                                                        // Removed children={null} as it's no longer needed with the span wrapper
                                                                         />
                                                                     </span>
                                                                 </TooltipTrigger>
@@ -807,13 +849,13 @@ function RepairStep({ initialMappedData, columnMappings, customValidationRules, 
                                                 )
                                             })}
                                         {/* Actions */}
-                                        <td className="p-0 text-center border-l border-gray-200 w-[80px]">
+                                        <td className="p-0 text-center border-l w-[80px]">
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
-                                                        onClick={() => deleteRow(originalIndex)}
+                                                        onClick={() => deleteRow(actualOriginalIndex)}
                                                         className="h-8 w-8 p-0 hover:bg-red-100 hover:text-red-600"
                                                     >
                                                         <Trash2 className="h-4 w-4" />
@@ -825,14 +867,20 @@ function RepairStep({ initialMappedData, columnMappings, customValidationRules, 
                                     </tr>
                                 )
                             })}
+
+                            {sortedAndFilteredRows.length === 0 && (
+                                <tr className="border">
+                                    <td colSpan={columnMappings.length + 2} className="p-2 text-center">No record found for "{searchTerm}"</td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>
             </div>
 
             {/* Navigation Buttons */}
-            <div className="p-6 border-t border-gray-200 flex justify-between">
-                <Button variant="default" onClick={onGoBack} className="bg-black text-white hover:bg-gray-800">
+            <div className="p-6 border-t flex justify-between">
+                <Button variant="secondary" onClick={onGoBack}>
                     Go back
                 </Button>
                 <Button
@@ -996,14 +1044,14 @@ export default function CsvImporter() {
     const currentStepIndex = steps.indexOf(currentStep)
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
-            <Card className="container mx-auto p-4 shadow-lg">
+        <div className="p-4">
+            <Card className="w-full shadow-lg">
                 <CardHeader className="pb-4">
-                    <CardTitle className="">Import data</CardTitle>
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <CardTitle>Import contacts</CardTitle>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         {steps.map((step, index) => (
                             <React.Fragment key={step}>
-                                <span className={index <= currentStepIndex ? "text-black font-medium" : ""}>
+                                <span className={index <= currentStepIndex ? "text-primary font-medium" : ""}>
                                     {step.charAt(0).toUpperCase() + step.slice(1)}
                                 </span>
                                 {index < steps.length - 1 && <span className="mx-1">{">"}</span>}

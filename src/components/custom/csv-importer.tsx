@@ -996,57 +996,55 @@ export default function CsvImporter() {
     const currentStepIndex = steps.indexOf(currentStep)
 
     return (
-        <TooltipProvider>
-            <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
-                <Card className="w-full max-w-3xl shadow-lg">
-                    <CardHeader className="pb-4">
-                        <CardTitle className="text-2xl font-bold">Import data</CardTitle>
-                        <div className="flex items-center gap-2 text-sm text-gray-500">
-                            {steps.map((step, index) => (
-                                <React.Fragment key={step}>
-                                    <span className={index <= currentStepIndex ? "text-black font-medium" : ""}>
-                                        {step.charAt(0).toUpperCase() + step.slice(1)}
-                                    </span>
-                                    {index < steps.length - 1 && <span className="mx-1">{">"}</span>}
-                                </React.Fragment>
-                            ))}
-                        </div>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                        {currentStep === "upload" && (
-                            <UploadStep
-                                onFileSelect={handleFileSelect}
-                                isLoading={isLoading}
-                                isDragOver={isDragOver}
-                                setIsDragOver={setIsDragOver}
-                                fileInputRef={fileInputRef}
-                            />
-                        )}
-                        {currentStep === "match" && rawData.length > 0 && (
-                            <MatchStep
-                                rawData={rawData}
-                                fileName={fileName}
-                                headerRowIndex={headerRowIndex} // Still passed, but not used for UI interaction
-                                onGoBack={handleGoBack}
-                                onNext={handleMatchStepNext}
-                                initialCustomValidationRules={customValidationRules} // Pass initial rules
-                            />
-                        )}
-                        {currentStep === "repair" && processedRowsForRepair.length > 0 && (
-                            <RepairStep
-                                initialMappedData={processedRowsForRepair}
-                                columnMappings={mappedColumnsForRepair}
-                                customValidationRules={customValidationRules} // Pass custom rules to RepairStep
-                                onGoBack={handleGoBack}
-                                onNext={handleRepairStepNext}
-                            />
-                        )}
-                        {currentStep === "complete" && processedRowsForRepair.length > 0 && (
-                            <CompleteStep finalRows={processedRowsForRepair} onStartOver={handleStartOver} />
-                        )}
-                    </CardContent>
-                </Card>
-            </div>
-        </TooltipProvider>
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+            <Card className="container mx-auto p-4 shadow-lg">
+                <CardHeader className="pb-4">
+                    <CardTitle className="">Import data</CardTitle>
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                        {steps.map((step, index) => (
+                            <React.Fragment key={step}>
+                                <span className={index <= currentStepIndex ? "text-black font-medium" : ""}>
+                                    {step.charAt(0).toUpperCase() + step.slice(1)}
+                                </span>
+                                {index < steps.length - 1 && <span className="mx-1">{">"}</span>}
+                            </React.Fragment>
+                        ))}
+                    </div>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    {currentStep === "upload" && (
+                        <UploadStep
+                            onFileSelect={handleFileSelect}
+                            isLoading={isLoading}
+                            isDragOver={isDragOver}
+                            setIsDragOver={setIsDragOver}
+                            fileInputRef={fileInputRef}
+                        />
+                    )}
+                    {currentStep === "match" && rawData.length > 0 && (
+                        <MatchStep
+                            rawData={rawData}
+                            fileName={fileName}
+                            headerRowIndex={headerRowIndex} // Still passed, but not used for UI interaction
+                            onGoBack={handleGoBack}
+                            onNext={handleMatchStepNext}
+                            initialCustomValidationRules={customValidationRules} // Pass initial rules
+                        />
+                    )}
+                    {currentStep === "repair" && processedRowsForRepair.length > 0 && (
+                        <RepairStep
+                            initialMappedData={processedRowsForRepair}
+                            columnMappings={mappedColumnsForRepair}
+                            customValidationRules={customValidationRules} // Pass custom rules to RepairStep
+                            onGoBack={handleGoBack}
+                            onNext={handleRepairStepNext}
+                        />
+                    )}
+                    {currentStep === "complete" && processedRowsForRepair.length > 0 && (
+                        <CompleteStep finalRows={processedRowsForRepair} onStartOver={handleStartOver} />
+                    )}
+                </CardContent>
+            </Card>
+        </div>
     )
 }

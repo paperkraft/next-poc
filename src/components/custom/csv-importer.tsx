@@ -8,7 +8,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Input } from "@/components/ui/input"
-import { Trash2, Upload, Plus, AlertCircle, CheckCircle2, Loader2, Info, ArrowUp, ArrowDown } from "lucide-react"
+import {
+    Trash2,
+    Upload,
+    Plus,
+    AlertCircle,
+    CheckCircle2,
+    Loader2,
+    Info,
+    ArrowUp,
+    ArrowDown,
+    ChevronFirst,
+    ChevronLast,
+    ChevronLeft,
+    ChevronRight,
+} from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ValidationRuleEditor, type CustomValidationRule } from "./validation-rule-editor"
 
@@ -305,7 +319,7 @@ function MatchStep({
     return (
         <>
             {/* File name display and Validation Rules button */}
-            <div className="text-sm font-medium text-gray-700 mt-6 flex justify-between items-center">
+            <div className="text-sm font-medium flex justify-between items-center">
                 <span>{fileName}</span>
                 <ValidationRuleEditor
                     columnMappings={columnMappings}
@@ -440,6 +454,10 @@ function RepairStep({ initialMappedData, columnMappings, customValidationRules, 
         key: null,
         direction: null,
     })
+
+    // Pagination states
+    const [currentPage, setCurrentPage] = React.useState(1)
+    const pageSize = 10 // Default page size
 
     // Memoize column mappings and custom validation rules to prevent unnecessary re-renders of validation logic
     const memoizedColumnMappings = React.useMemo(() => columnMappings, [columnMappings])
@@ -640,6 +658,13 @@ function RepairStep({ initialMappedData, columnMappings, customValidationRules, 
     const deleteRow = (originalIndex: number) => {
         setRows((prev) => {
             const newRows = prev.filter((_, i) => i !== originalIndex)
+            // Adjust current page if the last row on the current page was deleted
+            const newTotalPages = Math.ceil(newRows.length / pageSize)
+            if (currentPage > newTotalPages && newTotalPages > 0) {
+                setCurrentPage(newTotalPages)
+            } else if (newTotalPages === 0) {
+                setCurrentPage(1) // Reset to page 1 if all rows are deleted
+            }
             return newRows
         })
         toast.success("Row deleted")
@@ -654,6 +679,8 @@ function RepairStep({ initialMappedData, columnMappings, customValidationRules, 
             }
         })
         setRows((prev) => [...prev, newRow])
+        // Move to the last page when a new row is added
+        setCurrentPage(Math.ceil((rows.length + 1) / pageSize))
     }
 
     const handleSort = (key: string) => {
@@ -668,6 +695,7 @@ function RepairStep({ initialMappedData, columnMappings, customValidationRules, 
             }
         }
         setSortConfig({ key, direction })
+        setCurrentPage(1) // Reset to first page on sort
     }
 
     const sortedAndFilteredRows = React.useMemo(() => {
@@ -699,6 +727,20 @@ function RepairStep({ initialMappedData, columnMappings, customValidationRules, 
         return currentRows
     }, [rows, searchTerm, sortConfig])
 
+    // Pagination logic
+    const totalPages = Math.ceil(sortedAndFilteredRows.length / pageSize)
+    const paginatedRows = sortedAndFilteredRows.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+
+    const goToFirstPage = () => setCurrentPage(1)
+    const goToPreviousPage = () => setCurrentPage((prev) => Math.max(1, prev - 1))
+    const goToNextPage = () => setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+    const goToLastPage = () => setCurrentPage(totalPages)
+
+    // Reset page to 1 if search term changes or total pages decrease significantly
+    React.useEffect(() => {
+        setCurrentPage(1)
+    }, [searchTerm, totalPages])
+
     const totalErrors = Object.keys(errors).length
     const validRowsCount = rows.length - totalErrors // This count is for the *original* rows, not filtered/sorted
 
@@ -721,7 +763,7 @@ function RepairStep({ initialMappedData, columnMappings, customValidationRules, 
 
     return (
         <>
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mt-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div className="flex flex-wrap gap-2">
                     <Badge variant="outline" className="flex items-center gap-1">
                         <CheckCircle2 className="h-3 w-3 text-green-500" />
@@ -760,12 +802,12 @@ function RepairStep({ initialMappedData, columnMappings, customValidationRules, 
                 />
             </div>
 
-            <div className="mt-6 rounded-lg overflow-hidden shadow-sm">
-                <div className="overflow-x-auto max-h-[370px]">
-                    <table className="w-full border border-collapse table-fixed relative">
-                        <thead className="sticky -top-[1px] z-50 border-b rounded-lg bg-sidebar">
-                            <tr className="[&_th]:p-2 [&_th]:border text-muted-foreground">
-                                <th className="w-[50px] text-xs font-medium text-center">
+            <div className="mt-6 overflow-hidden shadow-sm border rounded-lg">
+                <div className="overflow-x-auto">
+                    <table className="w-full border-collapse table-fixed">
+                        <thead className="bg-sidebar">
+                            <tr className="[&_th]:p-2 [&_th]:border-b [&_th]:border-r text-muted-foreground font-normal">
+                                <th className="w-[50px] text-xs text-center">
                                     #
                                 </th>
                                 {columnMappings
@@ -776,7 +818,7 @@ function RepairStep({ initialMappedData, columnMappings, customValidationRules, 
                                         return (
                                             <th
                                                 key={fieldName}
-                                                className="text-left font-semibold relative min-w-[150px] cursor-pointer "
+                                                className="text-left relative min-w-[150px] cursor-pointer"
                                                 onClick={() => handleSort(fieldName)}
                                             >
                                                 <div className="flex items-center justify-between gap-2">
@@ -791,11 +833,11 @@ function RepairStep({ initialMappedData, columnMappings, customValidationRules, 
                                             </th>
                                         )
                                     })}
-                                <th className="w-[80px] text-center font-semibold">Actions</th>
+                                <th className="w-[80px] text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {sortedAndFilteredRows.map((row, originalIndex) => {
+                            {paginatedRows.map((row) => {
                                 // Find the original index of the row in the 'rows' array
                                 const actualOriginalIndex = rows.indexOf(row)
                                 const rowHasErrors = errors[actualOriginalIndex] && Object.keys(errors[actualOriginalIndex]).length > 0
@@ -820,7 +862,7 @@ function RepairStep({ initialMappedData, columnMappings, customValidationRules, 
                                                             <Tooltip>
                                                                 <TooltipTrigger asChild>
                                                                     {/* Wrap input in a span to prevent children error */}
-                                                                    <span className="w-full h-full block">
+                                                                    <span className="w-full h-full block text-sm">
                                                                         <input
                                                                             value={row[fieldName] ?? ""}
                                                                             onChange={(e) => editCell(actualOriginalIndex, fieldName, e.target.value)}
@@ -877,6 +919,27 @@ function RepairStep({ initialMappedData, columnMappings, customValidationRules, 
                     </table>
                 </div>
             </div>
+
+            {/* Pagination Controls */}
+            {sortedAndFilteredRows.length > 0 && (
+                <div className="flex justify-center items-center gap-2 mt-4">
+                    <Button variant="outline" size="sm" onClick={goToFirstPage} disabled={currentPage === 1}>
+                        <ChevronFirst className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={goToPreviousPage} disabled={currentPage === 1}>
+                        <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <span className="text-sm text-gray-700">
+                        Page {currentPage} of {totalPages}
+                    </span>
+                    <Button variant="outline" size="sm" onClick={goToNextPage} disabled={currentPage === totalPages}>
+                        <ChevronRight className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={goToLastPage} disabled={currentPage === totalPages}>
+                        <ChevronLast className="h-4 w-4" />
+                    </Button>
+                </div>
+            )}
 
             {/* Navigation Buttons */}
             <div className="p-6 border-t flex justify-between">
@@ -1046,19 +1109,16 @@ export default function CsvImporter() {
     return (
         <div className="p-4">
             <Card className="w-full shadow-lg">
-                <CardHeader className="pb-4">
-                    <CardTitle>Import contacts</CardTitle>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        {steps.map((step, index) => (
-                            <React.Fragment key={step}>
-                                <span className={index <= currentStepIndex ? "text-primary font-medium" : ""}>
-                                    {step.charAt(0).toUpperCase() + step.slice(1)}
-                                </span>
-                                {index < steps.length - 1 && <span className="mx-1">{">"}</span>}
-                            </React.Fragment>
-                        ))}
-                    </div>
-                </CardHeader>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground p-6 pb-3">
+                    {steps.map((step, index) => (
+                        <React.Fragment key={step}>
+                            <span className={index <= currentStepIndex ? "text-primary font-medium" : ""}>
+                                {step.charAt(0).toUpperCase() + step.slice(1)}
+                            </span>
+                            {index < steps.length - 1 && <span className="mx-1">{">"}</span>}
+                        </React.Fragment>
+                    ))}
+                </div>
                 <CardContent className="space-y-6">
                     {currentStep === "upload" && (
                         <UploadStep

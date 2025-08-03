@@ -49,6 +49,7 @@ export const SystemAdminMenus = [
       { name: "Stepper Form", path: "/ui-blocks/stepper-form" },
       { name: "Form Builder", path: "/ui-blocks/form-builder" },
       { name: "Full Calendar", path: "/ui-blocks/full-calendar" },
+      { name: "Data Migration", path: "/ui-blocks/csv" },
     ],
   },
 ];

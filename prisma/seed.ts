@@ -3,425 +3,438 @@ import bcrypt from "bcryptjs";
 import { Masters, SystemAdminMenus, TenantMenus, Widgets } from "./menus";
 
 const prisma = new PrismaClient();
+// await bcrypt.hash('SuperAdmin123', 12),
 
-type scetionKey = "management" | "settings";
+// const hashedSuperAdmin = await bcrypt.hash("105105", 10);
 
 async function main() {
-  console.log("🧹 Clearing existing data...");
-  await prisma.pushSubscription.deleteMany();
-  await prisma.auditLog.deleteMany();
-  await prisma.rolePermission.deleteMany();
-  await prisma.user.deleteMany();
-  await prisma.menuItem.deleteMany();
-  await prisma.menuGroup.deleteMany();
-  await prisma.role.deleteMany();
-  await prisma.permission.deleteMany();
-  await prisma.widget.deleteMany();
-  await prisma.tenant.deleteMany();
-  await prisma.addOnItem.deleteMany();
-  await prisma.subscription.deleteMany();
-  await prisma.subscriptionPlan.deleteMany();
-
-  console.log("✅ Database cleared.");
-
-  console.log("🎭 Seeding Super Admin role...");
-  const superAdminRole = await prisma.role.create({
-    data: {
-      name: "Super Admin",
-      tenantId: null,
-      isSystem: true,
-    },
-  });
-
-  const groupNamesMap = new Map<string, number>();
-
-  console.log("📁 Seeding System Admin menu group...");
-  const sysAdminGroups = [
-    { name: "System Administration", position: 1 },
-    { name: "Master", position: 2 },
-  ];
-
-  for (const g of sysAdminGroups) {
-    const group = await prisma.menuGroup.create({
+  // 1. Create Roles
+  const roles = await Promise.all([
+    prisma.role.create({
       data: {
-        name: g.name,
-        sortOrder: g.position,
-        tenantId: null,
-        isSystem: true,
-      },
-    });
-
-    groupNamesMap.set(g.name, group.id)
-  }
-
-  console.log("🛠️ Seeding System default Master menus...");
-
-  // Helper: recursively create menu items with hierarchy
-  async function createMenuItems(
-    items: typeof SystemAdminMenus | typeof Masters[number]["children"],
-    parentId: number | null,
-    groupId: number,
-    tenantId?: number // null implies system-wide menus
-  ) {
-    for (const item of items) {
-      const menuItem = await prisma.menuItem.create({
-        data: {
-          name: item.name,
-          path: "path" in item ? item.path : undefined,
-          icon: "icon" in item ? item.icon : undefined,
-          parentId: parentId ?? undefined,
-          groupId,
-          tenantId: tenantId ?? null,
-          isActive: true,
-          isSystem: tenantId == null,
-        },
-      });
-
-      if ("children" in item && item.children.length > 0) {
-        await createMenuItems(item.children, menuItem.id, groupId, tenantId);
+        name: 'SUPER_ADMIN',
+        description: 'System super administrator with full access',
+        permissionMask: 2147483647 // All permissions
       }
-    }
-  }
-
-  console.log("🛠️ Seeding System Admin menus...");
-
-  // Seed SystemAdminMenus into "System Administration" group
-  const systemAdminGroupId = groupNamesMap.get("System Administration");
-  if (systemAdminGroupId) {
-    await createMenuItems(SystemAdminMenus, null, systemAdminGroupId);
-  }
-
-  // Seed Masters into "Master" group
-  const masterGroupId = groupNamesMap.get("Master");
-  if (masterGroupId) {
-    await createMenuItems(Masters, null, masterGroupId);
-  }
-
-  const systemMenus = await prisma.menuItem.findMany({
-    where: { tenantId: null },
-  });
-
-  for (const menu of systemMenus) {
-    await prisma.rolePermission.create({
+    }),
+    prisma.role.create({
       data: {
-        roleId: superAdminRole.id,
-        menuId: menu.id,
-        tenantId: null,
-        permissionBits: 15,
-      },
-    });
-  }
+        name: 'SCHOOL_ADMIN',
+        description: 'School administrator with full school access',
+        permissionMask: 1073741823
+      }
+    }),
+    prisma.role.create({
+      data: {
+        name: 'TEACHER',
+        description: 'Teaching staff with classroom access',
+        permissionMask: 1048575
+      }
+    }),
+    prisma.role.create({
+      data: {
+        name: 'STUDENT',
+        description: 'Student access to their own data',
+        permissionMask: 65535
+      }
+    })
+  ]);
 
-  const hashedSuperAdmin = await bcrypt.hash("123123", 10);
-  await prisma.user.create({
+  console.log('Created roles:', roles);
+
+  // 2. Create Super Admin
+  const superAdmin = await prisma.user.create({
     data: {
-      email: "superadmin@email.com",
-      password: hashedSuperAdmin,
+      email: 'superadmin@schoolsystem.com',
+      password: await bcrypt.hash('SuperAdmin123', 12),
+      userType: 'SYSTEM_ADMIN',
       isActive: true,
-      userScope: "SYSTEM",
-      globalRoles: ["SYSTEM_ADMIN"],
-      roleId: superAdminRole.id,
       profile: {
         create: {
-          firstName: "Super",
-          lastName: "Admin",
-        },
+          firstName: 'System',
+          lastName: 'Admin',
+          phone: '+1234567890'
+        }
       },
+      roles: {
+        create: {
+          roleId: roles.find(r => r.name === 'SUPER_ADMIN')!.id
+        }
+      }
     },
-  });
-
-  // Create Subscription Plans with included menu items
-  const basicPlan = await prisma.subscriptionPlan.create({
-    data: {
-      name: "Basic",
-      description: "Basic plan with dashboard access",
-      monthlyPrice: 9.99,
-      annualPrice: 99.99,
-      isActive: true,
-      menuItems: {
-        connect: [{ id: systemMenus[0].id }],
-      },
-    },
-  });
-
-  const standardPlan = await prisma.subscriptionPlan.create({
-    data: {
-      name: "Standard",
-      description: "Standard plan with dashboard and reports",
-      monthlyPrice: 19.99,
-      annualPrice: 199.99,
-      isActive: true,
-      menuItems: {
-        connect: [{ id: systemMenus[0].id }],
-      },
-    },
-  });
-
-  const premiumPlan = await prisma.subscriptionPlan.create({
-    data: {
-      name: "Premium",
-      description: "Premium plan with all features",
-      monthlyPrice: 49.99,
-      annualPrice: 499.99,
-      isActive: true,
-      menuItems: {
-        connect: [{ id: systemMenus[0].id }],
-      },
-    },
-  });
-
-
-  // ==============================
-  // MULTI-TENANT SEED LOOP START
-  // ==============================
-
-  console.log("🏢 Seeding sample tenants in loop...");
-
-  const sampleTenants = [
-    {
-      name: "Sunrise Public School",
-      slug: "sunrise",
-      email: "admin@sunrise.edu",
-      city: "Kolhapur",
-      type: "SCHOOL",
-      adminUser: {
-        email: "admin@sunrise.edu",
-        password: "admin",
-        firstName: "Ajit",
-        lastName: "Patil",
-      },
-      subscriptionPlanId: basicPlan.id,
-      billingCycle: BillingCycle.MONTHLY
-    },
-    {
-      name: "Green Valley College",
-      slug: "greenvalley",
-      email: "admin@greenvalley.edu",
-      city: "Pune",
-      type: "COLLEGE",
-      adminUser: {
-        email: "admin@greenvalley.edu",
-        password: "admin",
-        firstName: "Neha",
-        lastName: "Patil",
-      },
-      subscriptionPlanId: premiumPlan.id,
-      billingCycle: BillingCycle.ANNUALLY
-    },
-  ];
-
-  for (const t of sampleTenants) {
-    const tenant = await prisma.tenant.create({
-      data: {
-        name: t.name,
-        slug: t.slug,
-        description: `${t.name} is a reputed educational institute.`,
-        type: t.type as TenantType,
-        address: {
-          street: "123 School St",
-          city: t.city,
-          state: "Maharashtra",
-          zipCode: "400001",
-          country: "India",
-        },
-        contact: {
-          phone: "+91-9876543210",
-          email: t.email,
-          website: `https://${t.slug}.edu`,
-        },
-        settings: {
-          timezone: "Asia/Kolkata",
-          academicYear: "2024-2025",
-        },
-        limits: {
-          maxUsers: 1000,
-          maxStorage: "10GB",
-        },
-        branding: {
-          primaryColor: "#1565C0",
-          secondaryColor: "#42A5F5",
-          logo: "/logo.png",
-        },
-        features: ["attendance", "exams", "notifications"],
-        subscription: {
-          create: {
-            subscriptionPlanId: t.subscriptionPlanId,
-            billingCycle: t.billingCycle,
-            startDate: new Date(),
-            isTrial: false,
-            autoRenew: true,
-          },
-        },
-      },
-    });
-
-    const permissions = [
-      { name: "view", bitmask: 1 },
-      { name: "create", bitmask: 2 },
-      { name: "update", bitmask: 4 },
-      { name: "delete", bitmask: 8 },
-    ];
-
-    for (const perm of permissions) {
-      await prisma.permission.create({
-        data: {
-          ...perm,
-          tenantId: tenant.id,
-        },
-      });
+    include: {
+      profile: true,
+      roles: true
     }
+  });
 
-    const adminRole = await prisma.role.create({
-      data: { name: "Admin", tenantId: tenant.id },
-    });
+  console.log('Created super admin:', superAdmin);
 
-    const facultyRole = await prisma.role.create({
-      data: { name: "Faculty", tenantId: tenant.id },
-    });
-
-    const studentRole = await prisma.role.create({
-      data: { name: "Student", tenantId: tenant.id },
-    });
-
-    // Create groups
-
-    const groups = [
-      { name: "Home", position: 1 },
-      { name: "Management", position: 2 },
-      { name: "Settings", position: 3 },
-    ];
-
-    for (const g of groups) {
-      await prisma.menuGroup.create({
-        data: {
-          name: g.name,
-          sortOrder: g.position,
-          tenantId: tenant.id,
-        },
-      });
-    }
-
-    const allGroups = await prisma.menuGroup.findMany({
-      where: { tenantId: tenant.id },
-    });
-
-    const groupMap = Object.fromEntries(
-      allGroups.map((group) => [group.name, group.id])
-    );
-
-    // home
-    await prisma.menuItem.create({
-      data: {
-        name: "Dashboard",
-        path: "/dashboard",
-        icon: "BarChart3",
-        groupId: groupMap["Home"],
-        tenantId: tenant.id,
+  // 3. Create a School
+  const school = await prisma.school.create({
+    data: {
+      slug: 'premier-academy',
+      name: 'Premier Academy',
+      description: 'A premier educational institution',
+      website: 'https://premieracademy.edu',
+      establishedYear: 1995,
+      contactEmail: 'info@premieracademy.edu',
+      contactPhone: '+18005551234',
+      address: {
+        street: '123 Education Blvd',
+        city: 'Metropolis',
+        state: 'CA',
+        country: 'USA',
+        zipCode: '12345'
       },
-    });
+      isActive: true,
+      subscriptionType: 'PREMIUM',
+      subscriptionStatus: 'ACTIVE',
+      trialStartsAt: new Date(),
+      trialEndsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+      maxStudents: 1000,
+      maxStaff: 100
+    }
+  });
 
-    for (const section of TenantMenus) {
-      for (const key of Object.keys(section)) {
-        const groupName = key.charAt(0).toUpperCase() + key.slice(1);
-        const groupId = groupMap[groupName];
-        const menuGroups = section[key as scetionKey];
-        if (menuGroups) await createMenuItems(menuGroups, null, groupId, tenant.id);
+  console.log('Created school:', school);
+
+  // 4. Create School Admin
+  const schoolAdmin = await prisma.user.create({
+    data: {
+      email: 'admin@premieracademy.edu',
+      password: await bcrypt.hash('Admin123', 12),
+      userType: 'SCHOOL_ADMIN',
+      isActive: true,
+      school: {
+        connect: { id: school.id }
+      },
+      profile: {
+        create: {
+          firstName: 'School',
+          lastName: 'Principal',
+          phone: '+18005551235'
+        }
+      },
+      roles: {
+        create: {
+          roleId: roles.find(r => r.name === 'SCHOOL_ADMIN')!.id
+        }
+      }
+    },
+    include: {
+      profile: true,
+      roles: true
+    }
+  });
+
+  console.log('Created school admin:', schoolAdmin);
+
+  // 5. Create Academic Year
+  const currentYear = new Date().getFullYear();
+  const academicYear = await prisma.academicYear.create({
+    data: {
+      name: `${currentYear}-${currentYear + 1}`,
+      code: `AY${currentYear}`,
+      startDate: new Date(`${currentYear}-09-01`),
+      endDate: new Date(`${currentYear + 1}-06-30`),
+      isCurrent: true,
+      school: {
+        connect: { id: school.id }
       }
     }
+  });
 
-    const tenantMenus = await prisma.menuItem.findMany({
-      where: { tenantId: tenant.id },
-    });
+  console.log('Created academic year:', academicYear);
 
-    for (const menu of tenantMenus) {
-      await prisma.rolePermission.create({
+  // 6. Create Grades (9th to 12th)
+  const grades = await Promise.all(
+    Array.from({ length: 4 }, (_, i) => i + 9).map(gradeNum =>
+      prisma.grade.create({
         data: {
-          roleId: adminRole.id,
-          menuId: menu.id,
-          tenantId: tenant.id,
-          permissionBits: 15,
-        },
+          name: `Grade ${gradeNum}`,
+          code: `G${gradeNum}`,
+          school: { connect: { id: school.id } },
+          academicYear: { connect: { id: academicYear.id } }
+        }
+      })
+    )
+  );
+
+  console.log('Created grades:', grades);
+
+  // 7. Create Sections for each Grade (A, B)
+  const sections = [];
+  for (const grade of grades) {
+    for (const sectionName of ['A', 'B']) {
+      const section = await prisma.section.create({
+        data: {
+          name: sectionName,
+          grade: { connect: { id: grade.id } }
+        }
       });
+      sections.push(section);
     }
+  }
 
-    const hashed = await bcrypt.hash(t.adminUser.password, 10);
+  console.log('Created sections:', sections);
 
-    await prisma.user.create({
+  // 8. Create Subjects for each Grade
+  const subjectNames = ['Mathematics', 'Science', 'English', 'History', 'Computer Science'];
+  const subjects = [];
+
+  for (const grade of grades) {
+    for (const subjectName of subjectNames) {
+      const subjectCode = `${subjectName.substring(0, 3).toUpperCase()}${grade.code}`;
+      const subject = await prisma.subject.create({
+        data: {
+          name: `${subjectName} ${grade.name}`,
+          code: subjectCode,
+          grade: { connect: { id: grade.id } },
+          school: { connect: { id: school.id } }
+        }
+      });
+      subjects.push(subject);
+    }
+  }
+
+  console.log('Created subjects:', subjects);
+
+  // 9. Create Teachers (Staff)
+  const teacherData = [
+    {
+      firstName: 'John',
+      lastName: 'Smith',
+      email: 'jsmith@premieracademy.edu',
+      staffId: 'T101',
+      position: 'Math Teacher',
+      isTeacher: true
+    },
+    {
+      firstName: 'Sarah',
+      lastName: 'Johnson',
+      email: 'sjohnson@premieracademy.edu',
+      staffId: 'T102',
+      position: 'Science Teacher',
+      isTeacher: true
+    }
+  ];
+
+  const teachers = [];
+  for (const [i, teacher] of teacherData.entries()) {
+    // Create user account for teacher
+    const teacherUser = await prisma.user.create({
       data: {
-        email: t.adminUser.email,
-        password: hashed,
+        email: teacher.email,
+        password: await bcrypt.hash(`Teacher123`, 12),
+        userType: 'SCHOOL_STAFF',
         isActive: true,
-        tenantId: tenant.id,
-        roleId: adminRole.id,
+        school: { connect: { id: school.id } },
         profile: {
           create: {
-            firstName: t.adminUser.firstName,
-            lastName: t.adminUser.lastName,
-          },
+            firstName: teacher.firstName,
+            lastName: teacher.lastName,
+            phone: `+1800555${1000 + i}`
+          }
         },
+        roles: {
+          create: {
+            roleId: roles.find(r => r.name === 'TEACHER')!.id
+          }
+        }
       },
+      include: {
+        profile: true
+      }
     });
 
-    // Seed teachers
-    for (let i = 1; i <= 2; i++) {
-      await prisma.user.create({
-        data: {
-          email: `teacher${i}@${t.slug}.edu`,
-          password: await bcrypt.hash("teacher", 10),
-          isActive: true,
-          tenantId: tenant.id,
-          roleId: facultyRole.id,
-          profile: {
-            create: {
-              firstName: `Teacher${i}`,
-              lastName: `Test`,
-            },
-          },
-        },
-      });
-    }
-
-    // Seed students
-    for (let i = 1; i <= 2; i++) {
-      await prisma.user.create({
-        data: {
-          email: `student${i}@${t.slug}.edu`,
-          password: await bcrypt.hash("student", 10),
-          isActive: true,
-          tenantId: tenant.id,
-          roleId: studentRole.id,
-          profile: {
-            create: {
-              firstName: `Student${i}`,
-              lastName: `Test`,
-            },
-          },
-        },
-      });
-    }
-
-    console.log(`✅ Seeded tenant: ${t.name}`);
-  }
-
-  console.log("🛠️ Seeding sample widgets");
-
-  for (const w of Widgets) {
-    await prisma.widget.create({
+    // Create staff record
+    const teacherStaff = await prisma.staff.create({
       data: {
-        name: w.name,
-        key: w.key,
-        component: w.component,
-        description: w.description,
-        category: w.category,
-      },
+        staffId: teacher.staffId,
+        profile: { connect: { id: teacherUser.profile!.id } },
+        school: { connect: { id: school.id } },
+        position: teacher.position,
+        isTeacher: teacher.isTeacher,
+        user: { connect: { id: teacherUser.id } }
+      }
     });
+
+    // Assign subjects to teachers
+    const subjectStartIdx = i * (subjects.length / teacherData.length);
+    const subjectEndIdx = subjectStartIdx + (subjects.length / teacherData.length);
+    for (const subject of subjects.slice(subjectStartIdx, subjectEndIdx)) {
+      await prisma.subject.update({
+        where: { id: subject.id },
+        data: {
+          teacher: { connect: { id: teacherStaff.id } }
+        }
+      });
+    }
+
+    // Assign teachers to sections
+    const section = sections[i % sections.length];
+    await prisma.staff.update({
+      where: { id: teacherStaff.id },
+      data: {
+        sections: { connect: { id: section.id } }
+      }
+    });
+
+    teachers.push(teacherStaff);
   }
-  console.log("🎉 All data seeded successfully!");
+
+  console.log('Created teachers:', teachers);
+
+  // 10. Create Students with User Accounts
+  const studentData = [
+    {
+      firstName: 'Emma',
+      lastName: 'Williams',
+      email: 'emma.w@premieracademy.edu',
+      studentId: 'S1001',
+      gradeIdx: 0,
+      sectionIdx: 0
+    },
+    {
+      firstName: 'Noah',
+      lastName: 'Brown',
+      email: 'noah.b@premieracademy.edu',
+      studentId: 'S1002',
+      gradeIdx: 0,
+      sectionIdx: 1
+    },
+    {
+      firstName: 'Olivia',
+      lastName: 'Jones',
+      email: 'olivia.j@premieracademy.edu',
+      studentId: 'S1003',
+      gradeIdx: 1,
+      sectionIdx: 0
+    },
+    {
+      firstName: 'Liam',
+      lastName: 'Garcia',
+      email: 'liam.g@premieracademy.edu',
+      studentId: 'S1004',
+      gradeIdx: 1,
+      sectionIdx: 1
+    },
+    {
+      firstName: 'Ava',
+      lastName: 'Miller',
+      email: 'ava.m@premieracademy.edu',
+      studentId: 'S1005',
+      gradeIdx: 2,
+      sectionIdx: 0
+    }
+  ];
+
+  const students = [];
+  for (const [i, student] of studentData.entries()) {
+    const grade = grades[student.gradeIdx];
+    const section = sections[student.sectionIdx + student.gradeIdx * 2];
+
+    // Create user account for student
+    const studentUser = await prisma.user.create({
+      data: {
+        email: student.email,
+        password: await bcrypt.hash(`Student123`, 12),
+        userType: 'SCHOOL_STUDENT',
+        isActive: true,
+        school: { connect: { id: school.id } },
+        profile: {
+          create: {
+            firstName: student.firstName,
+            lastName: student.lastName,
+            dateOfBirth: new Date(2005 + student.gradeIdx, 1, 1),
+            phone: `+1800555${2000 + i}`
+          }
+        },
+        roles: {
+          create: {
+            roleId: roles.find(r => r.name === 'STUDENT')!.id
+          }
+        }
+      },
+      include: {
+        profile: true
+      }
+    });
+
+    // Create student record
+    const studentRecord = await prisma.student.create({
+      data: {
+        studentId: student.studentId,
+        profile: { connect: { id: studentUser.profile!.id } },
+        school: { connect: { id: school.id } },
+        grade: { connect: { id: grade.id } },
+        section: { connect: { id: section.id } },
+        academicYear: { connect: { id: academicYear.id } },
+        status: 'ACTIVE',
+        user: { connect: { id: studentUser.id } }
+      }
+    });
+
+    students.push(studentRecord);
+  }
+
+  console.log('Created students:', students);
+
+  // 11. Create Enrollments for Students
+  for (const student of students) {
+    // Get all subjects for student's grade
+    const gradeSubjects = await prisma.subject.findMany({
+      where: { gradeId: student.gradeId! }
+    });
+
+    // Enroll student in all subjects for their grade
+    for (const subject of gradeSubjects) {
+      await prisma.enrollment.create({
+        data: {
+          student: { connect: { id: student.id } },
+          subject: { connect: { id: subject.id } },
+          section: { connect: { id: student.sectionId! } },
+          grade: { connect: { id: student.gradeId! } },
+          school: { connect: { id: school.id } },
+          academicYear: { connect: { id: academicYear.id } },
+          status: 'ACTIVE'
+        }
+      });
+    }
+  }
+
+  console.log('Created enrollments for all students');
+
+  // 12. Print login credentials for testing
+  console.log('\n=== TEST CREDENTIALS ===');
+  console.log('Super Admin:', {
+    email: 'superadmin@schoolsystem.com',
+    password: 'SuperAdmin123!'
+  });
+  console.log('School Admin:', {
+    email: 'admin@premieracademy.edu',
+    password: 'SchoolAdmin123!'
+  });
+  console.log('Teachers:');
+  teacherData.forEach((teacher, i) => {
+    console.log({
+      email: teacher.email,
+      password: `Teacher${i + 1}123!`
+    });
+  });
+  console.log('Students:');
+  studentData.forEach((student, i) => {
+    console.log({
+      email: student.email,
+      password: `Student${i + 1}123!`
+    });
+  });
 }
 
 main()
   .catch((e) => {
-    console.error("❌ Error during seeding:", e);
+    console.error(e);
     process.exit(1);
   })
   .finally(async () => {

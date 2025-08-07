@@ -7,376 +7,328 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum TenantType {
-  UNIVERSITY
-  SOCIETY
-  COLLEGE
-  SCHOOL
+// ==== SCHOOL (multi-tenant) ====
+model School {
+  id              Int     @id @default(autoincrement())
+  slug            String  @unique
+  name            String
+  description     String?
+  website         String?
+  establishedYear Int?
+  contactEmail    String?
+  contactPhone    String?
+  address         Json?
+  logo            String?
+  favicon         String?
+  primaryColor    String?
+  secondaryColor  String?
+  timezone        String? @default("UTC")
+  defaultLanguage String? @default("en")
+  currency        String? @default("INR")
+  isActive        Boolean @default(false)
+
+  // SaaS subscription fields
+  subscriptionType   SubscriptionType   @default(TRIAL)
+  subscriptionStatus SubscriptionStatus @default(TRIAL)
+  trialStartsAt      DateTime?
+  trialEndsAt        DateTime?
+  subscriptionEndsAt DateTime?
+  maxStudents        Int?
+  maxStaff           Int?
+  activatedAt        DateTime?
+  lastLoginAt        DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users         User[]
+  academicYears AcademicYear[]
+  grades        Grade[]
+  students      Student[]
+  staff         Staff[]
+  subjects      Subject[]
+  enrollments   Enrollment[]
+
+  @@index([isActive])
+  @@index([subscriptionStatus])
 }
 
-enum UserScope {
-  SYSTEM
-  TENANT
+enum SubscriptionType {
+  TRIAL
+  BASIC
+  STANDARD
+  PREMIUM
+  CUSTOM
 }
 
-enum GlobalRole {
-  SUPER_ADMIN
-  SYSTEM_ADMIN
-  SUPPORT
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  EXPIRED
 }
 
-enum AuditAction {
-  CREATE
-  UPDATE
-  DELETE
-  LOGIN
-  LOGOUT
-  ERROR
-}
-
-model Tenant {
-  id          Int        @id @default(autoincrement())
-  name        String     @unique
-  description String?
-  slug        String     @unique
-  type        TenantType
-  parent      Tenant?    @relation("TenantHierarchy", fields: [parentId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  parentId    Int?
-  children    Tenant[]   @relation("TenantHierarchy")
-  address     Json       @default("{}")
-  settings    Json       @default("{}")
-  contact     Json       @default("{}")
-  limits      Json       @default("{}")
-  branding    Json       @default("{}")
-  customField Json       @default("{}")
-  features    String[]   @default([])
-  isActive    Boolean    @default(true)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-
-  users          User[]
-  roles          Role[]
-  groups         MenuGroup[]
-  menus          MenuItem[]
-  permissions    Permission[]
-  rolePermission RolePermission[]
-  auditLogs      AuditLog[]
-  widgets        TenantWidget[]
-
-  addOnItems   AddOnItem[]
-  subscription Subscription? @relation("TenantSubscription")
-
-  @@index([type])
-}
-
-model User {
-  id               Int                @id @default(autoincrement())
-  email            String             @unique
-  password         String
-  role             Role               @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  roleId           Int
-  userScope        UserScope          @default(TENANT)
-  globalRoles      GlobalRole[]
-  tenant           Tenant?            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId         Int?
-  isActive         Boolean            @default(true)
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-  ip               String?
-  customFields     Json               @default("{}")
-  profile          Profile?
-  auditLog         AuditLog[]
-  widgets          UserWidget[]
-  notification     Notification[]
-  pushSubscription PushSubscription[]
-
-  @@index([tenantId, email])
-}
-
+// ==== USER PROFILES ====
+// Base profile for all user types
 model Profile {
-  id           Int       @id @default(autoincrement())
-  firstName    String
-  middleName   String?
-  lastName     String
-  dateOfBirth  DateTime?
-  avatar       String?
-  phone        String?
-  address      Json?     @default("{}")
-  customFields Json      @default("{}")
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  user         User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId       Int?      @unique
+  id          Int       @id @default(autoincrement())
+  firstName   String
+  lastName    String
+  dateOfBirth DateTime?
+  phone       String?
+  address     Json?     @default("{}")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  @@index([firstName, lastName])
+  // Only one of these should be set
+  user    User?    @relation(fields: [userId], references: [id])
+  userId  Int?     @unique
+  student Student?
+  staff   Staff?
 }
 
+// ==== PLATFORM/SCHOOL USER ====
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  password  String
+  userType  UserType  @default(SCHOOL_ADMIN)
+  isActive  Boolean   @default(true)
+  lastLogin DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  // School-link (null for system users)
+  school   School? @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  schoolId Int?
+
+  // Links back to Staff or Student (one user linked to one entity only)
+  staff   Staff? @relation(fields: [staffId], references: [id])
+  staffId Int?   @unique
+
+  student   Student? @relation(fields: [studentId], references: [id])
+  studentId Int?     @unique
+
+  profile Profile?
+  roles   UserRole[]
+
+  // Indexes
+  @@index([schoolId])
+  @@index([userType])
+  @@index([isActive])
+}
+
+enum UserType {
+  SYSTEM_ADMIN
+  SUPPORT_ADMIN
+  SCHOOL_ADMIN
+  SCHOOL_STAFF
+  SCHOOL_STUDENT
+}
+
+// ==== ROLES ====
 model Role {
-  id          Int              @id @default(autoincrement())
-  name        String
-  description String?
-  tenantId    Int?
-  tenant      Tenant?          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  permissions RolePermission[]
-  isActive    Boolean          @default(true)
-  isSystem    Boolean          @default(false)
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  users       User[]
-  widgets     RoleWidget[]
+  id             Int        @id @default(autoincrement())
+  name           String     @unique
+  description    String?
+  permissionMask Int        @default(0)
+  users          UserRole[]
 
-  @@unique([tenantId, name])
+  @@index([permissionMask])
 }
 
-model RolePermission {
-  id             Int      @id @default(autoincrement())
-  tenantId       Int?
-  tenant         Tenant?  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  roleId         Int
-  menuId         Int
-  permissionBits Int
-  role           Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  menus          MenuItem @relation(fields: [menuId], references: [id], onDelete: Cascade)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+model UserRole {
+  id     Int  @id @default(autoincrement())
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int
+  role   Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  roleId Int
 
-  @@unique([roleId, menuId, tenantId], name: "role_permission_tenant_unique")
-  @@unique([roleId, menuId], name: "role_permission_global_unique")
-  @@index([tenantId, roleId])
-  @@index([tenantId, menuId])
+  @@unique([userId, roleId])
 }
 
-model Permission {
+// ==== ACADEMIC YEAR ====
+model AcademicYear {
   id        Int      @id @default(autoincrement())
-  name      String
-  bitmask   Int
-  tenantId  Int?
-  tenant    Tenant?  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  isGlobal  Boolean  @default(false)
+  name      String // e.g. "2024-2025"
+  code      String
+  startDate DateTime
+  endDate   DateTime
+  isCurrent Boolean  @default(false)
+  school    School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  schoolId  Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([name, tenantId], name: "permission_name_tenant")
-  @@index([tenantId, name])
+  grades      Grade[]
+  students    Student[]
+  enrollments Enrollment[]
+
+  @@unique([schoolId, code])
+  @@index([isCurrent])
 }
 
-model MenuItem {
-  id        Int        @id @default(autoincrement())
-  name      String
-  path      String?
-  icon      String?
-  sortOrder Int        @default(0)
-  parentId  Int? // For submenu items
-  parent    MenuItem?  @relation("MenuParent", fields: [parentId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  children  MenuItem[] @relation("MenuParent")
-  isActive  Boolean    @default(true)
-  isSystem  Boolean    @default(false)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+// ==== GRADE (class) ====
+model Grade {
+  id             Int          @id @default(autoincrement())
+  name           String // e.g. "Grade 10"
+  code           String
+  school         School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  schoolId       Int
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+  academicYearId Int
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 
-  // Relationships
-  groupId        Int?
-  group          MenuGroup?       @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  tenantId       Int?
-  tenant         Tenant?          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  rolePermission RolePermission[]
-  addOnItem      AddOnItem[]
+  sections    Section[]
+  students    Student[]
+  enrollments Enrollment[]
+  subjects    Subject[]
 
-  subscriptionPlans SubscriptionPlan[] @relation("SubscriptionPlanMenuItems")
-
-  @@unique([tenantId, parentId, name])
+  @@unique([schoolId, academicYearId, code])
+  @@index([academicYearId])
 }
 
-model MenuGroup {
-  id        Int      @id @default(autoincrement())
-  name      String
-  sortOrder Int      @default(0)
-  isSystem  Boolean  @default(false)
-  isActive  Boolean  @default(true)
+// ==== SECTION (like "A", "B") ====
+model Section {
+  id      Int    @id @default(autoincrement())
+  name    String
+  grade   Grade  @relation(fields: [gradeId], references: [id], onDelete: Cascade)
+  gradeId Int
+
+  students     Student[]
+  enrollments  Enrollment[]
+  staffMembers Staff[]      @relation("SectionStaff")
+
+  @@unique([gradeId, name])
+}
+
+// ==== SUBJECT ====
+model Subject {
+  id      Int    @id @default(autoincrement())
+  name    String
+  code    String
+  grade   Grade  @relation(fields: [gradeId], references: [id], onDelete: Cascade)
+  gradeId Int
+
+  teacher   Staff? @relation("TeacherSubjects", fields: [teacherId], references: [id])
+  teacherId Int?
+
+  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  schoolId Int
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  enrollments Enrollment[]
+
+  @@unique([schoolId, gradeId, code])
+  @@index([teacherId])
+}
+
+// ==== STUDENT ====
+model Student {
+  id             Int           @id @default(autoincrement())
+  studentId      String        @unique
+  profile        Profile       @relation(fields: [profileId], references: [id])
+  profileId      Int           @unique
+  school         School        @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  schoolId       Int
+  grade          Grade?        @relation(fields: [gradeId], references: [id])
+  gradeId        Int?
+  section        Section?      @relation(fields: [sectionId], references: [id])
+  sectionId      Int?
+  academicYear   AcademicYear  @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+  academicYearId Int
+  status         StudentStatus @default(ACTIVE)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Relationships
-  tenantId Int?
-  tenant   Tenant?    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  menus    MenuItem[]
+  // Link back to User for login
+  user User?
 
-  @@unique([tenantId, name])
+  enrollments Enrollment[]
+
+  @@unique([schoolId, studentId])
+  @@index([schoolId, status])
+  @@index([gradeId, sectionId, status])
+  @@index([academicYearId])
 }
 
-model AuditLog {
+enum StudentStatus {
+  ACTIVE
+  INACTIVE
+  GRADUATED
+  SUSPENDED
+  TRANSFERRED
+}
+
+// ==== STAFF ====
+model Staff {
   id        Int         @id @default(autoincrement())
-  action    AuditAction
-  user      User        @relation(fields: [userId], references: [id])
-  userId    Int
-  tenant    Tenant?     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId  Int?
-  slug      String?
-  metadata  Json        @default("{}")
-  entity    String
-  details   Json
-  device    Json?
-  createdAt DateTime    @default(now())
+  staffId   String      @unique
+  profile   Profile     @relation(fields: [profileId], references: [id])
+  profileId Int         @unique
+  school    School      @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  schoolId  Int
+  position  String
+  isTeacher Boolean     @default(false)
+  isAdmin   Boolean     @default(false)
+  status    StaffStatus @default(ACTIVE)
 
-  @@index([action, createdAt])
-  @@index([tenantId, createdAt])
-  @@index([userId, createdAt])
-}
+  user   User?
+  userId Int?  @unique
 
-model Widget {
-  id          Int            @id @default(autoincrement())
-  key         String         @unique
-  name        String
-  description String?
-  component   String
-  category    String
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  tenants     TenantWidget[]
-}
+  subjects Subject[] @relation("TeacherSubjects")
+  sections Section[] @relation("SectionStaff")
 
-model TenantWidget {
-  id        Int      @id @default(autoincrement())
-  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId  Int
-  widget    Widget   @relation(fields: [widgetId], references: [id], onDelete: Cascade)
-  widgetId  Int
-  isDefault Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  roleWidget RoleWidget[]
-  userWidget UserWidget[]
-
-  @@unique([tenantId, widgetId])
+  @@unique([schoolId, staffId])
+  @@index([isTeacher])
+  @@index([status])
+  @@index([schoolId, isAdmin])
 }
 
-model RoleWidget {
-  id         Int      @id @default(autoincrement())
-  isAssigned Boolean  @default(false)
-  sortOrder  Int      @default(0)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  // Relationships
-  role              Role         @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  roleId            Int
-  widget            TenantWidget @relation(fields: [widgetId], references: [id], onDelete: Cascade)
-  widgetId          Int
-  userWidgetConfigs UserWidget[]
-
-  @@unique([roleId, widgetId])
+enum StaffStatus {
+  ACTIVE
+  INACTIVE
+  ON_LEAVE
+  RETIRED
+  TERMINATED
 }
 
-model UserWidget {
-  id         Int      @id @default(autoincrement())
-  isPinned   Boolean  @default(false)
-  isHidden   Boolean  @default(false)
-  customSize String   @default("small")
-  sortOrder  Int
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+// ==== ENROLLMENT ====
+model Enrollment {
+  id             Int              @id @default(autoincrement())
+  student        Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId      Int
+  subject        Subject          @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  subjectId      Int
+  section        Section          @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  sectionId      Int
+  grade          Grade            @relation(fields: [gradeId], references: [id], onDelete: Cascade)
+  gradeId        Int
+  school         School           @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  schoolId       Int
+  academicYear   AcademicYear     @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+  academicYearId Int
+  status         EnrollmentStatus @default(ACTIVE)
+  enrolledAt     DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
 
-  // Relationships
-  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId       Int
-  widget       TenantWidget @relation(fields: [widgetId], references: [id], onDelete: Cascade)
-  widgetId     Int
-  roleWidget   RoleWidget   @relation(fields: [roleWidgetId], references: [id], onDelete: Cascade)
-  roleWidgetId Int
-
-  @@unique([userId, widgetId])
-  @@index([userId])
+  @@unique([studentId, subjectId, academicYearId])
+  @@index([schoolId, status])
+  @@index([subjectId])
+  @@index([gradeId, sectionId])
 }
 
-enum NotificationStatus {
-  SENT
-  DELIVERED
+enum EnrollmentStatus {
+  ACTIVE
+  COMPLETED
+  WITHDRAWN
   FAILED
-}
-
-model Notification {
-  id        Int                @id @default(autoincrement())
-  userId    Int
-  topic     String?
-  title     String?
-  message   String
-  status    NotificationStatus
-  read      Boolean            @default(false)
-  createdAt DateTime           @default(now())
-  updatedAt DateTime           @updatedAt
-  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model PushSubscription {
-  id           Int      @id @default(autoincrement())
-  userId       Int
-  endpoint     String   @unique
-  subscription Json
-  topics       String[]
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-}
-
-enum BillingCycle {
-  MONTHLY
-  ANNUALLY
-}
-
-model SubscriptionPlan {
-  id           Int      @id @default(autoincrement())
-  name         String   @unique // e.g. "Basic", "Pro", "Enterprise"
-  description  String? // "Includes 10 users, 5 projects, basic reporting"
-  monthlyPrice Float // 9.99
-  annualPrice  Float // 99.99
-  isActive     Boolean  @default(true) // Whether plan is available for purchase
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  // Predefined menu items included in this plan (many-to-many)
-  menuItems  MenuItem[]     @relation("SubscriptionPlanMenuItems")
-  addOnItems AddOnItem[]
-  tenants    Subscription[]
-}
-
-model Subscription {
-  id                 Int              @id @default(autoincrement())
-  tenant             Tenant           @relation("TenantSubscription", fields: [tenantId], references: [id])
-  tenantId           Int              @unique
-  subscriptionPlan   SubscriptionPlan @relation(fields: [subscriptionPlanId], references: [id])
-  subscriptionPlanId Int
-  billingCycle       BillingCycle     @default(MONTHLY)
-
-  startDate    DateTime
-  endDate      DateTime? // When subscription expires (null for auto-renewing)
-  isActive     Boolean   @default(true) // Active or cancelled
-  isTrial      Boolean   @default(false) // Is this a trial subscription?
-  trialEndDate DateTime? // When trial period ends
-  autoRenew    Boolean   @default(true) // Whether to automatically renew
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-}
-
-model AddOnItem {
-  id         Int      @id @default(autoincrement())
-  menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
-  menuItemId Int
-
-  subscriptionPlan   SubscriptionPlan? @relation(fields: [subscriptionPlanId], references: [id], onDelete: Cascade)
-  subscriptionPlanId Int?
-
-  tenant   Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId Int?
-
-  extraCostMonthly Float? // Extra cost for this add-on (monthly)
-  extraCostAnnual  Float? // Extra cost for this add-on (annually)
-  description      String?
-
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([subscriptionPlanId])
-  @@index([tenantId])
+  INCOMPLETE
 }

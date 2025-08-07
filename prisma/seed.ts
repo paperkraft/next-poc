@@ -1,4 +1,4 @@
-import { PrismaClient, TenantType } from "@prisma/client";
+import { BillingCycle, PrismaClient, TenantType } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { Masters, SystemAdminMenus, TenantMenus, Widgets } from "./menus";
 
@@ -18,6 +18,9 @@ async function main() {
   await prisma.permission.deleteMany();
   await prisma.widget.deleteMany();
   await prisma.tenant.deleteMany();
+  await prisma.addOnItem.deleteMany();
+  await prisma.subscription.deleteMany();
+  await prisma.subscriptionPlan.deleteMany();
 
   console.log("✅ Database cleared.");
 
@@ -26,8 +29,11 @@ async function main() {
     data: {
       name: "Super Admin",
       tenantId: null,
+      isSystem: true,
     },
   });
+
+  const groupNamesMap = new Map<string, number>();
 
   console.log("📁 Seeding System Admin menu group...");
   const sysAdminGroups = [
@@ -36,71 +42,59 @@ async function main() {
   ];
 
   for (const g of sysAdminGroups) {
-    await prisma.menuGroup.create({
+    const group = await prisma.menuGroup.create({
       data: {
         name: g.name,
-        position: g.position,
+        sortOrder: g.position,
         tenantId: null,
+        isSystem: true,
       },
     });
-  }
 
-  const allSysAdminGroups = await prisma.menuGroup.findMany({
-    where: { tenantId: null },
-  });
+    groupNamesMap.set(g.name, group.id)
+  }
 
   console.log("🛠️ Seeding System default Master menus...");
 
-  for (const parent of Masters) {
-    const parentItem = await prisma.menuItem.create({
-      data: {
-        name: parent.name,
-        path: undefined,
-        icon: parent.icon,
-        groupId: allSysAdminGroups[1].id,
-        tenantId: null,
-      },
-    });
-
-    for (const child of parent.children) {
-      await prisma.menuItem.create({
+  // Helper: recursively create menu items with hierarchy
+  async function createMenuItems(
+    items: typeof SystemAdminMenus | typeof Masters[number]["children"],
+    parentId: number | null,
+    groupId: number,
+    tenantId?: number // null implies system-wide menus
+  ) {
+    for (const item of items) {
+      const menuItem = await prisma.menuItem.create({
         data: {
-          name: child.name,
-          path: child.path,
-          icon: undefined,
-          tenantId: null,
-          groupId: allSysAdminGroups[1].id,
-          parentId: parentItem.id,
+          name: item.name,
+          path: "path" in item ? item.path : undefined,
+          icon: "icon" in item ? item.icon : undefined,
+          parentId: parentId ?? undefined,
+          groupId,
+          tenantId: tenantId ?? null,
+          isActive: true,
+          isSystem: tenantId == null,
         },
       });
+
+      if ("children" in item && item.children.length > 0) {
+        await createMenuItems(item.children, menuItem.id, groupId, tenantId);
+      }
     }
   }
 
   console.log("🛠️ Seeding System Admin menus...");
 
-  for (const parent of SystemAdminMenus) {
-    const parentItem = await prisma.menuItem.create({
-      data: {
-        name: parent.name,
-        path: parent.path ? parent.path : undefined,
-        icon: parent.icon,
-        tenantId: null,
-        groupId: allSysAdminGroups[0].id,
-      },
-    });
+  // Seed SystemAdminMenus into "System Administration" group
+  const systemAdminGroupId = groupNamesMap.get("System Administration");
+  if (systemAdminGroupId) {
+    await createMenuItems(SystemAdminMenus, null, systemAdminGroupId);
+  }
 
-    for (const child of parent.children) {
-      await prisma.menuItem.create({
-        data: {
-          name: child.name,
-          path: child.path,
-          icon: undefined,
-          tenantId: null,
-          groupId: allSysAdminGroups[0].id,
-          parentId: parentItem.id,
-        },
-      });
-    }
+  // Seed Masters into "Master" group
+  const masterGroupId = groupNamesMap.get("Master");
+  if (masterGroupId) {
+    await createMenuItems(Masters, null, masterGroupId);
   }
 
   const systemMenus = await prisma.menuItem.findMany({
@@ -124,6 +118,7 @@ async function main() {
       email: "superadmin@email.com",
       password: hashedSuperAdmin,
       isActive: true,
+      userScope: "SYSTEM",
       globalRoles: ["SYSTEM_ADMIN"],
       roleId: superAdminRole.id,
       profile: {
@@ -134,6 +129,47 @@ async function main() {
       },
     },
   });
+
+  // Create Subscription Plans with included menu items
+  const basicPlan = await prisma.subscriptionPlan.create({
+    data: {
+      name: "Basic",
+      description: "Basic plan with dashboard access",
+      monthlyPrice: 9.99,
+      annualPrice: 99.99,
+      isActive: true,
+      menuItems: {
+        connect: [{ id: systemMenus[0].id }],
+      },
+    },
+  });
+
+  const standardPlan = await prisma.subscriptionPlan.create({
+    data: {
+      name: "Standard",
+      description: "Standard plan with dashboard and reports",
+      monthlyPrice: 19.99,
+      annualPrice: 199.99,
+      isActive: true,
+      menuItems: {
+        connect: [{ id: systemMenus[0].id }],
+      },
+    },
+  });
+
+  const premiumPlan = await prisma.subscriptionPlan.create({
+    data: {
+      name: "Premium",
+      description: "Premium plan with all features",
+      monthlyPrice: 49.99,
+      annualPrice: 499.99,
+      isActive: true,
+      menuItems: {
+        connect: [{ id: systemMenus[0].id }],
+      },
+    },
+  });
+
 
   // ==============================
   // MULTI-TENANT SEED LOOP START
@@ -154,6 +190,8 @@ async function main() {
         firstName: "Ajit",
         lastName: "Patil",
       },
+      subscriptionPlanId: basicPlan.id,
+      billingCycle: BillingCycle.MONTHLY
     },
     {
       name: "Green Valley College",
@@ -167,6 +205,8 @@ async function main() {
         firstName: "Neha",
         lastName: "Patil",
       },
+      subscriptionPlanId: premiumPlan.id,
+      billingCycle: BillingCycle.ANNUALLY
     },
   ];
 
@@ -203,6 +243,15 @@ async function main() {
           logo: "/logo.png",
         },
         features: ["attendance", "exams", "notifications"],
+        subscription: {
+          create: {
+            subscriptionPlanId: t.subscriptionPlanId,
+            billingCycle: t.billingCycle,
+            startDate: new Date(),
+            isTrial: false,
+            autoRenew: true,
+          },
+        },
       },
     });
 
@@ -225,9 +274,11 @@ async function main() {
     const adminRole = await prisma.role.create({
       data: { name: "Admin", tenantId: tenant.id },
     });
+
     const facultyRole = await prisma.role.create({
       data: { name: "Faculty", tenantId: tenant.id },
     });
+
     const studentRole = await prisma.role.create({
       data: { name: "Student", tenantId: tenant.id },
     });
@@ -244,7 +295,7 @@ async function main() {
       await prisma.menuGroup.create({
         data: {
           name: g.name,
-          position: g.position,
+          sortOrder: g.position,
           tenantId: tenant.id,
         },
       });
@@ -271,39 +322,10 @@ async function main() {
 
     for (const section of TenantMenus) {
       for (const key of Object.keys(section)) {
-        const groupName =
-          key === "management"
-            ? "Management"
-            : key === "settings"
-              ? "Settings"
-              : "Home";
-
+        const groupName = key.charAt(0).toUpperCase() + key.slice(1);
         const groupId = groupMap[groupName];
         const menuGroups = section[key as scetionKey];
-
-        for (const parent of menuGroups!) {
-          const parentItem = await prisma.menuItem.create({
-            data: {
-              name: parent.name,
-              path: undefined, // no direct path for parent
-              icon: parent.icon,
-              tenantId: tenant.id,
-              groupId,
-            },
-          });
-          for (const child of parent.children) {
-            await prisma.menuItem.create({
-              data: {
-                name: child.name,
-                path: child.path,
-                icon: undefined,
-                tenantId: tenant.id,
-                groupId,
-                parentId: parentItem.id,
-              },
-            });
-          }
-        }
+        if (menuGroups) await createMenuItems(menuGroups, null, groupId, tenant.id);
       }
     }
 

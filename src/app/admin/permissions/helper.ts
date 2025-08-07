@@ -85,6 +85,6 @@ export const groupModules = (modules: MenuItem[]): IGroupedModule[] => {
     }
     return Array.from(groupMap.values()).map((group) => ({
         ...group,
-        modules: group.modules.sort((a, b) => (a.position ?? Infinity) - (b.position ?? Infinity)),
+        modules: group.modules.sort((a, b) => (a.sortOrder ?? Infinity) - (b.sortOrder ?? Infinity)),
     }));
 };

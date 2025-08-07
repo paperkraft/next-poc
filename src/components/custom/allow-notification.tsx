@@ -7,8 +7,11 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useNotifications } from '@/context/notification-context';
 import { useMount } from '@/hooks/use-mount';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
+import { useSession } from 'next-auth/react';
 
 export default function AllowNotification() {
+
+    const isMounted = useMount();
 
     const {
         loading,
@@ -18,8 +21,8 @@ export default function AllowNotification() {
     } = useNotifications();
 
     const [showAlert, setShowAlert] = useState(true);
+    const { data } = useSession();
 
-    const isMounted = useMount();
 
     if (loading) return null; // Avoid rendering while loading
     if (!showAlert) return null;
@@ -56,7 +59,7 @@ export default function AllowNotification() {
                     <X className='size-4 ml-auto cursor-pointer' onClick={() => setShowAlert(false)} />
                 </AlertTitle>
                 <AlertDescription className='space-y-2'>
-                    Go to Notification setting <Link href={'/profile-settings/notifications'} className='text-blue-400 hover:text-blue-600'> click here</Link>
+                    Go to Notification setting <Link href={`/${data?.user?.slug ?? "admin"}/profile-settings/notifications`} className='text-blue-400 hover:text-blue-600'> click here</Link>
                     {/* Click <button onClick={requestPermission} className='text-blue-400'>Allow Notifications</button> to subscribe. */}
                 </AlertDescription>
             </Alert>

@@ -9,7 +9,7 @@ export const SystemAdminMenus = [
     name: "Tenant Management",
     icon: "Building2",
     children: [
-      { name: "All Tenants", path: "/tenants" },
+      { name: "All Tenants", path: "/tenants/list" },
       { name: "Create Tenant", path: "/tenants/create" },
       { name: "Tenant Analytics", path: "/tenants/analytics" },
     ],
@@ -49,6 +49,7 @@ export const SystemAdminMenus = [
       { name: "Stepper Form", path: "/ui-blocks/stepper-form" },
       { name: "Form Builder", path: "/ui-blocks/form-builder" },
       { name: "Full Calendar", path: "/ui-blocks/full-calendar" },
+      { name: "Data Migration", path: "/ui-blocks/csv" },
     ],
   },
 ];

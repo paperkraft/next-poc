@@ -1,3 +1,4 @@
+import AllowNotification from "@/components/custom/allow-notification";
 import { SystemAdminDashboard } from "@/components/dashboard/system-admin-dashboard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import prisma from "@/lib/prisma";
@@ -5,20 +6,20 @@ import { BarChart3, Building, School, Users } from "lucide-react";
 
 async function getDashboardStats() {
     try {
-        return await prisma.$transaction(async (tx) => {
-            const [tenantCount, userCount, activeUsers, totalSchools] = await Promise.all([
-                tx.tenant.count(),
-                tx.user.count(),
-                tx.user.count({ where: { isActive: true } }),
-                tx.tenant.count({ where: { type: 'SCHOOL' } })
-            ]);
+        const [tenantCount, userCount, activeUsers, totalSchools] = await Promise.all([
+            prisma.tenant.count(),
+            prisma.user.count(),
+            prisma.user.count({ where: { isActive: true } }),
+            prisma.tenant.count({ where: { type: 'SCHOOL' } }),
+        ]);
 
-            return { tenantCount, userCount, activeUsers, totalSchools };
-        });
-    } finally {
-        await prisma.$disconnect();
+        return { tenantCount, userCount, activeUsers, totalSchools };
+    } catch (err) {
+        console.error(err);
+        return null;
     }
 }
+
 
 export default async function AdminDashboard() {
 
@@ -52,14 +53,15 @@ export default async function AdminDashboard() {
 
     return (
         <>
+            <AllowNotification />
             <div className="hidden">
                 <SystemAdminDashboard />
             </div>
 
             <div className="space-y-6">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Super Admin Dashboard</h1>
-                    <p className="mt-2 text-gray-600">
+                    <h1 className="text-3xl font-bold">Super Admin Dashboard</h1>
+                    <p className="mt-2 text-muted-foreground">
                         System overview and management console
                     </p>
                 </div>
@@ -111,7 +113,7 @@ export default async function AdminDashboard() {
                                 </div>
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm text-gray-600">Active Sessions</span>
-                                    <span className="text-sm text-blue-600 font-medium">{stats.activeUsers}</span>
+                                    <span className="text-sm text-blue-600 font-medium">{stats?.activeUsers ?? 0}</span>
                                 </div>
                             </div>
                         </CardContent>

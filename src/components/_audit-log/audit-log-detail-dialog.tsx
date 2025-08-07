@@ -69,7 +69,7 @@ export function AuditLogDetailDialog() {
 
                         <div className="md:col-span-2 space-y-4">
                             <h3 className="text-lg font-semibold text-gray-900">Details</h3>
-                            <pre className="bg-gray-50 rounded-lg p-4 text-sm text-gray-800 overflow-x-auto border">
+                            <pre className="bg-gray-50 rounded-lg p-4 text-sm text-gray-800 overflow-x-auto border max-h-64 overflow-auto">
                                 {JSON.stringify(selectedLog.details, null, 2)}
                             </pre>
                         </div>

@@ -39,7 +39,7 @@ export async function GET(req: Request) {
       parentId: mod.parentId,
       groupId: mod.group?.id,
       groupName: mod.group?.name,
-      position: mod.group?.position,
+      sortOrder: mod.group?.sortOrder,
       permissions: permissionMap.get(mod.id) || 0,
       children: [],
     });

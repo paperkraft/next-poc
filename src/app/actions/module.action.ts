@@ -9,8 +9,8 @@ function sortModules(modules: MenuItem[]): MenuItem[] {
     return modules
         .sort((a, b) => {
             // First sort by group position (nulls last), then by name
-            if (a.position !== b.position) {
-                return (a.position ?? Infinity) - (b.position ?? Infinity);
+            if (a.sortOrder !== b.sortOrder) {
+                return (a.sortOrder ?? Infinity) - (b.sortOrder ?? Infinity);
             }
             return a.name.localeCompare(b.name);
         })
@@ -57,7 +57,7 @@ export async function fetchModules(): Promise<FetchModulesResponse> {
                 parentId: mod.parentId ?? undefined,
                 groupId: mod.groupId ?? undefined,
                 groupName: mod.group?.name,
-                position: mod.group?.position ?? undefined,
+                sortOrder: mod.group?.sortOrder ?? undefined,
                 children: [],
             });
         }

@@ -17,11 +17,11 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { AlertCircle } from "lucide-react"
-import { Row, RowErrors, SortConfig } from "./types"
+import { RowData, RowErrors, SortConfig } from "./types"
 
 interface ToolbarProps {
-    rows: Row[]
-    filteredRows: Row[]
+    rows: RowData[]
+    filteredRows: RowData[]
     errors: RowErrors
     duplicateEmailIndexes: Set<number>
     isSaving: boolean

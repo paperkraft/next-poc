@@ -19,8 +19,8 @@ const ModuleMasterList = ({ data, moduleId }: ModuleMasterProps) => {
   const [toggle, setToggle] = useState(false);
   const { columns } = ModuleMasterColumns();
 
-  const groupedModules = data && groupModules(data.sort((a, b) => (a.position ?? Infinity) - (b.position ?? Infinity)));
-  const moduleData = data && data.sort((a, b) => (a.position ?? Infinity) - (b.position ?? Infinity)).map((item) => item);
+  const groupedModules = data && groupModules(data.sort((a, b) => (a.sortOrder ?? Infinity) - (b.sortOrder ?? Infinity)));
+  const moduleData = data && data.sort((a, b) => (a.sortOrder ?? Infinity) - (b.sortOrder ?? Infinity)).map((item) => item);
 
   const deleteRecord = async (ids: number | number[]) => {
     try {
@@ -81,7 +81,7 @@ export const groupModules = (modules: MenuItem[]): GroupedMenus[] => {
         groupId: +mod?.groupId!,
         groupName: mod.groupName as string,
         modules: [],
-        position: Number(mod.position)
+        sortOrder: Number(mod.sortOrder)
       });
     }
 
@@ -89,6 +89,6 @@ export const groupModules = (modules: MenuItem[]): GroupedMenus[] => {
   }
   return Array.from(groupMap.values()).map((group) => ({
     ...group,
-    modules: group.modules.sort((a, b) => (a.position ?? Infinity) - (b.position ?? Infinity)),
+    modules: group.modules.sort((a, b) => (a.sortOrder ?? Infinity) - (b.sortOrder ?? Infinity)),
   }));
 };

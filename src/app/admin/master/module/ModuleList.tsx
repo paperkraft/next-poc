@@ -21,8 +21,8 @@ const ModuleMasterList = ({ data, moduleId }: ModuleMasterProps) => {
   const [toggle, setToggle] = useState(false);
   const { columns } = ModuleMasterColumns();
 
-  const groupedModules = data && groupModules(data.sort((a, b) => (a.position ?? Infinity) - (b.position ?? Infinity)));
-  const moduleData = data && data.sort((a, b) => (a.position ?? Infinity) - (b.position ?? Infinity)).map((item) => item);
+  const groupedModules = data && groupModules(data.sort((a, b) => (a.sortOrder ?? Infinity) - (b.sortOrder ?? Infinity)));
+  const moduleData = data && data.sort((a, b) => (a.sortOrder ?? Infinity) - (b.sortOrder ?? Infinity)).map((item) => item);
 
   const deleteRecord = async (ids: number | number[]) => {
     try {

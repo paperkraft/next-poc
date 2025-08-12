@@ -1,6 +1,5 @@
-import { BillingCycle, PrismaClient, TenantType } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import { Masters, SystemAdminMenus, TenantMenus, Widgets } from "./menus";
 
 const prisma = new PrismaClient();
 // await bcrypt.hash('SuperAdmin123', 12),
@@ -150,9 +149,9 @@ async function main() {
   // 6. Create Grades (9th to 12th)
   const grades = await Promise.all(
     Array.from({ length: 4 }, (_, i) => i + 9).map(gradeNum =>
-      prisma.grade.create({
+      prisma.standard.create({
         data: {
-          name: `Grade ${gradeNum}`,
+          name: `standard ${gradeNum}`,
           code: `G${gradeNum}`,
           school: { connect: { id: school.id } },
           academicYear: { connect: { id: academicYear.id } }
@@ -161,7 +160,7 @@ async function main() {
     )
   );
 
-  console.log('Created grades:', grades);
+  console.log('Created standards:', grades);
 
   // 7. Create Sections for each Grade (A, B)
   const sections = [];
@@ -170,7 +169,7 @@ async function main() {
       const section = await prisma.section.create({
         data: {
           name: sectionName,
-          grade: { connect: { id: grade.id } }
+          standard: { connect: { id: grade.id } }
         }
       });
       sections.push(section);
@@ -190,7 +189,7 @@ async function main() {
         data: {
           name: `${subjectName} ${grade.name}`,
           code: subjectCode,
-          grade: { connect: { id: grade.id } },
+          standard: { connect: { id: grade.id } },
           school: { connect: { id: school.id } }
         }
       });
@@ -368,7 +367,7 @@ async function main() {
         studentId: student.studentId,
         profile: { connect: { id: studentUser.profile!.id } },
         school: { connect: { id: school.id } },
-        grade: { connect: { id: grade.id } },
+        standard: { connect: { id: grade.id } },
         section: { connect: { id: section.id } },
         academicYear: { connect: { id: academicYear.id } },
         status: 'ACTIVE',
@@ -385,7 +384,7 @@ async function main() {
   for (const student of students) {
     // Get all subjects for student's grade
     const gradeSubjects = await prisma.subject.findMany({
-      where: { gradeId: student.gradeId! }
+      where: { standardId: student.standardId! }
     });
 
     // Enroll student in all subjects for their grade
@@ -395,7 +394,7 @@ async function main() {
           student: { connect: { id: student.id } },
           subject: { connect: { id: subject.id } },
           section: { connect: { id: student.sectionId! } },
-          grade: { connect: { id: student.gradeId! } },
+          standard: { connect: { id: student.standardId! } },
           school: { connect: { id: school.id } },
           academicYear: { connect: { id: academicYear.id } },
           status: 'ACTIVE'

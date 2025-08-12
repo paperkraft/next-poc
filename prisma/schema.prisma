@@ -43,7 +43,7 @@ model School {
 
   users         User[]
   academicYears AcademicYear[]
-  grades        Grade[]
+  standards     Standard[]
   students      Student[]
   staff         Staff[]
   subjects      Subject[]
@@ -161,7 +161,7 @@ model AcademicYear {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  grades      Grade[]
+  standards   Standard[]
   students    Student[]
   enrollments Enrollment[]
 
@@ -169,10 +169,10 @@ model AcademicYear {
   @@index([isCurrent])
 }
 
-// ==== GRADE (class) ====
-model Grade {
+// ==== standard (class) ====
+model Standard {
   id             Int          @id @default(autoincrement())
-  name           String // e.g. "Grade 10"
+  name           String // e.g. "Standard 10"
   code           String
   school         School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   schoolId       Int
@@ -192,25 +192,25 @@ model Grade {
 
 // ==== SECTION (like "A", "B") ====
 model Section {
-  id      Int    @id @default(autoincrement())
-  name    String
-  grade   Grade  @relation(fields: [gradeId], references: [id], onDelete: Cascade)
-  gradeId Int
+  id         Int      @id @default(autoincrement())
+  name       String
+  standard   Standard @relation(fields: [standardId], references: [id], onDelete: Cascade)
+  standardId Int
 
   students     Student[]
   enrollments  Enrollment[]
   staffMembers Staff[]      @relation("SectionStaff")
 
-  @@unique([gradeId, name])
+  @@unique([standardId, name])
 }
 
 // ==== SUBJECT ====
 model Subject {
-  id      Int    @id @default(autoincrement())
-  name    String
-  code    String
-  grade   Grade  @relation(fields: [gradeId], references: [id], onDelete: Cascade)
-  gradeId Int
+  id         Int      @id @default(autoincrement())
+  name       String
+  code       String
+  standard   Standard @relation(fields: [standardId], references: [id], onDelete: Cascade)
+  standardId Int
 
   teacher   Staff? @relation("TeacherSubjects", fields: [teacherId], references: [id])
   teacherId Int?
@@ -222,7 +222,7 @@ model Subject {
   updatedAt   DateTime     @updatedAt
   enrollments Enrollment[]
 
-  @@unique([schoolId, gradeId, code])
+  @@unique([schoolId, standardId, code])
   @@index([teacherId])
 }
 
@@ -234,8 +234,8 @@ model Student {
   profileId      Int           @unique
   school         School        @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   schoolId       Int
-  grade          Grade?        @relation(fields: [gradeId], references: [id])
-  gradeId        Int?
+  standard       Standard?     @relation(fields: [standardId], references: [id])
+  standardId     Int?
   section        Section?      @relation(fields: [sectionId], references: [id])
   sectionId      Int?
   academicYear   AcademicYear  @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
@@ -252,7 +252,7 @@ model Student {
 
   @@unique([schoolId, studentId])
   @@index([schoolId, status])
-  @@index([gradeId, sectionId, status])
+  @@index([standardId, sectionId, status])
   @@index([academicYearId])
 }
 
@@ -309,8 +309,8 @@ model Enrollment {
   subjectId      Int
   section        Section          @relation(fields: [sectionId], references: [id], onDelete: Cascade)
   sectionId      Int
-  grade          Grade            @relation(fields: [gradeId], references: [id], onDelete: Cascade)
-  gradeId        Int
+  standard       Standard         @relation(fields: [standardId], references: [id], onDelete: Cascade)
+  standardId     Int
   school         School           @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   schoolId       Int
   academicYear   AcademicYear     @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
@@ -322,7 +322,7 @@ model Enrollment {
   @@unique([studentId, subjectId, academicYearId])
   @@index([schoolId, status])
   @@index([subjectId])
-  @@index([gradeId, sectionId])
+  @@index([standardId, sectionId])
 }
 
 enum EnrollmentStatus {

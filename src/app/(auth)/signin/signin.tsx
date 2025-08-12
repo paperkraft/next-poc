@@ -67,7 +67,7 @@ export default function SignInPage() {
       //   window.location.href = callbackUrl || "/dashboard";
       // }
 
-      window.location.reload()
+      if (response.success) window.location.reload()
 
       if (response.type === "CredentialsSignin" || response.code === "credentials") {
         toast.error("Invalid credentials");

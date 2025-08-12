@@ -8,7 +8,7 @@ export const signInSchema = z.object({
   password: z
     .string({ required_error: "Password is required" })
     .min(1, "Password is required")
-    .max(10, "Password must be less than 10 characters"),
+    .max(20, "Password must be less than 10 characters"),
 });
 
 export const signUpSchema = z.object({
